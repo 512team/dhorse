@@ -1,0 +1,297 @@
+<div class="layuimini-container">
+    <div class="layuimini-main">
+		<div style="margin: 5px 5px 5px 5px">
+			<form class="layui-form layui-form-pane" action="">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<select name="projectEnvId" id="projectEnvId">
+							<option value="">请选择环境</option>
+						</select>
+					</div>
+					<input type="hidden" name="projectId" id="projectId"/>
+					<div class="layui-inline">
+						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+		<script type="text/html" id="deploymentStatusBar">
+		    {{#	if (d.deploymentStatus == 0){	     	}}
+			{{#		return '部署待审批'				}}
+			{{#	} else if (d.deploymentStatus == 1){ 	}}
+			{{#		return '部署中' 			 	}}
+			{{#	} else if (d.deploymentStatus == 2){ 	}}
+			{{#		return '部署成功'		    	}}
+			{{#	} else if (d.deploymentStatus == 3){ 	}}
+			{{#		return '部署失败'		    	}}
+			{{#	} else if (d.deploymentStatus == 4){ 	}}
+			{{#		return '合并成功'		    	}}
+			{{#	} else if (d.deploymentStatus == 5){ 	}}
+			{{#		return '合并失败'		    	}}
+			{{#	} else if (d.deploymentStatus == 6){ 	}}
+			{{#		return '回滚待审批'		    	}}
+			{{#	} else if (d.deploymentStatus == 7){ 	}}
+			{{#		return '回滚中'		    	 	}}
+			{{#	} else if (d.deploymentStatus == 8){ 	}}
+			{{#		return '回滚成功'		    	}}
+			{{#	} else if (d.deploymentStatus == 9){ 	}}
+			{{#		return '回滚失败'		    	}}
+			{{# }			                     	}}
+		</script>
+        <script type="text/html" id="currentTableBar">
+			{{#	if (d.deployApprovalRights == 1 || d.rollbackApprovalRights == 1){				}}
+				<a href="javascript:;" class="layui-font-blue" lay-event="approve">审批</a>
+				<span style="color: rgb(179, 179, 179);"> | </span>
+			{{# }			                     												}}
+			{{#	if (d.rollbackRights == 1){														}}
+				<a href="javascript:;" class="layui-font-blue" lay-event="rollback">回滚</a>
+				<span style="color: rgb(179, 179, 179);"> | </span>
+			{{# }			                     												}}
+			<a href="javascript:;" class="layui-font-blue" lay-event="log">日志</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
+			<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
+		</script>
+    </div>
+</div>
+<script>
+	
+	var id;
+	
+    layui.use(['form', 'table', 'dropdown'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+		
+		$("#projectId").val(projectId);
+		form.render('select');
+		
+        //初始化环境
+		initHis(form, table, $, projectId);
+
+		// 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            }, 'data');
+
+            return false;
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+			if (obj.event === 'approve') {
+                approve($, projectId, obj.data.branchName, obj.data.id);
+            }else if (obj.event === 'rollback') {
+                rollback($, projectId, obj.data.versionName, obj.data.id)
+            }else if (obj.event === 'log') {
+				id = obj.data.id;
+                var index = layer.open({
+                    title: '日志',
+                    type: 2,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['70%', '80%'],
+					offset: ['5%', '18%'],
+					content: ['page/deployment_detail/log.html', 'no']
+                });
+            }if (obj.event === 'delete') {
+                doDelete($, obj.data.id, obj.data.versionName, projectId);
+            }
+			return false;
+        });
+    });
+
+	function approve($, projectId, branchName, deploymentDetailId) {
+		var msg = '确定通过？';
+		layer.confirm(msg, {shade: 0.5,
+			maxmin: false,
+			shadeClose: false,
+			offset: ['35%', '40%'],
+		}, function (index) {
+			$.ajax({
+				url: '/project/deployment/detail/approveToDeploy',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"projectId": projectId, "branchName": branchName, "deploymentDetailId": deploymentDetailId}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("审核通过，请查看部署日志", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(index);
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+	
+	function rollback($, projectId, versionName, deploymentDetailId) {
+		var msg = '确定回滚到版本：' + versionName + '?';
+		layer.confirm(msg, {icon: 0,
+			title:'提示',
+			shade: 0.5,
+			maxmin: false,
+			shadeClose: false,
+			offset: ['35%', '40%'],
+		}, function (index) {
+			$.ajax({
+				url: '/project/deployment/detail/submitToRollback',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"projectId": projectId, "deploymentDetailId": deploymentDetailId}),
+				success: function(data){
+					if(data.code == "800000"){
+						layer.close(index);
+						layer.msg(data.message, {
+							icon: 1,
+							time: 1000,
+							shade: 0.01,
+							shadeClose: false}, function(){
+							layui.table.reload('currentTableId');
+						});
+						return false;
+					}
+
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.close(index);
+				},
+				error: function(data){
+					layer.close(index);
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+	
+	function initTable(table, projectId, projectEnvId){
+		table.render({
+            elem: '#currentTableId',
+            url: '/project/deployment/detail/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+			where: {"projectId": projectId, "projectEnvId": projectEnvId},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+				{field: 'versionName', title: '版本'},
+				{field: 'branchName', title: '分支',  width: '11%'},
+				{field: 'envName', title: '环境', width: '7%'},
+				{field: 'deploymentStatus', title: '部署状态', width: '9%', templet: '#deploymentStatusBar'},
+				{field: 'deployer', title: '部署人', width: '8%'},
+				{field: 'startTime', title: '开始时间', width: '13%'},
+				{field: 'endTime', title: '结束时间',  width: '13%'},
+                {title: '操作', toolbar: '#currentTableBar', width: '12%'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true
+        });
+	}
+	
+	function initHis(form, table, $, projectId) {
+		$.ajax({
+			url: '/project/env/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId, 'pageSize': 1000, 'pageNum': 1}),
+			success: function(res){
+				data = res.data
+				var firstEnv = 0;
+				var opt = '';
+				for(var k in data){
+					if(k == 0){
+						firstEnv = data[k].id;
+					}
+					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].envName +"</option>");
+				}
+				if(opt != ''){
+					$("#projectEnvId").html(opt);
+					form.render('select');
+				}
+				
+				initTable(table, projectId, firstEnv);
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	//删除
+	function doDelete($, id, name, projectId) {
+		var msg = "确定要删除“" + name + "”吗？";
+		layer.confirm(msg, {title: '提示'}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/project/deployment/detail/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"projectId": projectId, "deploymentDetailId": id}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

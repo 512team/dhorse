@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<define name="defaultLogPath" class="org.dhorse.infrastructure.utils.DefaultLogPath"/>
+	<springProperty scope="context" name="log.path" source="log.path"/>
+	<springProperty scope="context" name="log.max.history" source="log.max.history" defaultValue="7"/>
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger:%-3L - %msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 如果未指定目录，日志放在当前系统目录 -->
+		<if condition='isNull("log.path")'>
+			<then>
+				<File>${defaultLogPath}/out.log</File>
+			</then>
+			<else>
+				<File>${log.path}/dhorse/out.log</File>
+			</else>
+		</if>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 如果未指定目录，日志放在当前系统目录 -->
+			<if condition='isNull("log.path")'>
+				<then>
+					<fileNamePattern>${defaultLogPath}/out.%d{yyyy-MM-dd}.log</fileNamePattern>
+				</then>
+				<else>
+					<fileNamePattern>${log.path}/dhorse/out.%d{yyyy-MM-dd}.log</fileNamePattern>
+				</else>
+			</if>
+			<maxHistory>${log.max.history}</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger:%-3L - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="deploy" class="org.dhorse.infrastructure.log.DeployingAppender">
+		<policy class="org.dhorse.infrastructure.log.DeployingPolicy" />
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n</pattern>
+		</layout>
+	</appender>
+
+	<root level="info">
+		<appender-ref ref="console" />
+		<appender-ref ref="file" />
+		<appender-ref ref="deploy" />
+	</root>
+</configuration>

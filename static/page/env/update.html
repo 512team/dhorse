@@ -1,0 +1,328 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="update-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">环境名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="envName" lay-verify="required" lay-reqtext="环境名称不能为空" placeholder="请输入环境名称" autocomplete="off" class="layui-input">
+				<input type="hidden" name="projectId" id="projectId2"/>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">环境标识</label>
+			<div class="layui-input-block">
+				<input type="text" name="tag" lay-verify="required" lay-reqtext="环境标识不能为空" placeholder="请输入环境标识" autocomplete="off" class="layui-input" disabled="disabled">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">部署集群</label>
+			<div class="layui-input-block">
+				<select name="clusterId" id="clusterId" lay-filter="clusterId" lay-verify="required" lay-reqtext="部署集群不能为空" disabled="disabled">
+					<option value="">请选择或输入</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署命名空间</label>
+			<div class="layui-input-block">
+				<select name="namespaceName" id="namespaceName" lay-filter="namespaceName" lay-verify="required" lay-reqtext="部署命名空间不能为空" disabled="disabled">
+					<option value="">请选择或输入</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署序号</label>
+			<div class="layui-input-block">
+				<input name="orders" placeholder="值越小越往前，默认值：0" autocomplete="off"  class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">服务端口</label>
+			<div class="layui-input-block">
+				<input type="text" name="servicePort" placeholder="如：8080" lay-verify="required" lay-reqtext="服务端口不能为空" autocomplete="off" class="layui-input" disabled="disabled">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">健康检查路径</label>
+			<div class="layui-input-block">
+				<input type="text" name="healthPath" placeholder="如：/health" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">最小副本数</label>
+			<div class="layui-input-block">
+				<input type="text" name="minReplicas" placeholder="默认值：1" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">最大副本数</label>
+			<div class="layui-input-block">
+				<input type="text" name="maxReplicas" placeholder="默认值：1" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">单副本CPU数</label>
+			<div class="layui-input-block">
+				<input type="text" name="replicaCpu" placeholder="默认值：2" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">单副本内存数（M）</label>
+			<div class="layui-input-block">
+				<input type="text" name="replicaMemory" placeholder="默认值：1024" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">自动扩容CPU率（%）</label>
+			<div class="layui-input-block">
+				<input type="text" name="autoScalingCpu" placeholder="默认值：80" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">自动扩容内存率（%）</label>
+			<div class="layui-input-block">
+				<input type="text" name="autoScalingMemory" placeholder="默认值：80" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署审批</label>
+			<div class="layui-input-block">
+				<input type="radio" name="requiredDeployApproval" value="0" title="否" checked>
+				<input type="radio" name="requiredDeployApproval" value="1" title="是">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署后合并代码</label>
+			<div class="layui-input-block">
+				<input type="radio" name="requiredMerge" value="0" title="否" checked>
+				<input type="radio" name="requiredMerge" value="1" title="是">
+			</div>
+		</div>
+		<!--
+		<div class="layui-form-item">
+			<label class="layui-form-label">链路追踪状态</label>
+			<div class="layui-input-block">
+				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="0" title="否" checked>
+				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="1" title="是">
+			</div>
+		</div>
+		<div class="layui-form-item" style="display:none" id="traceTemplateDiv">
+			<label class="layui-form-label">链路追踪模板</label>
+			<div class="layui-input-block">
+				<select name="traceTemplateId" id="traceTemplateId" lay-filter="traceTemplateId" lay-verify="required" lay-reqtext="链路追踪模板不能为空">
+				</select>
+			</div>
+		</div>
+		-->
+		<div class="layui-form-item">
+			<label class="layui-form-label">Jvm参数</label>
+			<div class="layui-input-block">
+				<input type="text" name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">描述</label>
+			<div class="layui-input-block">
+				<input type="text" name="description" placeholder="不超过100字" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<input type="hidden" name="projectEnvId" id="projectEnvId">
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			parentIndex = layer.index;
+		var projectId = localStorage.getItem('projectId_' + $("#userName").val()),
+		envId = JSON.parse(parent.data2).envId;
+		
+		$("#projectId2").val(projectId);
+		
+		$.ajax({
+			url: '/project/env/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId, "projectEnvId": envId}),
+			success: function(res){
+				data = res.data;
+				$("#projectEnvId").val(data.id);
+				form.val("update-form", {
+					"envName": data.envName
+					,"tag": data.tag
+					,"orders": data.orders
+					,"minReplicas": data.minReplicas
+					,"maxReplicas": data.maxReplicas
+					,"replicaCpu": data.replicaCpu
+					,"replicaMemory": data.replicaMemory
+					,"autoScalingCpu": data.autoScalingCpu
+					,"servicePort": data.servicePort
+					,"requiredDeployApproval": data.requiredDeployApproval
+					,"requiredMerge": data.requiredMerge
+					,"autoScalingMemory": data.autoScalingMemory
+					,"traceStatus": data.traceStatus
+					,"healthPath": data.healthPath
+					,"jvmArgs": data.jvmArgs
+					,"description": data.description
+				});
+				//初始化集群列表
+				initCluster(form, $, data.clusterId);
+				initNamespaceName(form, $, data.clusterId, data.namespaceName);
+				initTraceTemplate(form, $, data.traceTemplateId, data.traceStatus);
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+		
+		form.on('radio(traceStatus)', function(data) {
+			if(data.value == 1){
+				initTraceTemplate(form, $, 0, 1);
+			}else{
+				$("#traceTemplateId").children().remove();
+				$("#traceTemplateDiv").hide();
+			}
+		});
+		
+        form.on('submit(saveBtn)', function(data) {
+			if($("#projectId").val() == ''){
+				layer.msg('请选择项目', {icon: 5, shift: 6});
+				return false;
+			}
+			if(data.field.traceStatus == 1){
+				if(data.field.traceTemplateId == ''){
+					layer.msg('链路追踪模板编号不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+			}
+			$.ajax({
+				url: '/project/env/update',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.close(parentIndex);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.close(parentIndex);
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+	
+	function initCluster(form, $, selectedClusterId){
+		$.ajax({
+			url: '/cluster/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'1': 1}),
+			success: function(res){
+				if(res.code != '000000'){
+					return false;
+				}
+				data = res.data;
+				var opt = '';
+				for(var k in data){
+					if(selectedClusterId == data[k].id){
+						opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].clusterName +"</option>");
+					}else{
+						opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].clusterName +"</option>");
+					}
+					
+				}
+				$("#clusterId").append(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	function initNamespaceName(form, $, clusterId, selectedNamespace){
+		$.ajax({
+			url: '/cluster/namespace/page',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'clusterId': clusterId, 'pageSize': 1000, 'pageNum': 1}),
+			success: function(res){
+				if(res.code != '000000'){
+					return false;
+				}
+				var opt;
+				if(selectedNamespace == 'defualt'){
+					opt = '<option value="default" selected>default</option>';
+				}else{
+					opt = '<option value="default">default</option>';
+				}
+				data = res.data.items;
+				for(var k in data){
+					if(data[k].namespaceName == selectedNamespace){
+						opt = opt.concat("<option value='"+ data[k].namespaceName +"' selected>"+ data[k].namespaceName +"</option>");
+					}else{
+						opt = opt.concat("<option value='"+ data[k].namespaceName +"'>"+ data[k].namespaceName +"</option>");
+					}
+				}
+				$("#namespaceName").html(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	function initTraceTemplate(form, $, traceTemplateId, traceStatus){
+		if(traceStatus == 0){
+			return false;
+		}
+		$.ajax({
+			url: '/globalConfig/traceTemplate/page',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'itemType': 5, 'pageSize': 1000, 'pageNum': 1}),
+			success: function(res){
+				var opt = '<option value="">请选择或输入</option>';
+				if(res.data.itemCount != 0){	
+					data = res.data.items;
+					for(var k in data){
+						if(traceTemplateId == data[k].id){
+							opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].name +"</option>");
+						}else{
+							opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].name +"</option>");
+						}
+					}
+				}
+				$("#traceTemplateId").html(opt);
+				$("#traceTemplateDiv").show();
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+</script>

@@ -1,0 +1,150 @@
+CREATE TABLE sys_user (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	login_name VARCHAR (32) DEFAULT NULL COMMENT '登录名',
+	user_name VARCHAR (32) DEFAULT NULL COMMENT '用户名',
+	password VARCHAR (64) DEFAULT NULL COMMENT '密码，MD5和SHA256双重加密',
+	email VARCHAR (32) DEFAULT NULL COMMENT '邮箱',
+	role_type TINYINT DEFAULT 0 COMMENT '0：普通用户，1：管理员',
+	registered_source TINYINT DEFAULT 0 COMMENT '注册来源，1：Dhorse，2：Ldap，3：Sso',
+	last_login_time datetime DEFAULT NULL COMMENT '上次登录时间',
+	last_login_token VARCHAR (32) DEFAULT NULL COMMENT '上次登录token',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '用户';
+CREATE INDEX index_user_login_name ON sys_user(login_name);
+CREATE INDEX index_user_update_time ON sys_user(update_time);
+INSERT INTO sys_user(login_name, user_name, password, email, role_type, registered_source, last_login_time, last_login_token, creation_time, update_time, deletion_status) VALUES ('admin', 'admin', '$2a$10$/kSSeihnxhzGdo9IJ0yYweGJyR/g9pSDk0jfDH1BvXRCZw.yv2D3i', '', 1, 1, NULL, NULL, now(), now(), 0);
+
+CREATE TABLE cluster (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	cluster_name VARCHAR (8) DEFAULT NULL COMMENT '集群名称，如：开发、测试、预发、生产等',
+	cluster_type TINYINT DEFAULT NULL COMMENT '集群类型，1：私有k8s，2：阿里云，3：腾讯云',
+	cluster_url VARCHAR (128) DEFAULT NULL COMMENT '集群地址，带端口',
+	auth_token VARCHAR (1024) DEFAULT NULL COMMENT '认证令牌',
+	auth_name VARCHAR (16) DEFAULT NULL COMMENT '认证用户',
+	auth_password VARCHAR (128) DEFAULT NULL COMMENT '认证密码',
+	description VARCHAR (128) DEFAULT NULL COMMENT '描述',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '集群';
+CREATE INDEX index_cluster_update_time ON cluster(update_time);
+
+CREATE TABLE global_config (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	item_type tinyint DEFAULT NULL COMMENT '配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境资源模板',
+	item_value VARCHAR (8192) DEFAULT NULL COMMENT '配置项值',
+	remark VARCHAR (64) DEFAULT NULL COMMENT '备注',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '全局配置';
+CREATE INDEX index_config_item_type ON global_config(item_type);
+
+CREATE TABLE project (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '项目编号',
+	project_name VARCHAR (32) NOT NULL COMMENT '项目名称',
+	language_type TINYINT DEFAULT 0 COMMENT '开发语言类型，1：Java，2：Python，3：Node，4：App，5：H5，6：C，7：C++，8：Go',
+	base_image VARCHAR (128) DEFAULT NULL COMMENT '依赖镜像',
+	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT '代码仓库路径',
+	first_department VARCHAR (16) DEFAULT NULL COMMENT '一级部门',
+	second_department VARCHAR (16) DEFAULT NULL COMMENT '二级部门',
+	third_department VARCHAR (16) DEFAULT NULL COMMENT '三级部门',
+	description VARCHAR (64) DEFAULT NULL COMMENT '项目描述',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '项目信息';
+CREATE INDEX index_project_project_name ON project(project_name);
+CREATE INDEX index_project_update_time ON project(update_time);
+
+CREATE TABLE project_extend_java (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	package_build_type TINYINT DEFAULT 0 COMMENT '打包构建方式，1：Maven，2：Gradle',
+	package_file_type TINYINT DEFAULT 0 COMMENT '打包文件类型，1：jar，2：war，3：zip',
+	package_target_path VARCHAR (64) DEFAULT 'target/' COMMENT '打包相对路径',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT 'java项目信息';
+CREATE INDEX index_extend_java_project_id ON project_extend_java(project_id);
+
+CREATE TABLE project_member (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	user_id BIGINT DEFAULT NULL COMMENT '用户编号',
+	login_name VARCHAR (16) DEFAULT NULL COMMENT '登录名',
+	role_type VARCHAR (16) DEFAULT NULL COMMENT '存储格式：1,2,3，角色类型，1：管理员，2：开发，3：测试，4：运维，5：架构师，6：告警接收：7：发布审批',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '项目成员';
+CREATE INDEX index_project_member_project_id ON project_member(project_id);
+CREATE INDEX index_project_member_user_id ON project_member(user_id);
+CREATE INDEX index_project_member_login_name ON project_member(login_name);
+CREATE INDEX index_project_member_update_time ON project_member(update_time);
+
+CREATE TABLE project_env (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	cluster_id BIGINT DEFAULT NULL COMMENT '集群编号',
+	namespace_name VARCHAR (32) DEFAULT NULL COMMENT '部署命名空间',
+	env_name VARCHAR (8) DEFAULT NULL COMMENT '环境名称，如：开发、测试、预发、生产等',
+	tag VARCHAR (8) DEFAULT NULL COMMENT '标签，如：dev、qa、pl、ol等',
+	orders TINYINT DEFAULT 0 COMMENT '发布序号（值越小越往前）',
+	min_replicas INT DEFAULT 1 COMMENT '最小副本数',
+	max_replicas INT DEFAULT 0 COMMENT '最大副本数',
+	replica_cpu INT DEFAULT 0 COMMENT '每个副本的cpu核心数',
+	replica_memory INT DEFAULT 0 COMMENT '每个副本的内存大小，单位M',
+	auto_scaling_cpu INT DEFAULT 0 COMMENT '自动扩容，cpu使用率',
+	auto_scaling_memory INT DEFAULT 0 COMMENT '自动扩容，内存使用率',
+	required_deploy_approval TINYINT DEFAULT 0 COMMENT '是否需要发布审批，0：否，1：是',
+	required_merge TINYINT DEFAULT 0 COMMENT '是否需要合并分支，0：否，1：是',
+	service_port INT DEFAULT NULL COMMENT '服务端口',
+	trace_status INT DEFAULT 0 COMMENT '链路追踪状态，0：未开启，1：已开启',
+	trace_template_id BIGINT DEFAULT NULL COMMENT '链路追踪模板编号',
+	health_path VARCHAR (32) DEFAULT NULL COMMENT '健康检查路径，端口后的uri，如：/health',
+	jvm_args VARCHAR (1024) DEFAULT NULL COMMENT 'jvm参数',
+	description VARCHAR (128) DEFAULT NULL COMMENT '环境描述',
+	deployment_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '部署时间',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '项目环境';
+CREATE INDEX index_env_project_id ON project_env(project_id);
+CREATE INDEX index_env_update_time ON project_env(update_time);
+
+CREATE TABLE deployment_version (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	branch_name VARCHAR (32) DEFAULT NULL COMMENT '分支名称',
+	version_name VARCHAR (128) DEFAULT NULL COMMENT '版本名称',
+	status TINYINT DEFAULT 0 COMMENT '状态，0：构建中，1：构建成功，2：构建失败',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '部署版本';
+CREATE INDEX index_version_project_id ON deployment_version(project_id);
+CREATE INDEX index_version_version_name ON deployment_version(version_name);
+CREATE INDEX index_version_update_time ON deployment_version(update_time);
+
+CREATE TABLE deployment_detail (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	branch_name VARCHAR (32) DEFAULT NULL COMMENT '分支名称',
+	version_name VARCHAR (128) DEFAULT NULL COMMENT '版本名称',
+	env_id BIGINT DEFAULT 0 COMMENT '环境编号',
+	deployment_status TINYINT DEFAULT 0 COMMENT '发布状态，0：发布待审批，1：发布中，2：发布成功，3：发布失败，4：合并成功，5：合并失败，6：回滚待审批，7：回滚中，8：回滚成功，9：回滚失败',
+	deployer VARCHAR (16) DEFAULT NULL COMMENT '发布人',
+	approver VARCHAR (16) DEFAULT NULL COMMENT '审批人',
+	start_time datetime DEFAULT NULL COMMENT '开始时间',
+	end_time datetime DEFAULT NULL COMMENT '结束时间',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '部署明细';
+CREATE INDEX index_detail_env_id ON deployment_detail(env_id);
+CREATE INDEX index_detail_version_name ON deployment_detail(version_name);
+CREATE INDEX index_detail_update_time ON deployment_detail(update_time);

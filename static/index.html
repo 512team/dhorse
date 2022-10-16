@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dhorse-简单易用的DevOps开发平台</title>
+    <meta name="keywords" content="Dhorse">
+    <meta name="description" content="简单易用的DevOps开发平台">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+    <link rel="stylesheet" href="css/layuimini.css?v=2.0.1" media="all">
+    <link rel="stylesheet" href="css/themes/default.css" media="all">
+    <link rel="stylesheet" href="css/public.css" media="all">
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style id="layuimini-bg-color">
+		.layuimini-tool {
+			left: 215px;
+			width: 100px;
+		}
+		.project-select {
+			color: #666;
+			border:none;
+			height: 30px;
+		}
+    </style>
+</head>
+<body class="layui-layout-body layuimini-all">
+<div class="layui-layout layui-layout-admin">
+
+    <div class="layui-header header">
+        <div class="layui-logo layuimini-logo layuimini-back-home"></div>
+
+        <div class="layuimini-header-content">
+			<a>
+                <div class="layuimini-tool" style="text-align:left">
+					<select class="project-select" title="请选择项目">
+					</select>
+				</div>
+            </a>
+            <!--手机端头部菜单-->
+            <ul class="layui-nav layui-layout-left layuimini-header-menu layuimini-mobile-show">
+                <li class="layui-nav-item">
+                    <a href="javascript:;"><i class="fa fa-list-ul"></i> 选择模块</a>
+                    <dl class="layui-nav-child layuimini-menu-header-mobile">
+                    </dl>
+                </li>
+            </ul>
+
+            <ul class="layui-nav layui-layout-right">
+				<li class="layui-nav-item" lay-unselect>
+                    <a href="javascript:;" data-refresh="刷新" title="刷新"><i class="fa fa-refresh"></i></a>
+                </li>
+			
+                <li class="layui-nav-item mobile layui-hide-xs" lay-unselect>
+                    <a href="javascript:;" data-check-screen="full" title="全屏"><i class="fa fa-arrows-alt"></i></a>
+                </li>
+                <li class="layui-nav-item layuimini-setting">
+                    <a href="javascript:;" id="userName"></a>
+                    <dl class="layui-nav-child">
+                        <dd>
+                            <a href="javascript:;" layuimini-content-href="page/sys_user/update_password.html" data-title="修改密码" data-icon="fa fa-gears">修改密码</a>
+                        </dd>
+                        <dd>
+                            <hr>
+                        </dd>
+                        <dd>
+                            <a href="javascript:;" class="login-out">退出登录</a>
+                        </dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item layuimini-select-bgcolor" lay-unselect>
+                    <a href="javascript:;" data-bgcolor="配色方案"><i class="fa fa-ellipsis-v"></i></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!--无限极左侧菜单-->
+    <div class="layui-side layui-bg-black layuimini-menu-left">
+    </div>
+
+    <!--初始化加载层-->
+    <div class="layuimini-loader">
+        <div class="layuimini-loader-inner"></div>
+    </div>
+
+    <!--手机端遮罩层-->
+    <div class="layuimini-make"></div>
+
+    <!-- 移动导航 -->
+    <div class="layuimini-site-mobile"><i class="layui-icon"></i></div>
+
+    <div class="layui-body">
+        <div class="layuimini-content-page">
+        </div>
+    </div>
+
+</div>
+<script src="lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script src="js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['jquery', 'layer', 'miniAdmin', 'miniTongji'], function () {
+        var $ = layui.jquery,
+            layer = layui.layer,
+            miniAdmin = layui.miniAdmin,
+            miniTongji = layui.miniTongji;
+		
+        $.ajax({
+			url: '/sysUser/queryLoginUser',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			success: function(res){
+				if(redirectLogin(res.code)){
+					return;
+				}
+				if(res.code != "000000"){
+					layer.msg("获取用户信息失败：" + res.message, {icon: 2});
+					return false;
+				}
+				var initMenu = "api/init_normal.json";
+				if(res.data.roleType == 1){
+					initMenu = "api/init_admin.json";
+				}
+				var options = {
+					iniUrl: initMenu, // 初始化接口
+					renderPageVersion: false,    // 初始化页面是否加版本号
+					bgColorDefault: false,      // 主题默认配置
+					multiModule: false,         // 是否开启多模块
+					menuChildOpen: false,       // 是否默认展开菜单
+					loadingTime: 0.001,         // 初始化加载时间
+					pageAnim: false,            // 切换菜单动画
+					urlHashLocation: false     // 是否打开hash定位
+				};
+				miniAdmin.render(options);
+				$("#userName").val(res.data.id).text(res.data.userName).append('<span class="layui-nav-more"></span>');
+			},
+			error: function(res){
+				layer.msg("调用用户信息接口失败：" + res.message, {icon: 2});
+			}
+		});
+
+        $('.login-out').on("click", function () {
+			$.ajax({
+				url: '/sysUser/logout',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg("退出登录失败：" + data.message, {icon: 2});
+						return false;
+					}
+					$("#userName").val();
+					window.location = '/page/login.html';
+				},
+				error: function(data){
+					layer.msg("退出登录失败：" + data.message, {icon: 2});
+				}
+			});
+        });
+				
+		$.ajax({
+			url: '/project/page',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'pageSize': 100, 'pageNum': 1}),
+			success: function(res){
+				var opt = '';
+				if(res.data.itemCount == 0){
+					opt = opt.concat("<option>请选择项目</option>");
+				}else{
+					var data = res.data.items;
+					var projectIdKey = 'projectId_' + $("#userName").val();
+					for(var k in data){
+						if(localStorage.getItem(projectIdKey) === null && k == 0){
+							localStorage.setItem(projectIdKey, data[k].id);
+						}
+						if(localStorage.getItem(projectIdKey) == data[k].id){
+							opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].projectName +"</option>");
+						}else{
+							opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].projectName +"</option>");
+						}
+					}
+				}
+				$(".project-select").append(opt);
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+		
+		$(".project-select").change(function(){
+			localStorage.setItem('projectId_' + $("#userName").val(), $(this).val());
+			$(".fa-refresh").click();
+		});
+    });
+</script>
+</body>
+</html>

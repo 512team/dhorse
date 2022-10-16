@@ -1,0 +1,109 @@
+<link rel="stylesheet" href="../../../lib/layui-v2.6.3/css/layui.css" media="all">
+<link rel="stylesheet" href="../../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+<link rel="stylesheet" href="../../../css/layuimini.css?v=2.0.1" media="all">
+<link rel="stylesheet" href="../../../css/themes/default.css" media="all">
+<link rel="stylesheet" href="../../../css/public.css" media="all">
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">项目成员</label>
+			<div class="layui-input-block">
+				<select name="userId" id="userId" lay-filter="userId" lay-verify="required" lay-reqtext="项目成员不能为空" lay-search>
+					<option value="">请选择或输入</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">角色类型</label>
+			<div class="layui-input-block">
+				<div id="roleType"></div>
+			</div>
+		</div>
+		<input type="hidden" name="projectId" id="projectId">
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit id="saveBtn" lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="../../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script src="../../../js/common.js" charset="utf-8"></script>
+<script src="../../../js/xm-select.js" charset="utf-8"></script>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			parentIndex = layer.index,
+			projectId = localStorage.getItem('projectId_' + parent.layui.$("#userName").val());
+		
+		$("#projectId").val(projectId);
+		
+		$.ajax({
+			url: '/sysUser/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'1': 1}),
+			success: function(res){
+				data = res.data
+				var opt = '';
+				for(var k in data){
+					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].loginName +"</option>");
+				}
+				$("#userId").append(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+		
+		var roleType = xmSelect.render({
+			el: '#roleType', 
+			data: [
+				{name: '管理员', value: 1},
+				{name: '开发', value: 2},
+				{name: '测试', value: 3},
+				{name: '运维', value: 4},
+				{name: '架构师', value: 5},
+				{name: '告警接收', value: 6},
+				{name: '部署审批', value: 7}
+			],
+	   });
+
+        form.on('submit(saveBtn)', function(data) {
+			$("#roleTypes").val(JSON.stringify(roleType.getValue('value')));
+			data.field.roleTypes = roleType.getValue('value');
+			$.ajax({
+				url: '/project/member/addOrUpdate',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						var indexOfParent = parent.layer.getFrameIndex(window.name);
+						parent.layer.close(indexOfParent);
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+       });
+    });
+</script>

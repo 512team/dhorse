@@ -1,0 +1,108 @@
+<style>
+	.text-value{
+		text-align: left;
+		width: 800px;
+		word-break:break-all;
+		white-space:pre-wrap;
+		cursor:auto;
+	}
+</style>
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">集群编号：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="id"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">集群名称：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="clusterName"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">集群类型：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="clusterType"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">集群地址：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="clusterUrl"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">认证令牌：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="authToken"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">认证用户：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="authUser"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">认证密码：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="authPassword"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">日志收集状态：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="logSwitch"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">创建时间：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="creationTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">修改时间：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="updateTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">描述：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="description"></label>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+			form.render();
+        //给表单赋值
+		var parentData = JSON.parse(parent.parentData);
+		$("#id").text(parentData.id);
+		$("#clusterName").text(parentData.clusterName);
+		$("#clusterType").text(parentData.clusterType);
+		$("#clusterUrl").text(parentData.clusterUrl);
+		$("#authToken").text(parentData.authToken);
+		$("#authUser").text(parentData.authUser);
+		$("#authPassword").text(parentData.authPassword);
+		$("#creationTime").text(parentData.creationTime);
+		$("#updateTime").text(parentData.updateTime);
+		$("#description").text(parentData.description);
+		
+		if(parentData.logSwitch == 0){
+			$("#logSwitch").text("关闭");
+		}else if(parentData.logSwitch == 1){
+			$("#logSwitch").text("开启");
+		}else if(parentData.logSwitch == 2){
+			$("#logSwitch").text("未知");
+		}
+		
+    });
+</script>

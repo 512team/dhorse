@@ -1,0 +1,5 @@
+version: 0.9.0-beta
+spring.jackson.default-property-inclusion: non_null
+spring.jackson.date-format: yyyy-MM-dd HH:mm:ss
+spring.jackson.time-zone: GMT+8
+spring.resources.static-locations: file:../static

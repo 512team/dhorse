@@ -1,0 +1,121 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">仓库类型</label>
+			<div class="layui-input-block">
+				<select name="type" id="type" lay-verify="required" lay-reqtext="仓库类型不能为空">
+					<option value="">请选择</option>
+					<option value="Harbor">Harbor</option>
+					<option value="DockerHub">DockerHub</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">仓库地址</label>
+			<div class="layui-input-block">
+				<input type="text" name="url" lay-verify="required" lay-reqtext="仓库地址不能为空" placeholder="格式：http://harborhost:20080" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<!-- 目前没有令牌认证的仓库类型
+		<div class="layui-form-item">
+			<label class="layui-form-label">认证令牌</label>
+			<div class="layui-input-block">
+				<input type="text" name="authToken" placeholder="与认证用户二选一必填" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		-->
+		<div class="layui-form-item">
+			<label class="layui-form-label required">认证用户</label>
+			<div class="layui-input-block">
+				<input type="text" name="authUser" placeholder="认证用户" lay-verify="required" lay-reqtext="认证用户不能为空" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">认证密码</label>
+			<div class="layui-input-block">
+				<input type="text" name="authPassword" placeholder="认证密码" lay-verify="required" lay-reqtext="认证密码不能为空" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+		$.ajax({
+			url: '/globalConfig/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 3}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				if(JSON.stringify(res.data) === '{}'){
+					return false;
+				}
+				//给表单赋值
+				form.val("form-data", {
+				  "type": res.data.imageRepo.type
+				  ,"url": res.data.imageRepo.url
+				  ,"authToken": res.data.imageRepo.authToken
+				  ,"authUser": res.data.imageRepo.authUser
+				  ,"authPassword": res.data.imageRepo.authPassword
+				});
+			},
+			error: function(res){
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+		
+		form.render('select');
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+			if(data.field.authUser == ''){
+				layer.msg("认证用户不能为空", {icon: 5, shift: 6});
+				return false;
+			}
+			if(data.field.authPassword == ''){
+				layer.msg("认证密码不能为空", {icon: 5, shift: 6});
+				return false;
+			}
+			//增加类型
+			data.field.itemType = 3;
+			$.ajax({
+				url: '/globalConfig/imageRepo/addOrUpdate',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}	
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+</script>

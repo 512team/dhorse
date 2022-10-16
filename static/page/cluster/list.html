@@ -1,0 +1,257 @@
+<div class="layuimini-main">
+	<div style="margin: 5px 5px 5px 5px">
+		<form class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<input type="text" name="clusterName" autocomplete="off" class="layui-input" placeholder="集群名称">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<select name="clusterType">
+							<option value="">集群类型</option>
+							<option value="1">K8S</option>
+							<!--
+							<option value="2">阿里云</option>
+							<option value="3">腾讯云</option>
+							-->
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	<script type="text/html" id="toolbarDemo">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+			<!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
+		</div>
+	</script>
+
+	<table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+	<script type="text/html" id="currentTableBar">
+		<a href="javascript:;" class="layui-font-blue" lay-event="detail">详情</a><span style="color: rgb(179, 179, 179);"> | </span>
+		<a href="javascript:;" class="layui-font-blue" lay-event="namespace">命名空间</a><span style="color: rgb(179, 179, 179);"> | </span>
+		<a href="javascript:;" class="layui-font-blue dropdown-operate" data-cluster-id="{{d.id}}" data-cluster-name="{{d.clusterName}}">更多 <i class="layui-icon layui-font-12 layui-icon-down"></i></a>
+	</script>
+	
+	<script type="text/html" id="cluserTypeBar">
+		{{#	if (d.clusterType == 1){	    }}
+		{{#		return 'K8S'				}}
+		{{#	} else if (d.clusterType == 2){ }}
+		{{#		return '阿里云' 			}}
+		{{#	} else if (d.clusterType == 3){ }}
+		{{#		return '腾讯云'		    	}}
+		{{# }			                    }}
+	</script>
+	
+	<script type="text/html" id="logSwitchBar">
+		{{#	if (d.logSwitch == 0){	    	}}
+		{{#		return '关闭'				}}
+		{{#	} else if (d.logSwitch == 1){ 	}}
+		{{#		return '开启' 				}}
+		{{#	} else if (d.logSwitch == 2){ 	}}
+		{{#		return '未知'		    	}}
+		{{# }			                   	}}
+	</script>
+</div>
+
+<script>
+
+	//全局变量，在子页面里使用
+	var parentData;
+	
+    layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			miniPage = layui.miniPage;
+		
+		form.render();
+		
+        table.render({
+			id: 'currentTableId', 
+            elem: '#currentTableId',
+            url: '/cluster/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+                {field: 'id', title: '集群编号', sort: true},
+                {field: 'clusterName', title: '集群名称', width: '8%'},
+                {field: 'clusterType', title: '集群类型', templet: '#cluserTypeBar', width: '7%'},
+                {field: 'clusterUrl', title: '集群地址'},
+                {field: 'logSwitch', title: '日志收集状态', templet: '#logSwitchBar', width: '9%'},
+                {field: 'creationTime', title: '创建时间', width: '13%'},
+                {field: 'updateTime', title: '修改时间', width: '13%'},
+                {title: '操作', toolbar: '#currentTableBar'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true,
+			done: function(res, curr, count){
+				dropdown.render({
+					elem: '.dropdown-operate'
+					,trigger: 'hover'
+					,data: [{
+					  title: '修改'
+					  ,id: 'update'
+					}, {
+					  title: '删除'
+					  ,id: 'delete'
+					}]
+					,click: function(data, othis){
+						var elem = $(this.elem)
+						,clusterId = elem.data('cluster-id')
+						,clusterName = elem.data('cluster-name');
+						if(data.id == 'delete'){
+							doDelete($, clusterId, clusterName);
+						}else if(data.id == 'update'){
+							parentData = JSON.stringify({"clusterId": clusterId});
+							var index = layer.open({
+								title: '修改集群',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['50%', '90%'],
+								offset: ['7%', '30%'],
+								content: miniPage.getHrefContent('page/cluster/update.html')
+							});
+						}
+					}
+				});
+			}
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            }, 'data');
+
+            return false;
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加集群',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['50%', '85%'],
+                    offset: ['10%', '30%'],
+					content: miniPage.getHrefContent('page/cluster/add.html')
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                layer.alert(JSON.stringify(data));
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            parentData = JSON.stringify(obj.data);
+			if (obj.event === 'detail') {
+                var index = layer.open({
+                    title: '集群详情',
+                    type: 1,
+					shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['67%', '95%'],
+                    offset: ['2%', '20%'],
+					content: miniPage.getHrefContent('page/cluster/detail.html')
+                });
+            }else if (obj.event === 'namespace') {
+                var index = layer.open({
+                    title: '命名空间',
+                    type: 1,
+					shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['67%', '70%'],
+                    offset: ['15%', '20%'],
+					content: miniPage.getHrefContent('page/cluster/namespace/list.html')
+                });
+            }
+			return false;
+        });
+    });
+	
+	//删除
+	function doDelete($, clusterId, clusterName) {
+		var msg = '只会删除在DHorse的配置，不会删除“' + clusterName + '”里的任何组件，确定删除？';
+		layer.confirm(msg, function (index) {
+			layer.close(index);
+			var param = {"clusterId": clusterId};
+			$.ajax({
+				url: '/cluster/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(param),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

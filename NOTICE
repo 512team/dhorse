@@ -1,0 +1,10 @@
+
+DHorse
+Copyright 2021-2022 The Apache Software Foundation
+
+This product includes software developed at Github
+(https://github.com/tiandizhiguai/dhorse).
+
+This product uses the following Project:
+
+Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、H2、Mysql

@@ -1,0 +1,231 @@
+<style>
+	.text-value{
+		text-align: left;
+		width: 80%;
+		word-break:break-all;
+		white-space:pre-wrap;
+		cursor:auto;
+		float: left;
+		display: block;
+		padding: 9px 15px;
+		font-weight: 400;
+		line-height: 20px;
+		position: relative;
+	}
+	.layuimini-form > .layui-form-item > .layui-form-label{
+		width: 160px !important;
+	}
+</style>
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label">环境编号：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="id"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">环境名称：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="envName"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">环境标识：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="tag"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">集群名称：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="clusterName"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">集群命名空间：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="namespaceName"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署序号：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="orders"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">最小副本数：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="minReplicas"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">最大副本数：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="maxReplicas"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">单副本CPU数：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="replicaCpu"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">单副本内存（M）：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="replicaMemory"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">自动扩容CPU率（%）：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="autoScalingCpu"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">自动扩容内存率（%）：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="autoScalingMemory"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署审批：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="requiredDeployApproval"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署后合并代码：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="requiredMerge"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">服务端口：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="servicePort"></label>
+			</div>
+		</div>
+		<!--
+		<div class="layui-form-item">
+			<label class="layui-form-label">链路追踪状态：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="traceStatus"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">链路追踪模板名称：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="traceTemplateName"></label>
+			</div>
+		</div>
+		-->
+		<div class="layui-form-item">
+			<label class="layui-form-label">健康检查路径：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="healthPath"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">Jvm参数：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="jvmArgs"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">最近部署时间：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="deploymentTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">创建时间：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="creationTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">修改时间：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="updateTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">描述：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="description"></label>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+
+		//初始化表单数据
+		var loadIndex = 0;
+		$.ajax({
+			url: '/project/env/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId, 'projectEnvId': JSON.parse(parent.data2).envId}),
+			beforeSend: function() {
+				loadIndex = layer.load(2);
+			},
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					layer.close(loadIndex);
+					return false;
+				}				
+				$("#id").text(res.data.id);
+				$("#clusterName").text(res.data.clusterName);
+				$("#namespaceName").text(res.data.namespaceName);
+				$("#envName").text(res.data.envName);
+				$("#tag").text(res.data.tag);
+				$("#orders").text(res.data.orders);
+				$("#minReplicas").text(res.data.minReplicas);
+				$("#maxReplicas").text(res.data.maxReplicas);
+				$("#replicaCpu").text(res.data.replicaCpu);
+				$("#replicaMemory").text(res.data.replicaMemory);
+				$("#autoScalingCpu").text(res.data.autoScalingCpu);
+				$("#autoScalingMemory").text(res.data.autoScalingMemory);
+				if(res.data.requiredDeployApproval == 0){
+					$("#requiredDeployApproval").text('否');
+				}else{
+					$("#requiredDeployApproval").text('是');
+				}
+				if(res.data.requiredMerge == 0){
+					$("#requiredMerge").text('否');
+				}else{
+					$("#requiredMerge").text('是');
+				}
+				$("#servicePort").text(res.data.servicePort);
+				if(res.data.traceStatus == 0){
+					$("#traceStatus").text('关闭');
+				}else{
+					$("#traceStatus").text('开启');
+				}
+				$("#traceTemplateName").text(res.data.traceTemplateName);
+				$("#healthPath").text(res.data.healthPath);
+				$("#jvmArgs").text(res.data.jvmArgs);
+				$("#description").text(res.data.description);
+				$("#deploymentTime").text(res.data.deploymentTime);
+				$("#creationTime").text(res.data.creationTime);
+				$("#updateTime").text(res.data.updateTime);
+
+				layer.close(loadIndex);
+			},
+			error: function(res){
+				layer.close(loadIndex);
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+    });
+</script>

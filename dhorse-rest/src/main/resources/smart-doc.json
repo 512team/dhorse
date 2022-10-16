@@ -1,0 +1,12 @@
+{
+	"outPath": "e://workspace/doc",
+	"requestHeaders": [
+		{
+			"name": "logined_token",
+			"type": "string",
+			"desc": "登录token",
+			"value": "f92e4c7e8d414c329b4c87e2a87c3d14",
+			"required": true
+		}
+	]
+}

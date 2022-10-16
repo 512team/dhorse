@@ -1,0 +1,206 @@
+<div class="layuimini-container">
+    <div class="layuimini-main">
+		<div style="margin: 5px 5px 5px 5px">
+			<form class="layui-form layui-form-pane" action="">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<div class="layui-input-inline">
+							<input type="text" name="branchName" autocomplete="off" class="layui-input" placeholder="分支名称">
+							<input type="hidden" name="projectId" id="projectId"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+					</div>
+				</div>
+			</form>
+		</div>
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 创建分支 </button>
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+			<a href="javascript:;" class="layui-font-blue" lay-event="buildVersion">构建版本</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
+			<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
+        </script>
+
+		<script type="text/html" id="mergedStatusBar">
+		    {{#	if (d.mergedStatus == 0) {  }}
+			{{#		return '未合并'			}}
+			{{#	} else {              		}}
+			{{#		return '已合并'   		}}
+			{{#	}                     		}}
+		</script>
+    </div>
+</div>
+<script>
+
+    layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			projectId = localStorage.getItem('projectId_' + $("#userName").val()),
+			miniPage = layui.miniPage;
+		
+		$("#projectId").val(projectId);
+		
+        table.render({
+            elem: '#currentTableId',
+            url: '/project/branch/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+			where: {'projectId': projectId},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+                {field: 'branchName', title: '分支名称'},
+                {field: 'mergedStatus', title: '合并状态', templet: '#mergedStatusBar'},
+                {field: 'updateTime', title: '最后提交时间', width: '13%'},
+                {title: '操作', toolbar: '#currentTableBar'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            }, 'data');
+            return false;
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '创建分支',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin:false,
+                    shadeClose: false,
+                    area: ['30%', '30%'],
+					offset: ['30%', '35%'],
+					content: miniPage.getHrefContent('page/branch/add.html')
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                layer.alert(JSON.stringify(data));
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            if (obj.event === 'buildVersion') {
+                buildVersion($, projectId, obj.data.branchName);
+            }else if (obj.event === 'delete') {
+                doDelete($, projectId, obj.data.branchName);
+            }
+			return false;
+        });
+    });
+	
+	function buildVersion($, projectId, branchName){
+		$.ajax({
+			url: '/project/branch/buildVersion',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"projectId": projectId, "branchName": branchName}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				//var msg = "开始构建<br/>版本号：" + res.data + "<br/>请至“版本列表”查看";
+				//layer.alert(msg, {icon: 1, title:'提示', offset: ['30%', '30%']});
+				layer.msg("开始构建", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false,
+						offset: ['38%', '45%']
+				});
+			},
+			error: function(res){
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	//删除
+	function doDelete($, projectId, branchName) {
+		var msg = '确定删除：' + branchName + "？";
+		layer.confirm(msg, {
+			shade: 0.4,
+			maxmin: false,
+			shadeClose: false,
+			offset: ['35%', '40%']}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/project/branch/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"projectId": projectId, "branchName": branchName}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 500}, function(){
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

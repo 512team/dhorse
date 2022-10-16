@@ -1,0 +1,238 @@
+<link rel="stylesheet" href="../../js/lay-module/step-lay/step.css" media="all">
+<div class="layuimini-main">
+	<div class="layui-carousel" id="stepForm" lay-filter="stepForm" style="margin: 0 auto;">
+		<div carousel-item>
+			<div>
+				<div class="layui-form layuimini-form" lay-filter="first-form">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">项目名称</label>
+						<div class="layui-input-block">
+							<input type="text" name="projectName" lay-verify="required" lay-reqtext="项目名称不能为空" placeholder="请输入项目名称" autocomplete="off" class="layui-input" disabled="">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">语言类型</label>
+						<div class="layui-input-block">
+							<select name="languageType" disabled="">
+								<option value="">请选择</option>
+								<option value="1">Java</option>
+								<option value="2">Python</option>
+								<option value="3">Node</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">代码仓库地址</label>
+						<div class="layui-input-block">
+							<input name="codeRepoPath" lay-verify="required" lay-reqtext="代码仓库地址不能为空" placeholder="如GitLab项目的id" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">依赖镜像</label>
+						<div class="layui-input-block">
+							<input type="text" name="baseImage" placeholder="格式，如：openjdk:8-jdk-alpine" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">一级部门</label>
+						<div class="layui-input-block">
+							<input type="text" name="firstDepartment" placeholder="请输入一级部门" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">二级部门</label>
+						<div class="layui-input-block">
+							<input type="text" name="secondDepartment" placeholder="请输入二级部门" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">三级部门</label>
+						<div class="layui-input-block">
+							<input type="text" name="thirdDepartment" placeholder="请输入三级部门" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">描述</label>
+						<div class="layui-input-block">
+							<input type="text" name="description" placeholder="至多100字" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<input type="hidden" id="projectId" name="projectId">
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button class="layui-btn layui-btn-normal" lay-submit id="saveBtn" lay-filter="saveBtn">确认保存</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="layui-form layuimini-form" id="secondForm" lay-filter="second-form">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">打包构建方式</label>
+						<div class="layui-input-block">
+							<select name="extendParam.packageBuildType">
+								<option value="">请选择</option>
+								<option value="1">Maven</option>
+								<option value="2">Gradle</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">打包文件类型</label>
+						<div class="layui-input-block">
+							<select name="extendParam.packageFileType">
+								<option value="">请选择</option>
+								<option value="1">Jar</option>
+								<option value="2">War</option>
+								<option value="3">Zip</option>
+							</select>
+						</div>
+					</div>
+					
+					<div class="layui-form-item">
+						<label class="layui-form-label">打包相对路径</label>
+						<div class="layui-input-block">
+							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form', 'step'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			step = layui.step,
+			parentIndex = layer.index;
+		var projectId = localStorage.getItem('projectId_' + $("#userName").val());
+		
+		//首先初始化分步表单
+		step.render({
+            elem: '#stepForm',
+            filter: 'stepForm',
+            width: '100%',
+            stepWidth: '750px',
+            height: '500px',
+            stepItems: []
+        });
+		
+		//初始化表单数据
+		var loadIndex = 0;
+		$.ajax({
+			url: '/project/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId}),
+			beforeSend: function() {
+				loadIndex = layer.load(2);
+			},
+			success: function(res){
+				if(res.code != "000000"){
+					layer.close(loadIndex);
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				
+				$("#projectId").val(res.data.id);
+				
+				//给表单赋值
+				form.val("first-form", {
+					"projectName": res.data.projectName
+					,"languageType": res.data.languageType
+					,"codeRepoPath": res.data.codeRepoPath
+					,"baseImage": res.data.baseImage
+					,"firstDepartment": res.data.firstDepartment
+					,"secondDepartment": res.data.secondDepartment
+					,"thirdDepartment": res.data.thirdDepartment
+					,"description": res.data.description
+				});
+				
+				//如果是java语言，则初始化下个表单数据
+				if(res.data.languageType == 1){
+					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+					//初始化下个表单
+					form.val("second-form", {
+						"extendParam.packageBuildType": res.data.projectExtend.packageBuildType
+						,"extendParam.packageFileType": res.data.projectExtend.packageFileType
+						,"extendParam.packageTargetPath": res.data.projectExtend.packageTargetPath
+					});
+				}else{
+					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
+				}
+				layer.close(loadIndex);
+			},
+			error: function(res){
+				layer.close(loadIndex);
+				layer.msg(res.message, {icon: 5, shift: 6});				
+			}
+		});
+		
+		form.on('submit(formStep)', function (data) {
+			var fields = data.field;
+			var firstFormData = '<div id="firstFormData">';
+			for(var fieldName in fields){
+				firstFormData += '<input type="hidden" name="'+ fieldName +'" value="'+ fields[fieldName] +'">';
+			}
+			firstFormData += "</div>";
+			$("#secondForm").append(firstFormData);
+            step.next('#stepForm');
+            return false;
+        });
+
+        $('.pre').click(function () {
+			$("#firstFormData").remove();
+            step.pre('#stepForm');
+        });
+		
+        form.on('submit(saveBtn)', function(data) {
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendParam'] = extendParams;
+		
+			$.ajax({
+				url: '/project/update',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.initForm($, projectId);
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+</script>

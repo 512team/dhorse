@@ -1,0 +1,64 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">模板名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="name" lay-verify="required" lay-reqtext="模板名称不能为空" placeholder="请输入模板名称" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">服务地址</label>
+			<div class="layui-input-block">
+				<input type="text" name="serverUrl" lay-verify="required" lay-reqtext="服务地址不能为空" placeholder="如：127.0.0.1:11800" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">代理镜像名称</label>
+			<div class="layui-input-block">
+			  <input type="text" name="agentImage" lay-verify="required" lay-reqtext="代理镜像名称不能为空" placeholder="如：skywalking-agent:8.9" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			parentIndex = layer.index;
+				
+        form.on('submit(saveBtn)', function(data) {
+			$.ajax({
+				url: '/globalConfig/traceTemplate/add',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.close(parentIndex);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.close(parentIndex);
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+</script>

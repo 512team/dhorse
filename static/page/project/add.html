@@ -1,0 +1,197 @@
+<div class="layuimini-main">
+	<div class="layui-carousel" id="stepForm" lay-filter="stepForm" style="margin: 0 auto;">
+		<div carousel-item>
+			<div>
+				<div class="layui-form layuimini-form">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">项目名称</label>
+						<div class="layui-input-block">
+							<input type="text" name="projectName" lay-verify="required" lay-reqtext="项目名称不能为空" placeholder="请输入项目名称" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">语言类型</label>
+						<div class="layui-input-block">
+							<select name="languageType" id="languageType" lay-filter="languageType">
+								<option value="">请选择</option>
+								<option value="1">Java</option>
+								<!--
+								<option value="2">Python</option>
+								<option value="3">Node</option>
+								-->
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">代码仓库地址</label>
+						<div class="layui-input-block">
+							<input name="codeRepoPath" lay-verify="required" lay-reqtext="代码仓库地址不能为空" placeholder="如GitLab项目的id" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">依赖镜像</label>
+						<div class="layui-input-block">
+							<input type="text" name="baseImage" placeholder="如：openjdk:17-jdk-alpine" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">一级部门</label>
+						<div class="layui-input-block">
+							<input type="text" name="firstDepartment" placeholder="请输入一级部门" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">二级部门</label>
+						<div class="layui-input-block">
+							<input type="text" name="secondDepartment" placeholder="请输入二级部门" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">三级部门</label>
+						<div class="layui-input-block">
+							<input type="text" name="thirdDepartment" placeholder="请输入三级部门" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">描述</label>
+						<div class="layui-input-block">
+							<input type="text" name="description" placeholder="至多100字" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button class="layui-btn layui-btn-normal" lay-submit id="saveBtn" lay-filter="saveBtn">确认保存</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="layui-form layuimini-form" id="secondForm">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">打包构建方式</label>
+						<div class="layui-input-block">
+							<select name="extendParam.packageBuildType">
+								<option value="">请选择</option>
+								<option value="1">Maven</option>
+								<!--
+								<option value="2">Gradle</option>
+								-->
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">打包文件类型</label>
+						<div class="layui-input-block">
+							<select name="extendParam.packageFileType">
+								<option value="">请选择</option>
+								<option value="1">Jar</option>
+								<!--
+								<option value="2">War</option>
+								<option value="3">Zip</option>
+								-->
+							</select>
+						</div>
+					</div>
+					
+					<div class="layui-form-item">
+						<label class="layui-form-label">打包相对路径</label>
+						<div class="layui-input-block">
+							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form', 'step'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			step = layui.step;
+		
+		form.render();
+		
+		step.render({
+            elem: '#stepForm',
+            filter: 'stepForm',
+            width: '100%',
+            stepWidth: '750px',
+            height: '500px',
+            stepItems: []
+        });
+		
+		form.on('select(languageType)', function(data) {
+			if(data.value == 1){
+				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+			}else{
+				$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
+			}
+        });
+		
+		form.on('submit(formStep)', function (data) {
+			var fields = data.field;
+			var firstFormData = '<div id="firstFormData">';
+			for(var fieldName in fields){
+				firstFormData += '<input type="hidden" name="'+ fieldName +'" value="'+ fields[fieldName] +'">';
+			}
+			firstFormData += "</div>";
+			$("#secondForm").append(firstFormData);
+            step.next('#stepForm');
+            return false;
+        });
+
+        $('.pre').click(function () {
+			$("#firstFormData").remove();
+            step.pre('#stepForm');
+        });
+		
+        form.on('submit(saveBtn)', function(data) {
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendParam'] = extendParams;
+		
+			$.ajax({
+				url: '/project/add',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					localStorage.setItem('projectId_' + $("#userName").val(), res.data.id);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						window.location = '/index.html';
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+</script>

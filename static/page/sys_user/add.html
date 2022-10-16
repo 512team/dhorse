@@ -1,0 +1,95 @@
+<div class="layuimini-main">
+<div class="layui-form layuimini-form" lay-filter="form-data">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">登录名</label>
+        <div class="layui-input-block">
+            <input type="text" name="loginName" lay-verify="required" lay-reqtext="登录名不能为空" placeholder="请输入登录账号名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">用户名</label>
+        <div class="layui-input-block">
+            <input type="text" name="userName" lay-verify="required" lay-reqtext="用户名不能为空" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+	<div class="layui-form-item">
+		<label class="layui-form-label required">登录密码</label>
+		<div class="layui-input-inline">
+		  <input type="password" name="password" lay-verify="required" lay-reqtext="初始登录密码不能为空" placeholder="请输入初始登录密码" autocomplete="off" class="layui-input">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label required">确认登录密码</label>
+		<div class="layui-input-inline">
+		  <input type="password" name="confirmPassword" lay-verify="required" lay-reqtext="确认初始登录密码不能为空" placeholder="请再次输入初始登录密码" autocomplete="off" class="layui-input">
+		</div>
+	</div>
+	<div class="layui-form-item">
+        <label class="layui-form-label required">角色类型</label>
+        <div class="layui-input-block">
+            <input type="radio" name="roleType" value="0" title="普通用户" checked="">
+            <input type="radio" name="roleType" value="1" title="管理员">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱</label>
+        <div class="layui-input-block">
+            <input type="email" name="email" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+	<input type="hidden" name="registeredSource" value="1">
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			parentIndex = layer.index;
+		
+		form.render('radio');		
+		
+        form.on('submit(saveBtn)', function(data) {
+			var password = data.field.password;
+			var confirmPassword = data.field.confirmPassword;
+			if(confirmPassword != password){
+				layer.msg("登录密码不一致", {icon: 5, shift: 6});
+				return false;
+			}
+			data.field.password = password.md5(32).toUpperCase();
+			data.field.confirmPassword = data.field.password;
+		
+			$.ajax({
+				url: '/sysUser/createUser',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.close(parentIndex);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.close(parentIndex);
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,253 @@
+<style>
+	.text-value{
+		text-align: left;
+		width: 800px;
+		word-break:break-all;
+		white-space:pre-wrap;
+		cursor:auto;
+	}
+</style>
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label">项目编号：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="id"></label>
+				<a href="javascript:;" class="layui-font-blue" style="float:right;margin-right:45px;padding-top: 9px;" id="delete">删除</a>
+				<a href="javascript:;" class="layui-font-blue" style="float:right;margin-right:15px;padding-top: 9px;" id="edit">修改</a>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">项目名称：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="projectName"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">语言类型：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="languageType"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">依赖镜像：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="baseImage"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">代码仓库地址：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="codeRepoPath"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">打包构建方式：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="packageBuildType"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">打包文件类型：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="packageFileType"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">打包文件路径：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="packageTargetPath"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">部门：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="department"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">创建时间：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="creationTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">修改时间：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="updateTime"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">描述：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="description"></label>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form', 'miniPage'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			miniPage = layui.miniPage;
+		var projectId = localStorage.getItem('projectId_' + $("#userName").val());
+		
+		initForm($, projectId);
+
+		$('#edit').click(function(){
+			var index = layer.open({
+				title: '修改项目',
+				type: 1,
+				shade: 0.5,
+				maxmin: false,
+				shadeClose: false,
+				area: ['45%', '80%'],
+				offset: ['10%', '32%'],
+				content: miniPage.getHrefContent('page/project/update.html')
+			});
+		});
+		
+		$('#delete').click(function(){
+			doDelete($, projectId);
+		});
+		
+    });
+	
+	function initForm($, projectId){
+	
+		var loadIndex = 0;
+		//初始化表单数据
+		$.ajax({
+			url: '/project/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId}),
+			beforeSend: function() {
+				loadIndex = layer.load(2);
+			},
+			success: function(res){
+				if(res.code != "000000"){
+					layer.close(loadIndex);
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				
+				if(!res.data){
+					layer.close(loadIndex);
+					return false;
+				}
+				
+				$("#id").text(res.data.id);
+				$("#projectName").text(res.data.projectName);
+				
+				var languageType = '';
+				if(res.data.languageType == 1){
+					languageType = "Java";
+				}else if(res.data.languageType == 2){
+					languageType = "Python";
+				}else if(res.data.languageType == 3){
+					languageType = "Node";
+				}
+				$("#languageType").text(languageType);
+				$("#baseImage").text(res.data.baseImage);
+				$("#codeRepoPath").text(res.data.codeRepoPath);
+				$("#creationTime").text(res.data.creationTime);
+				$("#updateTime").text(res.data.updateTime);
+				$("#description").text(res.data.description);
+				var department = res.data.firstDepartment;
+				if(department != ''){
+					department += ' - ';
+					department += res.data.secondDepartment;
+				}
+				if(department != ''){
+					department += ' - ';
+					department += res.data.thirdDepartment;
+				}
+				$("#department").text(department);
+				
+				var packageBuildType = '';
+				if(typeof(res.data.projectExtend) == "undefined"){
+					packageBuildType = '';
+				}else if(typeof(res.data.projectExtend.packageBuildType) == "undefined"){
+					packageBuildType = '';
+				}else if(res.data.projectExtend.packageBuildType == 1){
+					packageBuildType = "Maven";
+				}else if(res.data.projectExtend.packageBuildType == 2){
+					packageBuildType = "Gradle";
+				}
+				$("#packageBuildType").text(packageBuildType);
+				
+				var packageFileType = '';
+				if(typeof(res.data.projectExtend) == "undefined"){
+					packageBuildType = '';
+				}else if(res.data.projectExtend.packageFileType == 1){
+					packageFileType = "Jar";
+				}else if(res.data.projectExtend.packageFileType == 2){
+					packageFileType = "War";
+				}else if(res.data.projectExtend.packageFileType == 3){
+					packageFileType = "Zip";
+				}
+				$("#packageFileType").text(packageFileType);
+				
+				var packageTargetPath = '';
+				if(typeof(res.data.projectExtend) == "undefined"){
+					packageTargetPath = '';
+				}else {
+					packageTargetPath = res.data.projectExtend.packageTargetPath;
+				}
+				$("#packageTargetPath").text(packageTargetPath);
+				layer.close(loadIndex);
+			},
+			error: function(res){
+				layer.close(loadIndex);
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	function doDelete($, id) {
+		var msg = "确定删除？";
+		layer.confirm(msg, {shade: 0.5,
+			maxmin: false,
+			shadeClose: false,
+			offset: ['35%', '40%'],
+		}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/project/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"projectId": id}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					//清除当前项目的所有缓存
+					var length = localStorage.length;
+					for(var i = 0; i < length; i++){
+						var key = localStorage.key(0);
+						if(localStorage.getItem(key) == id){
+							localStorage.removeItem(key);
+						}
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+							window.location = '/index.html';
+						});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

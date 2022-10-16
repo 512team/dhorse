@@ -1,0 +1,115 @@
+{
+	"homeInfo": {
+		"title": "欢迎页",
+		"href": "page/welcome.html"
+	},
+	"logoInfo": {
+		"title": "DHorse",
+		"image": "images/logo.png",
+		"href": ""
+	},
+	"menuInfo": [
+		{
+			"title": "用户管理",
+			"href": "page/sys_user/list.html",
+			"icon": "fa fa-users",
+			"target": "_self"
+		},
+		{
+			"title": "系统配置",
+			"href": "",
+			"icon": "fa fa-cogs",
+			"target": "_self",
+			"child": [
+				{
+					"title": "代码仓库",
+					"href": "page/project_config/code_repo.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
+					"title": "镜像仓库",
+					"href": "page/project_config/image_repo.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
+					"title": "Maven",
+					"href": "page/project_config/maven.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				}
+			]
+		},
+		{
+			"title": "集群管理",
+			"href": "page/cluster/list.html",
+			"icon": "fa fa-server",
+			"target": "_self"
+		},
+		{
+			"title": "项目管理",
+			"href": "",
+			"icon": "fa fa-file-code-o",
+			"target": "_self",
+			"child": [
+				{
+					"title": "项目详情",
+					"href": "page/project/detail.html",
+					"icon": "fa fa-file-text-o",
+					"target": "_self"
+				},
+				{
+					"title": "项目成员",
+					"href": "page/project/member/list.html",
+					"icon": "fa fa-user",
+					"target": "_self"
+				},
+				{
+					"title": "添加项目",
+					"href": "page/project/add.html",
+					"icon": "fa fa-plus-square",
+					"target": "_self"
+				}
+			]
+		},
+		{
+			"title": "发布管理",
+			"href": "",
+			"icon": "fa fa-rocket",
+			"target": "_self",
+			"child": [
+				{
+					"title": "分支管理",
+					"href": "page/branch/list.html",
+					"icon": "fa fa-share-alt",
+					"target": "_self"
+				},
+				{
+					"title": "版本列表",
+					"href": "page/deployment_version/list.html",
+					"icon": "fa fa-th",
+					"target": "_self"
+				},
+				{
+					"title": "环境管理",
+					"href": "page/env/list.html",
+					"icon": "fa fa-laptop",
+					"target": "_self"
+				},
+				{
+					"title": "部署历史",
+					"href": "page/deployment_detail/list.html",
+					"icon": "fa fa-history",
+					"target": "_self"
+				}
+			]
+		},
+		{
+			"title": "副本管理",
+			"href": "page/replica/list.html",
+			"icon": "fa fa-list",
+			"target": "_self"
+		}
+	]
+}

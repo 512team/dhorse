@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+
+	<id>windows</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>true</includeBaseDirectory>
+	<fileSets>
+		<fileSet>
+			<directory>../static</directory>
+			<includes>
+				<include>**</include>
+			</includes>
+			<outputDirectory>static</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../bin/windows</directory>
+			<includes>
+				<include>**</include>
+			</includes>
+			<filtered>true</filtered>
+			<!-- 替换目标文件里的变量 -->
+			<outputDirectory>bin</outputDirectory>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>..</directory>
+			<includes>
+				<include>LICENSE</include>
+				<include>NOTICE</include>
+				<include>README.txt</include>
+			</includes>
+			<outputDirectory>.</outputDirectory>
+		</fileSet>
+	</fileSets>
+	<files>
+		<file>
+			<source>src/main/resources/dhorse.yml</source>
+			<outputDirectory>conf</outputDirectory>
+			<destName>dhorse.yml</destName>
+		</file>
+		<file>
+			<source>../conf/filebeat-k8s.yml</source>
+			<outputDirectory>conf</outputDirectory>
+			<destName>filebeat-k8s.yml</destName>
+		</file>
+		<file>
+			<source>target/${project.artifactId}-${project.version}.jar</source>
+			<outputDirectory>/lib</outputDirectory>
+			<destName>${project.artifactId}-${project.version}.jar</destName>
+			<fileMode>0444</fileMode>
+		</file>
+	</files>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>/lib/ext</outputDirectory>
+			<!-- 指定打包时是否包含工程自身生成的jar包 -->
+			<useProjectArtifact>false</useProjectArtifact>
+			<fileMode>0444</fileMode>
+			<!-- 将依赖以原来的JAR形式打包 -->
+			<unpack>false</unpack>
+			<!-- 作用范围的依赖包 -->
+			<scope>runtime</scope>
+		</dependencySet>
+	</dependencySets>
+</assembly>

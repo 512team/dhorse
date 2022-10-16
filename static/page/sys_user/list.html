@@ -1,0 +1,261 @@
+<div class="layuimini-main">
+	<div style="margin: 5px 5px 5px 5px">
+		<form class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<input type="text" name="loginName" id="loginName" autocomplete="off" class="layui-input" placeholder="登录名">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<input type="text" name="userName" id="userName" autocomplete="off" class="layui-input" placeholder="用户名">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<select name="roleType" id="roleType">
+							<option value="">角色类型</option>
+							<option value="0">普通用户</option>
+							<option value="1">管理员</option>
+						</select>
+					</div>
+				</div>
+				<!--
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<select name="registeredSource" id="registeredSource">
+							<option value="">注册来源</option>
+							<option value="1">Dhorse</option>
+							<option value="2">Ldap</option>
+							<option value="3">Sso</option>
+						</select>
+					</div>
+				</div>
+				-->
+				<div class="layui-inline">
+					<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	<script type="text/html" id="toolbarDemo">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+			<!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
+		</div>
+	</script>
+
+	<table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+	<script type="text/html" id="currentTableBar">
+		{{#	if (d.loginName != 'admin') {	}}
+			{{#	if (d.registeredSource == 1) {  }}
+				<a href="javascript:;" class="layui-font-blue" lay-event="edit">修改</a>
+			{{#	}                      			}}
+			<a href="javascript:;" class="layui-font-blue dropdown-operate" data-login-name="{{d.loginName}}" data-user-name="{{d.userName}}">更多 <i class="layui-icon layui-font-12 layui-icon-down"></i></a>
+		{{#	}								}}
+	</script>
+
+	<script type="text/html" id="roleTypeBar">
+		{{#	if (d.roleType == 0) {}}
+		{{#		return '普通用户' }}
+		{{#	} else {              }}
+		{{#		return '管理员'   }}
+		{{#	}                     }}
+	</script>
+	<script type="text/html" id="registeredSourceBar">
+		{{#	if (d.registeredSource == 1){		}}
+		{{#		return 'Dhorse'					}}
+		{{#	}else if (d.registeredSource == 2){	}}
+		{{#		return 'Ldap'					}}
+		{{#	}else if (d.registeredSource == 3){	}}
+		{{#		return 'Sso' 					}}
+		{{#	}                     				}}
+	</script>
+</div>
+<script>
+
+	//全局变量，在子页面里使用
+	var data;
+	
+    layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			miniPage = layui.miniPage;
+		
+		form.render('select');
+		
+        table.render({
+			id: 'currentTableId',
+            elem: '#currentTableId',
+            url: '/sysUser/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+                {field: 'id', title: '编号', sort: true},
+                {field: 'loginName', title: '登录名'},
+                {field: 'userName', title: '用户名'},
+				{field: 'roleType', title: '角色类型', templet: '#roleTypeBar', width: '8%'},
+                {field: 'email', title: '邮箱', width: '13%'},
+                {field: 'registeredSource', title: '注册来源', templet: '#registeredSourceBar', width: '7%'},
+                {title: '操作', toolbar: '#currentTableBar'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true,
+			done: function(res, curr, count){
+				dropdown.render({
+					elem: '.dropdown-operate'
+					,trigger: 'hover'
+					,data: [{
+					  title: '重置密码'
+					  ,id: 'reset-password'
+					}, {
+					  title: '删除'
+					  ,id: 'delete'
+					}]
+					,click: function(data, othis){
+						var elem = $(this.elem)
+						,loginName = elem.data('login-name')
+						,userName = elem.data('user-name');
+						if(data.id == 'delete'){
+							deleteUser($, loginName, userName);
+						}else if(data.id == 'reset-password'){
+							var index = layer.open({
+								title: '重置密码',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['40%', '40%'],
+								offset: ['25%', '32%'],
+								content: miniPage.getHrefContent('page/sys_user/set_password.html'),
+								success: function(layero, index){
+									var body = layer.getChildFrame('body', index);
+									$(body.contents().find("#loginName")).val(loginName);
+								}
+							});
+						}
+					}
+				});
+			}
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            }, 'data');
+
+            return false;
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+				var index = layer.open({
+                    title: '添加用户',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['50%', '60%'],
+                    offset: ['18%', '25%'],
+                    content: miniPage.getHrefContent('page/sys_user/add.html')
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                layer.alert(JSON.stringify(data));
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            if (obj.event === 'edit') {
+				data = JSON.stringify(obj.data);
+                var index = layer.open({
+                    title: '修改用户',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['40%', '40%'],
+                    offset: ['25%', '32%'],
+                    content: miniPage.getHrefContent('page/sys_user/edit.html')
+                });
+                return false;
+            }
+        });
+    });
+	
+	//删除用户
+	function deleteUser($, loginName, userName) {
+		var msg = '确定删除用户：' + userName + "？";
+		layer.confirm(msg, {offset: ['30%', '42%']}, function (index) {
+			layer.close(index);
+			var param = {"loginName": loginName};
+			$.ajax({
+				url: '/sysUser/deleteUser',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(param),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

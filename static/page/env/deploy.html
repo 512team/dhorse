@@ -1,0 +1,111 @@
+<link rel="stylesheet" href="../../../lib/layui-v2.6.3/css/layui.css" media="all">
+<link rel="stylesheet" href="../../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+<link rel="stylesheet" href="../../../css/layuimini.css?v=2.0.1" media="all">
+<link rel="stylesheet" href="../../../css/themes/default.css" media="all">
+<link rel="stylesheet" href="../../../css/public.css" media="all">
+<style>
+	.layui-form-select dl{
+		max-height: 200px;
+	}
+</style>
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">版本名称</label>
+			<div class="layui-input-block">
+				<select name="versionName" id="versionName" lay-search>
+					<option value="">请输入或选择版本</option>
+				</select>
+			</div>
+		</div>
+		<input type="hidden" name="projectId" id="projectId2"/>
+		<input type="hidden" name="envId" id="envId"/>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="deployBtn">确认部署</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="../../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script src="../../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			projectId = localStorage.getItem('projectId_' + parent.layui.$("#userName").val()),
+			parentData = JSON.parse(parent.data2);
+		
+		$("#projectId2").val(projectId);
+		$("#envId").val(parentData.envId);
+		
+		initVersion(form, $, projectId);
+		
+        form.on('submit(deployBtn)', function(data) {
+			$.ajax({
+				url: '/project/deployment/version/submitToDeploy',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(data){
+					if(data.code == "800000"){
+						layer.msg(data.message, {
+							icon: 1,
+							time: 1000,
+							shade: 0.01,
+							shadeClose: false}, function(){
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+						return false;
+					}
+				
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("部署中，请查看日志", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						parent.layer.close(parent.layer.getFrameIndex(window.name));
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+	
+	function initVersion(form, $, projectId){
+		$.ajax({
+			url: '/project/deployment/version/page',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId, 'status': 1, 'pageSize': 100, 'pageNum': 1}),
+			success: function(res){
+				data = res.data.items
+				var opt = '';
+				for(var k in data){
+					if(k == 0){
+						opt = opt.concat("<option value='"+ data[k].versionName +"' selected>"+ data[k].versionName + "(" + data[k].branchName + ")</option>");
+					}else{
+						opt = opt.concat("<option value='"+ data[k].versionName +"'>"+ data[k].versionName + "(" + data[k].branchName + ")</option>");
+					}
+				}
+				$("#versionName").append(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+</script>

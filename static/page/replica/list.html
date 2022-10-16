@@ -1,0 +1,215 @@
+<div class="layuimini-container">
+    <div class="layuimini-main">
+		<div style="margin: 5px 5px 5px 5px">
+			<form class="layui-form layui-form-pane" action="">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<select name="projectEnvId" id="projectEnvId">
+							<option value="">请选择环境</option>
+						</select>
+					</div>
+					<input type="hidden" name="projectId" id="projectId"/>
+					<div class="layui-inline">
+						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+		
+		<script type="text/html" id="statusBar">
+			{{#	if (d.status == 1) {    	}}
+			{{#		return '启动中' 		}}
+			{{#	} else if (d.status == 2) {	}}
+			{{#		return '成功'   		}}
+			{{#	} else if (d.status == 3) { }}
+			{{#		return '失败'   		}}
+			{{#	} else if (d.status == 4) { }}
+			{{#		return '销毁中'   		}}
+			{{#	}                     		}}
+		</script>
+        <script type="text/html" id="currentTableBar">
+			<a href="javascript:;" class="layui-font-blue" lay-event="rebuild">重建</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
+			<a href="javascript:;" class="layui-font-blue" lay-event="log">日志</a>
+			<a href="/project/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
+			<a href="javascript:;" class="layui-font-blue" lay-event="terminal">终端</a>
+		</script>
+    </div>
+</div>
+<script>
+
+	var replicaName;
+	var ws;
+
+    layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			miniPage = layui.miniPage,
+			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+		
+		$("#projectId").val(projectId);
+		form.render('select');
+		
+        //初始化环境
+		initEnv(form, table, $, projectId);
+
+		// 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            }, 'data');
+
+            return false;
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+			replicaName = obj.data.name;
+			if (obj.event === 'rebuild') {
+                rebuild($, obj.data.name);
+            }else if (obj.event === 'log') {
+                var index = layer.open({
+                    title: '日志',
+                    type: 2,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['70%', '80%'],
+					offset: ['5%', '18%'],
+					content: ['page/replica/log.html', 'no']
+                });
+            }else if (obj.event === 'terminal') {
+                var index = layer.open({
+                    title: '终端',
+                    type: 2,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['70%', '80%'],
+					offset: ['5%', '18%'],
+					content: ['page/replica/terminal.html', 'no']
+                });
+            }
+			return false;
+        });
+    });
+	
+	function rebuild($, replicaName) {
+		var msg = '确定重建”' + replicaName + '“吗？';
+		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/project/env/replica/rebuild',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"replicaName": replicaName}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("重建成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+	
+	function initTable(table, projectId, projectEnvId){
+		table.render({
+            elem: '#currentTableId',
+            url: '/project/env/replica/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+			where: {"projectId": projectId, "projectEnvId": projectEnvId},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+                {field: 'name', title: '名称'},
+				{field: 'ip', title: 'IP', width: '11%'},
+				{field: 'versionName', title: '部署版本'},
+				{field: 'branchName', title: '部署分支', width: '7%'},
+				{field: 'envName', title: '环境', width: '5%'},
+				{field: 'status', title: '状态', width: '6%', templet: '#statusBar'},
+				{field: 'startTime', title: '开始时间', width: '13%'},
+				{field: 'namespace', title: '命名空间',  width: '7%'},
+                {field: 'clusterName', title: '集群名称', width: '7%'},
+                {title: '操作', toolbar: '#currentTableBar', width: '14%'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true
+        });
+	}
+	
+	function initEnv(form, table, $, projectId) {
+		$.ajax({
+			url: '/project/env/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'projectId': projectId, 'pageSize': 1000, 'pageNum': 1}),
+			success: function(res){
+				data = res.data
+				var firstEnv = 0;
+				var opt = '';
+				for(var k in data){
+					if(k == 0){
+						firstEnv = data[k].id;
+					}
+					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].envName +"</option>");
+				}
+				if(opt != ''){
+					$("#projectEnvId").html(opt);
+					form.render('select');
+				}
+				
+				//初始化表格
+				initTable(table, projectId, firstEnv);
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+</script>
