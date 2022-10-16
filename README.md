@@ -18,7 +18,7 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 ## 快速开始
 首先需要安装大于等于Java11的环境。
 
-下载安装文件：[Linux、Mac和Cygwin](https://gitee.com/tiandizhiguai/release2/raw/master/dhorse-1.0.2-x64_bin.tar.gz)，[Windows](https://gitee.com/tiandizhiguai/release2/raw/master/dhorse-1.0.2-x64_bin.tar.gz)，然后解压：
+下载安装文件：[Linux、Mac和Cygwin](https://objects.githubusercontent.com/github-production-release-asset-2e65be/552242471/d42b1101-008e-45c8-a729-db82163803a0?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20221016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221016T062819Z&X-Amz-Expires=300&X-Amz-Signature=33246db14ca66b1b1f6e5f6f652e15f67f57e0fdd2d047b154a40112b6170cab&X-Amz-SignedHeaders=host&actor_id=5219088&key_id=0&repo_id=552242471&response-content-disposition=attachment%3B%20filename%3Ddhorse-0.9.0-beta-x64_bin-unix.tar.gz&response-content-type=application%2Foctet-stream)，[Windows](https://objects.githubusercontent.com/github-production-release-asset-2e65be/552242471/7747dd15-03f4-4647-8d4f-12d1cd0dbd68?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20221016%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221016T063001Z&X-Amz-Expires=300&X-Amz-Signature=a88cd080a0e957559d10c9698f99ddec7963f61a1fc665f70cdc72ea88db4afd&X-Amz-SignedHeaders=host&actor_id=5219088&key_id=0&repo_id=552242471&response-content-disposition=attachment%3B%20filename%3Ddhorse-0.9.0-beta-x64_bin-windows.zip&response-content-type=application%2Foctet-stream)，然后解压：
 
 ```bash
 $  tar -xzf dhorse-*.tar.gz
