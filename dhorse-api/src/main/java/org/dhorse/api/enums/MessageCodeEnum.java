@@ -77,6 +77,7 @@ public enum MessageCodeEnum {
 	
 	//镜像仓库
 	IMAGE_REPO_PROJECT_FAILURE("200000", "创建镜像仓库项目失败"),
+	IMAGE_REPO_IS_EMPTY("200000", "请先完成镜像仓库配置"),
 	SSL_CLIENT_FAILURE("200000", "创建https客户端失败"),
 	PACK("200000", "打包失败"),
 	JAVA_HOME_IS_EMPTY("200000", "Java安装目录不能为空"),

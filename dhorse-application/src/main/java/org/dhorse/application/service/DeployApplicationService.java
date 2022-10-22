@@ -466,6 +466,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 
 	private String fullNameOfImage(ImageRepo imageRepo, String nameOfImage) {
+		if(imageRepo == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
+		}
 		String imgUrl = imageRepo.getUrl();
 		if(imgUrl.startsWith("http")) {
 			imgUrl = imgUrl.substring(imgUrl.indexOf("//") + 2);
