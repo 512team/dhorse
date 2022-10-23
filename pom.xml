@@ -5,7 +5,7 @@
 	<groupId>org.dhorse</groupId>
 	<artifactId>dhorse-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>0.9.0-beta</version>
+	<version>0.9.1-beta</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -13,7 +13,7 @@
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<project.version>0.9.0-beta</project.version>
+		<project.version>0.9.1-beta</project.version>
 		<spring.version>5.3.9</spring.version>
 		<springboot.version>2.5.3</springboot.version>
 	</properties>
@@ -120,7 +120,6 @@
 				<artifactId>maven-compat</artifactId>
 				<version>3.8.1</version>
 			</dependency>
-			<!-- deploy时需要
 			<dependency>
 				<groupId>org.apache.maven.resolver</groupId>
 				<artifactId>maven-resolver-connector-basic</artifactId>
@@ -131,7 +130,6 @@
 				<artifactId>maven-resolver-transport-http</artifactId>
 				<version>1.7.1</version>
 			</dependency>
-			-->
 			<dependency>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-core</artifactId>
