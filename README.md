@@ -18,7 +18,7 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 ## 快速开始
 首先需要安装大于等于Java11的环境。
 
-下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.0-beta/dhorse-0.9.0-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.0-beta/dhorse-0.9.0-beta-x64_bin-windows.zip)，然后解压：
+下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-windows.zip)，然后解压：
 
 ```bash
 $  tar -xzf dhorse-*.tar.gz
@@ -65,8 +65,11 @@ $  bin/dhorse-stop.sh
 
 ## 社区文章
 《[DHorse系列文章之操作手册](https://blog.csdn.net/huashetianzu/article/details/127560678)》
+
 《[DHorse系列文章之镜像制作](https://blog.csdn.net/huashetianzu/article/details/127376460)》
+
 《[DHorse系列文章之maven打包](https://blog.csdn.net/huashetianzu/article/details/127481538)》
+
 《[DHorse系列文章之Dubbo项目解决方案](https://blog.csdn.net/huashetianzu/article/details/127560873)》
 
 ## 社区交流
