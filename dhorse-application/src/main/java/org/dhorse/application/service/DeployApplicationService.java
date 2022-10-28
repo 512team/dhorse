@@ -391,6 +391,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		profile.setProperties(properties);
 		MavenExecutionRequest executionRequest = request.getRequest();
 		executionRequest.setProfiles(Arrays.asList(profile));
+		executionRequest.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
 		
 		MavenCli cli = new MavenCli();
 		int status = 0;

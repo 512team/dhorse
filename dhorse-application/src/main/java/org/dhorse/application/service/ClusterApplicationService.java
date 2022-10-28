@@ -100,18 +100,19 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		}
 		validateAddParam(clusterUpdateParam);
 		
-		//首先开启日志收集
-		if(clusterUpdateParam.getLogSwitch() == null) {
-			closeLogSwitch(clusterUpdateParam.getClusterId());
-		}else if(YesOrNoEnum.YES.getCode().equals(clusterUpdateParam.getLogSwitch())) {
-			openLogSwitch(clusterUpdateParam.getClusterId());
-		}
-		
 		ClusterParam clusterParam = buildBizParam(clusterUpdateParam);
 		clusterParam.setId(clusterUpdateParam.getClusterId());
 		if (!clusterRepository.update(clusterParam)) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
+		
+		//开启（关闭）日志收集
+		if(clusterUpdateParam.getLogSwitch() == null) {
+			closeLogSwitch(clusterUpdateParam.getClusterId());
+		}else if(YesOrNoEnum.YES.getCode().equals(clusterUpdateParam.getLogSwitch())) {
+			openLogSwitch(clusterUpdateParam.getClusterId());
+		}
+				
 		return null;
 	}
 

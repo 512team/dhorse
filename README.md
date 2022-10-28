@@ -63,6 +63,12 @@ $  bin/dhorse-stop.sh
 
 本软件遵守Apache开源许可协议2.0，详情《 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)》。
 
+## 社区文章
+《[DHorse系列文章之操作手册](https://blog.csdn.net/huashetianzu/article/details/127560678)》
+《[DHorse系列文章之镜像制作](https://blog.csdn.net/huashetianzu/article/details/127376460)》
+《[DHorse系列文章之maven打包](https://blog.csdn.net/huashetianzu/article/details/127481538)》
+《[DHorse系列文章之Dubbo项目解决方案](https://blog.csdn.net/huashetianzu/article/details/127560873)》
+
 ## 社区交流
 
 如果想了解更多内容，请加如下微信（邀请进群），感谢您的使用。

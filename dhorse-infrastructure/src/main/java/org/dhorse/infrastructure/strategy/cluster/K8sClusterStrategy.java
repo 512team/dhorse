@@ -627,7 +627,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			//目前只有一个container
 			String imageName = e.getSpec().getContainers().get(0).getImage();
 			r.setVersionName(imageName.substring(imageName.lastIndexOf("/") + 1));
-			r.setIp(e.getStatus().getHostIP());
+			r.setIp(e.getStatus().getPodIP());
 			r.setName(e.getMetadata().getName());
 			r.setEnvName(projectEnvPO.getEnvName());
 			r.setClusterName(clusterPO.getClusterName());
