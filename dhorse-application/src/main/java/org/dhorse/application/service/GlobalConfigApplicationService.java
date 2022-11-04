@@ -156,7 +156,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
         httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthUser() + ":" + imageRepo.getAuthPassword()).getBytes()));
         ObjectNode objectNode = JsonUtils.getObjectMapper().createObjectNode();
         objectNode.put("project_name", "dhorse");
-        //1：共有类型
+        //1：公有类型
         objectNode.put("public", 1);
         httpPost.setEntity(new StringEntity(objectNode.toString(),"UTF-8"));
         try (CloseableHttpResponse response = createHttpClient(imageRepo.getUrl()).execute(httpPost)){

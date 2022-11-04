@@ -49,7 +49,7 @@ drwxr-xr-x 8 root root    93 Sep 23 16:09 static
 $  bin/dhorse-start.sh
 ```
 
-在浏览器里访问地址：`http://127.0.0.1:8100`，并在出现的登录页面中输入账号：admin，密码：admin后，页面如下：
+在浏览器里访问地址：`http://127.0.0.1:8100`，并在出现的登录页面中输入账号：admin，密码：admin，页面如下：
 
 ![Image text](./static/images/home.jpg)
 
@@ -74,6 +74,6 @@ $  bin/dhorse-stop.sh
 
 ## 社区交流
 
-如果想了解更多内容，请加如下微信（邀请进群），感谢您的使用。
+感谢您的使用，如果想了解更多内容，请加入如下群聊。
 
 <img  src="./static/images/weixin.jpg" align='left'/> 
