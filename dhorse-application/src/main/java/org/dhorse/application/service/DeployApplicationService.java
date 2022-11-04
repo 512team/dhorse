@@ -437,24 +437,29 @@ public abstract class DeployApplicationService extends ApplicationService {
 			return false;
 		}
 
+		//连接镜像仓库5秒超时
+		System.setProperty("jib.httpTimeout", "5000");
+		System.setProperty("sendCredentialsOverHttp", "true");
+		String fileNameWithExtension = targetFiles.get(0).toFile().getName();
+		List<String> entrypoint = Arrays.asList("java", "-jar", fileNameWithExtension);
+		
 		try {
+			RegistryImage registryImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
+					context.getGlobalConfigAgg().getImageRepo().getAuthUser(),
+					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
+			
 			JibContainerBuilder jibContainerBuilder = null;
 			if (StringUtils.isBlank(context.getProject().getBaseImage())) {
 				jibContainerBuilder = Jib.fromScratch();
 			} else {
 				jibContainerBuilder = Jib.from(context.getProject().getBaseImage());
 			}
-			//连接镜像仓库5秒超时
-			System.setProperty("jib.httpTimeout", "5000");
-			System.setProperty("sendCredentialsOverHttp", "true");
-			String fileNameWithExtension = targetFiles.get(0).toFile().getName();
-			List<String> entrypoint = Arrays.asList("java", "-jar", fileNameWithExtension);
-			RegistryImage registryImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
-					context.getGlobalConfigAgg().getImageRepo().getAuthUser(),
-					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
-			jibContainerBuilder.addLayer(targetFiles, "/")
+			jibContainerBuilder.addLayer(targetFiles, AbsoluteUnixPath.get("/"))
 				.setEntrypoint(entrypoint)
-				.addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))
+				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效。
+				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也此时无法使用，
+				//不过，可以通过手动构建基础镜像来使用RUN。
+				.addEnvironmentVariable("TZ", "Asia/Shanghai")
 				.containerize(Containerizer.to(registryImage)
 						.setAllowInsecureRegistries(true)
 						.addEventHandler(LogEvent.class, logEvent -> logger.info(logEvent.getMessage())));
