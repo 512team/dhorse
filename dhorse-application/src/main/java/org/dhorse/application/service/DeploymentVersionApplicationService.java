@@ -1,6 +1,7 @@
 package org.dhorse.application.service;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import org.dhorse.infrastructure.param.DeployParam;
 import org.dhorse.infrastructure.param.DeploymentDetailParam;
 import org.dhorse.infrastructure.param.DeploymentVersionParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
+import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
 import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -72,7 +74,17 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		DeploymentVersionPO deploymentVersion = deploymentVersionRepository.queryByVersionName(
 				deploymentApplictionParam.getVersionName());
 		
+		// 当前环境是否存在部署中
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
+		deploymentDetailParam.setEnvId(deploymentApplictionParam.getEnvId());
+		deploymentDetailParam.setDeploymentStatuss(Arrays.asList(DeploymentStatusEnum.DEPLOYING.getCode(),
+				DeploymentStatusEnum.ROLLBACKING.getCode()));
+		DeploymentDetailPO deploymentDetailPO = deploymentDetailRepository.query(deploymentDetailParam);
+		if (deploymentDetailPO != null) {
+			LogUtils.throwException(logger, MessageCodeEnum.ENV_DEPLOYING);
+		}
+		
+		deploymentDetailParam = new DeploymentDetailParam();
 		deploymentDetailParam.setDeploymentStatus(DeploymentStatusEnum.DEPLOYING_APPROVAL.getCode());
 		deploymentDetailParam.setEnvId(deploymentApplictionParam.getEnvId());
 		deploymentDetailParam.setVersionName(deploymentVersion.getVersionName());
