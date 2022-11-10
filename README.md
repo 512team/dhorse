@@ -16,7 +16,7 @@ DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单�
 Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、H2、Mysql等。
 
 ## 快速开始
-需要的环境：
+环境要求：
 | Java | Harbor |
 | :-----: | :----: |
 | >=11 | >=2.0.0 |
