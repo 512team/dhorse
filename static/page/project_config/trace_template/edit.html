@@ -3,7 +3,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label required">模板名称</label>
 			<div class="layui-input-block">
-				<input type="text" name="name" lay-verify="required" lay-reqtext="模板名称不能为空" placeholder="请输入模板名称" autocomplete="off" class="layui-input">
+				<input type="text" name="name" lay-verify="required" lay-reqtext="模板名称不能为空" placeholder="请输入模板名称" autocomplete="off" class="layui-input" disabled="disabled">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -13,9 +13,35 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label required">代理镜像名称</label>
+			<label class="layui-form-label required">语言类型</label>
 			<div class="layui-input-block">
-			  <input type="text" name="agentImage" lay-verify="required" lay-reqtext="代理镜像名称不能为空" placeholder="如：skywalking-agent:8.9" autocomplete="off" class="layui-input">
+				<select name="languageType" lay-filter="languageType" lay-verify="required" lay-reqtext="语言类型不能为空">
+					<option value="">请选择</option>
+					<option value="1">Java</option>
+					<!--
+					<option value="2">Python</option>
+					<option value="3">Node</option>
+					-->
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">Agent版本</label>
+			<div class="layui-input-block">
+				<select name="agentVersion" lay-filter="agentVersion">
+					<option value="">请选择</option>
+					<option value="8.12.0">v8.12.0</option>
+					<option value="8.11.0">v8.11.0</option>
+					<option value="8.10.0">v8.10.0</option>
+					<option value="8.9.0">v8.9.0</option>
+					<option value="8.8.0">v8.8.0</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">Agent镜像</label>
+			<div class="layui-input-block">
+			  <input type="text" name="agentImage" placeholder="与Agent版本二选一，优先使用项的像，值如：127.0.0.1:20080/skywalking-java-agent:8.10" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<input type="hidden" name="id"/>
@@ -38,6 +64,8 @@
 		form.val("form-data", {
 		  "name": parentData.name
 		  ,"serverUrl": parentData.serverUrl
+		  ,"languageType": parentData.languageType
+		  ,"agentVersion": parentData.agentVersion
 		  ,"agentImage": parentData.agentImage
 		  ,"id": parentData.id
 		});

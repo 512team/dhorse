@@ -51,6 +51,11 @@ public class DeployContext {
 	 */
 	private String logFilePath;
 
+	/**
+	 * 代理镜像名称
+	 */
+	private String fullNameOfAgentImage;
+
 	public ClusterPO getCluster() {
 		return cluster;
 	}
@@ -169,6 +174,14 @@ public class DeployContext {
 
 	public void setLogFilePath(String logFilePath) {
 		this.logFilePath = logFilePath;
+	}
+
+	public String getFullNameOfAgentImage() {
+		return fullNameOfAgentImage;
+	}
+
+	public void setFullNameOfAgentImage(String fullNameOfAgentImage) {
+		this.fullNameOfAgentImage = fullNameOfAgentImage;
 	}
 
 }

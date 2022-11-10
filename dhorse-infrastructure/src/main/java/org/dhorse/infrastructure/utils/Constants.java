@@ -54,6 +54,11 @@ public class Constants {
 	public static final String CONF_PATH = JAR_HOME + "/conf/";
 	
 	/**
+	 * 临时目录相对路径
+	 */
+	public static final String RELATIVE_TMP_PATH = "tmp/";
+	
+	/**
 	 * 部署日志文件路径
 	 */
 	public static String publishedLogPath(String logPath, Date deplopyedStartTime) {

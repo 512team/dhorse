@@ -4,18 +4,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -25,9 +26,11 @@ import org.apache.http.ssl.TrustStrategy;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.global.GlolabConfigDeletionParam;
 import org.dhorse.api.param.global.GlolabConfigPageParam;
 import org.dhorse.api.result.PageData;
+import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.BaseGlobalConfig;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
@@ -35,7 +38,10 @@ import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
+import org.dhorse.infrastructure.param.ProjectEnvParam;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
+import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
@@ -47,7 +53,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.tools.jib.api.Containerizer;
+import com.google.cloud.tools.jib.api.Jib;
+import com.google.cloud.tools.jib.api.JibContainerBuilder;
+import com.google.cloud.tools.jib.api.LogEvent;
+import com.google.cloud.tools.jib.api.RegistryImage;
+import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
 
 /**
  * 
@@ -82,7 +95,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		return null;
 	}
 	
-	private class MavenRepo implements Callable<Void> {
+	private class MavenRepo implements Runnable {
 
 		private Maven mavenConf;
 
@@ -91,7 +104,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		}
 
 		@Override
-		public Void call() throws Exception {
+		public void run() {
 			String localPathName = componentConstants.getDataPath() + "project/tmp/";
 			File localPathOfPom = new File(localPathName);
 			if (!localPathOfPom.exists()) {
@@ -100,7 +113,6 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 			buildTmpProject(localPathName);
 			doMavenPack(mavenConf, localPathName);
 			deleteTmpProject(localPathName);
-			return null;
 		}
 
 		private void buildTmpProject(String localPath) {
@@ -181,11 +193,12 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 					return true;
 				}
 			}).build();
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext);
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
 			return HttpClients.custom().setSSLSocketFactory(sslsf).build();
 		} catch (Exception e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.SSL_CLIENT_FAILURE);
 		}
+		
 		return HttpClients.createDefault();
 	}
 	
@@ -213,6 +226,18 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	}
 	
 	public Void addTraceTemplate(TraceTemplate taceTemplate) {
+		GlobalConfigParam bizParam = new GlobalConfigParam();
+		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
+		if(globalConfigAgg.getImageRepo() == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
+		}
+		
+		//制作Agent镜像
+		ThreadPoolUtils.async(() -> {
+			buildAgentImage(taceTemplate, globalConfigAgg);
+		});
+		
 		GlobalConfigParam param = new GlobalConfigParam();
 		param.setItemType(GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode());
 		param.setItemValue(JsonUtils.toJsonString(taceTemplate, "id", "pageSize", "itemType"));
@@ -224,6 +249,18 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		if(taceTemplate.getId() == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_ID_IS_EMPTY);
 		}
+		GlobalConfigParam bizParam = new GlobalConfigParam();
+		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
+		if(globalConfigAgg.getImageRepo() == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
+		}
+		
+		//制作Agent镜像
+		ThreadPoolUtils.async(() -> {
+			buildAgentImage(taceTemplate, globalConfigAgg);
+		});
+		
 		GlobalConfigParam param = new GlobalConfigParam();
 		param.setId(taceTemplate.getId());
 		param.setItemType(GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode());
@@ -232,7 +269,66 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		return null;
 	}
 	
+	private void buildAgentImage(TraceTemplate taceTemplate, GlobalConfigAgg globalConfigAgg) {
+		if(!StringUtils.isBlank(taceTemplate.getAgentImage())) {
+			return;
+		}
+		
+		logger.info("Start to build agent image");
+		
+		//1.下载Agent文件
+		String fileName = "apache-skywalking-java-agent-"
+				+ taceTemplate.getAgentVersion()
+				+ ".tgz";
+		String fileUrl = "https://archive.apache.org/dist/skywalking/java-agent/"
+				+ taceTemplate.getAgentVersion()
+				+ "/"
+				+ fileName;
+		long current = System.currentTimeMillis();
+		File localFilePath = new File(componentConstants.getDataPath() + Constants.RELATIVE_TMP_PATH + "agent/"+ current + "/" + fileName);
+		File parentFile = localFilePath.getParentFile();
+		parentFile.mkdirs();
+		FileUtils.downloadFile(fileUrl, localFilePath);
+		
+		//2.解压Agent文件
+		FileUtils.decompressTarGz(localFilePath, parentFile);
+		
+		//3.制作Agent镜像并上传到仓库
+		System.setProperty("jib.httpTimeout", "5000");
+		System.setProperty("sendCredentialsOverHttp", "true");
+		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
+		String imageName = "skywalking-agent:v" + taceTemplate.getAgentVersion();
+		try {
+			RegistryImage registryImage = RegistryImage.named(fullNameOfImage(imageRepo, imageName)).addCredential(
+					imageRepo.getAuthUser(),
+					imageRepo.getAuthPassword());
+			JibContainerBuilder jibContainerBuilder = Jib.from("busybox:latest");
+			jibContainerBuilder.addLayer(Arrays.asList(Paths.get(parentFile + "/skywalking-agent")), AbsoluteUnixPath.get("/"))
+				.containerize(Containerizer.to(registryImage)
+						.setAllowInsecureRegistries(true)
+						.addEventHandler(LogEvent.class, logEvent -> logger.info(logEvent.getMessage())));
+		} catch (Exception e) {
+			logger.error("Failed to build image", e);
+		}finally {
+			try {
+				FileUtils.deleteDirectory(parentFile);
+			} catch (IOException e) {
+				logger.error("Failed to delete agent file", e);
+			}
+			logger.info("End to build agent image");
+		}
+	}
+	
 	public Void delete(GlolabConfigDeletionParam deleteParam) {
+		GlobalConfigPO globalConfigPO = globalConfigRepository.queryById(deleteParam.getId());
+		if(GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode().equals(globalConfigPO.getItemType())) {
+			ProjectEnvParam projectEnvParam = new ProjectEnvParam();
+			projectEnvParam.setTraceTemplateId(deleteParam.getId());
+			projectEnvParam.setTraceStatus(YesOrNoEnum.YES.getCode());
+			if(projectEnvRepository.query(projectEnvParam) != null) {
+				LogUtils.throwException(logger, MessageCodeEnum.CONFIG_IS_USING);
+			}
+		}
 		globalConfigRepository.delete(deleteParam.getId());
 		return null;
 	}

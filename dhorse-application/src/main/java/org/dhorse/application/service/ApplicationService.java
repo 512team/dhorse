@@ -7,12 +7,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.ClusterTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
+import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
+import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
+import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
@@ -33,6 +38,7 @@ import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.DeployContext;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,6 +163,39 @@ public abstract class ApplicationService {
 		if(adminRole.size() <= 0) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
+	}
+	
+	protected String fullNameOfAgentImage(DeployContext context) {
+		if(!YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getTraceStatus())) {
+			return null;
+		}
+		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getProjectEnv().getTraceTemplateId());
+		if(!StringUtils.isBlank(traceTemplate.getAgentImage())) {
+			return traceTemplate.getAgentImage();
+		}
+		String imageName = "skywalking-agent:v" + traceTemplate.getAgentVersion();
+		return fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), imageName);
+	}
+	
+	protected String fullNameOfImage(ImageRepo imageRepo, String nameOfImage) {
+		if(imageRepo == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
+		}
+		String imgUrl = imageRepo.getUrl();
+		if(imgUrl.startsWith("http")) {
+			imgUrl = imgUrl.substring(imgUrl.indexOf("//") + 2);
+		}
+		StringBuilder fullNameOfImage = new StringBuilder(imgUrl);
+		if(!imgUrl.endsWith("/")) {
+			fullNameOfImage.append("/");
+		}
+		if(ImageRepoTypeEnum.DOCKERHUB.getValue().equals(imageRepo.getType())) {
+			fullNameOfImage.append(imageRepo.getAuthUser());
+		}else {
+			fullNameOfImage.append(Constants.IMAGE_REPO_PROJECT);
+		}
+		fullNameOfImage.append("/").append(nameOfImage);
+		return fullNameOfImage.toString();
 	}
 	
 	protected <D> PageData<D> zeroPageData(int pageSize) {

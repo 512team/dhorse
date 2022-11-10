@@ -301,7 +301,17 @@ public class GlobalConfigAgg implements Serializable {
 		private String serverUrl;
 
 		/**
-		 * 代理镜像名称
+		 * 语言类型
+		 */
+		private Integer languageType;
+
+		/**
+		 * Agent版本
+		 */
+		private String agentVersion;
+
+		/**
+		 * Agent镜像
 		 */
 		private String agentImage;
 
@@ -327,6 +337,22 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setAgentImage(String agentImage) {
 			this.agentImage = agentImage;
+		}
+
+		public Integer getLanguageType() {
+			return languageType;
+		}
+
+		public void setLanguageType(Integer languageType) {
+			this.languageType = languageType;
+		}
+
+		public String getAgentVersion() {
+			return agentVersion;
+		}
+
+		public void setAgentVersion(String agentVersion) {
+			this.agentVersion = agentVersion;
 		}
 
 	}

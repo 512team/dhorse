@@ -21,7 +21,6 @@ import org.apache.maven.model.RepositoryPolicy;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.DeploymentVersionStatusEnum;
-import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.LanguageTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
@@ -29,7 +28,6 @@ import org.dhorse.api.enums.PackageFileTypeTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.project.branch.VersionBuildParam;
 import org.dhorse.api.vo.GlobalConfigAgg;
-import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.Project;
 import org.dhorse.api.vo.ProjectExtendJava;
@@ -281,6 +279,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setNameOfImage(deployParam.getVersionName());
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), deployParam.getVersionName());
 		context.setFullNameOfImage(fullNameOfImage);
+		context.setFullNameOfAgentImage(fullNameOfAgentImage(context));
 		String logFilePath = Constants.deploymentLogFile(context.getComponentConstants().getLogPath(),
 				context.getStartTime(), context.getId());
 		context.setLogFilePath(logFilePath);
@@ -457,8 +456,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 			jibContainerBuilder.addLayer(targetFiles, AbsoluteUnixPath.get("/"))
 				.setEntrypoint(entrypoint)
 				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效。
-				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也此时无法使用，
-				//不过，可以通过手动构建基础镜像来使用RUN。
+				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也无法使用，
+				//不过，可以通过手动构建基础镜像来使用RUN，然后目标镜像再依赖基础镜像。
 				.addEnvironmentVariable("TZ", "Asia/Shanghai")
 				.containerize(Containerizer.to(registryImage)
 						.setAllowInsecureRegistries(true)
@@ -469,27 +468,6 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 
 		return true;
-	}
-
-	private String fullNameOfImage(ImageRepo imageRepo, String nameOfImage) {
-		if(imageRepo == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
-		}
-		String imgUrl = imageRepo.getUrl();
-		if(imgUrl.startsWith("http")) {
-			imgUrl = imgUrl.substring(imgUrl.indexOf("//") + 2);
-		}
-		StringBuilder fullNameOfImage = new StringBuilder(imgUrl);
-		if(!imgUrl.endsWith("/")) {
-			fullNameOfImage.append("/");
-		}
-		if(ImageRepoTypeEnum.DOCKERHUB.getValue().equals(imageRepo.getType())) {
-			fullNameOfImage.append(imageRepo.getAuthUser());
-		}else {
-			fullNameOfImage.append(Constants.IMAGE_REPO_PROJECT);
-		}
-		fullNameOfImage.append("/").append(nameOfImage);
-		return fullNameOfImage.toString();
 	}
 
 	private boolean updateDeployStatus(DeployContext context, DeploymentStatusEnum status, Date startTime, Date endTime) {

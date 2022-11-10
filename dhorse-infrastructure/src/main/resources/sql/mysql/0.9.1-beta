@@ -115,6 +115,7 @@ CREATE TABLE project_env (
 )COMMENT '项目环境';
 CREATE INDEX index_env_project_id ON project_env(project_id);
 CREATE INDEX index_env_update_time ON project_env(update_time);
+CREATE INDEX index_trace_template_id ON project_env(trace_template_id);
 
 CREATE TABLE deployment_version (
 	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',

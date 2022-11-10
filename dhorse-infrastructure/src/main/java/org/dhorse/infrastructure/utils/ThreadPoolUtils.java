@@ -67,7 +67,7 @@ public class ThreadPoolUtils {
 		THREAD_POOL_CLEAR_LOG.scheduleWithFixedDelay(runnable, 0, delay, unit);
 	}
 	
-	public static void async(Callable<Void> call) {
-		SINGLE_THREAD.submit(call);
+	public static void async(Runnable runnable) {
+		SINGLE_THREAD.submit(runnable);
 	}
 }

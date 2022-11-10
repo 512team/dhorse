@@ -468,7 +468,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if(traceTemplate == null) {
 				LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
 			}
-			commands.add("-javaagent:/opt/agent/skywalking-agent.jar");
+			commands.add("-javaagent:/tmp/skywalking-agent/skywalking-agent.jar");
 			commands.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServerUrl());
 			commands.add("-Dskywalking.agent.service_name=" + context.getProject().getProjectName());
 		}
@@ -499,9 +499,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1Container initContainer = new V1Container();
 		initContainer.setName("skywalking-agent");
-		initContainer.setImage(traceTemplate.getAgentImage());
-		List<String> command = Arrays.asList("cp", "-rf", "/skywalking/agent", "/tmp");
+		initContainer.setImage(context.getFullNameOfAgentImage());
+		initContainer.setImagePullPolicy("Always");
+		List<String> command = Arrays.asList("/bin/sh", "-c");
 		initContainer.setCommand(command);
+		List<String> args = Arrays.asList("cp -rf /skywalking-agent /tmp");
+		initContainer.setArgs(args);
+		
 		V1VolumeMount agentVolumeMount = new V1VolumeMount();
 		agentVolumeMount.setMountPath("/tmp");
 		agentVolumeMount.setName("skw-agent-volume");
@@ -528,7 +532,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		//skyWalking-agent
 		if(YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getTraceStatus())) {
 			V1VolumeMount volumeMountAgent = new V1VolumeMount();
-			volumeMountAgent.setMountPath("/opt");
+			volumeMountAgent.setMountPath("/tmp");
 			volumeMountAgent.setName("skw-agent-volume");
 			volumeMounts.add(volumeMountAgent);
 		}
