@@ -7,7 +7,6 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.ProjectMember;
 import org.dhorse.application.service.ProjectMemberApplicationService;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,13 +36,9 @@ public class ProjectMemberRest extends AbstractRest {
 	@PostMapping("/page")
 	public RestResponse<PageData<ProjectMember>> page(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectMemberPageParam pageQueryParam) {
-		try {
-			return success(projectMemberApplicationService.page(queryLoginUserByToken(loginToken), pageQueryParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectMemberApplicationService.page(queryLoginUserByToken(loginToken), pageQueryParam));
 	}
-	
+
 	/**
 	 * 添加或修改
 	 * 
@@ -51,12 +46,10 @@ public class ProjectMemberRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/addOrUpdate")
-	public RestResponse<Void> addOrUpdate(@CookieValue("login_token") String loginToken, @RequestBody ProjectMemberCreationParam addOrUpdateParam) {
-		try {
-			return success(projectMemberApplicationService.addOrUpdate(queryLoginUserByToken(loginToken), addOrUpdateParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+	public RestResponse<Void> addOrUpdate(@CookieValue("login_token") String loginToken,
+			@RequestBody ProjectMemberCreationParam addOrUpdateParam) {
+		return success(
+				projectMemberApplicationService.addOrUpdate(queryLoginUserByToken(loginToken), addOrUpdateParam));
 	}
 
 	/**
@@ -68,10 +61,6 @@ public class ProjectMemberRest extends AbstractRest {
 	@PostMapping("/delete")
 	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectMemberDeletionParam deletedParam) {
-		try {
-			return success(projectMemberApplicationService.delete(queryLoginUserByToken(loginToken), deletedParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectMemberApplicationService.delete(queryLoginUserByToken(loginToken), deletedParam));
 	}
 }

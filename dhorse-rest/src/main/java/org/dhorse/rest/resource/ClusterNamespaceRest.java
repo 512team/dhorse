@@ -8,7 +8,6 @@ import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.application.service.ClusterNamespaceApplicationService;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,11 +35,7 @@ public class ClusterNamespaceRest extends AbstractRest {
 	 */
 	@PostMapping("/page")
 	public RestResponse<PageData<ClusterNamespace>> page(@RequestBody ClusterNamespacePageParam pageClusterNamespaceParam) {
-		try {
-			return this.success(clusterNamespaceApplicationService.page(pageClusterNamespaceParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterNamespaceApplicationService.page(pageClusterNamespaceParam));
 	}
 	
 	/**
@@ -52,11 +47,7 @@ public class ClusterNamespaceRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/add")
 	public RestResponse<Void> add(@RequestBody ClusterNamespaceCreationParam clusterNamespaceCreationParam) {
-		try {
-			return this.success(clusterNamespaceApplicationService.add(clusterNamespaceCreationParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterNamespaceApplicationService.add(clusterNamespaceCreationParam));
 	}
 	
 	/**
@@ -68,10 +59,6 @@ public class ClusterNamespaceRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/delete")
 	public RestResponse<Void> delete(@RequestBody ClusterNamespaceDeletionParam clusterNamespaceDeletionParam) {
-		try {
-			return this.success(clusterNamespaceApplicationService.delete(clusterNamespaceDeletionParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterNamespaceApplicationService.delete(clusterNamespaceDeletionParam));
 	}
 }

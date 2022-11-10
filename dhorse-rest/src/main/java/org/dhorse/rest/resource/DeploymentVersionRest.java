@@ -7,7 +7,6 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.DeploymentVersion;
 import org.dhorse.application.service.DeploymentVersionApplicationService;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,12 +36,8 @@ public class DeploymentVersionRest extends AbstractRest {
 	@PostMapping("/page")
 	public RestResponse<PageData<DeploymentVersion>> page(@CookieValue("login_token") String loginToken,
 			@RequestBody DeploymentVersionPageParam deploymentVersionPageParam) {
-		try {
-			return success(deploymentVersionApplicationService.page(queryLoginUserByToken(loginToken),
-					deploymentVersionPageParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(deploymentVersionApplicationService.page(queryLoginUserByToken(loginToken),
+				deploymentVersionPageParam));
 	}
 	
 	/**
@@ -54,12 +49,8 @@ public class DeploymentVersionRest extends AbstractRest {
 	@PostMapping("/delete")
 	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
 			@RequestBody DeploymentVersionDeletionParam deletionParam) {
-		try {
-			return success(deploymentVersionApplicationService.delete(queryLoginUserByToken(loginToken),
-					deletionParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(deploymentVersionApplicationService.delete(queryLoginUserByToken(loginToken),
+				deletionParam));
 	}
 	
 	/**
@@ -71,11 +62,7 @@ public class DeploymentVersionRest extends AbstractRest {
 	@RequestMapping("/submitToDeploy")
 	public RestResponse<Void> submitToDeploy(@CookieValue("login_token") String loginToken,
 			@RequestBody DeploymentApplicationParam deploymentApplictionParam) {
-		try {
-			return this.success(deploymentVersionApplicationService
-					.submitToDeploy(this.queryLoginUserByToken(loginToken), deploymentApplictionParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(deploymentVersionApplicationService
+				.submitToDeploy(this.queryLoginUserByToken(loginToken), deploymentApplictionParam));
 	}
 }

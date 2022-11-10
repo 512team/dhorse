@@ -90,7 +90,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> codeRepo(@RequestBody CodeRepo codeRepo) {
 		return this.success(globalConfigApplicationService.addOrUpdateCodeRepo(codeRepo));
 	}
-	
+
 	/**
 	 * 分页查询链路追踪模板
 	 * 
@@ -101,7 +101,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<PageData<TraceTemplate>> traceTemplatePage(@RequestBody GlolabConfigPageParam pageParam) {
 		return this.success(globalConfigApplicationService.traceTemplatePage(pageParam));
 	}
-	
+
 	/**
 	 * 添加链路追踪模板
 	 * 
@@ -113,7 +113,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> traceTemplateAdd(@RequestBody TraceTemplate taceTemplate) {
 		return this.success(globalConfigApplicationService.addTraceTemplate(taceTemplate));
 	}
-	
+
 	/**
 	 * 修改链路追踪模板
 	 * 
@@ -125,7 +125,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> traceTemplateUpdate(@RequestBody TraceTemplate taceTemplate) {
 		return this.success(globalConfigApplicationService.updateTraceTemplate(taceTemplate));
 	}
-	
+
 	/**
 	 * 删除配置
 	 * 

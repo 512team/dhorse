@@ -25,6 +25,7 @@ public enum MessageCodeEnum {
 	LOGIN_SOURCE_IS_EMPTY("200000", "登录来源不能为空"),
 	USER_ID_IS_EMPTY("200000", "用户编号不能为空"),
 	INIT_LDAP_FAILURE("200000", "初始化Ldap失败"),
+	MK_DIR_FAILURE("200000", "创建目录失败"),
 	
 	FILE_BEAT_K8S_FILE_INEXISTENCE("200000", "filebeat-k8s文件不存在"),
 	
@@ -110,7 +111,8 @@ public enum MessageCodeEnum {
 	//部署
 	INIT_GLOBAL_CONFIG("200000", "未进行全局配置"),
 	SERVER_ERROR("200000", "系统错误，请查看详细日志"),
-	ENV_DEPLOYING("200000", "环境正在部署中"),
+	CONFIG_IS_USING("200000", "该配置具有使用者，不允许删除"),
+	ENV_DEPLOYING("200000", "环境正在部署中，请查看部署历史"),
 	VERSION_IS_BUILDING("200000", "上个版本正在构建中，请稍后重试"),
 	DEPLOYEMENT_VERSION_ID_IS_EMPTY("200000", "版本编号不能为空"),
 	ADD_PULISHED_DETAIL("200000", "新增部署记录失败"),

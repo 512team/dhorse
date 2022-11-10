@@ -3,19 +3,18 @@ package org.dhorse.rest.resource;
 import java.util.List;
 
 import org.dhorse.api.param.cluster.ClusterCreationParam;
-import org.dhorse.api.param.cluster.ClusterSearchParam;
 import org.dhorse.api.param.cluster.ClusterDeletionParam;
-import org.dhorse.api.param.cluster.LogSwitchParam;
 import org.dhorse.api.param.cluster.ClusterPageParam;
 import org.dhorse.api.param.cluster.ClusterQueryParam;
+import org.dhorse.api.param.cluster.ClusterSearchParam;
 import org.dhorse.api.param.cluster.ClusterUpdateParam;
+import org.dhorse.api.param.cluster.LogSwitchParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
-import org.dhorse.api.vo.LogCollectorStatus;
 import org.dhorse.api.vo.Cluster;
+import org.dhorse.api.vo.LogCollectorStatus;
 import org.dhorse.application.service.ClusterApplicationService;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,11 +43,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/page")
 	public RestResponse<PageData<Cluster>> page(@RequestBody ClusterPageParam clusterPageParam) {
-		try {
-			return this.success(clusterApplicationService.page(clusterPageParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.page(clusterPageParam));
 	}
 	
 	/**
@@ -60,11 +55,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/query")
 	public RestResponse<Cluster> query(@RequestBody ClusterQueryParam clusterQueryParam) {
-		try {
-			return this.success(clusterApplicationService.query(clusterQueryParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.query(clusterQueryParam));
 	}
 	
 	/**
@@ -75,11 +66,7 @@ public class ClusterRest extends AbstractRest {
 	 */
 	@PostMapping("/search")
 	public RestResponse<List<Cluster>> search(@RequestBody ClusterSearchParam clusterSearchParam) {
-		try {
-			return this.success(clusterApplicationService.search(clusterSearchParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.search(clusterSearchParam));
 	}
 	
 	/**
@@ -91,11 +78,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/add")
 	public RestResponse<Void> add(@RequestBody ClusterCreationParam clusterCreationParam) {
-		try {
-			return this.success(clusterApplicationService.add(clusterCreationParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.add(clusterCreationParam));
 	}
 	
 	/**
@@ -107,11 +90,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/update")
 	public RestResponse<Void> update(@RequestBody ClusterUpdateParam clusterUpdateParam) {
-		try {
-			return this.success(clusterApplicationService.update(clusterUpdateParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.update(clusterUpdateParam));
 	}
 	
 	/**
@@ -123,11 +102,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/delete")
 	public RestResponse<Void> delete(@RequestBody ClusterDeletionParam clusterDeletionParam) {
-		try {
-			return this.success(clusterApplicationService.delete(clusterDeletionParam.getClusterId()));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.delete(clusterDeletionParam.getClusterId()));
 	}
 	
 	/**
@@ -139,11 +114,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/logSwitch/open")
 	public RestResponse<Void> openLogSwitch(@RequestBody LogSwitchParam logSwitchParam) {
-		try {
-			return this.success(clusterApplicationService.openLogSwitch(logSwitchParam.getClusterId()));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.openLogSwitch(logSwitchParam.getClusterId()));
 	}
 	
 	/**
@@ -155,11 +126,7 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/logSwitch/close")
 	public RestResponse<Void> closeLogSwitch(@RequestBody LogSwitchParam logSwitchParam) {
-		try {
-			return this.success(clusterApplicationService.closeLogSwitch(logSwitchParam.getClusterId()));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.closeLogSwitch(logSwitchParam.getClusterId()));
 	}
 	
 	/**
@@ -171,10 +138,6 @@ public class ClusterRest extends AbstractRest {
 	@AccessOnlyAdmin
 	@PostMapping("/logSwitch/status")
 	public RestResponse<LogCollectorStatus> logSwitchStatus(@RequestBody LogSwitchParam logSwitchParam) {
-		try {
-			return this.success(clusterApplicationService.logSwitchStatus(logSwitchParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(clusterApplicationService.logSwitchStatus(logSwitchParam));
 	}
 }

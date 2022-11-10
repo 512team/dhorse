@@ -8,7 +8,6 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.DeploymentDetail;
 import org.dhorse.application.service.DeploymentDetailApplicationService;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,12 +37,8 @@ public class DeploymentDetailRest extends AbstractRest {
 	@PostMapping("/page")
 	public RestResponse<PageData<DeploymentDetail>> page(@CookieValue("login_token") String loginToken,
 			@RequestBody DeploymentDetailPageParam deploymentDetailPageParam) {
-		try {
-			return success(deploymentDetailApplicationService.page(queryLoginUserByToken(loginToken),
-					deploymentDetailPageParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(deploymentDetailApplicationService.page(queryLoginUserByToken(loginToken),
+				deploymentDetailPageParam));
 	}
 
 	/**
@@ -55,12 +50,8 @@ public class DeploymentDetailRest extends AbstractRest {
 	@RequestMapping("/approveToDeploy")
 	public RestResponse<Void> approveToDeploy(@CookieValue("login_token") String loginToken,
 			@RequestBody DeploymentApprovementParam deploymentApplicationParam) {
-		try {
-			return this.success(deploymentDetailApplicationService
-					.approveToDeploy(queryLoginUserByToken(loginToken), deploymentApplicationParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(deploymentDetailApplicationService
+				.approveToDeploy(queryLoginUserByToken(loginToken), deploymentApplicationParam));
 	}
 
 	/**
@@ -72,12 +63,8 @@ public class DeploymentDetailRest extends AbstractRest {
 	@RequestMapping("/submitToRollback")
 	public RestResponse<Void> submitToRollback(@CookieValue("login_token") String loginToken,
 			@RequestBody RollbackApplicationParam requestParam) {
-		try {
-			return this.success(deploymentDetailApplicationService
-					.submitToRollback(queryLoginUserByToken(loginToken), requestParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(deploymentDetailApplicationService
+				.submitToRollback(queryLoginUserByToken(loginToken), requestParam));
 	}
 
 	/**
@@ -89,11 +76,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	@RequestMapping("/delete")
 	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
 			@RequestBody DeploymentDetailDeletionParam requestParam) {
-		try {
-			return this.success(
-					deploymentDetailApplicationService.delete(queryLoginUserByToken(loginToken), requestParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(
+				deploymentDetailApplicationService.delete(queryLoginUserByToken(loginToken), requestParam));
 	}
 }

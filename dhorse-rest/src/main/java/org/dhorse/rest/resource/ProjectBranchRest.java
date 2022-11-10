@@ -3,15 +3,14 @@ package org.dhorse.rest.resource;
 import java.util.List;
 
 import org.dhorse.api.param.project.branch.ProjectBranchCreationParam;
-import org.dhorse.api.param.project.branch.VersionBuildParam;
 import org.dhorse.api.param.project.branch.ProjectBranchDeletionParam;
-import org.dhorse.api.param.project.branch.ProjectBranchPageParam;
 import org.dhorse.api.param.project.branch.ProjectBranchListParam;
+import org.dhorse.api.param.project.branch.ProjectBranchPageParam;
+import org.dhorse.api.param.project.branch.VersionBuildParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.ProjectBranch;
 import org.dhorse.application.service.ProjectBranchApplicationService;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,12 +40,8 @@ public class ProjectBranchRest extends AbstractRest {
 	@PostMapping("/page")
 	public RestResponse<PageData<ProjectBranch>> page(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectBranchPageParam projectBranchPageParam) {
-		try {
-			return success(projectBranchApplicationService.page(queryLoginUserByToken(loginToken),
-					projectBranchPageParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectBranchApplicationService.page(queryLoginUserByToken(loginToken),
+				projectBranchPageParam));
 	}
 	
 	/**
@@ -58,12 +53,8 @@ public class ProjectBranchRest extends AbstractRest {
 	@PostMapping("/search")
 	public RestResponse<List<ProjectBranch>> search(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectBranchListParam projectBranchListParam) {
-		try {
-			return success(projectBranchApplicationService.list(queryLoginUserByToken(loginToken),
-					projectBranchListParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectBranchApplicationService.list(queryLoginUserByToken(loginToken),
+				projectBranchListParam));
 	}
 
 	/**
@@ -75,12 +66,8 @@ public class ProjectBranchRest extends AbstractRest {
 	@PostMapping("/add")
 	public RestResponse<Void> add(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectBranchCreationParam projectBranchCreationParam) {
-		try {
-			return success(projectBranchApplicationService.add(queryLoginUserByToken(loginToken),
-					projectBranchCreationParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectBranchApplicationService.add(queryLoginUserByToken(loginToken),
+				projectBranchCreationParam));
 	}
 
 	/**
@@ -92,12 +79,8 @@ public class ProjectBranchRest extends AbstractRest {
 	@PostMapping("/delete")
 	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectBranchDeletionParam projectBranchDeletionParam) {
-		try {
-			return success(projectBranchApplicationService.delete(queryLoginUserByToken(loginToken),
-					projectBranchDeletionParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectBranchApplicationService.delete(queryLoginUserByToken(loginToken),
+				projectBranchDeletionParam));
 	}
 
 	/**
@@ -109,11 +92,7 @@ public class ProjectBranchRest extends AbstractRest {
 	@RequestMapping("/buildVersion")
 	public RestResponse<String> buildVersion(@CookieValue("login_token") String loginToken,
 			@RequestBody VersionBuildParam versionBuildParam) {
-		try {
-			return this.success(projectBranchApplicationService
-					.buildVersion(this.queryLoginUserByToken(loginToken), versionBuildParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return this.success(projectBranchApplicationService
+				.buildVersion(this.queryLoginUserByToken(loginToken), versionBuildParam));
 	}
 }

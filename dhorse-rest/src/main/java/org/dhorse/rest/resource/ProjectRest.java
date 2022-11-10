@@ -9,7 +9,6 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.Project;
 import org.dhorse.application.service.ProjectApplicationService;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,13 +38,9 @@ public class ProjectRest extends AbstractRest {
 	@PostMapping("/page")
 	public RestResponse<PageData<Project>> page(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectPageParam projectPageParam) {
-		try {
-			return success(projectApplicationService.page(queryLoginUserByToken(loginToken), projectPageParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectApplicationService.page(queryLoginUserByToken(loginToken), projectPageParam));
 	}
-	
+
 	/**
 	 * 查询详情
 	 * 
@@ -55,12 +50,8 @@ public class ProjectRest extends AbstractRest {
 	@PostMapping("/query")
 	public RestResponse<Project> query(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectQueryParam projectQueryParam) {
-		try {
-			return success(projectApplicationService.query(queryLoginUserByToken(loginToken),
-					projectQueryParam.getProjectId()));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(
+				projectApplicationService.query(queryLoginUserByToken(loginToken), projectQueryParam.getProjectId()));
 	}
 
 	/**
@@ -72,11 +63,7 @@ public class ProjectRest extends AbstractRest {
 	@PostMapping("/add")
 	public RestResponse<Project> add(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectCreationParam projectCreationParam) {
-		try {
-			return success(projectApplicationService.add(queryLoginUserByToken(loginToken), projectCreationParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectApplicationService.add(queryLoginUserByToken(loginToken), projectCreationParam));
 	}
 
 	/**
@@ -88,11 +75,7 @@ public class ProjectRest extends AbstractRest {
 	@PostMapping("/update")
 	public RestResponse<Void> update(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectUpdateParam projectUpdateParam) {
-		try {
-			return success(projectApplicationService.update(queryLoginUserByToken(loginToken), projectUpdateParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectApplicationService.update(queryLoginUserByToken(loginToken), projectUpdateParam));
 	}
 
 	/**
@@ -104,10 +87,6 @@ public class ProjectRest extends AbstractRest {
 	@PostMapping("/delete")
 	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
 			@RequestBody ProjectDeletionParam projectDeletionParam) {
-		try {
-			return success(projectApplicationService.delete(queryLoginUserByToken(loginToken), projectDeletionParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(projectApplicationService.delete(queryLoginUserByToken(loginToken), projectDeletionParam));
 	}
 }

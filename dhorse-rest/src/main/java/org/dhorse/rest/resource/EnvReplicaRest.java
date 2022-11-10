@@ -17,7 +17,6 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.application.service.EnvReplicaApplicationService;
-import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +55,8 @@ public class EnvReplicaRest extends AbstractRest {
 	@PostMapping("/page")
 	public RestResponse<PageData<EnvReplica>> page(@CookieValue("login_token") String loginToken,
 			@RequestBody EnvReplicaPageParam envReplicaPageParam) {
-		try {
-			return success(
-					envReplicaApplicationService.page(queryLoginUserByToken(loginToken), envReplicaPageParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(
+				envReplicaApplicationService.page(queryLoginUserByToken(loginToken), envReplicaPageParam));
 	}
 
 	/**
@@ -73,11 +68,7 @@ public class EnvReplicaRest extends AbstractRest {
 	@PostMapping("/rebuild")
 	public RestResponse<Void> rebuild(@CookieValue("login_token") String loginToken,
 			@RequestBody EnvReplicaRebuildParam rebuildParam) {
-		try {
-			return success(envReplicaApplicationService.rebuild(queryLoginUserByToken(loginToken), rebuildParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(envReplicaApplicationService.rebuild(queryLoginUserByToken(loginToken), rebuildParam));
 	}
 
 	/**
@@ -89,12 +80,8 @@ public class EnvReplicaRest extends AbstractRest {
 	@PostMapping("/queryFiles")
 	public RestResponse<List<String>> queryFiles(@CookieValue("login_token") String loginToken,
 			@RequestBody QueryFilesParam requestParam) {
-		try {
-			return success(
-					envReplicaApplicationService.queryFiles(queryLoginUserByToken(loginToken), requestParam));
-		} catch (ApplicationException e) {
-			return this.error(e);
-		}
+		return success(
+				envReplicaApplicationService.queryFiles(queryLoginUserByToken(loginToken), requestParam));
 	}
 
 	/**
