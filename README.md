@@ -16,7 +16,10 @@ DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单�
 Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、H2、Mysql等。
 
 ## 快速开始
-首先需要安装大于等于Java11的环境。
+需要的环境：
+| Java | Harbor |
+| :-----: | :----: |
+| >=11 | >=2.0.0 |
 
 下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-windows.zip)，然后解压：
 
@@ -71,6 +74,10 @@ $  bin/dhorse-stop.sh
 《[DHorse系列文章之maven打包](https://blog.csdn.net/huashetianzu/article/details/127481538)》
 
 《[DHorse系列文章之Dubbo项目解决方案](https://blog.csdn.net/huashetianzu/article/details/127560873)》
+
+《[DHorse系列文章之日志收集](https://blog.csdn.net/huashetianzu/article/details/127697038)》
+
+《[DHorse系列文章之多环境标识](https://blog.csdn.net/huashetianzu/article/details/127696995)》
 
 ## 社区交流
 
