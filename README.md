@@ -2,7 +2,7 @@
 DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单、功能快速、操作简洁。
 
 ## 架构
-![Image text](./static/images/architecture.jpg)
+ ![Image text](./static/images/architecture.jpg)
 
 ## 主要特性
 * 简洁的操作界面
@@ -27,13 +27,13 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 $  tar -xzf dhorse-*.tar.gz
 ```
 
-进入解压目录并查看文件内容：
+进入解压目录并查看文件：
 
 ```bash
 $  cd dhorse-* && ls -l
 ```
 
-文件内容如下：
+文件如下：
 
 ```bash
 total 24
@@ -52,9 +52,9 @@ drwxr-xr-x 8 root root    93 Sep 23 16:09 static
 $  bin/dhorse-start.sh
 ```
 
-在浏览器里访问地址：`http://127.0.0.1:8100`，并在出现的登录页面中输入账号：admin，密码：admin，页面如下：
+在浏览器里输入地址：`http://127.0.0.1:8100`，并输入登录信息，登录名：admin，密码：admin，登录之后如下图所示：
 
-![Image text](./static/images/home.jpg)
+ ![Image text](./static/images/home.jpg)
 
 最后，关闭服务：
 
@@ -62,11 +62,8 @@ $  bin/dhorse-start.sh
 $  bin/dhorse-stop.sh
 ```
 
-## 开源许可
+了解更多：
 
-本软件遵守Apache开源许可协议2.0，详情《 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)》。
-
-## 社区文章
 《[DHorse系列文章之操作手册](https://blog.csdn.net/huashetianzu/article/details/127560678)》
 
 《[DHorse系列文章之镜像制作](https://blog.csdn.net/huashetianzu/article/details/127376460)》
@@ -81,6 +78,10 @@ $  bin/dhorse-stop.sh
 
 ## 社区交流
 
-感谢您的使用，如果想了解更多内容，请加入如下群聊。
+感谢您的支持和使用，如想了解更多内容，请加入如下群聊。
 
-<img  src="./static/images/weixin.jpg" align='left'/> 
+ ![Image text](./static/images/weixin.jpg)
+
+## 开源许可
+
+本软件遵守Apache开源许可协议2.0，详情《 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)》。
