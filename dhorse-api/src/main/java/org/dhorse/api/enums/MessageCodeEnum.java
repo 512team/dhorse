@@ -105,6 +105,7 @@ public enum MessageCodeEnum {
 	REPLICA_LOG_FAILED("200000", "获取副本日志失败"),
 	REPLICA_LIST_FAILURE("200000", "获取副本列表失败"),
 	REPLICA_RESTARTED_FAILURE("200000", "启动副本失败"),
+	DELETE_AUTO_SCALING_FAILURE("200000", "删除自动扩容失败"),
 	REPLICA_NAME_INVALIDE("200000", "无效的副本名称"),
 	DOWNLOAD_FILE_FAILURE("200000", "下载文件失败"),
 	

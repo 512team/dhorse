@@ -296,7 +296,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			}
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.REPLICA_RESTARTED_FAILURE);
+			LogUtils.throwException(logger, message, MessageCodeEnum.DELETE_AUTO_SCALING_FAILURE);
 		}
 		return true;
 	}
@@ -639,6 +639,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			//todo 这里为了解决k8s的时区问题，强制加8小时
 			r.setStartTime(e.getMetadata().getCreationTimestamp().atZoneSameInstant(ZoneOffset.of("+08:00"))
 					.format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS)));
+			//k8s 1.19版本以下的api
+			//r.setStartTime(e.getMetadata().getCreationTimestamp().withZone(DateTimeZone.forOffsetHours(8))
+			//		.toString(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS));
 			r.setStatus(podStatus(e.getStatus()));
 			return r;
 		}).collect(Collectors.toList());
