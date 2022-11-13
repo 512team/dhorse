@@ -49,6 +49,7 @@ public enum MessageCodeEnum {
 	DELETE_NAMESPACE_FAILURE("200000", "删除命名空间出错"),
 	NAMESPACE_EXISTENCE("200000", "命名空间已经存在"),
 	NAMESPACE_INEXISTENCE("200000", "命名空间不存在"),
+	NAMESPACE_NOT_ALLOWED_DELETION("200000", "该命名空间不允许删除"),
 	
 	//项目
 	PROJECT_ID_IS_NULL("200000", "项目编号不能为空"),

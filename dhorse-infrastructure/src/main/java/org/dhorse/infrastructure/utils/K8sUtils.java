@@ -16,7 +16,6 @@ public class K8sUtils {
 		SYSTEM_NAMESPACES.add("kube-public");
 		SYSTEM_NAMESPACES.add("kube-system");
 		SYSTEM_NAMESPACES.add("dhorse-system");
-		SYSTEM_NAMESPACES.add("default");
 	}
 	
 	public static String getReplicaAppName(String projectName, String projectEnvTag) {

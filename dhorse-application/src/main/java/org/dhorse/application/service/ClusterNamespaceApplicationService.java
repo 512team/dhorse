@@ -59,6 +59,9 @@ public class ClusterNamespaceApplicationService extends BaseApplicationService<C
 	
 	public Void delete(ClusterNamespaceDeletionParam deleteParam) {
 		validateAddParam(deleteParam);
+		if("default".equals(deleteParam.getNamespaceName())){
+			LogUtils.throwException(logger, MessageCodeEnum.NAMESPACE_NOT_ALLOWED_DELETION);
+		}
 		ClusterPO clusterPO = clusterRepository.queryById(deleteParam.getClusterId());
 		if (clusterPO == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);

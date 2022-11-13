@@ -223,8 +223,7 @@
 			data: JSON.stringify({'clusterId': clusterId, 'pageSize': 1000, 'pageNum': 1}),
 			success: function(res){
 				var opt = '<option value="">请选择或输入</option>';
-				if(res.data.itemCount != 0){	
-					opt = opt.concat('<option value="default">default</option>');
+				if(res.data.itemCount != 0){
 					data = res.data.items;
 					for(var k in data){
 						opt = opt.concat("<option value='"+ data[k].namespaceName +"'>"+ data[k].namespaceName +"</option>");
