@@ -35,6 +35,14 @@
 		{{#	}                     						}}
 	</script>
 	
+	<script type="text/html" id="agentImageSourceBar">
+		{{#	if (d.agentImageSource == 1) {			}}
+		{{#		return '版本号' 					}}
+		{{#	} else if (d.agentImageSource == 2){	}}
+		{{#		return '自定义'   					}}
+		{{#	} 										}}
+	</script>
+	
 	<script type="text/html" id="currentTableBar">
 		<a href="javascript:;" class="layui-font-blue" lay-event="edit">修改</a>
 		<span style="color: rgb(179, 179, 179);"> | </span>
@@ -85,10 +93,11 @@
 			},
             cols: [[
                 {field: 'name', title: '模板名称'},
-                {field: 'serverUrl', title: '服务地址', width: '15%'},
+                {field: 'serverUrl', title: '服务地址', width: '14%'},
 				{field: 'languageType', title: 'Agent语言类型', templet: '#languageTypeBar'},
+				{field: 'agentImageSource', title: 'Agent镜像来源', templet: '#agentImageSourceBar'},
 				{field: 'agentVersion', title: 'Agent版本', templet: '#agentVersionBar'},
-                {field: 'agentImage', title: 'Agent镜像', width: '40%'},
+                {field: 'agentImage', title: 'Agent镜像', width: '30%'},
                 {title: '操作', toolbar: '#currentTableBar', width: '15%'}
             ]],
             limits: [10, 20],

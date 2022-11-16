@@ -26,7 +26,17 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">Agent版本</label>
+			<label class="layui-form-label required">Agent镜像来源</label>
+			<div class="layui-input-block">
+				<select name="agentImageSource" lay-filter="agentImageSource" lay-verify="required" lay-reqtext="Agent镜像来源不能为空">
+					<option value="">请选择</option>
+					<option value="1">版本号</option>
+					<option value="2">自定义</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="agentVersionDiv">
+			<label class="layui-form-label required">Agent版本</label>
 			<div class="layui-input-block">
 				<select name="agentVersion" lay-filter="agentVersion">
 					<option value="">请选择</option>
@@ -38,10 +48,10 @@
 				</select>
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">Agent镜像</label>
+		<div class="layui-form-item required" style="display:none" id="agentImageDiv">
+			<label class="layui-form-label required">Agent镜像</label>
 			<div class="layui-input-block">
-			  <input type="text" name="agentImage" placeholder="与Agent版本二选一，优先使用项的像，值如：127.0.0.1:20080/skywalking-java-agent:8.10" autocomplete="off" class="layui-input">
+				<input type="text" name="agentImage" placeholder="如：127.0.0.1:20080/skywalking-java-agent:v8.9.0" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -60,10 +70,29 @@
 		
 		form.render();
 		
+		form.on('select(agentImageSource)', function(data) {
+			if(data.value == 1){
+				$('#agentVersionDiv').show();
+				$('#agentImageDiv').hide();
+			}else{
+				$('#agentVersionDiv').hide();
+				$('#agentImageDiv').show();
+			}
+		});
+		
         form.on('submit(saveBtn)', function(data) {
-			if(data.field.agentVersion == '' && data.field.agentImage == ''){
-				layer.msg('Agent版本和Agent镜像不能同时为空', {icon: 5, shift: 6});
-				return false;
+			if(data.field.agentImageSource == 1){
+				if(data.field.agentVersion == ''){
+					layer.msg('Agent版本不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.agentImage = '';
+			}else if(data.field.agentImageSource == 2){
+				if(data.field.agentImage == ''){
+					layer.msg('Agent镜像不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.agentVersion = '';
 			}
 			$.ajax({
 				url: '/globalConfig/traceTemplate/add',
