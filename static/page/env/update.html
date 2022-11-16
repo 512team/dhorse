@@ -271,12 +271,7 @@
 				if(res.code != '000000'){
 					return false;
 				}
-				var opt;
-				if(selectedNamespace == 'defualt'){
-					opt = '<option value="default" selected>default</option>';
-				}else{
-					opt = '<option value="default">default</option>';
-				}
+				var opt = '';
 				data = res.data.items;
 				for(var k in data){
 					if(data[k].namespaceName == selectedNamespace){

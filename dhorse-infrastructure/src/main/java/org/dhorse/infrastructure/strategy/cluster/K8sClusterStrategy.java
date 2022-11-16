@@ -914,7 +914,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public boolean addNamespace(ClusterPO clusterPO, String namespaceName) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		String labelSelector = "kubernetes.io/metadata.name=" + namespaceName;
+		String labelSelector = "custom.name=" + namespaceName;
 		try {
 			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, labelSelector, null, null, null, null, null);
 			if(!CollectionUtils.isEmpty(namespaceList.getItems())) {
@@ -923,6 +923,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			}
 			V1ObjectMeta metaData = new V1ObjectMeta();
 			metaData.setName(namespaceName);
+			metaData.setLabels(Collections.singletonMap("custom.name", namespaceName));
 			V1Namespace namespace = new V1Namespace();
 			namespace.setMetadata(metaData);
 			coreApi.createNamespace(namespace, null, null, null);

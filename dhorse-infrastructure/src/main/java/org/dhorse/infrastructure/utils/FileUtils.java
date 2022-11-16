@@ -47,24 +47,28 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 	}
 
 	public static void downloadFile(String fileUrl, File targetFile) {
+		logger.info("Start to download file from {}", fileUrl);
+		
 		URLConnection conn = null;
 		try {
 			conn = new URL(fileUrl).openConnection();
-			conn.setConnectTimeout(5 * 1000);
-			conn.setReadTimeout(20 * 60 * 1000);
 		} catch (Exception e) {
 			logger.error("Invalid file url", e);
 		}
 		
+		conn.setConnectTimeout(5 * 1000);
+		conn.setReadTimeout(10 * 60 * 1000);
 		try (InputStream inStream = conn.getInputStream();
 				FileOutputStream fs = new FileOutputStream(targetFile)){
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[1024 * 1024];
 			int length = 0;
 			while ((length = inStream.read(buffer)) != -1) {
 				fs.write(buffer, 0, length);
 			}
+			fs.flush();
 		} catch (Exception e) {
 			logger.error("Failed to download file", e);
 		}
+		logger.info("End to download file from {}", fileUrl);
 	}
 }
