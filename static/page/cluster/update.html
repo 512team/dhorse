@@ -29,21 +29,31 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">认证令牌</label>
+			<label class="layui-form-label required">认证方式</label>
 			<div class="layui-input-block">
-				<textarea name="authToken" placeholder="用于远程访问集群的认证，与认证用户二选一" autocomplete="off"  class="layui-textarea"></textarea>
+				<select name="authType" lay-filter="authType" lay-verify="required" lay-reqtext="认证类型不能为空">
+					<option value="">请选择</option>
+					<option value="1">令牌认证</option>
+					<option value="2">账号认证</option>
+				</select>
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">认证用户</label>
+		<div class="layui-form-item" style="display: none" id="authTokenDiv">
+			<label class="layui-form-label required">认证令牌</label>
 			<div class="layui-input-block">
-				<input type="text" name="authUser" placeholder="用于远程访问集群的认证，与认证令牌二选一" autocomplete="off" class="layui-input">
+				<textarea name="authToken" placeholder="请输入认证令牌" autocomplete="off"  class="layui-textarea"></textarea>
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">认证密码</label>
+		<div class="layui-form-item" style="display: none" id="authNameDiv">
+			<label class="layui-form-label required">认证名称</label>
 			<div class="layui-input-block">
-				<input type="text" name="authPassword" placeholder="用于远程访问集群的认证，当填入认证用户时，该项必填" autocomplete="off" class="layui-input">
+				<input type="text" name="authName" placeholder="请输入认证名称" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item" style="display: none" id="authPasswordDiv">
+			<label class="layui-form-label required">认证密码</label>
+			<div class="layui-input-block">
+				<input type="text" name="authPassword" placeholder="请输入认证密码" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -104,11 +114,19 @@
 				  ,"clusterName": res.data.clusterName
 				  ,"clusterType": res.data.clusterType
 				  ,"clusterUrl": res.data.clusterUrl
+				  ,"authType": res.data.authType
 				  ,"authToken": res.data.authToken
-				  ,"authUser": res.data.authUser
+				  ,"authName": res.data.authName
 				  ,"authPassword": res.data.authPassword
 				  ,"description": res.data.description
 				});
+				
+				if(res.data.authType == 1){
+					$("#authTokenDiv").show();
+				}else if(res.data.authType == 2){
+					$("#authNameDiv").show();
+					$("#authPasswordDiv").show();
+				}
 				layer.close(loadIndex);
 			},
 			error: function(res){
@@ -117,8 +135,38 @@
 			}
 		});
 		
+		form.on('select(authType)', function(data) {
+			if(data.value == 1){
+				$("#authTokenDiv").show();
+				$("#authNameDiv").hide();
+				$("#authPasswordDiv").hide();
+			}else if(data.value == 2){
+				$("#authTokenDiv").hide();
+				$("#authNameDiv").show();
+				$("#authPasswordDiv").show();
+			}else{
+				$("#authTokenDiv").hide();
+				$("#authNameDiv").hide();
+				$("#authPasswordDiv").hide();
+			}
+		});
+		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
+			if(data.field.authType == 1){
+				if(data.field.authToken == ''){
+					layer.msg("认证令牌不能为空", {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.authName = '';
+				data.field.authPassword = '';
+			}else if(data.field.authType == 2){
+				if(data.field.authName == '' || data.field.authPassword == ''){
+					layer.msg("认证名称和密码不能为空", {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.authToken = ''
+			}
 			$.ajax({
 				url: '/cluster/update',
 				type: 'POST',

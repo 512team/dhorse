@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.AuthTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.cluster.ClusterCreationParam;
@@ -136,18 +137,22 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 	}
 
 	private void validateAddParam(ClusterCreationParam clusterCreationParam) {
+		if(clusterCreationParam.getAuthType() == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.AUTH_TYPE_IS_EMPTY);
+		}
 		if (StringUtils.isBlank(clusterCreationParam.getClusterName())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_NAME_IS_EMPTY);
 		}
 		if (StringUtils.isBlank(clusterCreationParam.getClusterUrl())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_URL_IS_EMPTY);
 		}
-		if (StringUtils.isBlank(clusterCreationParam.getAuthName())
+		if (AuthTypeEnum.TOKEN.getCode().equals(clusterCreationParam.getAuthType())
 				&& StringUtils.isBlank(clusterCreationParam.getAuthToken())) {
-			LogUtils.throwException(logger, MessageCodeEnum.CLUSTER_AUTH_IS_EMPTY);
+			LogUtils.throwException(logger, MessageCodeEnum.AUTH_TOKEN_IS_EMPTY);
 		}
-		if (StringUtils.isNotBlank(clusterCreationParam.getAuthName())
-				&& StringUtils.isBlank(clusterCreationParam.getAuthPassword())) {
+		if (AuthTypeEnum.ACCOUNT.getCode().equals(clusterCreationParam.getAuthType())
+				&& (StringUtils.isNotBlank(clusterCreationParam.getAuthName())
+				|| StringUtils.isBlank(clusterCreationParam.getAuthPassword()))) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSTER_AUTHP_ASSWORD_IS_EMPTY);
 		}
 	}

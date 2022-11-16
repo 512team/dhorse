@@ -20,12 +20,17 @@ public class ClusterParam extends PageParam {
 	private String clusterUrl;
 
 	/**
+	 * 认证方式，参见：AuthTypeEnum
+	 */
+	private Integer authType;
+
+	/**
 	 * 认证token
 	 */
 	private String authToken;
 
 	/**
-	 * 认证用户
+	 * 认证名称
 	 */
 	private String authName;
 
@@ -61,6 +66,14 @@ public class ClusterParam extends PageParam {
 
 	public void setClusterUrl(String clusterUrl) {
 		this.clusterUrl = clusterUrl;
+	}
+
+	public Integer getAuthType() {
+		return authType;
+	}
+
+	public void setAuthType(Integer authType) {
+		this.authType = authType;
 	}
 
 	public String getAuthToken() {

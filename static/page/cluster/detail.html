@@ -34,18 +34,24 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">认证方式：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="authType"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" style="display: none" id="authTokenDiv">
 			<label class="layui-form-label">认证令牌：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="authToken"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">认证用户：</label>
+		<div class="layui-form-item" style="display: none" id="authNameDiv">
+			<label class="layui-form-label">认证名称：</label>
 			<div class="layui-input-block">
-				<label class="layui-form-label text-value" id="authUser"></label>
+				<label class="layui-form-label text-value" id="authName"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" style="display: none" id="authPasswordDiv">
 			<label class="layui-form-label">认证密码：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="authPassword"></label>
@@ -87,14 +93,21 @@
 		var parentData = JSON.parse(parent.parentData);
 		$("#id").text(parentData.id);
 		$("#clusterName").text(parentData.clusterName);
-		$("#clusterType").text(parentData.clusterType);
 		$("#clusterUrl").text(parentData.clusterUrl);
 		$("#authToken").text(parentData.authToken);
-		$("#authUser").text(parentData.authUser);
+		$("#authName").text(parentData.authName);
 		$("#authPassword").text(parentData.authPassword);
 		$("#creationTime").text(parentData.creationTime);
 		$("#updateTime").text(parentData.updateTime);
 		$("#description").text(parentData.description);
+		
+		if(parentData.clusterType == 1){
+			$("#clusterType").text('K8S');
+		}else if(parentData.clusterType == 1){
+			$("#clusterType").text('阿里云');
+		}else if(parentData.clusterType == 2){
+			$("#clusterType").text('腾讯云');
+		}
 		
 		if(parentData.logSwitch == 0){
 			$("#logSwitch").text("关闭");
@@ -102,6 +115,15 @@
 			$("#logSwitch").text("开启");
 		}else if(parentData.logSwitch == 2){
 			$("#logSwitch").text("未知");
+		}
+		
+		if(parentData.authType == 1){
+			$("#authType").text("令牌认证");
+			$("#authTokenDiv").show();
+		}else if(parentData.logSwitch == 2){
+			$("#authType").text("账号认证");
+			$("#authNameDiv").show();
+			$("#authPasswordDiv").show();
 		}
 		
     });

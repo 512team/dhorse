@@ -30,12 +30,13 @@ public enum MessageCodeEnum {
 	FILE_BEAT_K8S_FILE_INEXISTENCE("200000", "filebeat-k8s文件不存在"),
 	
 	//服务器集群配置
+	AUTH_TYPE_IS_EMPTY("200000", "认证方式不能为空"),
 	CLUSER_NAME_EXISTENCE("200000", "集群名称已经存在"),
 	CLUSER_ID_IS_EMPTY("200000", "集群编号不能为空"),
 	CLUSER_NAME_IS_EMPTY("200000", "集群名称不能为空"),
 	CLUSER_URL_IS_EMPTY("200000", "集群地址不能为空"),
-	CLUSTER_AUTH_IS_EMPTY("200000", "集群认证信息不能为空"),
-	CLUSTER_AUTHP_ASSWORD_IS_EMPTY("200000", "集群认证密码不能为空"),
+	AUTH_TOKEN_IS_EMPTY("200000", "集群认证令牌不能为空"),
+	CLUSTER_AUTHP_ASSWORD_IS_EMPTY("200000", "集群认证名称和密码不能为空"),
 	NAMESPACE_NAME_EMPTY("200000", "命名空间名称不能为空"),
 	CLUSER_EXISTENCE("200000", "集群不存在"),
 	TAGE_EXISTENCE("200000", "标签名称已经存在"),

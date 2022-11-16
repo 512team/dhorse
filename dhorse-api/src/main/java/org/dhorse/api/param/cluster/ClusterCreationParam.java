@@ -27,12 +27,17 @@ public class ClusterCreationParam implements Serializable {
 	private String clusterUrl;
 
 	/**
+	 * 认证方式，参见：AuthTypeEnum
+	 */
+	private Integer authType;
+
+	/**
 	 * 认证token
 	 */
 	private String authToken;
 
 	/**
-	 * 认证用户
+	 * 认证名称
 	 */
 	private String authName;
 
@@ -42,8 +47,8 @@ public class ClusterCreationParam implements Serializable {
 	private String authPassword;
 
 	/**
-	 * 日志收集开关
-	 * <br>枚举值：org.dhorse.api.enums.YesOrNoEnum
+	 * 日志收集开关 <br>
+	 * 枚举值：org.dhorse.api.enums.YesOrNoEnum
 	 */
 	private Integer logSwitch;
 
@@ -66,6 +71,14 @@ public class ClusterCreationParam implements Serializable {
 
 	public void setClusterType(Integer clusterType) {
 		this.clusterType = clusterType;
+	}
+
+	public Integer getAuthType() {
+		return authType;
+	}
+
+	public void setAuthType(Integer authType) {
+		this.authType = authType;
 	}
 
 	public Integer getLogSwitch() {
