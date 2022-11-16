@@ -190,7 +190,7 @@ public abstract class ApplicationService {
 			fullNameOfImage.append("/");
 		}
 		if(ImageRepoTypeEnum.DOCKERHUB.getValue().equals(imageRepo.getType())) {
-			fullNameOfImage.append(imageRepo.getAuthUser());
+			fullNameOfImage.append(imageRepo.getAuthName());
 		}else {
 			fullNameOfImage.append(Constants.IMAGE_REPO_PROJECT);
 		}

@@ -444,7 +444,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		
 		try {
 			RegistryImage registryImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
-					context.getGlobalConfigAgg().getImageRepo().getAuthUser(),
+					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
 					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
 			
 			JibContainerBuilder jibContainerBuilder = null;

@@ -20,14 +20,14 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label">认证令牌</label>
 			<div class="layui-input-block">
-				<input type="text" name="authToken" placeholder="与认证用户二选一必填" autocomplete="off" class="layui-input">
+				<input type="text" name="authToken" placeholder="与认证名称二选一必填" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		-->
 		<div class="layui-form-item">
-			<label class="layui-form-label required">认证用户</label>
+			<label class="layui-form-label required">认证名称</label>
 			<div class="layui-input-block">
-				<input type="text" name="authUser" placeholder="认证用户" lay-verify="required" lay-reqtext="认证用户不能为空" autocomplete="off" class="layui-input">
+				<input type="text" name="authName" placeholder="认证名称" lay-verify="required" lay-reqtext="认证名称不能为空" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -68,7 +68,7 @@
 				  "type": res.data.imageRepo.type
 				  ,"url": res.data.imageRepo.url
 				  ,"authToken": res.data.imageRepo.authToken
-				  ,"authUser": res.data.imageRepo.authUser
+				  ,"authName": res.data.imageRepo.authName
 				  ,"authPassword": res.data.imageRepo.authPassword
 				});
 			},
@@ -81,8 +81,8 @@
 		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-			if(data.field.authUser == ''){
-				layer.msg("认证用户不能为空", {icon: 5, shift: 6});
+			if(data.field.authName == ''){
+				layer.msg("认证名称不能为空", {icon: 5, shift: 6});
 				return false;
 			}
 			if(data.field.authPassword == ''){

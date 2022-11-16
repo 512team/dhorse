@@ -23,6 +23,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
+import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -53,7 +54,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
@@ -165,7 +165,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
                 .build();
         httpPost.setConfig(requestConfig);
         httpPost.setHeader("Content-Type", "application/json;charset=UTF-8");
-        httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthUser() + ":" + imageRepo.getAuthPassword()).getBytes()));
+        httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthName() + ":" + imageRepo.getAuthPassword()).getBytes()));
         ObjectNode objectNode = JsonUtils.getObjectMapper().createObjectNode();
         objectNode.put("project_name", "dhorse");
         //1：公有类型
@@ -270,11 +270,9 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	}
 	
 	private void buildAgentImage(TraceTemplate taceTemplate, GlobalConfigAgg globalConfigAgg) {
-		if(!StringUtils.isBlank(taceTemplate.getAgentImage())) {
+		if(!AgentImageSourceEnum.VERSION.getCode().equals(taceTemplate.getAgentImageSource())) {
 			return;
 		}
-		
-		logger.info("Start to build agent image");
 		
 		//1.下载Agent文件
 		String fileName = "apache-skywalking-java-agent-"
@@ -293,6 +291,8 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		//2.解压Agent文件
 		FileUtils.decompressTarGz(localFilePath, parentFile);
 		
+		logger.info("Start to build agent image");
+		
 		//3.制作Agent镜像并上传到仓库
 		System.setProperty("jib.httpTimeout", "5000");
 		System.setProperty("sendCredentialsOverHttp", "true");
@@ -300,7 +300,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		String imageName = "skywalking-agent:v" + taceTemplate.getAgentVersion();
 		try {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage(imageRepo, imageName)).addCredential(
-					imageRepo.getAuthUser(),
+					imageRepo.getAuthName(),
 					imageRepo.getAuthPassword());
 			JibContainerBuilder jibContainerBuilder = Jib.from("busybox:latest");
 			jibContainerBuilder.addLayer(Arrays.asList(Paths.get(parentFile + "/skywalking-agent")), AbsoluteUnixPath.get("/"))

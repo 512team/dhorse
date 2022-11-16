@@ -16,21 +16,31 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">认证令牌</label>
+			<label class="layui-form-label required">认证方式</label>
 			<div class="layui-input-block">
-				<input type="text" name="authToken" placeholder="与认证用户二选一必填" autocomplete="off" class="layui-input">
+				<select name="authType" lay-filter="authType" lay-verify="required" lay-reqtext="认证类型不能为空">
+					<option value="">请选择</option>
+					<option value="1">令牌认证</option>
+					<option value="2">账号认证</option>
+				</select>
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">认证用户</label>
+		<div class="layui-form-item" style="display: none" id="authTokenDiv">
+			<label class="layui-form-label required">认证令牌</label>
 			<div class="layui-input-block">
-				<input type="text" name="authUser" placeholder="与认证令牌二选一必填" autocomplete="off" class="layui-input">
+				<input type="text" name="authToken" placeholder="请输入认证令牌" autocomplete="off" class="layui-input">
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">认证密码</label>
+		<div class="layui-form-item" style="display: none" id="authNameDiv">
+			<label class="layui-form-label required">认证名称</label>
 			<div class="layui-input-block">
-				<input type="text" name="authPassword" placeholder="认证用户填写时，认证密码必填" autocomplete="off" class="layui-input">
+				<input type="text" name="authName" placeholder="请输入认证名称" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item" style="display: none" id="authPasswordDiv">
+			<label class="layui-form-label required">认证密码</label>
+			<div class="layui-input-block">
+				<input type="text" name="authPassword" placeholder="请输入认证密码" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -64,10 +74,18 @@
 				form.val("form-data", {
 				  "type": res.data.codeRepo.type
 				  ,"url": res.data.codeRepo.url
+				  ,"authType": res.data.codeRepo.authType
 				  ,"authToken": res.data.codeRepo.authToken
-				  ,"authUser": res.data.codeRepo.authUser
+				  ,"authName": res.data.codeRepo.authName
 				  ,"authPassword": res.data.codeRepo.authPassword
 				});
+				
+				if(res.data.codeRepo.authType == 1){
+					$("#authTokenDiv").show();
+				}else if(res.data.codeRepo.authType == 2){
+					$("#authNameDiv").show();
+					$("#authPasswordDiv").show();
+				}
 			},
 			error: function(res){
 				layer.msg(res.message, {icon: 5, shift: 6});
@@ -76,15 +94,37 @@
 		
 		form.render('select');
 		
+		form.on('select(authType)', function(data) {
+			if(data.value == 1){
+				$("#authTokenDiv").show();
+				$("#authNameDiv").hide();
+				$("#authPasswordDiv").hide();
+			}else if(data.value == 2){
+				$("#authTokenDiv").hide();
+				$("#authNameDiv").show();
+				$("#authPasswordDiv").show();
+			}else{
+				$("#authTokenDiv").hide();
+				$("#authNameDiv").hide();
+				$("#authPasswordDiv").hide();
+			}
+		});
+		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-			if(data.field.authToken == '' && data.field.authUser == ''){
-				layer.msg("认证令牌和认证用户不能同时为空", {icon: 5, shift: 6});
-				return false;
-			}
-			if(data.field.authUser != '' && data.field.authPassword == ''){
-				layer.msg("认证密码不能为空", {icon: 5, shift: 6});
-				return false;
+			if(data.field.authType == 1){
+				if(data.field.authToken == ''){
+					layer.msg("认证令牌不能为空", {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.authName = '';
+				data.field.authPassword = '';
+			}else if(data.field.authType == 2){
+				if(data.field.authName == '' || data.field.authPassword == ''){
+					layer.msg("认证名称和密码不能为空", {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.authToken = ''
 			}
 			//增加类型
 			data.field.itemType = 2;

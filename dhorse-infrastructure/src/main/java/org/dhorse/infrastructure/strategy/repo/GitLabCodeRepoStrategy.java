@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.AuthTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
@@ -236,18 +236,13 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	}
 	
 	private GitLabApi gitLabApi(CodeRepo codeRepo) {
-		GitLabApi gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthToken());
-		gitLabApi.setRequestTimeout(1000, 5 * 1000);
-		try {
-			gitLabApi.getVersion();
-		}catch(GitLabApiException e) {
-			//如果token无效，则用账号登录
-			if(e.getHttpStatus() == 401 && !StringUtils.isBlank(codeRepo.getAuthUser())) {
-				gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthUser(), codeRepo.getAuthPassword());
-				gitLabApi.setRequestTimeout(1000, 5 * 1000);
-			}
+		GitLabApi gitLabApi = null;
+		if(AuthTypeEnum.TOKEN.getCode().equals(codeRepo.getAuthType())) {
+			gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthToken());
+		}else if(AuthTypeEnum.ACCOUNT.getCode().equals(codeRepo.getAuthType())) {
+			gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthName(), codeRepo.getAuthPassword());
 		}
-		
+		gitLabApi.setRequestTimeout(1000, 5 * 1000);
 		return gitLabApi;
 	}
 }

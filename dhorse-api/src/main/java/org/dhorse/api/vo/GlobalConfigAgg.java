@@ -92,7 +92,7 @@ public class GlobalConfigAgg implements Serializable {
 
 		private String url;
 
-		private String authUser;
+		private String authName;
 
 		private String authPassword;
 
@@ -112,12 +112,12 @@ public class GlobalConfigAgg implements Serializable {
 			this.url = url;
 		}
 
-		public String getAuthUser() {
-			return authUser;
+		public String getAuthName() {
+			return authName;
 		}
 
-		public void setAuthUser(String authUser) {
-			this.authUser = authUser;
+		public void setAuthName(String authName) {
+			this.authName = authName;
 		}
 
 		public String getAuthPassword() {
@@ -138,9 +138,11 @@ public class GlobalConfigAgg implements Serializable {
 
 		private String url;
 
+		private Integer authType;
+
 		private String authToken;
 
-		private String authUser;
+		private String authName;
 
 		private String authPassword;
 
@@ -160,6 +162,14 @@ public class GlobalConfigAgg implements Serializable {
 			this.url = url;
 		}
 
+		public Integer getAuthType() {
+			return authType;
+		}
+
+		public void setAuthType(Integer authType) {
+			this.authType = authType;
+		}
+
 		public String getAuthToken() {
 			return authToken;
 		}
@@ -168,12 +178,12 @@ public class GlobalConfigAgg implements Serializable {
 			this.authToken = authToken;
 		}
 
-		public String getAuthUser() {
-			return authUser;
+		public String getAuthName() {
+			return authName;
 		}
 
-		public void setAuthUser(String authUser) {
-			this.authUser = authUser;
+		public void setAuthName(String authName) {
+			this.authName = authName;
 		}
 
 		public String getAuthPassword() {
@@ -306,6 +316,11 @@ public class GlobalConfigAgg implements Serializable {
 		private Integer languageType;
 
 		/**
+		 * agent镜像来源，1：版本号，2：自定义
+		 */
+		private Integer agentImageSource;
+
+		/**
 		 * Agent版本
 		 */
 		private String agentVersion;
@@ -329,6 +344,14 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setServerUrl(String serverUrl) {
 			this.serverUrl = serverUrl;
+		}
+
+		public Integer getAgentImageSource() {
+			return agentImageSource;
+		}
+
+		public void setAgentImageSource(Integer agentImageSource) {
+			this.agentImageSource = agentImageSource;
 		}
 
 		public String getAgentImage() {
