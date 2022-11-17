@@ -1,0 +1,179 @@
+<div class="layuimini-main">
+	<script type="text/html" id="toolbarDemo">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+		</div>
+	</script>
+
+	<table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+	
+	<script type="text/html" id="languageTypeBar">
+		{{#	if (d.languageType == 1) {			}}
+		{{#		return 'Java' 					}}
+		{{#	} else if (d.languageType == 2){	}}
+		{{#		return 'Python'   				}}
+		{{#	} else if (d.languageType == 3){	}}
+		{{#		return 'Node'   				}}
+		{{#	} else if (d.languageType == 4){	}}
+		{{#		return 'App'   					}}
+		{{#	} else if (d.languageType == 5){	}}
+		{{#		return 'H5'   					}}
+		{{#	} else if (d.languageType == 6){	}}
+		{{#		return 'C'   					}}
+		{{#	} else if (d.languageType == 7){	}}
+		{{#		return 'C++'   					}}
+		{{#	} else if (d.languageType == 8){	}}
+		{{#		return 'Go'   					}}
+		{{#	}                     				}}
+	</script>
+	
+	<script type="text/html" id="agentVersionBar">
+		{{#	if(typeof d.agentVersion !== 'undefined'){	}}
+		{{#		return 'v' + d.agentVersion 			}}
+		{{# } else {									}}
+		{{#		return ''   							}}
+		{{#	}                     						}}
+	</script>
+	
+	<script type="text/html" id="agentImageSourceBar">
+		{{#	if (d.agentImageSource == 1) {			}}
+		{{#		return '版本号' 					}}
+		{{#	} else if (d.agentImageSource == 2){	}}
+		{{#		return '自定义'   					}}
+		{{#	} 										}}
+	</script>
+	
+	<script type="text/html" id="currentTableBar">
+		<a href="javascript:;" class="layui-font-blue" lay-event="edit">修改</a>
+		<span style="color: rgb(179, 179, 179);"> | </span>
+		<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
+	</script>
+</div>
+<script>
+
+	//全局变量，在子页面里使用
+	var data;
+	
+    layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			miniPage = layui.miniPage;
+				
+        table.render({
+			id: 'currentTableId',
+            elem: '#currentTableId',
+            url: '/globalConfig/traceTemplate/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+			where: {itemType: 5},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+                {field: 'name', title: '模板名称'},
+                {field: 'serverUrl', title: '服务地址', width: '14%'},
+				{field: 'languageType', title: 'Agent语言类型', templet: '#languageTypeBar'},
+				{field: 'agentImageSource', title: 'Agent镜像来源', templet: '#agentImageSourceBar'},
+				{field: 'agentVersion', title: 'Agent版本', templet: '#agentVersionBar'},
+                {field: 'agentImage', title: 'Agent镜像', width: '30%'},
+                {title: '操作', toolbar: '#currentTableBar', width: '15%'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true
+        });
+		
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+				var index = layer.open({
+                    title: '添加模板',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['50%', '60%'],
+                    offset: ['18%', '25%'],
+                    content: miniPage.getHrefContent('page/app_config/trace_template/add.html')
+                });
+            }
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            if (obj.event === 'edit') {
+				data = JSON.stringify(obj.data);
+                var index = layer.open({
+                    title: '修改模板',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['50%', '60%'],
+                    offset: ['18%', '25%'],
+                    content: miniPage.getHrefContent('page/app_config/trace_template/edit.html')
+                });
+                return false;
+            }else if (obj.event === 'delete') {
+				doDelete($, obj.data.name, obj.data.id);
+			}
+        });
+    });
+	
+	//删除用户
+	function doDelete($, name, id) {
+		var msg = '确定删除：“' + name + '”？';
+		layer.confirm(msg, {offset: ['30%', '42%']}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/globalConfig/traceTemplate/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"id": id}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

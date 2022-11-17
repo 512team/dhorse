@@ -8,7 +8,7 @@
 							<option value="">请输入或选择分支</option>
 						</select>
 					</div>
-					<input type="hidden" name="projectId" id="projectId"/>
+					<input type="hidden" name="appId" id="appId"/>
 					<div class="layui-inline">
 						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
 					</div>
@@ -41,15 +41,15 @@
             form = layui.form,
             table = layui.table,
 			miniPage = layui.miniPage,
-			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 		
-		$("#projectId").val(projectId);
+		$("#appId").val(appId);
 		form.render('select');
 		
         //初始化环境
-		initTable(table, projectId, branchName);
+		initTable(table, appId, branchName);
 
-		initBranch(form, $, projectId);
+		initBranch(form, $, appId);
 
 		// 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -77,23 +77,23 @@
                     content: ['page/deployment_version/log.html', 'no']
                 });
 			}if (obj.event === 'delete') {
-                doDelete($, obj.data.id, obj.data.versionName, projectId);
+                doDelete($, obj.data.id, obj.data.versionName, appId);
             }
 			return false;
         });
     });
 
-	function initTable(table, projectId){
+	function initTable(table, appId){
 		table.render({
             elem: '#currentTableId',
-            url: '/project/deployment/version/page',
+            url: '/app/deployment/version/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"projectId": projectId},
+			where: {"appId": appId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -129,13 +129,13 @@
         });
 	}
 	
-	function initBranch(form, $, projectId){
+	function initBranch(form, $, appId){
 		$.ajax({
-			url: '/project/branch/search',
+			url: '/app/branch/search',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'projectId': projectId}),
+			data: JSON.stringify({'appId': appId}),
 			success: function(res){
 				data = res.data
 				var opt = '';
@@ -152,16 +152,16 @@
 	}
 	
 	//删除
-	function doDelete($, id, name, projectId) {
+	function doDelete($, id, name, appId) {
 		var msg = "确定要删除“" + name + "”吗？";
 		layer.confirm(msg, {title: '提示'}, function (index) {
 			layer.close(index);
 			$.ajax({
-				url: '/project/deployment/version/delete',
+				url: '/app/deployment/version/delete',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"projectId": projectId, "deploymentVersionId": id}),
+				data: JSON.stringify({"appId": appId, "deploymentVersionId": id}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});

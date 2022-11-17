@@ -1,9 +1,9 @@
 package org.dhorse.rest.resource;
 
-import org.dhorse.api.param.project.branch.deploy.DeploymentApprovementParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentDetailDeletionParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentDetailPageParam;
-import org.dhorse.api.param.project.branch.deploy.RollbackApplicationParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentApprovementParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentDetailDeletionParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentDetailPageParam;
+import org.dhorse.api.param.app.branch.deploy.RollbackApplicationParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.DeploymentDetail;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Dahai
  */
 @RestController
-@RequestMapping("/project/deployment/detail")
+@RequestMapping("/app/deployment/detail")
 public class DeploymentDetailRest extends AbstractRest {
 
 	@Autowired

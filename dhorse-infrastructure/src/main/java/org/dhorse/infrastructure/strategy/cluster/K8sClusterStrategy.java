@@ -22,16 +22,16 @@ import org.dhorse.api.enums.PackageFileTypeTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
-import org.dhorse.api.param.project.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
-import org.dhorse.api.vo.ProjectEnv;
-import org.dhorse.api.vo.ProjectExtendJava;
+import org.dhorse.api.vo.AppEnv;
+import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
-import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
-import org.dhorse.infrastructure.repository.po.ProjectPO;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
+import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -101,11 +101,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy.class);
 
 	@Override
-	public Replica readDeployment(ClusterPO clusterPO, ProjectEnv projectEnv, ProjectPO projectPO) {
+	public Replica readDeployment(ClusterPO clusterPO, AppEnv appEnv, AppPO appPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		AppsV1Api api = new AppsV1Api(apiClient);
-		String namespace = projectEnv.getNamespaceName();
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(projectPO.getProjectName(), projectEnv.getTag());
+		String namespace = appEnv.getNamespaceName();
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(appPO.getAppName(), appEnv.getTag());
 		try {
 			V1DeploymentList deployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
@@ -133,7 +133,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				context.getCluster().getAuthToken());
 		AppsV1Api api = new AppsV1Api(apiClient);
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		String namespace = context.getProjectEnv().getNamespaceName();
+		String namespace = context.getAppEnv().getNamespaceName();
 		String labelSelector = K8sUtils.getDeploymentLabelSelector(context.getDeploymentAppName());
 		try {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
@@ -146,7 +146,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			}
 			
 			// 自动扩容任务
-			createAutoScaling(context.getProjectEnv(), context.getDeploymentAppName(), apiClient);
+			createAutoScaling(context.getAppEnv(), context.getDeploymentAppName(), apiClient);
 
 			//部署service
 			createService(context);
@@ -165,7 +165,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					logger.warn("Replica size is 0");
 					continue;
 				}
-				if (checkHealthOfAll(context.getProjectEnv(), podList.getItems())) {
+				if (checkHealthOfAll(context.getAppEnv(), podList.getItems())) {
 					logger.info("All replicas successfullly");
 					return true;
 				}
@@ -190,33 +190,33 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		String namespace = context.getProjectEnv().getNamespaceName();
-		String projectName = context.getProject().getProjectName();
+		String namespace = context.getAppEnv().getNamespaceName();
+		String appName = context.getApp().getAppName();
 		V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-				"app=" + projectName, 1, null, null, null, null);
+				"app=" + appName, 1, null, null, null, null);
 		V1Service service = null;
 		if (CollectionUtils.isEmpty(serviceList.getItems())) {
 			service = new V1Service();
 			service.apiVersion("v1");
 			service.setKind("Service");
-			service.setMetadata(serviceMeta(projectName));
+			service.setMetadata(serviceMeta(appName));
 			service.setSpec(serviceSpec(context));
 			service = coreApi.createNamespacedService(namespace, service, null, null, null);
 		} else {
 			service = serviceList.getItems().get(0);
 			modifyServiceSpec(context, service);
-			service = coreApi.replaceNamespacedService(context.getProject().getProjectName(), namespace, service, null, null, null);
+			service = coreApi.replaceNamespacedService(context.getApp().getAppName(), namespace, service, null, null, null);
 		}
 		logger.info("End to create service");
 		return true;
 	}
 	
 	
-	public boolean deleteDeployment(ClusterPO clusterPO, ProjectPO projectPO, ProjectEnvPO projectEnvPO) {
+	public boolean deleteDeployment(ClusterPO clusterPO, AppPO appPO, AppEnvPO appEnvPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		AppsV1Api api = new AppsV1Api(apiClient);
-		String namespace = projectEnvPO.getNamespaceName();
-		String depolymentName = K8sUtils.getDeploymentName(projectPO.getProjectName(), projectEnvPO.getTag());
+		String namespace = appEnvPO.getNamespaceName();
+		String depolymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnvPO.getTag());
 		String labelSelector = K8sUtils.getDeploymentLabelSelector(depolymentName);
 		try {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
@@ -239,38 +239,38 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 
-	public boolean autoScaling(ProjectPO projectPO, ProjectEnvPO projectEnvPO, ClusterPO clusterPO) {
+	public boolean autoScaling(AppPO appPO, AppEnvPO appEnvPO, ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		String appName = K8sUtils.getReplicaAppName(projectPO.getProjectName(), projectEnvPO.getTag());
-		return createAutoScaling(projectEnvPO, appName, apiClient);
+		String appName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
+		return createAutoScaling(appEnvPO, appName, apiClient);
 	}
 
-	private boolean createAutoScaling(ProjectEnvPO projectEnvPO, String appName, ApiClient apiClient) {
+	private boolean createAutoScaling(AppEnvPO appEnvPO, String appName, ApiClient apiClient) {
 		AutoscalingV1Api autoscalingApi = new AutoscalingV1Api(apiClient);
 		V1HorizontalPodAutoscaler body = new V1HorizontalPodAutoscaler();
 		body.setKind("HorizontalPodAutoscaler");
 		body.setApiVersion("autoscaling/v1");
 		V1HorizontalPodAutoscalerSpec spec = new V1HorizontalPodAutoscalerSpec();
-		spec.setMinReplicas(projectEnvPO.getMinReplicas());
-		spec.setMaxReplicas(projectEnvPO.getMaxReplicas());
+		spec.setMinReplicas(appEnvPO.getMinReplicas());
+		spec.setMaxReplicas(appEnvPO.getMaxReplicas());
 		V1CrossVersionObjectReference scaleTargetRef = new V1CrossVersionObjectReference();
 		scaleTargetRef.setApiVersion("apps/v1");
 		scaleTargetRef.setKind("Deployment");
 		scaleTargetRef.setName(appName);
 		spec.setScaleTargetRef(scaleTargetRef);
-		spec.setTargetCPUUtilizationPercentage(projectEnvPO.getAutoScalingCpu());
+		spec.setTargetCPUUtilizationPercentage(appEnvPO.getAutoScalingCpu());
 		body.setMetadata(deploymentMetaData(appName));
 		body.setSpec(spec);
 		String labelSelector = K8sUtils.getDeploymentLabelSelector(appName);
 		try {
 			V1HorizontalPodAutoscalerList autoscalerList = autoscalingApi.listNamespacedHorizontalPodAutoscaler(
-					projectEnvPO.getNamespaceName(), null, null, null, null, labelSelector, 1, null, null, null,
+					appEnvPO.getNamespaceName(), null, null, null, null, labelSelector, 1, null, null, null,
 					null);
 			if (CollectionUtils.isEmpty(autoscalerList.getItems())) {
-				autoscalingApi.createNamespacedHorizontalPodAutoscaler(projectEnvPO.getNamespaceName(), body, null,
+				autoscalingApi.createNamespacedHorizontalPodAutoscaler(appEnvPO.getNamespaceName(), body, null,
 						null, null);
 			} else {
-				autoscalingApi.replaceNamespacedHorizontalPodAutoscaler(appName, projectEnvPO.getNamespaceName(),
+				autoscalingApi.replaceNamespacedHorizontalPodAutoscaler(appName, appEnvPO.getNamespaceName(),
 						body, null, null, null);
 			}
 		} catch (ApiException e) {
@@ -301,24 +301,24 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 
-	private V1ObjectMeta serviceMeta(String projectName) {
+	private V1ObjectMeta serviceMeta(String appName) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
-		metadata.setName(projectName);
-		metadata.setLabels(Collections.singletonMap("app", projectName));
+		metadata.setName(appName);
+		metadata.setLabels(Collections.singletonMap("app", appName));
 		return metadata;
 	}
 	
 	private void modifyServiceSpec(DeployContext context, V1Service service) {
 		V1ServicePort port = service.getSpec().getPorts().get(0);
-		port.setPort(context.getProjectEnv().getServicePort());
-		port.setTargetPort(new IntOrString(context.getProjectEnv().getServicePort()));
+		port.setPort(context.getAppEnv().getServicePort());
+		port.setTargetPort(new IntOrString(context.getAppEnv().getServicePort()));
 	}
 	
 	private V1ServiceSpec serviceSpec(DeployContext context) {
 		V1ServicePort port = new V1ServicePort();
 		port.setProtocol("TCP");
-		port.setPort(context.getProjectEnv().getServicePort());
-		port.setTargetPort(new IntOrString(context.getProjectEnv().getServicePort()));
+		port.setPort(context.getAppEnv().getServicePort());
+		port.setTargetPort(new IntOrString(context.getAppEnv().getServicePort()));
 		
 		V1ServiceSpec spec = new V1ServiceSpec();
 		spec.setSelector(Collections.singletonMap("app", context.getDeploymentAppName()));
@@ -335,7 +335,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 
 	private V1DeploymentSpec deploymentSpec(DeployContext context) {
 		V1DeploymentSpec spec = new V1DeploymentSpec();
-		spec.setReplicas(context.getProjectEnv().getMinReplicas());
+		spec.setReplicas(context.getAppEnv().getMinReplicas());
 		spec.setSelector(specSelector(context.getDeploymentAppName()));
 		spec.setTemplate(specTemplate(context));
 		return spec;
@@ -375,16 +375,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		args(container, context);
 		container.setImagePullPolicy("Always");
 		V1ContainerPort containerPort = new V1ContainerPort();
-		containerPort.setContainerPort(context.getProjectEnv().getServicePort());
+		containerPort.setContainerPort(context.getAppEnv().getServicePort());
 		container.setPorts(Arrays.asList(containerPort));
 		
 		// 设置资源
 		Map<String, Quantity> requests = new HashMap<>();
-		requests.put("memory", new Quantity(context.getProjectEnv().getReplicaMemory() + "Mi"));
-		requests.put("cpu", new Quantity(context.getProjectEnv().getReplicaCpu().toString()));
+		requests.put("memory", new Quantity(context.getAppEnv().getReplicaMemory() + "Mi"));
+		requests.put("cpu", new Quantity(context.getAppEnv().getReplicaCpu().toString()));
 		Map<String, Quantity> limits = new HashMap<>();
-		limits.put("memory", new Quantity(context.getProjectEnv().getReplicaMemory() + "Mi"));
-		limits.put("cpu", new Quantity(context.getProjectEnv().getReplicaCpu().toString()));
+		limits.put("memory", new Quantity(context.getAppEnv().getReplicaMemory() + "Mi"));
+		limits.put("cpu", new Quantity(context.getAppEnv().getReplicaCpu().toString()));
 		V1ResourceRequirements resources = new V1ResourceRequirements();
 		resources.setRequests(requests);
 		resources.setLimits(limits);
@@ -407,7 +407,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	private void probe(V1Container container, DeployContext context) {
-		if(context.getProjectEnv().getServicePort() == null) {
+		if(context.getAppEnv().getServicePort() == null) {
 			return;
 		}
 		
@@ -415,16 +415,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Probe readinessProbe = new V1Probe();
 		V1Probe livenessProbe = new V1Probe();
 		//如果没有设置健康检查路径，就用tcp检查，否则就用http检查
-		if(StringUtils.isBlank(context.getProjectEnv().getHealthPath())) {
+		if(StringUtils.isBlank(context.getAppEnv().getHealthPath())) {
 			V1TCPSocketAction tcpAction = new V1TCPSocketAction();
-			tcpAction.setPort(new IntOrString(context.getProjectEnv().getServicePort()));
+			tcpAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
 			startupProbe.setTcpSocket(tcpAction);
 			readinessProbe.setTcpSocket(tcpAction);
 			livenessProbe.setTcpSocket(tcpAction);
 		}else {
 			V1HTTPGetAction getAction = new V1HTTPGetAction();
-			getAction.setPath(context.getProjectEnv().getHealthPath());
-			getAction.setPort(new IntOrString(context.getProjectEnv().getServicePort()));
+			getAction.setPath(context.getAppEnv().getHealthPath());
+			getAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
 			startupProbe.setHttpGet(getAction);
 			readinessProbe.setHttpGet(getAction);
 			livenessProbe.setHttpGet(getAction);
@@ -456,43 +456,43 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		List<String> commands = new ArrayList<>();
 		commands.add("java");
 		//jvm参数
-		if (!StringUtils.isBlank(context.getProjectEnv().getJvmArgs())) {
-			String[] jvmArgs = context.getProjectEnv().getJvmArgs().split("\\s+");
+		if (!StringUtils.isBlank(context.getAppEnv().getJvmArgs())) {
+			String[] jvmArgs = context.getAppEnv().getJvmArgs().split("\\s+");
 			for (String arg : jvmArgs) {
 				commands.add(arg);
 			}
 		}
 		//skywalking-agent参数
-		if(YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getTraceStatus())) {
-			TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getProjectEnv().getTraceTemplateId());
+		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
+			TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getAppEnv().getTraceTemplateId());
 			if(traceTemplate == null) {
 				LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
 			}
 			commands.add("-javaagent:/tmp/skywalking-agent/skywalking-agent.jar");
 			commands.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServerUrl());
-			commands.add("-Dskywalking.agent.service_name=" + context.getProject().getProjectName());
+			commands.add("-Dskywalking.agent.service_name=" + context.getApp().getAppName());
 		}
 		commands.add("-Duser.timezone=Asia/Shanghai");
-		commands.add("-Denv=" + context.getProjectEnv().getTag());
+		commands.add("-Denv=" + context.getAppEnv().getTag());
 		commands.add("-jar");
-		String packageFileType = PackageFileTypeTypeEnum.getByCode(((ProjectExtendJava)context.getProject().getProjectExtend()).getPackageFileType()).getValue();
-		commands.add(context.getProject().getProjectName() + "." + packageFileType);
+		String packageFileType = PackageFileTypeTypeEnum.getByCode(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType()).getValue();
+		commands.add(context.getApp().getAppName() + "." + packageFileType);
 		
 		container.setCommand(commands);
 	}
 	
 	private void args(V1Container container, DeployContext context){
 		List<String> args = new ArrayList<>();
-		args.add("--server.port=" + context.getProjectEnv().getServicePort());
+		args.add("--server.port=" + context.getAppEnv().getServicePort());
 		container.setArgs(args);
 	}
 	
 	private List<V1Container> initContainer(DeployContext context) {
-		if(YesOrNoEnum.NO.getCode().equals(context.getProjectEnv().getTraceStatus())) {
+		if(YesOrNoEnum.NO.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			return null;
 		}
 		
-		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getProjectEnv().getTraceTemplateId());
+		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getAppEnv().getTraceTemplateId());
 		if(traceTemplate == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
 		}
@@ -530,7 +530,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		volumeMounts.add(volumeMountData);
 		
 		//skyWalking-agent
-		if(YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getTraceStatus())) {
+		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			V1VolumeMount volumeMountAgent = new V1VolumeMount();
 			volumeMountAgent.setMountPath("/tmp");
 			volumeMountAgent.setName("skw-agent-volume");
@@ -558,7 +558,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		volumes.add(volumeData);
 		
 		//skyWalking-agent
-		if(YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getTraceStatus())) {
+		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			V1Volume volumeAgent = new V1Volume();
 			volumeAgent.setName("skw-agent-volume");
 			V1EmptyDirVolumeSource emptyDir = new V1EmptyDirVolumeSource();
@@ -581,7 +581,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return apiClient;
 	}
 	
-	private boolean checkHealthOfAll(ProjectEnvPO env, List<V1Pod> pods) {
+	private boolean checkHealthOfAll(AppEnvPO env, List<V1Pod> pods) {
 		int runningService = 0;
 		for (V1Pod pod : pods) {
 			if (ReplicaStatusEnum.RUNNING.getCode().compareTo(podStatus(pod.getStatus())) == 0) {
@@ -594,9 +594,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	public PageData<EnvReplica> replicaPage(EnvReplicaPageParam pageParam, ClusterPO clusterPO,
-			ProjectPO projectPO, ProjectEnvPO projectEnvPO) {
-		String namespace = projectEnvPO.getNamespaceName();
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(projectPO.getProjectName(), projectEnvPO.getTag());
+			AppPO appPO, AppEnvPO appEnvPO) {
+		String namespace = appEnvPO.getNamespaceName();
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(appPO.getAppName(), appEnvPO.getTag());
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		V1PodList podList = null;
@@ -633,7 +633,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			r.setVersionName(imageName.substring(imageName.lastIndexOf("/") + 1));
 			r.setIp(e.getStatus().getPodIP());
 			r.setName(e.getMetadata().getName());
-			r.setEnvName(projectEnvPO.getEnvName());
+			r.setEnvName(appEnvPO.getEnvName());
 			r.setClusterName(clusterPO.getClusterName());
 			r.setNamespace(namespace);
 			//todo 这里为了解决k8s的时区问题，强制加8小时

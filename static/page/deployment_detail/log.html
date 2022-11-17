@@ -21,11 +21,11 @@
             form = layui.form;
 		
 		var loginToken = getCookie('login_token');
-		var projectId = localStorage.getItem('projectId_' + parent.layui.$("#userName").val());
-        //var websocket = new WebSocket('ws://'+ window.location.hostname +':'+ window.location.port +'/deployment/log/'+ parent.id +'/'+ projectId + '/' + loginToken);
+		var appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val());
+        //var websocket = new WebSocket('ws://'+ window.location.hostname +':'+ window.location.port +'/deployment/log/'+ parent.id +'/'+ appId + '/' + loginToken);
 		var websocket = new WebSocket('ws://'+ window.location.hostname +':'+ window.location.port +'/deployment/log');
         websocket.onopen = function(event) {
-            websocket.send(JSON.stringify({"projectId": projectId, "deploymentDetailId": parent.id, "loginToken": loginToken}));
+            websocket.send(JSON.stringify({"appId": appId, "deploymentDetailId": parent.id, "loginToken": loginToken}));
         };
 		websocket.onmessage = function(event) {
             $("#log-container div").append(event.data);

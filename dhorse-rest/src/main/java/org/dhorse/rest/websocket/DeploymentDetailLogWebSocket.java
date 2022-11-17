@@ -64,18 +64,18 @@ public class DeploymentDetailLogWebSocket implements WebSocketHandler {
 				.getBean(SysUserApplicationService.class);
 		LoginUser loginUser = sysUserApplicationService.queryLoginUserByToken(param.get("loginToken").asText());
 		String deploymentDetailId = param.get("deploymentDetailId").asText();
-		String projectId = param.get("projectId").asText();
-		deploymentLog(loginUser, deploymentDetailId, projectId, session);
+		String appId = param.get("appId").asText();
+		deploymentLog(loginUser, deploymentDetailId, appId, session);
 	}
 
-	public void deploymentLog(LoginUser loginUser, String deploymentDetailId, String projectId, WebSocketSession session) {
+	public void deploymentLog(LoginUser loginUser, String deploymentDetailId, String appId, WebSocketSession session) {
 		if (loginUser == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
 		DeploymentDetailRepository deploymentDetailRepository = SpringBeanContext
 				.getBean(DeploymentDetailRepository.class);
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
-		deploymentDetailParam.setProjectId(projectId);
+		deploymentDetailParam.setAppId(appId);
 		deploymentDetailParam.setId(deploymentDetailId);
 		DeploymentDetail deploymentDetail = deploymentDetailRepository.query(loginUser,
 				deploymentDetailParam);

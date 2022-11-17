@@ -10,26 +10,26 @@
 	},
 	"menuInfo": [
 		{
-			"title": "项目管理",
+			"title": "应用管理",
 			"href": "",
 			"icon": "fa fa-file-code-o",
 			"target": "_self",
 			"child": [
 				{
-					"title": "项目详情",
-					"href": "page/project/detail.html",
+					"title": "应用详情",
+					"href": "page/app/detail.html",
 					"icon": "fa fa-file-text-o",
 					"target": "_self"
 				},
 				{
-					"title": "项目成员",
-					"href": "page/project/member/list.html",
+					"title": "应用成员",
+					"href": "page/app/member/list.html",
 					"icon": "fa fa-user",
 					"target": "_self"
 				},
 				{
-					"title": "添加项目",
-					"href": "page/project/add.html",
+					"title": "添加应用",
+					"href": "page/app/add.html",
 					"icon": "fa fa-plus-square",
 					"target": "_self"
 				}

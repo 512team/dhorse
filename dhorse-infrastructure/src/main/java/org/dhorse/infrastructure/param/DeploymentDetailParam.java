@@ -13,9 +13,9 @@ public class DeploymentDetailParam extends PageParam {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 项目编号
+	 * 应用编号
 	 */
-	private String projectId;
+	private String appId;
 
 	/**
 	 * 分支编号
@@ -59,12 +59,12 @@ public class DeploymentDetailParam extends PageParam {
 	 */
 	private Date endTime;
 
-	public String getProjectId() {
-		return projectId;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setProjectId(String projectId) {
-		this.projectId = projectId;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 	public String getBranchName() {

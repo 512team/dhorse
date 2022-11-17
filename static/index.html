@@ -27,7 +27,7 @@
 			left: 215px;
 			width: 100px;
 		}
-		.project-select {
+		.app-select {
 			color: #666;
 			border:none;
 			height: 30px;
@@ -43,7 +43,7 @@
         <div class="layuimini-header-content">
 			<a>
                 <div class="layuimini-tool" style="text-align:left">
-					<select class="project-select" title="请选择项目">
+					<select class="app-select" title="请选择应用">
 					</select>
 				</div>
             </a>
@@ -172,7 +172,7 @@
         });
 				
 		$.ajax({
-			url: '/project/page',
+			url: '/app/page',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
@@ -180,30 +180,30 @@
 			success: function(res){
 				var opt = '';
 				if(res.data.itemCount == 0){
-					opt = opt.concat("<option>请选择项目</option>");
+					opt = opt.concat("<option>请选择应用</option>");
 				}else{
 					var data = res.data.items;
-					var projectIdKey = 'projectId_' + $("#userName").val();
+					var appIdKey = 'appId_' + $("#userName").val();
 					for(var k in data){
-						if(localStorage.getItem(projectIdKey) === null && k == 0){
-							localStorage.setItem(projectIdKey, data[k].id);
+						if(localStorage.getItem(appIdKey) === null && k == 0){
+							localStorage.setItem(appIdKey, data[k].id);
 						}
-						if(localStorage.getItem(projectIdKey) == data[k].id){
-							opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].projectName +"</option>");
+						if(localStorage.getItem(appIdKey) == data[k].id){
+							opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].appName +"</option>");
 						}else{
-							opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].projectName +"</option>");
+							opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].appName +"</option>");
 						}
 					}
 				}
-				$(".project-select").append(opt);
+				$(".app-select").append(opt);
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});
 			}
 		});
 		
-		$(".project-select").change(function(){
-			localStorage.setItem('projectId_' + $("#userName").val(), $(this).val());
+		$(".app-select").change(function(){
+			localStorage.setItem('appId_' + $("#userName").val(), $(this).val());
 			$(".fa-refresh").click();
 		});
     });

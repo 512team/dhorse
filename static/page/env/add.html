@@ -4,7 +4,7 @@
 			<label class="layui-form-label required">环境名称</label>
 			<div class="layui-input-block">
 				<input type="text" name="envName" lay-verify="required" lay-reqtext="环境名称不能为空" placeholder="如：测试" autocomplete="off" class="layui-input">
-				<input type="hidden" name="projectId" id="projectId2"/>
+				<input type="hidden" name="appId" id="appId2"/>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -97,7 +97,6 @@
 				<input type="radio" name="requiredMerge" value="1" title="是">
 			</div>
 		</div>
-		<!--
 		<div class="layui-form-item">
 			<label class="layui-form-label">链路追踪状态</label>
 			<div class="layui-input-block">
@@ -112,7 +111,6 @@
 				</select>
 			</div>
 		</div>
-		-->
 		<div class="layui-form-item">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
@@ -139,7 +137,7 @@
 			parentIndex = layer.index,
             $ = layui.$;
 		
-		$("#projectId2").val(localStorage.getItem('projectId_' + $("#userName").val()));
+		$("#appId2").val(localStorage.getItem('appId_' + $("#userName").val()));
 		form.render();
 		
 		$.ajax({
@@ -176,8 +174,8 @@
 		});
 		
         form.on('submit(saveBtn)', function(data) {
-			if($("#projectId").val() == ''){
-				layer.msg('请选择项目', {icon: 5, shift: 6});
+			if($("#appId").val() == ''){
+				layer.msg('请选择应用', {icon: 5, shift: 6});
 				return false;
 			}
 			if(data.field.traceStatus == 1){
@@ -187,7 +185,7 @@
 				}
 			}
 			$.ajax({
-				url: '/project/env/add',
+				url: '/app/env/add',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',

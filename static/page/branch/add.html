@@ -6,7 +6,7 @@
 				<input type="text" name="branchName" lay-verify="required" lay-reqtext="分支名称不能为空" placeholder="请输入分支名称" autocomplete="off" class="layui-input">
 			</div>
 		</div>
-		<input type="hidden" name="projectId" id="projectId2"/>
+		<input type="hidden" name="appId" id="appId2"/>
 		<div class="layui-form-item">
 			<div class="layui-input-block">
 				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
@@ -20,13 +20,13 @@
             layer = layui.layer,
             $ = layui.$,
 			parentIndex = layer.index,
-			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 		
-		$("#projectId2").val(projectId);
+		$("#appId2").val(appId);
 		
         form.on('submit(saveBtn)', function(data) {
 			$.ajax({
-				url: '/project/branch/add',
+				url: '/app/branch/add',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',

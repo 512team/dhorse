@@ -21,7 +21,7 @@
 			
 		var loginToken = getCookie('login_token');
 		var replicaName = parent.replicaName;
-		var projectId = localStorage.getItem('projectId_' + parent.layui.$("#userName").val());
+		var appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val());
         var websocket = new WebSocket('ws://'+ window.location.hostname +':'+ window.location.port +'/replica/log/'+ replicaName +'/' + loginToken);
 		parent.ws = websocket;
         websocket.onmessage = function(event) {

@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
-import org.dhorse.api.vo.ProjectBranch;
+import org.dhorse.api.vo.AppBranch;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -23,7 +23,7 @@ public abstract class CodeRepoStrategy {
 		try {
 			FileUtils.deleteDirectory(pathFile.getParentFile());
 		} catch (IOException e) {
-			logger.error("Failed to clear project code", e);
+			logger.error("Failed to clear app code", e);
 		}
 	}
 	
@@ -56,11 +56,11 @@ public abstract class CodeRepoStrategy {
 		return new StringBuilder()
 				.append(context.getComponentConstants().getDataPath())
 				.append(File.separator)
-				.append("project")
+				.append("app")
 				.append(File.separator)
-				.append(context.getProject().getProjectName())
+				.append(context.getApp().getAppName())
 				.append(File.separator)
-				.append(context.getProject().getProjectName())
+				.append(context.getApp().getAppName())
 				.append("-")
 				.append(System.currentTimeMillis())
 				.append(File.separator)
@@ -71,7 +71,7 @@ public abstract class CodeRepoStrategy {
 	
 	public abstract void deleteBranch(CodeRepo codeRepo, String codeRepoPath, String branchName);
 	
-	public abstract PageData<ProjectBranch> branchPage(CodeRepo codeRepo, BranchPageParam param);
+	public abstract PageData<AppBranch> branchPage(CodeRepo codeRepo, BranchPageParam param);
 	
-	public abstract List<ProjectBranch> branchList(CodeRepo codeRepo, BranchListParam param);
+	public abstract List<AppBranch> branchList(CodeRepo codeRepo, BranchListParam param);
 }

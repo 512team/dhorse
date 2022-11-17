@@ -12,7 +12,7 @@
 						<input type="text" name="tag" autocomplete="off" class="layui-input" placeholder="环境标识">
 					</div>
 				</div>
-				<input type="hidden" name="projectId" id="projectId"/>
+				<input type="hidden" name="appId" id="appId"/>
 				<div class="layui-inline">
 					<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
 				</div>
@@ -46,20 +46,20 @@
             table = layui.table,
 			dropdown = layui.dropdown,
 			miniPage = layui.miniPage;
-			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 			
-		$("#projectId").val(projectId);
+		$("#appId").val(appId);
 		
         table.render({
             elem: '#currentTableId',
-            url: '/project/env/page',
+            url: '/app/env/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"projectId": projectId},
+			where: {"appId": appId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -110,7 +110,7 @@
 						,envId = elem.data('env-id')
 						,envName = elem.data('env-name');
 						if(data.id == 'delete'){
-							doDelete($, projectId, envId, envName);
+							doDelete($, appId, envId, envName);
 						}else if(data.id == 'update'){
 							data2 = JSON.stringify({'envId': envId});
 							var index = layer.open({
@@ -193,16 +193,16 @@
         });
     });
 	
-	function doDelete($, projectId, id, name) {
+	function doDelete($, appId, id, name) {
 		var msg = '同时会删除"' + name + '"下的所有部署，确定删除吗？';
 		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
 			layer.close(index);
 			$.ajax({
-				url: '/project/env/delete',
+				url: '/app/env/delete',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"projectId": projectId, "projectEnvId": id}),
+				data: JSON.stringify({"appId": appId, "appEnvId": id}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});

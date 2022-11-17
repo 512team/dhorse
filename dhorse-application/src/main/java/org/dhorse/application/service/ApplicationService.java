@@ -21,19 +21,19 @@ import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
-import org.dhorse.infrastructure.param.ProjectMemberParam;
+import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.repository.ClusterRepository;
 import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
 import org.dhorse.infrastructure.repository.DeploymentVersionRepository;
 import org.dhorse.infrastructure.repository.GlobalConfigRepository;
-import org.dhorse.infrastructure.repository.ProjectEnvRepository;
-import org.dhorse.infrastructure.repository.ProjectExtendJavaRepository;
-import org.dhorse.infrastructure.repository.ProjectMemberRepository;
-import org.dhorse.infrastructure.repository.ProjectRepository;
+import org.dhorse.infrastructure.repository.AppEnvRepository;
+import org.dhorse.infrastructure.repository.AppExtendJavaRepository;
+import org.dhorse.infrastructure.repository.AppMemberRepository;
+import org.dhorse.infrastructure.repository.AppRepository;
 import org.dhorse.infrastructure.repository.SysUserRepository;
 import org.dhorse.infrastructure.repository.po.BasePO;
-import org.dhorse.infrastructure.repository.po.ProjectMemberPO;
-import org.dhorse.infrastructure.repository.po.ProjectPO;
+import org.dhorse.infrastructure.repository.po.AppMemberPO;
+import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -70,16 +70,16 @@ public abstract class ApplicationService {
 	protected ClusterRepository clusterRepository;
 	
 	@Autowired
-	protected ProjectRepository projectRepository;
+	protected AppRepository appRepository;
 	
 	@Autowired
-	protected ProjectExtendJavaRepository projectExtendJavaRepository;
+	protected AppExtendJavaRepository appExtendJavaRepository;
 
 	@Autowired
-	protected ProjectMemberRepository projectMemberRepository;
+	protected AppMemberRepository appMemberRepository;
 
 	@Autowired
-	protected ProjectEnvRepository projectEnvRepository;
+	protected AppEnvRepository appEnvRepository;
 	
 	@Autowired
 	protected DeploymentDetailRepository deploymentDetailRepository;
@@ -112,12 +112,12 @@ public abstract class ApplicationService {
 		return globalConfigRepository.queryAgg(configParam);
 	}
 	
-	public ProjectPO validateProject(String projectId) {
-		ProjectPO projectPO = projectRepository.queryById(projectId);
-		if(projectPO == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_IS_INEXISTENCE);
+	public AppPO validateApp(String appId) {
+		AppPO appPO = appRepository.queryById(appId);
+		if(appPO == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_IS_INEXISTENCE);
 		}
-		return projectPO;
+		return appPO;
 	}
 	
 	protected ClusterStrategy clusterStrategy(Integer clusterType) {
@@ -128,36 +128,36 @@ public abstract class ApplicationService {
 		}
 	}
 	
-	protected void hasRights(LoginUser loginUser, String projectId) {
+	protected void hasRights(LoginUser loginUser, String appId) {
 		if(RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())){
 			return;
 		}
-		ProjectMemberParam projectMemberParam = new ProjectMemberParam();
-		projectMemberParam.setProjectId(projectId);
-		projectMemberParam.setUserId(loginUser.getId());
-		ProjectMemberPO projectMemberPO = projectMemberRepository.query(projectMemberParam);
-		if(Objects.isNull(projectMemberPO)) {
+		AppMemberParam appMemberParam = new AppMemberParam();
+		appMemberParam.setAppId(appId);
+		appMemberParam.setUserId(loginUser.getId());
+		AppMemberPO appMemberPO = appMemberRepository.query(appMemberParam);
+		if(Objects.isNull(appMemberPO)) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
 	}
 	
-	protected void hasAdminRights(LoginUser loginUser, String projectId) {
+	protected void hasAdminRights(LoginUser loginUser, String appId) {
 		if(RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())){
 			return;
 		}
-		ProjectMemberParam projectMemberParam = new ProjectMemberParam();
-		projectMemberParam.setProjectId(projectId);
-		projectMemberParam.setUserId(loginUser.getId());
-		ProjectMemberPO projectMemberPO = projectMemberRepository.query(projectMemberParam);
-		if(Objects.isNull(projectMemberPO)) {
+		AppMemberParam appMemberParam = new AppMemberParam();
+		appMemberParam.setAppId(appId);
+		appMemberParam.setUserId(loginUser.getId());
+		AppMemberPO appMemberPO = appMemberRepository.query(appMemberParam);
+		if(Objects.isNull(appMemberPO)) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
-		String[] roleTypes = projectMemberPO.getRoleType().split(",");
+		String[] roleTypes = appMemberPO.getRoleType().split(",");
 		Set<Integer> roleSet = new HashSet<>();
 		for (String role : roleTypes) {
 			roleSet.add(Integer.valueOf(role));
 		}
-		List<Integer> adminRole = Constants.ROLE_OF_OPERATE_PROJECT_USER.stream()
+		List<Integer> adminRole = Constants.ROLE_OF_OPERATE_APP_USER.stream()
 				.filter(item -> roleSet.contains(item))
 				.collect(Collectors.toList());
 		if(adminRole.size() <= 0) {
@@ -166,10 +166,10 @@ public abstract class ApplicationService {
 	}
 	
 	protected String fullNameOfAgentImage(DeployContext context) {
-		if(!YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getTraceStatus())) {
+		if(!YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			return null;
 		}
-		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getProjectEnv().getTraceTemplateId());
+		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getAppEnv().getTraceTemplateId());
 		if(!StringUtils.isBlank(traceTemplate.getAgentImage())) {
 			return traceTemplate.getAgentImage();
 		}
@@ -192,7 +192,7 @@ public abstract class ApplicationService {
 		if(ImageRepoTypeEnum.DOCKERHUB.getValue().equals(imageRepo.getType())) {
 			fullNameOfImage.append(imageRepo.getAuthName());
 		}else {
-			fullNameOfImage.append(Constants.IMAGE_REPO_PROJECT);
+			fullNameOfImage.append(Constants.IMAGE_REPO_APP);
 		}
 		fullNameOfImage.append("/").append(nameOfImage);
 		return fullNameOfImage.toString();

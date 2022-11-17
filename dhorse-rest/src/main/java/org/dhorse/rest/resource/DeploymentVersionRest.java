@@ -1,8 +1,8 @@
 package org.dhorse.rest.resource;
 
-import org.dhorse.api.param.project.branch.DeploymentApplicationParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentVersionDeletionParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentVersionPageParam;
+import org.dhorse.api.param.app.branch.DeploymentApplicationParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentVersionPageParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.DeploymentVersion;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Dahai
  */
 @RestController
-@RequestMapping("/project/deployment/version")
+@RequestMapping("/app/deployment/version")
 public class DeploymentVersionRest extends AbstractRest {
 
 	@Autowired

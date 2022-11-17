@@ -12,9 +12,9 @@ public class DeploymentDetail extends BaseDto {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 项目编号
+	 * 应用编号
 	 */
-	private String projectId;
+	private String appId;
 
 	/**
 	 * 分支编号
@@ -76,12 +76,12 @@ public class DeploymentDetail extends BaseDto {
 	 */
 	private Integer rollbackRights = 0;
 
-	public String getProjectId() {
-		return projectId;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setProjectId(String projectId) {
-		this.projectId = projectId;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 	public String getBranchName() {

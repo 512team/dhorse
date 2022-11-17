@@ -48,7 +48,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<!-- 项目启动类 -->
+							<!-- 应用启动类 -->
 							<mainClass>org.dhorse.rest.DHorseBootstrap</mainClass>
 							<!-- 依赖的jar的目录前缀 -->
 							<classpathPrefix>../lib/ext</classpathPrefix>
@@ -64,7 +64,7 @@
 				<configuration>
 					<layout>ZIP</layout>
 					<includes>
-						<!-- 项目启动jar包中排除依赖包 -->
+						<!-- 应用启动jar包中排除依赖包 -->
 						<include>
 							<groupId>nothing</groupId>
 							<artifactId>nothing</artifactId>

@@ -12,20 +12,20 @@ import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.project.branch.deploy.DeploymentApprovementParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentDetailDeletionParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentDetailPageParam;
-import org.dhorse.api.param.project.branch.deploy.RollbackApplicationParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentApprovementParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentDetailDeletionParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentDetailPageParam;
+import org.dhorse.api.param.app.branch.deploy.RollbackApplicationParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.DeploymentDetail;
-import org.dhorse.api.vo.ProjectEnv;
+import org.dhorse.api.vo.AppEnv;
 import org.dhorse.infrastructure.param.DeployParam;
 import org.dhorse.infrastructure.param.DeploymentDetailParam;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
-import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
-import org.dhorse.infrastructure.repository.po.ProjectMemberPO;
-import org.dhorse.infrastructure.repository.po.ProjectPO;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
+import org.dhorse.infrastructure.repository.po.AppMemberPO;
+import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -54,27 +54,27 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 			return page;
 		}
 		
-		ProjectEnvPO projectEnvPO = projectEnvRepository.queryById(param.getProjectEnvId());
-		if (projectEnvPO == null) {
+		AppEnvPO appEnvPO = appEnvRepository.queryById(param.getAppEnvId());
+		if (appEnvPO == null) {
 			return page;
 		}
 		
-		ProjectMemberPO projectUser = projectMemberRepository
-				.queryByLoginNameAndProjectId(loginUser.getLoginName(), param.getProjectId());
-		String[] roleTypes = projectUser.getRoleType().split(",");
+		AppMemberPO appUser = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), param.getAppId());
+		String[] roleTypes = appUser.getRoleType().split(",");
 		Set<Integer> roleSet = new HashSet<>();
 		for (String role : roleTypes) {
 			roleSet.add(Integer.valueOf(role));
 		}
-		String currentVersionName = currentVersionName(projectEnvPO);
+		String currentVersionName = currentVersionName(appEnvPO);
 		for(DeploymentDetail e : page.getItems()) {
-			e.setEnvName(projectEnvPO.getEnvName());
+			e.setEnvName(appEnvPO.getEnvName());
 			//审批权限
 			if(RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 				e.setDeployApprovalRights(YesOrNoEnum.YES.getCode());
 				e.setRollbackApprovalRights(YesOrNoEnum.YES.getCode());
 			} else {
-				List<Integer> adminRole = Constants.ROLE_OF_OPERATE_PROJECT_USER.stream()
+				List<Integer> adminRole = Constants.ROLE_OF_OPERATE_APP_USER.stream()
 						.filter(item -> roleSet.contains(item))
 						.collect(Collectors.toList());
 				if(adminRole.size() > 0) {
@@ -101,16 +101,16 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 		return show;
 	}
 
-	private String currentVersionName(ProjectEnvPO projectEnvPO) {
-		ProjectPO projectPO = projectRepository.queryById(projectEnvPO.getProjectId());
-		ClusterPO clusterPO = clusterRepository.queryById(projectEnvPO.getClusterId());
+	private String currentVersionName(AppEnvPO appEnvPO) {
+		AppPO appPO = appRepository.queryById(appEnvPO.getAppId());
+		ClusterPO clusterPO = clusterRepository.queryById(appEnvPO.getClusterId());
 		ClusterStrategy clusterStrategy = clusterStrategy(clusterPO.getClusterType());
-		ProjectEnv projectEnv = new ProjectEnv();
-		projectEnv.setNamespaceName(projectEnvPO.getNamespaceName());
-		projectEnv.setTag(projectEnvPO.getTag());
+		AppEnv appEnv = new AppEnv();
+		appEnv.setNamespaceName(appEnvPO.getNamespaceName());
+		appEnv.setTag(appEnvPO.getTag());
 		Replica replica = null;
 		try {
-			replica = clusterStrategy.readDeployment(clusterPO, projectEnv, projectPO);
+			replica = clusterStrategy.readDeployment(clusterPO, appEnv, appPO);
 		}catch(Exception e) {
 			logger.error("Failed to read image", e);
 			return null;
@@ -153,8 +153,8 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 		deploymentDetailParam.setId(deploymentDetailPO.getId());
 		deploymentDetailParam.setDeployer(loginUser.getLoginName());
 		// 需要审核
-		ProjectEnvPO projectEnv = projectEnvRepository.queryById(deploymentDetailPO.getEnvId());
-		if (YesOrNoEnum.YES.getCode().equals(projectEnv.getRequiredDeployApproval())) {
+		AppEnvPO appEnv = appEnvRepository.queryById(deploymentDetailPO.getEnvId());
+		if (YesOrNoEnum.YES.getCode().equals(appEnv.getRequiredDeployApproval())) {
 			deploymentDetailParam.setDeploymentStatus(DeploymentStatusEnum.ROLLBACK_APPROVAL.getCode());
 			deploymentDetailRepository.update(deploymentDetailParam);
 			LogUtils.throwException(logger, MessageCodeEnum.APPROVE);
@@ -174,15 +174,15 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 	}
 
 	private DeploymentDetailPO deployParamValidate(LoginUser loginUser, DeploymentApprovementParam requestParam) {
-		if (StringUtils.isBlank(requestParam.getProjectId())) {
-			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_ID_IS_NULL);
+		if (StringUtils.isBlank(requestParam.getAppId())) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
 		if (StringUtils.isBlank(requestParam.getDeploymentDetailId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.BRANCH_DEPLOYED_DETAIL_ID_IS_EMPTY);
 		}
-		hasRights(loginUser, requestParam.getProjectId());
+		hasRights(loginUser, requestParam.getAppId());
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
-		deploymentDetailParam.setProjectId(requestParam.getProjectId());
+		deploymentDetailParam.setAppId(requestParam.getAppId());
 		deploymentDetailParam.setId(requestParam.getDeploymentDetailId());
 		DeploymentDetailPO deploymentDetailPO = deploymentDetailRepository.query(deploymentDetailParam);
 		if (deploymentDetailPO == null) {

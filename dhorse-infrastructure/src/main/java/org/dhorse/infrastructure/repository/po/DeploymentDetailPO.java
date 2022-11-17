@@ -12,14 +12,14 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @author Dahai 2021-09-08
  */
 @TableName("DEPLOYMENT_DETAIL")
-public class DeploymentDetailPO extends BaseProjectPO {
+public class DeploymentDetailPO extends BaseAppPO {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 项目编号
+	 * 应用编号
 	 */
-	private String projectId;
+	private String appId;
 
 	/**
 	 * 分支编号
@@ -64,12 +64,12 @@ public class DeploymentDetailPO extends BaseProjectPO {
 	 */
 	private Date endTime;
 
-	public String getProjectId() {
-		return projectId;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setProjectId(String projectId) {
-		this.projectId = projectId;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 	public String getBranchName() {

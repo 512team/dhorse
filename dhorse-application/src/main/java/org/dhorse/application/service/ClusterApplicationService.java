@@ -19,9 +19,9 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.Cluster;
 import org.dhorse.api.vo.LogCollectorStatus;
 import org.dhorse.infrastructure.param.ClusterParam;
-import org.dhorse.infrastructure.param.ProjectEnvParam;
+import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
-import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -121,11 +121,11 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		if (StringUtils.isBlank(clusterId)) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_ID_IS_EMPTY);
 		}
-		ProjectEnvParam projectEnvParam = new ProjectEnvParam();
-		projectEnvParam.setClusterId(clusterId);
-		List<ProjectEnvPO> projectEnvPOs = projectEnvRepository.list(projectEnvParam);
-		if(!CollectionUtils.isEmpty(projectEnvPOs)) {
-			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_ENV_DELETED);
+		AppEnvParam appEnvParam = new AppEnvParam();
+		appEnvParam.setClusterId(clusterId);
+		List<AppEnvPO> appEnvPOs = appEnvRepository.list(appEnvParam);
+		if(!CollectionUtils.isEmpty(appEnvPOs)) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_ENV_DELETED);
 		}
 		if (clusterRepository.queryById(clusterId) == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.RECORD_IS_INEXISTENCE);

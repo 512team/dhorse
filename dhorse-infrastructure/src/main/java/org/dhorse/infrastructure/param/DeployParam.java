@@ -18,9 +18,9 @@ public class DeployParam implements Serializable {
 	private String deploymentDetailId;
 
 	/**
-	 * 项目编号
+	 * 应用编号
 	 */
-	private String projectId;
+	private String appId;
 
 	/**
 	 * 部署版本
@@ -68,12 +68,12 @@ public class DeployParam implements Serializable {
 		this.versionName = versionName;
 	}
 
-	public String getProjectId() {
-		return projectId;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setProjectId(String projectId) {
-		this.projectId = projectId;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 	public String getBranchName() {

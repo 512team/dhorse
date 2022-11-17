@@ -3,10 +3,10 @@ package org.dhorse.infrastructure.utils;
 import java.util.Date;
 
 import org.dhorse.api.vo.GlobalConfigAgg;
-import org.dhorse.api.vo.Project;
+import org.dhorse.api.vo.App;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
-import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 
@@ -24,11 +24,11 @@ public class DeployContext {
 
 	private ComponentConstants componentConstants;
 
-	private Project project;
+	private App app;
 
 	private String branchName;
 
-	private ProjectEnvPO projectEnv;
+	private AppEnvPO appEnv;
 
 	private CodeRepoStrategy codeRepoStrategy;
 
@@ -128,20 +128,20 @@ public class DeployContext {
 		this.id = id;
 	}
 
-	public Project getProject() {
-		return project;
+	public App getApp() {
+		return app;
 	}
 
-	public void setProject(Project project) {
-		this.project = project;
+	public void setApp(App app) {
+		this.app = app;
 	}
 
-	public ProjectEnvPO getProjectEnv() {
-		return projectEnv;
+	public AppEnvPO getAppEnv() {
+		return appEnv;
 	}
 
-	public void setProjectEnv(ProjectEnvPO projectEnv) {
-		this.projectEnv = projectEnv;
+	public void setAppEnv(AppEnvPO appEnv) {
+		this.appEnv = appEnv;
 	}
 
 	public ComponentConstants getComponentConstants() {

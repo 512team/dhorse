@@ -10,9 +10,9 @@ public abstract class BaseParam implements Serializable {
 	protected String id;
 
 	/**
-	 * 项目编号
+	 * 应用编号
 	 */
-	protected String projectId;
+	protected String appId;
 
 	protected List<String> ids;
 
@@ -42,12 +42,12 @@ public abstract class BaseParam implements Serializable {
 		this.ids = ids;
 	}
 
-	public String getProjectId() {
-		return projectId;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setProjectId(String projectId) {
-		this.projectId = projectId;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 }

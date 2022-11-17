@@ -39,7 +39,7 @@ import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
-import org.dhorse.infrastructure.param.ProjectEnvParam;
+import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
@@ -105,17 +105,17 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 
 		@Override
 		public void run() {
-			String localPathName = componentConstants.getDataPath() + "project/tmp/";
+			String localPathName = componentConstants.getDataPath() + "app/tmp/";
 			File localPathOfPom = new File(localPathName);
 			if (!localPathOfPom.exists()) {
 				localPathOfPom.mkdirs();
 			}
-			buildTmpProject(localPathName);
+			buildTmpApp(localPathName);
 			doMavenPack(mavenConf, localPathName);
-			deleteTmpProject(localPathName);
+			deleteTmpApp(localPathName);
 		}
 
-		private void buildTmpProject(String localPath) {
+		private void buildTmpApp(String localPath) {
 			Resource resource = new PathMatchingResourcePatternResolver()
 					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/pom.xml");
 			try (InputStream in = resource.getInputStream();
@@ -126,15 +126,15 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 					out.write(buffer, 0, offset);
 				}
 			} catch (IOException e) {
-				logger.error("Failed to build tmp project", e);
+				logger.error("Failed to build tmp app", e);
 			}
 		}
 		
-		private void deleteTmpProject(String localPath) {
+		private void deleteTmpApp(String localPath) {
 			try {
 				FileUtils.deleteDirectory(new File(localPath));
 			} catch (IOException e) {
-				logger.error("Failed to delete tmp project", e);
+				logger.error("Failed to delete tmp app", e);
 			}
 		}
 	}
@@ -322,10 +322,10 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	public Void delete(GlolabConfigDeletionParam deleteParam) {
 		GlobalConfigPO globalConfigPO = globalConfigRepository.queryById(deleteParam.getId());
 		if(GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode().equals(globalConfigPO.getItemType())) {
-			ProjectEnvParam projectEnvParam = new ProjectEnvParam();
-			projectEnvParam.setTraceTemplateId(deleteParam.getId());
-			projectEnvParam.setTraceStatus(YesOrNoEnum.YES.getCode());
-			if(projectEnvRepository.query(projectEnvParam) != null) {
+			AppEnvParam appEnvParam = new AppEnvParam();
+			appEnvParam.setTraceTemplateId(deleteParam.getId());
+			appEnvParam.setTraceStatus(YesOrNoEnum.YES.getCode());
+			if(appEnvRepository.query(appEnvParam) != null) {
 				LogUtils.throwException(logger, MessageCodeEnum.CONFIG_IS_USING);
 			}
 		}

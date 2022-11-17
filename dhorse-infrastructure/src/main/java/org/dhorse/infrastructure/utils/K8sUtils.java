@@ -18,33 +18,33 @@ public class K8sUtils {
 		SYSTEM_NAMESPACES.add("dhorse-system");
 	}
 	
-	public static String getReplicaAppName(String projectName, String projectEnvTag) {
+	public static String getReplicaAppName(String appName, String appEnvTag) {
 		return new StringBuilder()
-				.append(projectName).append("-")
+				.append(appName).append("-")
 				.append("1").append("-")
-				.append(projectEnvTag).append("-")
+				.append(appEnvTag).append("-")
 				.append("dhorse")
 				.toString();
 	}
 	
-	public static String[] projectNameAndEnvTag(String podName) {
+	public static String[] appNameAndEnvTag(String podName) {
 		String nameAndeEnv = podName.split("-dhorse-")[0];
 		int offset = nameAndeEnv.lastIndexOf("-1-");
-		String projectName = nameAndeEnv.substring(0, offset);
+		String appName = nameAndeEnv.substring(0, offset);
 		String envTag = nameAndeEnv.substring(offset + 3);
-		return new String[]{projectName, envTag};
+		return new String[]{appName, envTag};
 	}
 	
 	public static String getDeploymentLabelSelector(String appName) {
 		return "app=" + appName;
 	}
 	
-	public static String getDeploymentName(String projectName, String projectEnvTag) {
-		return getReplicaAppName(projectName, projectEnvTag);
+	public static String getDeploymentName(String appName, String appEnvTag) {
+		return getReplicaAppName(appName, appEnvTag);
 	}
 	
-	public static String getDeploymentLabelSelector(String projectName, String projectEnvTag) {
-		return "app=" + getReplicaAppName(projectName, projectEnvTag);
+	public static String getDeploymentLabelSelector(String appName, String appEnvTag) {
+		return "app=" + getReplicaAppName(appName, appEnvTag);
 	}
 	
 	public static Set<String> getSystemNamspaces() {

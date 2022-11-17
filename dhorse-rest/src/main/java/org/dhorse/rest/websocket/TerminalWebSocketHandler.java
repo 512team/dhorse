@@ -7,10 +7,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.dhorse.api.param.project.env.replica.EnvReplicaTerminalParam;
+import org.dhorse.api.param.app.env.replica.EnvReplicaTerminalParam;
 import org.dhorse.application.service.EnvReplicaApplicationService;
 import org.dhorse.application.service.SysUserApplicationService;
-import org.dhorse.infrastructure.context.ProjectEnvClusterContext;
+import org.dhorse.infrastructure.context.AppEnvClusterContext;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.JsonUtils;
@@ -85,19 +85,19 @@ public class TerminalWebSocketHandler implements WebSocketHandler {
 				return;
 			}
 			
-			ProjectEnvClusterContext projectEnvClusterContext = null;
+			AppEnvClusterContext appEnvClusterContext = null;
 			try {
-				projectEnvClusterContext = replicaApplicationService
+				appEnvClusterContext = replicaApplicationService
 						.queryCluster(replicaTerminalParam.getReplicaName(), loginUser);
 			}catch(ApplicationException e) {
 				sendMessage(session, e.getMessage().getBytes());
 				return;
 			}
 			
-			ApiClient apiClient = apiClient(projectEnvClusterContext.getClusterPO().getClusterUrl(),
-					projectEnvClusterContext.getClusterPO().getAuthToken());
+			ApiClient apiClient = apiClient(appEnvClusterContext.getClusterPO().getClusterUrl(),
+					appEnvClusterContext.getClusterPO().getAuthToken());
 			Exec exec = new Exec(apiClient);
-			String namespace = projectEnvClusterContext.getProjectEnvPO().getNamespaceName();
+			String namespace = appEnvClusterContext.getAppEnvPO().getNamespaceName();
 			
 			ThreadPoolUtils.terminal(new Runnable() {
 				@Override

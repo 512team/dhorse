@@ -108,7 +108,7 @@
 				<label class="text-value" id="servicePort"></label>
 			</div>
 		</div>
-		<!--
+
 		<div class="layui-form-item">
 			<label class="layui-form-label">链路追踪状态：</label>
 			<div class="layui-input-block">
@@ -121,7 +121,6 @@
 				<label class="text-value" id="traceTemplateName"></label>
 			</div>
 		</div>
-		-->
 		<div class="layui-form-item">
 			<label class="layui-form-label">健康检查路径：</label>
 			<div class="layui-input-block">
@@ -165,16 +164,16 @@
         var form = layui.form,
             layer = layui.layer,
             $ = layui.$,
-			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 
 		//初始化表单数据
 		var loadIndex = 0;
 		$.ajax({
-			url: '/project/env/query',
+			url: '/app/env/query',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'projectId': projectId, 'projectEnvId': JSON.parse(parent.data2).envId}),
+			data: JSON.stringify({'appId': appId, 'appEnvId': JSON.parse(parent.data2).envId}),
 			beforeSend: function() {
 				loadIndex = layer.load(2);
 			},

@@ -9,17 +9,18 @@ DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单�
 * 支持Springboot项目部署
 * 无需安装Maven即可打包
 * 无需安装Docker即可构建镜像
-* 支持日志收集
 * 支持多环境部署
+* 支持日志收集
+* 支持链路追踪
 
 ## 主要技术
 Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、H2、Mysql等。
 
 ## 快速开始
 环境要求：
-| Java | Harbor |
-| :-----: | :----: |
-| >=11 | >=2.0.0 |
+| Java | Harbor | 已验证过的k8s版本
+| :-----: | :----: | :----: |
+| >=11 | >=2.0.0 | 1.19.x,1.21.x
 
 下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-windows.zip)，然后解压：
 
@@ -64,17 +65,17 @@ $  bin/dhorse-stop.sh
 
 了解更多：
 
-《[DHorse系列文章之操作手册](https://blog.csdn.net/huashetianzu/article/details/127560678)》
+《[DHorse系列文章之操作手册](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)》
 
-《[DHorse系列文章之镜像制作](https://blog.csdn.net/huashetianzu/article/details/127376460)》
+《[DHorse系列文章之镜像制作](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md)》
 
-《[DHorse系列文章之maven打包](https://blog.csdn.net/huashetianzu/article/details/127481538)》
+《[DHorse系列文章之maven打包](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/maven%E6%89%93%E5%8C%85.md)》
 
-《[DHorse系列文章之Dubbo项目解决方案](https://blog.csdn.net/huashetianzu/article/details/127560873)》
+《[DHorse系列文章之Dubbo项目解决方案](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Dubbo%E9%A1%B9%E7%9B%AE%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.md)》
 
-《[DHorse系列文章之日志收集](https://blog.csdn.net/huashetianzu/article/details/127697038)》
+《[DHorse系列文章之日志收集](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)》
 
-《[DHorse系列文章之多环境标识](https://blog.csdn.net/huashetianzu/article/details/127696995)》
+《[DHorse系列文章之多环境标识](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)》
 
 ## 社区交流
 

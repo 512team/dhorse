@@ -8,9 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.project.branch.DeploymentApplicationParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentVersionDeletionParam;
-import org.dhorse.api.param.project.branch.deploy.DeploymentVersionPageParam;
+import org.dhorse.api.param.app.branch.DeploymentApplicationParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentVersionPageParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.DeploymentVersion;
 import org.dhorse.infrastructure.param.DeployParam;
@@ -19,7 +19,7 @@ import org.dhorse.infrastructure.param.DeploymentVersionParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
-import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -43,8 +43,8 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 	}
 	
 	public Void delete(LoginUser loginUser, DeploymentVersionDeletionParam deletionParam) {
-		if (StringUtils.isBlank(deletionParam.getProjectId())) {
-			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_ID_IS_NULL);
+		if (StringUtils.isBlank(deletionParam.getAppId())) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
 		if (StringUtils.isBlank(deletionParam.getDeploymentVersionId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.DEPLOYEMENT_VERSION_ID_IS_EMPTY);
@@ -62,15 +62,15 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 	}
 	
 	public Void submitToDeploy(LoginUser loginUser, DeploymentApplicationParam deploymentApplictionParam) {
-		if (StringUtils.isBlank(deploymentApplictionParam.getProjectId())) {
-			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_ID_IS_NULL);
+		if (StringUtils.isBlank(deploymentApplictionParam.getAppId())) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
-		hasRights(loginUser, deploymentApplictionParam.getProjectId());
+		hasRights(loginUser, deploymentApplictionParam.getAppId());
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		if (globalConfigRepository.count(globalConfigParam) < 1) {
 			LogUtils.throwException(logger, MessageCodeEnum.INIT_GLOBAL_CONFIG);
 		}
-		ProjectEnvPO projectEnv = projectEnvRepository.queryById(deploymentApplictionParam.getEnvId());
+		AppEnvPO appEnv = appEnvRepository.queryById(deploymentApplictionParam.getEnvId());
 		DeploymentVersionPO deploymentVersion = deploymentVersionRepository.queryByVersionName(
 				deploymentApplictionParam.getVersionName());
 		
@@ -89,7 +89,7 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		deploymentDetailParam.setEnvId(deploymentApplictionParam.getEnvId());
 		deploymentDetailParam.setVersionName(deploymentVersion.getVersionName());
 		deploymentDetailParam.setBranchName(deploymentVersion.getBranchName());
-		deploymentDetailParam.setProjectId(deploymentApplictionParam.getProjectId());
+		deploymentDetailParam.setAppId(deploymentApplictionParam.getAppId());
 		deploymentDetailParam.setDeployer(loginUser.getLoginName());
 		deploymentDetailParam.setStartTime(new Date());
 		String deploymentDetailId = deploymentDetailRepository.add(deploymentDetailParam);
@@ -101,7 +101,7 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		deployParam.setDeployer(loginUser.getLoginName());
 		deployParam.setDeploymentDetailId(deploymentDetailId);
 		deployParam.setDeploymentStartTime(deploymentDetailParam.getStartTime());
-		if (YesOrNoEnum.YES.getCode().equals(projectEnv.getRequiredDeployApproval())) {
+		if (YesOrNoEnum.YES.getCode().equals(appEnv.getRequiredDeployApproval())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APPROVE);
 		}
 		deploy(deployParam);

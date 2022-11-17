@@ -9,8 +9,8 @@ import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.BaseDto;
 import org.dhorse.infrastructure.param.PageParam;
-import org.dhorse.infrastructure.repository.po.BaseProjectPO;
-import org.dhorse.infrastructure.repository.po.ProjectMemberPO;
+import org.dhorse.infrastructure.repository.po.BaseAppPO;
+import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.ClassUtils;
@@ -23,97 +23,97 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
-public abstract class RightRepository<P extends PageParam, E extends BaseProjectPO, D extends BaseDto>
+public abstract class RightRepository<P extends PageParam, E extends BaseAppPO, D extends BaseDto>
 		extends BaseRepository<P, E> {
 
 	private static final Logger logger = LoggerFactory.getLogger(RightRepository.class);
 	
 	@Autowired
-	private ProjectMemberRepository projectMemberRepository;
+	private AppMemberRepository appMemberRepository;
 	
 	public PageData<D> page(LoginUser loginUser, P bizParam) {
 		if(bizParam.getPageNum() == null){
 			LogUtils.throwException(logger, MessageCodeEnum.PAGE_NUM_IS_EMPTY);
 		}
-		if(bizParam.getProjectId() == null) {
+		if(bizParam.getAppId() == null) {
 			return pageData(bizParam);
 		}
 		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			return pageData(super.page(bizParam));
 		}
-		ProjectMemberPO projectMember = projectMemberRepository
-				.queryByLoginNameAndProjectId(loginUser.getLoginName(), bizParam.getProjectId());
-		if (projectMember == null) {
+		AppMemberPO appMember = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+		if (appMember == null) {
 			return pageData(bizParam);
 		}
 		return pageData(super.page(bizParam));
 	}
 
 	public List<D> list(LoginUser loginUser, P bizParam) {
-		validateProject(bizParam.getProjectId());
+		validateApp(bizParam.getAppId());
 		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			return pos2Dtos(super.list(bizParam));
 		}
-		ProjectMemberPO projectMember = projectMemberRepository
-				.queryByLoginNameAndProjectId(loginUser.getLoginName(), bizParam.getProjectId());
-		if (projectMember == null) {
+		AppMemberPO appMember = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+		if (appMember == null) {
 			return Collections.emptyList();
 		}
 		return pos2Dtos(super.list(bizParam));
 	}
 
 	public D query(LoginUser loginUser, P bizParam) {
-		validateProject(bizParam.getProjectId());
+		validateApp(bizParam.getAppId());
 		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			return po2Dto(super.query(bizParam));
 		}
-		ProjectMemberPO projectMember = projectMemberRepository
-				.queryByLoginNameAndProjectId(loginUser.getLoginName(), bizParam.getProjectId());
-		if (projectMember == null) {
+		AppMemberPO appMember = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+		if (appMember == null) {
 			return null;
 		}
 		return po2Dto(super.query(bizParam));
 	}
 
 	public boolean update(LoginUser loginUser, P bizParam) {
-		validateProject(bizParam.getProjectId());
+		validateApp(bizParam.getAppId());
 		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			return super.updateById(bizParam);
 		}
-		ProjectMemberPO projectMember = projectMemberRepository
-				.queryByLoginNameAndProjectId(loginUser.getLoginName(), bizParam.getProjectId());
-		if (projectMember == null) {
+		AppMemberPO appMember = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+		if (appMember == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
 		E e = super.queryById(bizParam.getId());
-		if(e == null || !e.getProjectId().equals(bizParam.getProjectId())) {
+		if(e == null || !e.getAppId().equals(bizParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.RECORD_IS_INEXISTENCE);
 		}
 		return super.updateById(bizParam);
 	}
 	
 	public boolean delete(LoginUser loginUser, P bizParam) {
-		validateProject(bizParam.getProjectId());
+		validateApp(bizParam.getAppId());
 		
 		E e = super.queryById(bizParam.getId());
-		if(e == null || !e.getProjectId().equals(bizParam.getProjectId())) {
+		if(e == null || !e.getAppId().equals(bizParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.RECORD_IS_INEXISTENCE);
 		}
 		
 		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			return super.delete(bizParam.getId());
 		}
-		ProjectMemberPO projectMember = projectMemberRepository
-				.queryByLoginNameAndProjectId(loginUser.getLoginName(), bizParam.getProjectId());
-		if (projectMember == null) {
+		AppMemberPO appMember = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+		if (appMember == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
 		return super.delete(bizParam.getId());
 	}
 
-	public boolean deleteByProjectId(String projectId) {
+	public boolean deleteByAppId(String appId) {
 		E po = ClassUtils.newParameterizedTypeInstance(getClass().getGenericSuperclass(), 1);
-		po.setProjectId(projectId);
+		po.setAppId(appId);
 		UpdateWrapper<E> wrapper = QueryHelper.buildUpdateWrapper(po);
 		po.setDeletionStatus(1);
 		return getMapper().update(po, wrapper) > 0 ? true : false;

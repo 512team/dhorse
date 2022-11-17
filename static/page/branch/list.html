@@ -6,7 +6,7 @@
 					<div class="layui-inline">
 						<div class="layui-input-inline">
 							<input type="text" name="branchName" autocomplete="off" class="layui-input" placeholder="分支名称">
-							<input type="hidden" name="projectId" id="projectId"/>
+							<input type="hidden" name="appId" id="appId"/>
 						</div>
 					</div>
 					<div class="layui-inline">
@@ -45,21 +45,21 @@
             form = layui.form,
             table = layui.table,
 			dropdown = layui.dropdown,
-			projectId = localStorage.getItem('projectId_' + $("#userName").val()),
+			appId = localStorage.getItem('appId_' + $("#userName").val()),
 			miniPage = layui.miniPage;
 		
-		$("#projectId").val(projectId);
+		$("#appId").val(appId);
 		
         table.render({
             elem: '#currentTableId',
-            url: '/project/branch/page',
+            url: '/app/branch/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {'projectId': projectId},
+			where: {'appId': appId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -134,21 +134,21 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
             if (obj.event === 'buildVersion') {
-                buildVersion($, projectId, obj.data.branchName);
+                buildVersion($, appId, obj.data.branchName);
             }else if (obj.event === 'delete') {
-                doDelete($, projectId, obj.data.branchName);
+                doDelete($, appId, obj.data.branchName);
             }
 			return false;
         });
     });
 	
-	function buildVersion($, projectId, branchName){
+	function buildVersion($, appId, branchName){
 		$.ajax({
-			url: '/project/branch/buildVersion',
+			url: '/app/branch/buildVersion',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"projectId": projectId, "branchName": branchName}),
+			data: JSON.stringify({"appId": appId, "branchName": branchName}),
 			success: function(res){
 				if(res.code != "000000"){
 					layer.msg(res.message, {icon: 5, shift: 6});
@@ -171,7 +171,7 @@
 	}
 	
 	//删除
-	function doDelete($, projectId, branchName) {
+	function doDelete($, appId, branchName) {
 		var msg = '确定删除：' + branchName + "？";
 		layer.confirm(msg, {
 			shade: 0.4,
@@ -180,11 +180,11 @@
 			offset: ['35%', '40%']}, function (index) {
 			layer.close(index);
 			$.ajax({
-				url: '/project/branch/delete',
+				url: '/app/branch/delete',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"projectId": projectId, "branchName": branchName}),
+				data: JSON.stringify({"appId": appId, "branchName": branchName}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});

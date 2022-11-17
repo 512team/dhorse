@@ -8,11 +8,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.param.project.env.replica.DownloadFileParam;
-import org.dhorse.api.param.project.env.replica.EnvReplicaPageParam;
-import org.dhorse.api.param.project.env.replica.EnvReplicaParam;
-import org.dhorse.api.param.project.env.replica.EnvReplicaRebuildParam;
-import org.dhorse.api.param.project.env.replica.QueryFilesParam;
+import org.dhorse.api.param.app.env.replica.DownloadFileParam;
+import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
+import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
+import org.dhorse.api.param.app.env.replica.QueryFilesParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Dahai
  */
 @RestController
-@RequestMapping("/project/env/replica")
+@RequestMapping("/app/env/replica")
 public class EnvReplicaRest extends AbstractRest {
 
 	private static final Logger logger = LoggerFactory.getLogger(EnvReplicaRest.class);

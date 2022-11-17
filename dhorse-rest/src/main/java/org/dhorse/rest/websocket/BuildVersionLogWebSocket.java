@@ -64,18 +64,18 @@ public class BuildVersionLogWebSocket implements WebSocketHandler {
 				.getBean(SysUserApplicationService.class);
 		LoginUser loginUser = sysUserApplicationService.queryLoginUserByToken(param.get("loginToken").asText());
 		String id = param.get("id").asText();
-		String projectId = param.get("projectId").asText();
-		log(loginUser, id, projectId, session);
+		String appId = param.get("appId").asText();
+		log(loginUser, id, appId, session);
 	}
 
-	public void log(LoginUser loginUser, String id, String projectId, WebSocketSession session) {
+	public void log(LoginUser loginUser, String id, String appId, WebSocketSession session) {
 		if (loginUser == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
 		DeploymentVersionRepository deploymentVersionRepository = SpringBeanContext
 				.getBean(DeploymentVersionRepository.class);
 		DeploymentVersionParam deploymentVersionParam = new DeploymentVersionParam();
-		deploymentVersionParam.setProjectId(projectId);
+		deploymentVersionParam.setAppId(appId);
 		deploymentVersionParam.setId(id);
 		DeploymentVersion deploymentVersion = deploymentVersionRepository.query(loginUser,
 				deploymentVersionParam);

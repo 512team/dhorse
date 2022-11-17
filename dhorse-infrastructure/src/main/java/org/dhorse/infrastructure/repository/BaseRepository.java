@@ -108,15 +108,15 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		return QueryHelper.buildUpdateWrapper(updateCondition(bizParam));
 	}
 
-	protected void validateProject(String projectId) {
-		if(projectId == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_ID_IS_NULL);
+	protected void validateApp(String appId) {
+		if(appId == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
-//		QueryWrapper<ProjectPO> wrapper = new QueryWrapper<>();
-//		wrapper.eq("id", projectId);
+//		QueryWrapper<AppPO> wrapper = new QueryWrapper<>();
+//		wrapper.eq("id", appId);
 //		wrapper.eq("deletion_status", 0);
-//		if(projectMapper.selectCount(wrapper) == 0) {
-//			LogUtils.throwException(logger, MessageCodeEnum.PROJECT_IS_INEXISTENCE);
+//		if(appMapper.selectCount(wrapper) == 0) {
+//			LogUtils.throwException(logger, MessageCodeEnum.APP_IS_INEXISTENCE);
 //		}
 	}
 	

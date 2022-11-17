@@ -263,7 +263,7 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 		SysUserPO sysUser = needUserToExist(userDeletionParam.getLoginName());
 		if (sysUserRepository.delete(sysUser.getId())) {
 			GuavaCacheUtils.removeLoginUserByLoginName(userDeletionParam.getLoginName());
-			projectMemberRepository.deleteByUserId(sysUser.getId());
+			appMemberRepository.deleteByUserId(sysUser.getId());
 		}
 		return null;
 	}

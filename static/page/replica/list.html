@@ -4,11 +4,11 @@
 			<form class="layui-form layui-form-pane" action="">
 				<div class="layui-form-item">
 					<div class="layui-inline">
-						<select name="projectEnvId" id="projectEnvId">
+						<select name="appEnvId" id="appEnvId">
 							<option value="">请选择环境</option>
 						</select>
 					</div>
-					<input type="hidden" name="projectId" id="projectId"/>
+					<input type="hidden" name="appId" id="appId"/>
 					<div class="layui-inline">
 						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
 					</div>
@@ -33,7 +33,7 @@
 			<a href="javascript:;" class="layui-font-blue" lay-event="rebuild">重建</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="log">日志</a>
-			<a href="/project/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a>
+			<a href="/app/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="terminal">终端</a>
 		</script>
@@ -50,13 +50,13 @@
             table = layui.table,
 			dropdown = layui.dropdown,
 			miniPage = layui.miniPage,
-			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 		
-		$("#projectId").val(projectId);
+		$("#appId").val(appId);
 		form.render('select');
 		
         //初始化环境
-		initEnv(form, table, $, projectId);
+		initEnv(form, table, $, appId);
 
 		// 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -106,7 +106,7 @@
 		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
 			layer.close(index);
 			$.ajax({
-				url: '/project/env/replica/rebuild',
+				url: '/app/env/replica/rebuild',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
@@ -132,17 +132,17 @@
 		});
 	}
 	
-	function initTable(table, projectId, projectEnvId){
+	function initTable(table, appId, appEnvId){
 		table.render({
             elem: '#currentTableId',
-            url: '/project/env/replica/page',
+            url: '/app/env/replica/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"projectId": projectId, "projectEnvId": projectEnvId},
+			where: {"appId": appId, "appEnvId": appEnvId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -182,13 +182,13 @@
         });
 	}
 	
-	function initEnv(form, table, $, projectId) {
+	function initEnv(form, table, $, appId) {
 		$.ajax({
-			url: '/project/env/search',
+			url: '/app/env/search',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'projectId': projectId, 'pageSize': 1000, 'pageNum': 1}),
+			data: JSON.stringify({'appId': appId, 'pageSize': 1000, 'pageNum': 1}),
 			success: function(res){
 				data = res.data
 				var firstEnv = 0;
@@ -200,12 +200,12 @@
 					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].envName +"</option>");
 				}
 				if(opt != ''){
-					$("#projectEnvId").html(opt);
+					$("#appEnvId").html(opt);
 					form.render('select');
 				}
 				
 				//初始化表格
-				initTable(table, projectId, firstEnv);
+				initTable(table, appId, firstEnv);
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});

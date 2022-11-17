@@ -26,19 +26,19 @@ import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.project.branch.VersionBuildParam;
+import org.dhorse.api.param.app.branch.VersionBuildParam;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
-import org.dhorse.api.vo.Project;
-import org.dhorse.api.vo.ProjectExtendJava;
+import org.dhorse.api.vo.App;
+import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.infrastructure.param.DeployParam;
 import org.dhorse.infrastructure.param.DeploymentDetailParam;
 import org.dhorse.infrastructure.param.DeploymentVersionParam;
-import org.dhorse.infrastructure.param.ProjectEnvParam;
+import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
-import org.dhorse.infrastructure.repository.po.ProjectEnvPO;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
@@ -150,7 +150,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 				
 				// 2.合并分支
 				try {
-					if (YesOrNoEnum.YES.getCode().equals(context.getProjectEnv().getRequiredMerge())
+					if (YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getRequiredMerge())
 							&& !"master".equals(context.getBranchName())
 							&& !"main".equals(context.getBranchName())) {
 						context.getCodeRepoStrategy().mergeBranch(context);
@@ -213,17 +213,17 @@ public abstract class DeployApplicationService extends ApplicationService {
 	
 	private DeployContext buildVersionContext(VersionBuildParam versionBuildParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
-		Project project = projectRepository.queryWithExtendById(versionBuildParam.getProjectId());
+		App app = appRepository.queryWithExtendById(versionBuildParam.getAppId());
 		DeployContext context = new DeployContext();
 		context.setGlobalConfigAgg(globalConfig);
 		context.setBranchName(versionBuildParam.getBranchName());
-		context.setProject(project);
+		context.setApp(app);
 		context.setComponentConstants(componentConstants);
 		context.setCodeRepoStrategy(buildCodeRepo(context.getGlobalConfigAgg().getCodeRepo().getType()));
 		
 		//构建版本编号
 		String nameOfImage = new StringBuilder()
-				.append(context.getProject().getProjectName())
+				.append(context.getApp().getAppName())
 				.append(":")
 				.append(new SimpleDateFormat(Constants.DATE_FORMAT_YYYYMMDDHHMMSS).format(new Date()))
 				.toString();
@@ -231,10 +231,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setNameOfImage(nameOfImage);
 		context.setFullNameOfImage(fullNameOfImage);
 		
-		//同一个项目，不允许同时构建多个版本
+		//同一个应用，不允许同时构建多个版本
 		DeploymentVersionParam bizParam = new DeploymentVersionParam();
 		bizParam.setStatus(DeploymentVersionStatusEnum.BUILDING.getCode());
-		bizParam.setProjectId(versionBuildParam.getProjectId());
+		bizParam.setAppId(versionBuildParam.getAppId());
 		DeploymentVersionPO deploymentVersionPO = deploymentVersionRepository.query(bizParam);
 		if(deploymentVersionPO != null) {
 			LogUtils.throwException(logger, MessageCodeEnum.VERSION_IS_BUILDING);
@@ -244,7 +244,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		bizParam = new DeploymentVersionParam();
 		bizParam.setBranchName(versionBuildParam.getBranchName());
 		bizParam.setVersionName(context.getNameOfImage());
-		bizParam.setProjectId(versionBuildParam.getProjectId());
+		bizParam.setAppId(versionBuildParam.getAppId());
 		Date now = new Date();
 		bizParam.setCreationTime(now);
 		String id = deploymentVersionRepository.add(bizParam);
@@ -258,9 +258,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 	private DeployContext buildDeployContext(DeployParam deployParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
-		ProjectEnvPO projectEnvPO = projectEnvRepository.queryById(deployParam.getEnvId());
-		Project project = projectRepository.queryWithExtendById(projectEnvPO.getProjectId());
-		ClusterPO clusterPO = clusterRepository.queryById(projectEnvPO.getClusterId());
+		AppEnvPO appEnvPO = appEnvRepository.queryById(deployParam.getEnvId());
+		App app = appRepository.queryWithExtendById(appEnvPO.getAppId());
+		ClusterPO clusterPO = clusterRepository.queryById(appEnvPO.getClusterId());
 		if(clusterPO == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);
 		}
@@ -269,13 +269,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setCodeRepoStrategy(buildCodeRepo(context.getGlobalConfigAgg().getCodeRepo().getType()));
 		context.setCluster(clusterPO);
 		context.setBranchName(deployParam.getBranchName());
-		context.setProject(project);
-		context.setProjectEnv(projectEnvPO);
+		context.setApp(app);
+		context.setAppEnv(appEnvPO);
 		context.setComponentConstants(componentConstants);
 		context.setClusterStrategy(clusterStrategy(context.getCluster().getClusterType()));
 		context.setId(deployParam.getDeploymentDetailId());
 		context.setStartTime(deployParam.getDeploymentStartTime());
-		context.setDeploymentAppName(K8sUtils.getReplicaAppName(project.getProjectName(), projectEnvPO.getTag()));
+		context.setDeploymentAppName(K8sUtils.getReplicaAppName(app.getAppName(), appEnvPO.getTag()));
 		context.setNameOfImage(deployParam.getVersionName());
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), deployParam.getVersionName());
 		context.setFullNameOfImage(fullNameOfImage);
@@ -302,12 +302,12 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 
 	private boolean pack(DeployContext context) {
-		if (!LanguageTypeEnum.JAVA.getCode().equals(context.getProject().getLanguageType())) {
+		if (!LanguageTypeEnum.JAVA.getCode().equals(context.getApp().getLanguageType())) {
 			logger.info("No need to pack");
 			return true;
 		}
-		ProjectExtendJava projectExtend = context.getProject().getProjectExtend();
-		if (PackageBuildTypeEnum.MAVEN.getCode().equals(projectExtend.getPackageBuildType())) {
+		AppExtendJava appExtend = context.getApp().getAppExtend();
+		if (PackageBuildTypeEnum.MAVEN.getCode().equals(appExtend.getPackageBuildType())) {
 			return doMavenPack(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
 		}
 
@@ -385,8 +385,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 		properties.put("maven.compiler.source", javaVersion);
 		properties.put("maven.compiler.target", javaVersion);
 		properties.put("maven.compiler.compilerVersion", javaVersion);
-		properties.put("project.build.sourceEncoding", "UTF-8");
-		properties.put("project.reporting.outputEncoding", "UTF-8");
+		properties.put("app.build.sourceEncoding", "UTF-8");
+		properties.put("app.reporting.outputEncoding", "UTF-8");
 		profile.setProperties(properties);
 		MavenExecutionRequest executionRequest = request.getRequest();
 		executionRequest.setProfiles(Arrays.asList(profile));
@@ -404,12 +404,12 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 
 	public boolean buildImage(DeployContext context) {
-		ProjectExtendJava projectExtend = context.getProject().getProjectExtend();
+		AppExtendJava appExtend = context.getApp().getAppExtend();
 		String fullTargetPath = context.getLocalPathOfBranch();
-		if(StringUtils.isBlank(projectExtend.getPackageTargetPath())) {
+		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
 			fullTargetPath += "target/";
 		}else {
-			fullTargetPath += projectExtend.getPackageTargetPath();
+			fullTargetPath += appExtend.getPackageTargetPath();
 		}
 		File packageTargetPath = Paths.get(fullTargetPath).toFile();
 		if (!packageTargetPath.exists()) {
@@ -419,9 +419,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 		List<Path> targetFiles = new ArrayList<>();
 		for (File file : packageTargetPath.listFiles()) {
-			String packageFileType = PackageFileTypeTypeEnum.getByCode(projectExtend.getPackageFileType()).getValue();
+			String packageFileType = PackageFileTypeTypeEnum.getByCode(appExtend.getPackageFileType()).getValue();
 			if (file.getName().endsWith("." + packageFileType)) {
-				File targetFile = new File(file.getParent() + "/" + context.getProject().getProjectName() + "." + packageFileType);
+				File targetFile = new File(file.getParent() + "/" + context.getApp().getAppName() + "." + packageFileType);
 				file.renameTo(targetFile);
 				targetFiles.add(targetFile.toPath());
 				break;
@@ -448,10 +448,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
 			
 			JibContainerBuilder jibContainerBuilder = null;
-			if (StringUtils.isBlank(context.getProject().getBaseImage())) {
+			if (StringUtils.isBlank(context.getApp().getBaseImage())) {
 				jibContainerBuilder = Jib.fromScratch();
 			} else {
-				jibContainerBuilder = Jib.from(context.getProject().getBaseImage());
+				jibContainerBuilder = Jib.from(context.getApp().getBaseImage());
 			}
 			jibContainerBuilder.addLayer(targetFiles, AbsoluteUnixPath.get("/"))
 				.setEntrypoint(entrypoint)
@@ -479,10 +479,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 		if(endTime != null) {
 			deploymentDetailParam.setEndTime(endTime);
-			ProjectEnvParam projectEnvParam = new ProjectEnvParam();
-			projectEnvParam.setId(context.getProjectEnv().getId());
-			projectEnvParam.setDeploymentTime(endTime);
-			projectEnvRepository.updateById(projectEnvParam);
+			AppEnvParam appEnvParam = new AppEnvParam();
+			appEnvParam.setId(context.getAppEnv().getId());
+			appEnvParam.setDeploymentTime(endTime);
+			appEnvRepository.updateById(appEnvParam);
 		}
 		return deploymentDetailRepository.updateById(deploymentDetailParam);
 	}

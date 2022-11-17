@@ -12,7 +12,7 @@ import org.dhorse.api.enums.AuthTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
-import org.dhorse.api.vo.ProjectBranch;
+import org.dhorse.api.vo.AppBranch;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -40,25 +40,25 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
 	public boolean doDownloadBranch(DeployContext context) {
-		int projectId = Integer.parseInt(context.getProject().getCodeRepoPath());
+		int appId = Integer.parseInt(context.getApp().getCodeRepoPath());
 		String branchName = context.getBranchName();
 		GitLabApi gitLabApi = gitLabApi(context.getGlobalConfigAgg().getCodeRepo());
 		try {
-			Project project = gitLabApi.getProjectApi().getProject(projectId);
+			Project project = gitLabApi.getProjectApi().getProject(appId);
 			if (project == null) {
-				logger.warn("The project does not exist, project id : {}", projectId);
+				logger.warn("The project does not exist, app id : {}", appId);
 				gitLabApi.close();
 				return false;
 			}
 
 			String localPathOfBranch = checkLocalPathOfBranch(context);
 			if (localPathOfBranch == null) {
-				logger.warn("Failed to local path of branch, project id : {}", projectId);
+				logger.warn("Failed to local path of branch, app id : {}", appId);
 				gitLabApi.close();
 				return false;
 			}
 
-			List<TreeItem> trees = gitLabApi.getRepositoryApi().getTree(projectId, null, branchName, true);
+			List<TreeItem> trees = gitLabApi.getRepositoryApi().getTree(appId, null, branchName, true);
 			for (TreeItem tree : trees) {
 				File file = new File(localPathOfBranch + tree.getPath());
 				if (Type.BLOB.equals(tree.getType())) {
@@ -67,7 +67,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 					}
 					byte[] buffer = new byte[1024 * 1024];
 					int length = 0;
-					try(InputStream inputStream = gitLabApi.getRepositoryFileApi().getRawFile(projectId, branchName,
+					try(InputStream inputStream = gitLabApi.getRepositoryFileApi().getRawFile(appId, branchName,
 							tree.getPath());
 							FileOutputStream outStream = new FileOutputStream(file)){
 						while ((length = inputStream.read(buffer)) != -1) {
@@ -91,19 +91,19 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	public void mergeBranch(DeployContext context) {
 		GitLabApi gitLabApi = gitLabApi(context.getGlobalConfigAgg().getCodeRepo());
 		try {
-			Branch branch = gitLabApi.getRepositoryApi().getBranch(context.getProject().getCodeRepoPath(), context.getBranchName());
+			Branch branch = gitLabApi.getRepositoryApi().getBranch(context.getApp().getCodeRepoPath(), context.getBranchName());
 			if(branch.getMerged() != null && branch.getMerged().booleanValue()) {
 				logger.error("The branch has been merged");
 				return;
 			}
 		} catch (GitLabApiException e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.PROJECT_BRANCH_FAILURE);
+			LogUtils.throwException(logger, e, MessageCodeEnum.APP_BRANCH_FAILURE);
 		}
 		
 		MergeRequestApi mergeRequestApi = gitLabApi.getMergeRequestApi();
 		MergeRequestFilter filter = new MergeRequestFilter();
 		filter.setState(MergeRequestState.OPENED);
-		filter.setProjectId(Integer.valueOf(context.getProject().getCodeRepoPath()));
+		filter.setProjectId(Integer.valueOf(context.getApp().getCodeRepoPath()));
 		MergeRequest mergeRequest = null;
 		try {
 			//1.如果存在未合并的请求，直接报错
@@ -116,15 +116,15 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 			mergeRequestParams.withSourceBranch(context.getBranchName());
 			mergeRequestParams.withTargetBranch("master");
 			mergeRequestParams.withTitle("dhorse merge");
-			mergeRequest = mergeRequestApi.createMergeRequest(context.getProject().getCodeRepoPath(),
+			mergeRequest = mergeRequestApi.createMergeRequest(context.getApp().getCodeRepoPath(),
 					mergeRequestParams);
 			// 接受合并请求
-			mergeRequestApi.acceptMergeRequest(context.getProject().getCodeRepoPath(), mergeRequest.getIid());
+			mergeRequestApi.acceptMergeRequest(context.getApp().getCodeRepoPath(), mergeRequest.getIid());
 		} catch (GitLabApiException e) {
 			//如果合并失败，则关闭本次合并请求，目前由人工介入处理。
 //			if(mergeRequest != null) {
 //				try {
-//					mergeRequestApi.cancelMergeRequest(context.getProject().getCodeRepoPath(), mergeRequest.getIid());
+//					mergeRequestApi.cancelMergeRequest(context.getApp().getCodeRepoPath(), mergeRequest.getIid());
 //				} catch (GitLabApiException e1) {
 //					LogUtils.throwException(logger, MessageCodeEnum.MERGE_BRANCH);
 //				}
@@ -160,18 +160,18 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	}
 	
 	@Override
-	public PageData<ProjectBranch> branchPage(CodeRepo codeRepo, BranchPageParam param) {
+	public PageData<AppBranch> branchPage(CodeRepo codeRepo, BranchPageParam param) {
 		GitLabApi gitLabApi = gitLabApi(codeRepo);
 		List<Branch> list = null;
 		try {
-			list = gitLabApi.getRepositoryApi().getBranches(param.getProjectIdOrPath(), param.getBranchName());
+			list = gitLabApi.getRepositoryApi().getBranches(param.getAppIdOrPath(), param.getBranchName());
 		} catch (GitLabApiException e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.PROJECT_BRANCH_PAGE_FAILURE);
+			LogUtils.throwException(logger, e, MessageCodeEnum.APP_BRANCH_PAGE_FAILURE);
 		} finally {
 			gitLabApi.close();
 		}
 		
-		PageData<ProjectBranch> pageData = new PageData<>();
+		PageData<AppBranch> pageData = new PageData<>();
 		int dataCount = list.size();
 		if (dataCount == 0) {
 			pageData.setPageNum(1);
@@ -194,11 +194,11 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		endOffset = endOffset > dataCount ? dataCount : endOffset;
 		List<Branch> page = list.subList(startOffset, endOffset);
 		pageData.setItems(page.stream().map(e ->{
-			ProjectBranch projectBranch = new ProjectBranch();
-			projectBranch.setBranchName(e.getName());
-			projectBranch.setMergedStatus(e.getMerged() ? 1 : 0);
-			projectBranch.setUpdateTime(e.getCommit().getCommittedDate());
-			return projectBranch;
+			AppBranch appBranch = new AppBranch();
+			appBranch.setBranchName(e.getName());
+			appBranch.setMergedStatus(e.getMerged() ? 1 : 0);
+			appBranch.setUpdateTime(e.getCommit().getCommittedDate());
+			return appBranch;
 		}).collect(Collectors.toList()));
 		pageData.setPageNum(pageNum);
 		pageData.setPageCount(pageCount);
@@ -209,13 +209,13 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	}
 	
 	@Override
-	public List<ProjectBranch> branchList(CodeRepo codeRepo, BranchListParam param) {
+	public List<AppBranch> branchList(CodeRepo codeRepo, BranchListParam param) {
 		GitLabApi gitLabApi = gitLabApi(codeRepo);
 		List<Branch> list = null;
 		try {
-			list = gitLabApi.getRepositoryApi().getBranches(param.getProjectIdOrPath(), param.getBranchName());
+			list = gitLabApi.getRepositoryApi().getBranches(param.getAppIdOrPath(), param.getBranchName());
 		} catch (GitLabApiException e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.PROJECT_BRANCH_PAGE_FAILURE);
+			LogUtils.throwException(logger, e, MessageCodeEnum.APP_BRANCH_PAGE_FAILURE);
 		} finally {
 			gitLabApi.close();
 		}
@@ -227,11 +227,11 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		//按照提交时间倒排序
 		list.sort((e1, e2) -> e2.getCommit().getCommittedDate().compareTo(e1.getCommit().getCommittedDate()));
 		return list.stream().map(e ->{
-			ProjectBranch projectBranch = new ProjectBranch();
-			projectBranch.setBranchName(e.getName());
-			projectBranch.setMergedStatus(e.getMerged() ? 1 : 0);
-			projectBranch.setUpdateTime(e.getCommit().getCommittedDate());
-			return projectBranch;
+			AppBranch appBranch = new AppBranch();
+			appBranch.setBranchName(e.getName());
+			appBranch.setMergedStatus(e.getMerged() ? 1 : 0);
+			appBranch.setUpdateTime(e.getCommit().getCommittedDate());
+			return appBranch;
 		}).collect(Collectors.toList());
 	}
 	

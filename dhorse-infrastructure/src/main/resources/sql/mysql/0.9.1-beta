@@ -43,53 +43,53 @@ CREATE TABLE global_config (
 )COMMENT '全局配置';
 CREATE INDEX index_config_item_type ON global_config(item_type);
 
-CREATE TABLE project (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '项目编号',
-	project_name VARCHAR (32) NOT NULL COMMENT '项目名称',
+CREATE TABLE app (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '应用编号',
+	app_name VARCHAR (32) NOT NULL COMMENT '应用名称',
 	language_type TINYINT DEFAULT 0 COMMENT '开发语言类型，1：Java，2：Python，3：Node，4：App，5：H5，6：C，7：C++，8：Go',
 	base_image VARCHAR (128) DEFAULT NULL COMMENT '依赖镜像',
 	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT '代码仓库路径',
 	first_department VARCHAR (16) DEFAULT NULL COMMENT '一级部门',
 	second_department VARCHAR (16) DEFAULT NULL COMMENT '二级部门',
 	third_department VARCHAR (16) DEFAULT NULL COMMENT '三级部门',
-	description VARCHAR (64) DEFAULT NULL COMMENT '项目描述',
+	description VARCHAR (64) DEFAULT NULL COMMENT '应用描述',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '项目信息';
-CREATE INDEX index_project_project_name ON project(project_name);
-CREATE INDEX index_project_update_time ON project(update_time);
+)COMMENT '应用信息';
+CREATE INDEX index_app_app_name ON app(app_name);
+CREATE INDEX index_app_update_time ON app(update_time);
 
-CREATE TABLE project_extend_java (
+CREATE TABLE app_extend_java (
 	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
 	package_build_type TINYINT DEFAULT 0 COMMENT '打包构建方式，1：Maven，2：Gradle',
 	package_file_type TINYINT DEFAULT 0 COMMENT '打包文件类型，1：jar，2：war，3：zip',
 	package_target_path VARCHAR (64) DEFAULT 'target/' COMMENT '打包相对路径',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT 'java项目信息';
-CREATE INDEX index_extend_java_project_id ON project_extend_java(project_id);
+)COMMENT 'java应用信息';
+CREATE INDEX index_extend_java_app_id ON app_extend_java(app_id);
 
-CREATE TABLE project_member (
+CREATE TABLE app_member (
 	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
 	user_id BIGINT DEFAULT NULL COMMENT '用户编号',
 	login_name VARCHAR (16) DEFAULT NULL COMMENT '登录名',
 	role_type VARCHAR (16) DEFAULT NULL COMMENT '存储格式：1,2,3，角色类型，1：管理员，2：开发，3：测试，4：运维，5：架构师，6：告警接收：7：发布审批',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '项目成员';
-CREATE INDEX index_project_member_project_id ON project_member(project_id);
-CREATE INDEX index_project_member_user_id ON project_member(user_id);
-CREATE INDEX index_project_member_login_name ON project_member(login_name);
-CREATE INDEX index_project_member_update_time ON project_member(update_time);
+)COMMENT '应用成员';
+CREATE INDEX index_app_member_app_id ON app_member(app_id);
+CREATE INDEX index_app_member_user_id ON app_member(user_id);
+CREATE INDEX index_app_member_login_name ON app_member(login_name);
+CREATE INDEX index_app_member_update_time ON app_member(update_time);
 
-CREATE TABLE project_env (
+CREATE TABLE app_env (
 	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
 	cluster_id BIGINT DEFAULT NULL COMMENT '集群编号',
 	namespace_name VARCHAR (32) DEFAULT NULL COMMENT '部署命名空间',
 	env_name VARCHAR (8) DEFAULT NULL COMMENT '环境名称，如：开发、测试、预发、生产等',
@@ -113,14 +113,14 @@ CREATE TABLE project_env (
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '项目环境';
-CREATE INDEX index_env_project_id ON project_env(project_id);
-CREATE INDEX index_env_update_time ON project_env(update_time);
-CREATE INDEX index_trace_template_id ON project_env(trace_template_id);
+)COMMENT '应用环境';
+CREATE INDEX index_env_app_id ON app_env(app_id);
+CREATE INDEX index_env_update_time ON app_env(update_time);
+CREATE INDEX index_trace_template_id ON app_env(trace_template_id);
 
 CREATE TABLE deployment_version (
 	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
 	branch_name VARCHAR (32) DEFAULT NULL COMMENT '分支名称',
 	version_name VARCHAR (128) DEFAULT NULL COMMENT '版本名称',
 	status TINYINT DEFAULT 0 COMMENT '状态，0：构建中，1：构建成功，2：构建失败',
@@ -128,13 +128,13 @@ CREATE TABLE deployment_version (
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
 )COMMENT '部署版本';
-CREATE INDEX index_version_project_id ON deployment_version(project_id);
+CREATE INDEX index_version_app_id ON deployment_version(app_id);
 CREATE INDEX index_version_version_name ON deployment_version(version_name);
 CREATE INDEX index_version_update_time ON deployment_version(update_time);
 
 CREATE TABLE deployment_detail (
 	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	project_id BIGINT DEFAULT NULL COMMENT '项目编号',
+	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
 	branch_name VARCHAR (32) DEFAULT NULL COMMENT '分支名称',
 	version_name VARCHAR (128) DEFAULT NULL COMMENT '版本名称',
 	env_id BIGINT DEFAULT 0 COMMENT '环境编号',

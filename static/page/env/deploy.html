@@ -18,7 +18,7 @@
 				</select>
 			</div>
 		</div>
-		<input type="hidden" name="projectId" id="projectId2"/>
+		<input type="hidden" name="appId" id="appId2"/>
 		<input type="hidden" name="envId" id="envId"/>
 		<div class="layui-form-item">
 			<div class="layui-input-block">
@@ -35,17 +35,17 @@
         var form = layui.form,
             layer = layui.layer,
             $ = layui.$,
-			projectId = localStorage.getItem('projectId_' + parent.layui.$("#userName").val()),
+			appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val()),
 			parentData = JSON.parse(parent.data2);
 		
-		$("#projectId2").val(projectId);
+		$("#appId2").val(appId);
 		$("#envId").val(parentData.envId);
 		
-		initVersion(form, $, projectId);
+		initVersion(form, $, appId);
 		
         form.on('submit(deployBtn)', function(data) {
 			$.ajax({
-				url: '/project/deployment/version/submitToDeploy',
+				url: '/app/deployment/version/submitToDeploy',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
@@ -83,13 +83,13 @@
         });
     });
 	
-	function initVersion(form, $, projectId){
+	function initVersion(form, $, appId){
 		$.ajax({
-			url: '/project/deployment/version/page',
+			url: '/app/deployment/version/page',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'projectId': projectId, 'status': 1, 'pageSize': 100, 'pageNum': 1}),
+			data: JSON.stringify({'appId': appId, 'status': 1, 'pageSize': 100, 'pageNum': 1}),
 			success: function(res){
 				data = res.data.items
 				var opt = '';

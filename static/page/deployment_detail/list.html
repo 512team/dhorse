@@ -4,11 +4,11 @@
 			<form class="layui-form layui-form-pane" action="">
 				<div class="layui-form-item">
 					<div class="layui-inline">
-						<select name="projectEnvId" id="projectEnvId">
+						<select name="appEnvId" id="appEnvId">
 							<option value="">请选择环境</option>
 						</select>
 					</div>
-					<input type="hidden" name="projectId" id="projectId"/>
+					<input type="hidden" name="appId" id="appId"/>
 					<div class="layui-inline">
 						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
 					</div>
@@ -64,13 +64,13 @@
             form = layui.form,
             table = layui.table,
 			dropdown = layui.dropdown,
-			projectId = localStorage.getItem('projectId_' + $("#userName").val());
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 		
-		$("#projectId").val(projectId);
+		$("#appId").val(appId);
 		form.render('select');
 		
         //初始化环境
-		initHis(form, table, $, projectId);
+		initHis(form, table, $, appId);
 
 		// 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -86,9 +86,9 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
 			if (obj.event === 'approve') {
-                approve($, projectId, obj.data.branchName, obj.data.id);
+                approve($, appId, obj.data.branchName, obj.data.id);
             }else if (obj.event === 'rollback') {
-                rollback($, projectId, obj.data.versionName, obj.data.id)
+                rollback($, appId, obj.data.versionName, obj.data.id)
             }else if (obj.event === 'log') {
 				id = obj.data.id;
                 var index = layer.open({
@@ -102,13 +102,13 @@
 					content: ['page/deployment_detail/log.html', 'no']
                 });
             }if (obj.event === 'delete') {
-                doDelete($, obj.data.id, obj.data.versionName, projectId);
+                doDelete($, obj.data.id, obj.data.versionName, appId);
             }
 			return false;
         });
     });
 
-	function approve($, projectId, branchName, deploymentDetailId) {
+	function approve($, appId, branchName, deploymentDetailId) {
 		var msg = '确定通过？';
 		layer.confirm(msg, {shade: 0.5,
 			maxmin: false,
@@ -116,11 +116,11 @@
 			offset: ['35%', '40%'],
 		}, function (index) {
 			$.ajax({
-				url: '/project/deployment/detail/approveToDeploy',
+				url: '/app/deployment/detail/approveToDeploy',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"projectId": projectId, "branchName": branchName, "deploymentDetailId": deploymentDetailId}),
+				data: JSON.stringify({"appId": appId, "branchName": branchName, "deploymentDetailId": deploymentDetailId}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});
@@ -143,7 +143,7 @@
 		});
 	}
 	
-	function rollback($, projectId, versionName, deploymentDetailId) {
+	function rollback($, appId, versionName, deploymentDetailId) {
 		var msg = '确定回滚到版本：' + versionName + '?';
 		layer.confirm(msg, {icon: 0,
 			title:'提示',
@@ -153,11 +153,11 @@
 			offset: ['35%', '40%'],
 		}, function (index) {
 			$.ajax({
-				url: '/project/deployment/detail/submitToRollback',
+				url: '/app/deployment/detail/submitToRollback',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"projectId": projectId, "deploymentDetailId": deploymentDetailId}),
+				data: JSON.stringify({"appId": appId, "deploymentDetailId": deploymentDetailId}),
 				success: function(data){
 					if(data.code == "800000"){
 						layer.close(index);
@@ -185,17 +185,17 @@
 		});
 	}
 	
-	function initTable(table, projectId, projectEnvId){
+	function initTable(table, appId, appEnvId){
 		table.render({
             elem: '#currentTableId',
-            url: '/project/deployment/detail/page',
+            url: '/app/deployment/detail/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"projectId": projectId, "projectEnvId": projectEnvId},
+			where: {"appId": appId, "appEnvId": appEnvId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -233,13 +233,13 @@
         });
 	}
 	
-	function initHis(form, table, $, projectId) {
+	function initHis(form, table, $, appId) {
 		$.ajax({
-			url: '/project/env/search',
+			url: '/app/env/search',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'projectId': projectId, 'pageSize': 1000, 'pageNum': 1}),
+			data: JSON.stringify({'appId': appId, 'pageSize': 1000, 'pageNum': 1}),
 			success: function(res){
 				data = res.data
 				var firstEnv = 0;
@@ -251,11 +251,11 @@
 					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].envName +"</option>");
 				}
 				if(opt != ''){
-					$("#projectEnvId").html(opt);
+					$("#appEnvId").html(opt);
 					form.render('select');
 				}
 				
-				initTable(table, projectId, firstEnv);
+				initTable(table, appId, firstEnv);
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});
@@ -264,16 +264,16 @@
 	}
 	
 	//删除
-	function doDelete($, id, name, projectId) {
+	function doDelete($, id, name, appId) {
 		var msg = "确定要删除“" + name + "”吗？";
 		layer.confirm(msg, {title: '提示'}, function (index) {
 			layer.close(index);
 			$.ajax({
-				url: '/project/deployment/detail/delete',
+				url: '/app/deployment/detail/delete',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"projectId": projectId, "deploymentDetailId": id}),
+				data: JSON.stringify({"appId": appId, "deploymentDetailId": id}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});

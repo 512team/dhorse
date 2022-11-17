@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @author Dahai 2021-09-08
  */
 @TableName("DEPLOYMENT_VERSION")
-public class DeploymentVersionPO extends BaseProjectPO {
+public class DeploymentVersionPO extends BaseAppPO {
 
 	private static final long serialVersionUID = 1L;
 

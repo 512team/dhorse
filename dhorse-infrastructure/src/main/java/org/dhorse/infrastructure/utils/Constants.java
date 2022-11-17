@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.dhorse.api.enums.ProjectUserRoleTypeEnum;
+import org.dhorse.api.enums.AppUserRoleTypeEnum;
 import org.dhorse.infrastructure.component.SpringBootApplicationHome;
 
 
@@ -27,7 +27,7 @@ public class Constants {
 	
 	public static final int DEPLOYED_LOG_EXIST_DAYS = 14;
 	
-	public static final String IMAGE_REPO_PROJECT = "dhorse";
+	public static final String IMAGE_REPO_APP = "dhorse";
 	
 	/**
 	 * 部署目录
@@ -93,10 +93,10 @@ public class Constants {
 	}
 	
 	/**
-	 * 可以操作项目成员的角色
+	 * 可以操作应用成员的角色
 	 */
-	public static final List<Integer> ROLE_OF_OPERATE_PROJECT_USER = Arrays.asList(
-			ProjectUserRoleTypeEnum.ADMIN.getCode(),
-			ProjectUserRoleTypeEnum.ARCHITECT.getCode(),
-			ProjectUserRoleTypeEnum.CHECKER.getCode());
+	public static final List<Integer> ROLE_OF_OPERATE_APP_USER = Arrays.asList(
+			AppUserRoleTypeEnum.ADMIN.getCode(),
+			AppUserRoleTypeEnum.ARCHITECT.getCode(),
+			AppUserRoleTypeEnum.CHECKER.getCode());
 }

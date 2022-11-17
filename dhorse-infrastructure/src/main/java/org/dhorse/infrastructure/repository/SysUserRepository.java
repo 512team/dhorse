@@ -35,7 +35,7 @@ public class SysUserRepository extends BaseRepository<SysUserParam, SysUserPO> {
 	private SysUserMapper mapper;
 	
 	@Autowired
-	private ProjectMemberRepository projectMemberRepository;
+	private AppMemberRepository appMemberRepository;
 	
 	public LoginUser queryLoginUser(String loginToken) {
 		LoginUserParam bizParam = new LoginUserParam();
@@ -81,7 +81,7 @@ public class SysUserRepository extends BaseRepository<SysUserParam, SysUserPO> {
 	
 	public boolean delete(String id) {
 		if(super.delete(id)) {
-			return projectMemberRepository.deleteByUserId(id);
+			return appMemberRepository.deleteByUserId(id);
 		}
 		return false;
 	}
