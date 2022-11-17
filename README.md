@@ -22,7 +22,7 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 | :-----: | :----: | :----: |
 | >=11 | >=2.0.0 | 1.19.x,1.21.x
 
-下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.9.1-beta/dhorse-0.9.1-beta-x64_bin-windows.zip)，然后解压：
+下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.0-beta/dhorse-0.10.0-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.0-beta/dhorse-0.10.0-beta-x64_bin-windows.zip)，然后解压：
 
 ```bash
 $  tar -xzf dhorse-*.tar.gz
@@ -53,7 +53,7 @@ drwxr-xr-x 8 root root    93 Sep 23 16:09 static
 $  bin/dhorse-start.sh
 ```
 
-在浏览器里输入地址：`http://127.0.0.1:8100`，并输入登录信息，登录名：admin，密码：admin，登录之后如下图所示：
+在浏览器里输入地址：`http://127.0.0.1:8100`，并输入登录名：admin，密码：admin，登录之后如下图所示：
 
  ![Image text](./static/images/home.jpg)
 
