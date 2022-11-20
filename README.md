@@ -18,9 +18,9 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 
 ## 快速开始
 环境要求：
-| Java | Harbor | 已验证过的k8s版本
+| Java | Harbor | kubernetes
 | :-----: | :----: | :----: |
-| >=11 | >=2.0.0 | 1.19.x,1.21.x
+| >=11 | >=2.0.0 | [1.13.x, 1.24.x]
 
 下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.0-beta/dhorse-0.10.0-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.0-beta/dhorse-0.10.0-beta-x64_bin-windows.zip)，然后解压：
 
@@ -66,6 +66,8 @@ $  bin/dhorse-stop.sh
 了解更多：
 
 《[DHorse系列文章之操作手册](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)》
+
+《[DHorse系列文章之配置文件](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.md)》
 
 《[DHorse系列文章之镜像制作](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md)》
 

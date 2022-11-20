@@ -21,17 +21,17 @@ import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.result.PageData;
+import org.dhorse.api.vo.AppEnv;
+import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
-import org.dhorse.api.vo.AppEnv;
-import org.dhorse.api.vo.AppExtendJava;
-import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -68,12 +68,12 @@ import io.kubernetes.client.openapi.models.V1DeploymentSpec;
 import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource;
 import io.kubernetes.client.openapi.models.V1ExecAction;
 import io.kubernetes.client.openapi.models.V1HTTPGetAction;
-import io.kubernetes.client.openapi.models.V1Handler;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscaler;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerList;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerSpec;
 import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1Lifecycle;
+import io.kubernetes.client.openapi.models.V1LifecycleHandler;
 import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.openapi.models.V1NamespaceList;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -139,10 +139,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
-				deployment = api.createNamespacedDeployment(namespace, deployment, null, null, null);
+				deployment = api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
 				deployment = api.replaceNamespacedDeployment(context.getDeploymentAppName(), namespace, deployment, null, null,
-						null);
+						null, null);
 			}
 			
 			// 自动扩容任务
@@ -201,11 +201,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			service.setKind("Service");
 			service.setMetadata(serviceMeta(appName));
 			service.setSpec(serviceSpec(context));
-			service = coreApi.createNamespacedService(namespace, service, null, null, null);
+			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
 		} else {
 			service = serviceList.getItems().get(0);
 			modifyServiceSpec(context, service);
-			service = coreApi.replaceNamespacedService(context.getApp().getAppName(), namespace, service, null, null, null);
+			service = coreApi.replaceNamespacedService(context.getApp().getAppName(), namespace, service, null, null, null, null);
 		}
 		logger.info("End to create service");
 		return true;
@@ -268,10 +268,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					null);
 			if (CollectionUtils.isEmpty(autoscalerList.getItems())) {
 				autoscalingApi.createNamespacedHorizontalPodAutoscaler(appEnvPO.getNamespaceName(), body, null,
-						null, null);
+						null, null, null);
 			} else {
 				autoscalingApi.replaceNamespacedHorizontalPodAutoscaler(appName, appEnvPO.getNamespaceName(),
-						body, null, null, null);
+						body, null, null, null, null);
 			}
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
@@ -399,7 +399,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private void lifecycle(V1Container container, DeployContext context) {
 		V1ExecAction exec = new V1ExecAction();
 		exec.command(Arrays.asList("sh", "-c", "sleep 2"));
-		V1Handler preStop = new V1Handler();
+		V1LifecycleHandler preStop = new V1LifecycleHandler();
 		preStop.setExec(exec);
 		V1Lifecycle lifecycle = new V1Lifecycle();
 		lifecycle.setPreStop(preStop);
@@ -720,21 +720,21 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, null,
 							null, null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
 					if (CollectionUtils.isEmpty(configMapList.getItems())) {
-						coreApi.createNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, (V1ConfigMap) o, null, null,
+						coreApi.createNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, (V1ConfigMap) o, null, null, null,
 								null);
 					} else {
 						coreApi.replaceNamespacedConfigMap("filebeat-config", K8sUtils.DHORSE_NAMESPACE,
-								(V1ConfigMap) o, null, null, null);
+								(V1ConfigMap) o, null, null, null, null);
 					}
 				} else if (o instanceof V1DaemonSet) {
 					V1DaemonSetList daemonSetList = appsApi.listNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, null,
 							null, null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
 					if (CollectionUtils.isEmpty(daemonSetList.getItems())) {
-						appsApi.createNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, (V1DaemonSet) o, null, null,
+						appsApi.createNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, (V1DaemonSet) o, null, null, null,
 								null);
 					} else {
 						appsApi.replaceNamespacedDaemonSet("filebeat", K8sUtils.DHORSE_NAMESPACE, (V1DaemonSet) o,
-								null, null, null);
+								null, null, null, null);
 					}
 				}
 			}
@@ -926,7 +926,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			metaData.setLabels(Collections.singletonMap("custom.name", namespaceName));
 			V1Namespace namespace = new V1Namespace();
 			namespace.setMetadata(metaData);
-			coreApi.createNamespace(namespace, null, null, null);
+			coreApi.createNamespace(namespace, null, null, null, null);
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
 			LogUtils.throwException(logger, message, MessageCodeEnum.ADD_NAMESPACE_FAILURE);
@@ -937,7 +937,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public boolean deleteNamespace(ClusterPO clusterPO, String namespaceName) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		String labelSelector = "kubernetes.io/metadata.name=" + namespaceName;
+		String labelSelector = "custom.name=" + namespaceName;
 		try {
 			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, labelSelector, null, null, null, null, null);
 			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
