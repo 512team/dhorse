@@ -6,7 +6,7 @@ DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单�
 
 ## 主要特性
 * 简洁的操作界面
-* 支持Springboot项目部署
+* 支持Springboot应用部署
 * 无需安装Maven即可打包
 * 无需安装Docker即可构建镜像
 * 支持多环境部署
@@ -73,11 +73,13 @@ $  bin/dhorse-stop.sh
 
 《[DHorse系列文章之maven打包](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/maven%E6%89%93%E5%8C%85.md)》
 
-《[DHorse系列文章之Dubbo项目解决方案](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Dubbo%E9%A1%B9%E7%9B%AE%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.md)》
+《[DHorse系列文章之Dubbo应用解决方案](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Dubbo%E5%BA%94%E7%94%A8%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.md)》
+
+《[DHorse系列文章之多环境标识](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)》
 
 《[DHorse系列文章之日志收集](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)》
 
-《[DHorse系列文章之多环境标识](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)》
+《[DHorse系列文章之链路追踪](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)》
 
 ## 社区交流
 
