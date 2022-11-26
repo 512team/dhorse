@@ -19,9 +19,15 @@
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form" lay-filter="form-data">
 		<div class="layui-form-item">
-			<label class="layui-form-label">环境编号：</label>
+			<label class="layui-form-label">模板编号：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="id"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">模板名称：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="templateName"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -134,12 +140,6 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">最近部署时间：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="deploymentTime"></label>
-			</div>
-		</div>
-		<div class="layui-form-item">
 			<label class="layui-form-label">创建时间：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="creationTime"></label>
@@ -163,17 +163,16 @@
     layui.use(['form'], function () {
         var form = layui.form,
             layer = layui.layer,
-            $ = layui.$,
-			appId = localStorage.getItem('appId_' + $("#userName").val());
+            $ = layui.$;
 
 		//初始化表单数据
 		var loadIndex = 0;
 		$.ajax({
-			url: '/app/env/query',
+			url: '/globalConfig/envTemplate/query',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'appId': appId, 'appEnvId': JSON.parse(parent.data2).envId}),
+			data: JSON.stringify({'globalConfigId': JSON.parse(parent.data2).id}),
 			beforeSend: function() {
 				loadIndex = layer.load(2);
 			},
@@ -182,42 +181,43 @@
 					layer.msg(res.message, {icon: 5, shift: 6});
 					layer.close(loadIndex);
 					return false;
-				}				
-				$("#id").text(res.data.id);
-				$("#clusterName").text(res.data.clusterName);
-				$("#namespaceName").text(res.data.namespaceName);
-				$("#envName").text(res.data.envName);
-				$("#tag").text(res.data.tag);
-				$("#deploymentOrder").text(res.data.deploymentOrder);
-				$("#minReplicas").text(res.data.minReplicas);
-				$("#maxReplicas").text(res.data.maxReplicas);
-				$("#replicaCpu").text(res.data.replicaCpu);
-				$("#replicaMemory").text(res.data.replicaMemory);
-				$("#autoScalingCpu").text(res.data.autoScalingCpu);
-				$("#autoScalingMemory").text(res.data.autoScalingMemory);
-				if(res.data.requiredDeployApproval == 0){
+				}
+				var data = res.data.envTemplate;
+				$("#id").text(data.id);
+				$("#templateName").text(data.templateName);
+				$("#clusterName").text(data.clusterName);
+				$("#namespaceName").text(data.namespaceName);
+				$("#envName").text(data.envName);
+				$("#tag").text(data.tag);
+				$("#deploymentOrder").text(data.deploymentOrder);
+				$("#minReplicas").text(data.minReplicas);
+				$("#maxReplicas").text(data.maxReplicas);
+				$("#replicaCpu").text(data.replicaCpu);
+				$("#replicaMemory").text(data.replicaMemory);
+				$("#autoScalingCpu").text(data.autoScalingCpu);
+				$("#autoScalingMemory").text(data.autoScalingMemory);
+				if(data.requiredDeployApproval == 0){
 					$("#requiredDeployApproval").text('否');
 				}else{
 					$("#requiredDeployApproval").text('是');
 				}
-				if(res.data.requiredMerge == 0){
+				if(data.requiredMerge == 0){
 					$("#requiredMerge").text('否');
 				}else{
 					$("#requiredMerge").text('是');
 				}
-				$("#servicePort").text(res.data.servicePort);
-				if(res.data.traceStatus == 0){
+				$("#servicePort").text(data.servicePort);
+				if(data.traceStatus == 0){
 					$("#traceStatus").text('关闭');
 				}else{
 					$("#traceStatus").text('开启');
 				}
-				$("#traceTemplateName").text(res.data.traceTemplateName);
-				$("#healthPath").text(res.data.healthPath);
-				$("#jvmArgs").text(res.data.jvmArgs);
-				$("#description").text(res.data.description);
-				$("#deploymentTime").text(res.data.deploymentTime);
-				$("#creationTime").text(res.data.creationTime);
-				$("#updateTime").text(res.data.updateTime);
+				$("#traceTemplateName").text(data.traceTemplateName);
+				$("#healthPath").text(data.healthPath);
+				$("#jvmArgs").text(data.jvmArgs);
+				$("#description").text(data.description);
+				$("#creationTime").text(data.creationTime);
+				$("#updateTime").text(data.updateTime);
 
 				layer.close(loadIndex);
 			},

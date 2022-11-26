@@ -9,6 +9,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
@@ -34,12 +35,13 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.BaseGlobalConfig;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
-import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.AppEnvParam;
+import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
@@ -207,6 +209,78 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		return addOrUpdateGlobalConfig(ldap);
 	}
 	
+	public PageData<EnvTemplate> envTemplatePage(GlolabConfigPageParam pageParam) {
+		GlobalConfigParam bizParam = new GlobalConfigParam();
+		bizParam.setPageNum(pageParam.getPageNum());
+		bizParam.setPageSize(pageParam.getPageSize());
+		bizParam.setItemType(pageParam.getItemType());
+		IPage<GlobalConfigPO> pagePO = globalConfigRepository.page(bizParam);
+		if(pagePO.getTotal() == 0) {
+			return zeroPageData(pageParam.getPageSize());
+		}
+		List<EnvTemplate> resultPage = pagePO.getRecords().stream().map(e ->{
+			EnvTemplate template = JsonUtils.parseToObject(e.getItemValue(), EnvTemplate.class);
+			template.setId(e.getId());
+			template.setItemType(e.getItemType());
+			return template;
+		}).collect(Collectors.toList());
+		return this.pageData(pagePO, resultPage);
+	}
+	
+	public Void addEnvTemplate(EnvTemplate envTemplate) {
+		initEnvTemplate(envTemplate);
+		GlobalConfigParam param = new GlobalConfigParam();
+		param.setItemType(GlobalConfigItemTypeEnum.ENV_TEMPLATE.getCode());
+		param.setItemValue(JsonUtils.toJsonString(envTemplate, "id", "pageSize", "itemType"));
+		globalConfigRepository.add(param);
+		return null;
+	}
+	
+	private void initEnvTemplate(EnvTemplate addParam) {
+		if(Objects.isNull(addParam.getDeploymentOrder())){
+			addParam.setDeploymentOrder(0);
+		}
+		if(Objects.isNull(addParam.getMinReplicas())){
+			addParam.setMinReplicas(1);
+		}
+		if(Objects.isNull(addParam.getMaxReplicas())){
+			addParam.setMaxReplicas(1);
+		}
+		if(Objects.isNull(addParam.getReplicaCpu())){
+			addParam.setReplicaCpu(2);
+		}
+		if(Objects.isNull(addParam.getReplicaMemory())){
+			addParam.setReplicaMemory(1024);
+		}
+		if(Objects.isNull(addParam.getAutoScalingCpu())){
+			addParam.setAutoScalingCpu(80);
+		}
+		if(Objects.isNull(addParam.getAutoScalingMemory())){
+			addParam.setAutoScalingMemory(80);
+		}
+		if(Objects.isNull(addParam.getRequiredDeployApproval())){
+			addParam.setRequiredDeployApproval(0);
+		}
+		if(Objects.isNull(addParam.getRequiredMerge())){
+			addParam.setRequiredMerge(0);
+		}
+		if(Objects.isNull(addParam.getTraceStatus())){
+			addParam.setTraceStatus(0);
+		}
+	}
+	
+	public Void updateEnvTemplate(EnvTemplate envTemplate) {
+		if(envTemplate.getId() == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
+		}
+		GlobalConfigParam param = new GlobalConfigParam();
+		param.setId(envTemplate.getId());
+		param.setItemType(GlobalConfigItemTypeEnum.ENV_TEMPLATE.getCode());
+		param.setItemValue(JsonUtils.toJsonString(envTemplate, "id", "pageSize", "itemType"));
+		globalConfigRepository.update(param);
+		return null;
+	}
+	
 	public PageData<TraceTemplate> traceTemplatePage(GlolabConfigPageParam pageParam) {
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setPageNum(pageParam.getPageNum());
@@ -247,7 +321,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	
 	public Void updateTraceTemplate(TraceTemplate taceTemplate) {
 		if(taceTemplate.getId() == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_ID_IS_EMPTY);
+			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
 		}
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());

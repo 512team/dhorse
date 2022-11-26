@@ -7,6 +7,7 @@ public enum GlobalConfigItemTypeEnum {
 	IMAGEREPO(3, "imageRepo"),
 	MAVEN(4, "maven"),
 	TRACE_TEMPLATE(5, "traceTemplate"),
+	ENV_TEMPLATE(6, "envTemplate"),
 	;
 
 	private Integer code;

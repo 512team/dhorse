@@ -32,7 +32,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label">部署序号</label>
 			<div class="layui-input-block">
-				<input name="orders" placeholder="值越小越往前，默认值：0" autocomplete="off"  class="layui-input">
+				<input name="deploymentOrder" placeholder="值越小越往前，默认值：0" autocomplete="off"  class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -114,7 +114,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
-				<input type="text" name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-input">
+				<textarea name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -141,7 +141,7 @@
 		envId = JSON.parse(parent.data2).envId;
 		
 		$("#appId2").val(appId);
-		
+				
 		$.ajax({
 			url: '/app/env/query',
 			type: 'POST',
@@ -154,7 +154,7 @@
 				form.val("update-form", {
 					"envName": data.envName
 					,"tag": data.tag
-					,"orders": data.orders
+					,"deploymentOrder": data.deploymentOrder
 					,"minReplicas": data.minReplicas
 					,"maxReplicas": data.maxReplicas
 					,"replicaCpu": data.replicaCpu
@@ -169,7 +169,7 @@
 					,"jvmArgs": data.jvmArgs
 					,"description": data.description
 				});
-				//初始化集群列表
+				
 				initCluster(form, $, data.clusterId);
 				initNamespaceName(form, $, data.clusterId, data.namespaceName);
 				initTraceTemplate(form, $, data.traceTemplateId, data.traceStatus);
@@ -240,7 +240,7 @@
 					return false;
 				}
 				data = res.data;
-				var opt = '';
+				var opt = '<option value="">请选择或输入</option>';
 				for(var k in data){
 					if(selectedClusterId == data[k].id){
 						opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].clusterName +"</option>");
@@ -249,7 +249,7 @@
 					}
 					
 				}
-				$("#clusterId").append(opt);
+				$("#clusterId").html(opt);
 				form.render('select');
 			},
 			error: function(data){
@@ -269,7 +269,7 @@
 				if(res.code != '000000'){
 					return false;
 				}
-				var opt = '';
+				var opt = '<option value="">请选择或输入</option>';
 				data = res.data.items;
 				for(var k in data){
 					if(data[k].namespaceName == selectedNamespace){
@@ -289,6 +289,7 @@
 	
 	function initTraceTemplate(form, $, traceTemplateId, traceStatus){
 		if(traceStatus == 0){
+			$("#traceTemplateDiv").hide();
 			return false;
 		}
 		$.ajax({

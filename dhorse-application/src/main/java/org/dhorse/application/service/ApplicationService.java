@@ -16,24 +16,25 @@ import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
+import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
+import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
-import org.dhorse.infrastructure.param.AppMemberParam;
-import org.dhorse.infrastructure.repository.ClusterRepository;
-import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
-import org.dhorse.infrastructure.repository.DeploymentVersionRepository;
-import org.dhorse.infrastructure.repository.GlobalConfigRepository;
 import org.dhorse.infrastructure.repository.AppEnvRepository;
 import org.dhorse.infrastructure.repository.AppExtendJavaRepository;
 import org.dhorse.infrastructure.repository.AppMemberRepository;
 import org.dhorse.infrastructure.repository.AppRepository;
+import org.dhorse.infrastructure.repository.ClusterRepository;
+import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
+import org.dhorse.infrastructure.repository.DeploymentVersionRepository;
+import org.dhorse.infrastructure.repository.GlobalConfigRepository;
 import org.dhorse.infrastructure.repository.SysUserRepository;
-import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
+import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -108,8 +109,25 @@ public abstract class ApplicationService {
 	
 	public GlobalConfigAgg globalConfig(GlobalConfigQueryParam queryParam) {
 		GlobalConfigParam configParam = new GlobalConfigParam();
+		configParam.setId(queryParam.getGlobalConfigId());
 		configParam.setItemType(queryParam.getItemType());
 		return globalConfigRepository.queryAgg(configParam);
+	}
+	
+	public GlobalConfigAgg envTemplateQuery(GlobalConfigQueryParam queryParam) {
+		GlobalConfigAgg globalConfigAgg = globalConfig(queryParam);
+		EnvTemplate template = globalConfigAgg.getEnvTemplate();
+		if(template == null) {
+			return globalConfigAgg;
+		}
+		if(!YesOrNoEnum.YES.getCode().equals(template.getTraceStatus())) {
+			return globalConfigAgg;
+		}
+		TraceTemplate traceTemplate = globalConfig().getTraceTemplate(template.getTraceTemplateId());
+		if(traceTemplate != null) {
+			template.setTraceTemplateName(traceTemplate.getName());
+		}
+		return globalConfigAgg;
 	}
 	
 	public AppPO validateApp(String appId) {

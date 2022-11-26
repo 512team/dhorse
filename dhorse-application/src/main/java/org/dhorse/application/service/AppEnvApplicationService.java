@@ -166,7 +166,7 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ENV_TRACE_STATUS_IS_EMPTY);
 		}
 		if(Objects.isNull(updateTraceParam.getTraceTemplateId())){
-			LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_ID_IS_EMPTY);
+			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
 		}
 		
 		AppEnvParam appEnvParam = new AppEnvParam();
@@ -264,7 +264,7 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		}
 		if(YesOrNoEnum.YES.getCode().equals(addParam.getTraceStatus())){
 			if(StringUtils.isBlank(addParam.getTraceTemplateId())) {
-				LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_ID_IS_EMPTY);
+				LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
 			}
 		}else {
 			addParam.setTraceTemplateId(null);
@@ -273,8 +273,8 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 	}
 	
 	private void initAddParam(AppEnvCreationParam addParam) {
-		if(Objects.isNull(addParam.getOrders())){
-			addParam.setOrders(0);
+		if(Objects.isNull(addParam.getDeploymentOrder())){
+			addParam.setDeploymentOrder(0);
 		}
 		if(Objects.isNull(addParam.getMinReplicas())){
 			addParam.setMinReplicas(1);

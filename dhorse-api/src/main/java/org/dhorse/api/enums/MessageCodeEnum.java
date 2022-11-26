@@ -73,7 +73,7 @@ public enum MessageCodeEnum {
 	APP_ENV_TAG_IS_EMPTY("200000", "环境标识不能为空"),
 	APP_ENV_TAG_INEXISTENCE("200000", "环境标识已经存在"),
 	APP_ENV_INEXISTENCE("200000", "环境不存在"),
-	TRACE_TEMPLATE_ID_IS_EMPTY("200000", "链路追踪模板编号不能为空"),
+	TEMPLATE_ID_IS_EMPTY("200000", "编号不能为空"),
 	APP_ENV_TRACE_STATUS_IS_EMPTY("200000", "链路追踪状态不能为空"),
 	APP_ENV_TRACE_IMAGE_IS_EMPTY("200000", "链路追踪镜像不能为空"),
 	TRACE_TEMPLATE_IS_EMPTY("200000", "链路模板不存在"),

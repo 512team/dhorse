@@ -6,6 +6,7 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
@@ -136,5 +137,51 @@ public class GlobalConfigRest extends AbstractRest {
 	@PostMapping("/traceTemplate/delete")
 	public RestResponse<Void> delete(@RequestBody GlolabConfigDeletionParam deleteParam) {
 		return this.success(globalConfigApplicationService.delete(deleteParam));
+	}
+
+	/**
+	 * 分页查询环境模板
+	 * 
+	 * @param pageParam 全局配置分页参数
+	 * @return 无
+	 */
+	@PostMapping("/envTemplate/page")
+	public RestResponse<PageData<EnvTemplate>> envTemplatePage(@RequestBody GlolabConfigPageParam pageParam) {
+		return this.success(globalConfigApplicationService.envTemplatePage(pageParam));
+	}
+
+	/**
+	 * 添加环境模板
+	 * 
+	 * @param envTemplate 环境模板参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/envTemplate/add")
+	public RestResponse<Void> envTemplateAdd(@RequestBody EnvTemplate envTemplate) {
+		return this.success(globalConfigApplicationService.addEnvTemplate(envTemplate));
+	}
+
+	/**
+	 * 修改环境模板
+	 * 
+	 * @param envTemplate 环境模板参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/envTemplate/update")
+	public RestResponse<Void> envTemplateUpdate(@RequestBody EnvTemplate envTemplate) {
+		return this.success(globalConfigApplicationService.updateEnvTemplate(envTemplate));
+	}
+	
+	/**
+	 * 查询模板
+	 * 
+	 * @return 配置数据
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/envTemplate/query")
+	public RestResponse<GlobalConfigAgg> envTemplateQuery(@RequestBody GlobalConfigQueryParam queryParam) {
+		return this.success(globalConfigApplicationService.envTemplateQuery(queryParam));
 	}
 }

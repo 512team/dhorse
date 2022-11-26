@@ -5,6 +5,7 @@ import java.util.List;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
@@ -63,6 +64,14 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 			if(GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode().equals(po.getItemType())) {
 				TraceTemplate traceTemplate = JsonUtils.parseToObject(po.getItemValue(), TraceTemplate.class);
 				globalConfig.setTraceTemplate(po.getId(), traceTemplate);
+				continue;
+			}
+			if(GlobalConfigItemTypeEnum.ENV_TEMPLATE.getCode().equals(po.getItemType())) {
+				EnvTemplate template = JsonUtils.parseToObject(po.getItemValue(), EnvTemplate.class);
+				template.setId(po.getId());
+				template.setCreationTime(po.getCreationTime());
+				template.setUpdateTime(po.getUpdateTime());
+				globalConfig.setEnvTemplate(template);
 				continue;
 			}
 		}
