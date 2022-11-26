@@ -16,6 +16,12 @@
 			"target": "_self"
 		},
 		{
+			"title": "集群管理",
+			"href": "page/cluster/list.html",
+			"icon": "fa fa-server",
+			"target": "_self"
+		},
+		{
 			"title": "系统配置",
 			"href": "",
 			"icon": "fa fa-cogs",
@@ -40,18 +46,18 @@
 					"target": "_self"
 				},
 				{
+					"title": "环境模板",
+					"href": "page/app_config/env_template/list.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
 					"title": "链路追踪模板",
 					"href": "page/app_config/trace_template/list.html",
 					"icon": "fa fa-cog",
 					"target": "_self"
 				}
 			]
-		},
-		{
-			"title": "集群管理",
-			"href": "page/cluster/list.html",
-			"icon": "fa fa-server",
-			"target": "_self"
 		},
 		{
 			"title": "应用管理",
