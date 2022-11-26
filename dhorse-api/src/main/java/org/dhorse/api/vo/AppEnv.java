@@ -54,7 +54,7 @@ public class AppEnv extends BaseDto {
 	/**
 	 * 部署序号（值越小越往前）
 	 */
-	private Integer orders;
+	private Integer deploymentOrder;
 
 	/**
 	 * 最小副本数
@@ -192,8 +192,8 @@ public class AppEnv extends BaseDto {
 		this.clusterId = clusterId;
 	}
 
-	public void setOrders(Integer orders) {
-		this.orders = orders;
+	public void setDeploymentOrder(Integer deploymentOrder) {
+		this.deploymentOrder = deploymentOrder;
 	}
 
 	public String getEnvName() {
@@ -204,8 +204,8 @@ public class AppEnv extends BaseDto {
 		this.envName = envName;
 	}
 
-	public Integer getOrders() {
-		return orders;
+	public Integer getDeploymentOrder() {
+		return deploymentOrder;
 	}
 
 	public Integer getMinReplicas() {
