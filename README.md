@@ -22,7 +22,7 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 | :-----: | :----: | :----: |
 | >=11 | >=2.0.0 | [1.13.x, 1.24.x]
 
-下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.0-beta/dhorse-0.10.0-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.0-beta/dhorse-0.10.0-beta-x64_bin-windows.zip)，然后解压：
+下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-windows.zip)，然后解压：
 
 ```bash
 $  tar -xzf dhorse-*.tar.gz
