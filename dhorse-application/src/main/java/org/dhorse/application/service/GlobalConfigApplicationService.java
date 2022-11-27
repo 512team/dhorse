@@ -171,7 +171,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
         ObjectNode objectNode = JsonUtils.getObjectMapper().createObjectNode();
         objectNode.put("project_name", "dhorse");
         //1：公有类型
-        objectNode.put("public", 1);
+        objectNode.put("public", true);
         httpPost.setEntity(new StringEntity(objectNode.toString(),"UTF-8"));
         try (CloseableHttpResponse response = createHttpClient(imageRepo.getUrl()).execute(httpPost)){
             if (response.getStatusLine().getStatusCode() != 201
