@@ -83,7 +83,7 @@ $  bin/dhorse-stop.sh
 
 ## 社区交流
 
-感谢您的支持和使用，如想了解更多内容，请加入如下群聊。
+感谢您的使用和支持，如想了解更多内容，请加入如下群聊。
 
  ![Image text](./static/images/weixin.jpg)
 
