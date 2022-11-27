@@ -40,7 +40,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
 	public boolean doDownloadBranch(DeployContext context) {
-		int appId = Integer.parseInt(context.getApp().getCodeRepoPath());
+		String appId = context.getApp().getCodeRepoPath();
 		String branchName = context.getBranchName();
 		GitLabApi gitLabApi = gitLabApi(context.getGlobalConfigAgg().getCodeRepo());
 		try {
@@ -103,7 +103,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		MergeRequestApi mergeRequestApi = gitLabApi.getMergeRequestApi();
 		MergeRequestFilter filter = new MergeRequestFilter();
 		filter.setState(MergeRequestState.OPENED);
-		filter.setProjectId(Integer.valueOf(context.getApp().getCodeRepoPath()));
+		filter.setProjectId(Long.valueOf(context.getApp().getCodeRepoPath()));
 		MergeRequest mergeRequest = null;
 		try {
 			//1.如果存在未合并的请求，直接报错
