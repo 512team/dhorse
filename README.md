@@ -72,21 +72,21 @@ $  bin/dhorse-stop.sh
 
 了解更多：
 
-《[DHorse系列文章之操作手册](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)》
+《[DHorse操作手册](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)》
 
-《[DHorse系列文章之配置文件](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.md)》
+《[DHorse配置文件](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.md)》
 
-《[DHorse系列文章之镜像制作](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md)》
+《[DHorse镜像制作](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md)》
 
-《[DHorse系列文章之maven打包](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/maven%E6%89%93%E5%8C%85.md)》
+《[DHorse打包](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/maven%E6%89%93%E5%8C%85.md)》
 
-《[DHorse系列文章之Dubbo应用解决方案](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Dubbo%E5%BA%94%E7%94%A8%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.md)》
+《[Dubbo应用解决方案](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Dubbo%E5%BA%94%E7%94%A8%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.md)》
 
-《[DHorse系列文章之多环境标识](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)》
+《[DHorse多环境标识](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)》
 
-《[DHorse系列文章之日志收集](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)》
+《[DHorse日志收集](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)》
 
-《[DHorse系列文章之链路追踪](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)》
+《[DHorse链路追踪](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)》
 
 ## 社区交流
 
