@@ -17,24 +17,31 @@ DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单�
 Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、H2、Mysql等。
 
 ## 快速开始
-环境要求：
-| Java | Harbor | kubernetes
-| :-----: | :----: | :----: |
-| >=11 | >=2.0.0 | [1.13.x, 1.24.x]
 
-下载安装文件：[Linux、Mac和Cygwin](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-unix.tar.gz)，[Windows](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-windows.zip)，然后解压：
+环境要求：
+| Harbor | kubernetes
+| :----: | :----: |
+| >=2.0.0 | [1.13.x, 1.24.x]
+
+下载安装文件：
+| Java版本 | Linux、Mac或Cygwin | Windows
+| :-----: | :----: | :----: | 
+| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-1.8-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-1.8-x64_bin-windows.zip)
+| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-windows.zip)
+
+下载文件之后，然后解压：
 
 ```bash
 $  tar -xzf dhorse-*.tar.gz
 ```
 
-进入解压目录并查看文件：
+进入解压目录并查看文件列表：
 
 ```bash
 $  cd dhorse-* && ls -l
 ```
 
-文件如下：
+内容如下：
 
 ```bash
 total 24
