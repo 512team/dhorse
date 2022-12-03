@@ -469,7 +469,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
 			}
 			commands.add("-javaagent:/tmp/skywalking-agent/skywalking-agent.jar");
-			commands.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServerUrl());
+			commands.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServiceUrl());
 			commands.add("-Dskywalking.agent.service_name=" + context.getApp().getAppName());
 		}
 		commands.add("-Duser.timezone=Asia/Shanghai");

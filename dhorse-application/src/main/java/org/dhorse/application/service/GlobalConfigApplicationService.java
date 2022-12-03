@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -40,6 +41,7 @@ import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
+import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
@@ -56,7 +58,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
 import com.google.cloud.tools.jib.api.JibContainerBuilder;
@@ -142,19 +143,30 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	}
 	
 	public Void addOrUpdateCodeRepo(CodeRepo codeRepo) {
+		if(!codeRepo.getUrl().startsWith("http")) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "仓库地址格式不正确");
+		}
 		codeRepo.setItemType(GlobalConfigItemTypeEnum.CODEREPO.getCode());
 		return addOrUpdateGlobalConfig(codeRepo);
 	}
 	
 	public Void addOrUpdateImageRepo(ImageRepo imageRepo) {
+		if(!imageRepo.getUrl().startsWith("http")) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "仓库地址格式不正确");
+		}
 		if(ImageRepoTypeEnum.HARBOR.getValue().equals(imageRepo.getType())) {
-			createProject(imageRepo);
+			try {
+				createProject(imageRepo, true);
+			}catch(ApplicationException e) {
+				//这里为了兼容Harbor2.0接口参数类型的不同，再次调用
+				createProject(imageRepo, 1);
+			}
 		}
 		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		return addOrUpdateGlobalConfig(imageRepo);
 	}
 	
-	private void createProject(ImageRepo imageRepo) {
+	private void createProject(ImageRepo imageRepo, Object publicType) {
         String uri = "api/v2.0/projects";
         if(!imageRepo.getUrl().endsWith("/")) {
         	uri = "/" + uri;
@@ -168,11 +180,8 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
         httpPost.setConfig(requestConfig);
         httpPost.setHeader("Content-Type", "application/json;charset=UTF-8");
         httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthName() + ":" + imageRepo.getAuthPassword()).getBytes()));
-        ObjectNode objectNode = JsonUtils.getObjectMapper().createObjectNode();
-        objectNode.put("project_name", "dhorse");
-        //1：公有类型
-        objectNode.put("public", true);
-        httpPost.setEntity(new StringEntity(objectNode.toString(),"UTF-8"));
+        String param = "{\"project_name\": \"dhorse\", \"public\": " + publicType + "}";
+        httpPost.setEntity(new StringEntity(param, "UTF-8"));
         try (CloseableHttpResponse response = createHttpClient(imageRepo.getUrl()).execute(httpPost)){
             if (response.getStatusLine().getStatusCode() != 201
             		&& response.getStatusLine().getStatusCode() != 409) {
@@ -229,6 +238,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	
 	public Void addEnvTemplate(EnvTemplate envTemplate) {
 		initEnvTemplate(envTemplate);
+		valideTemplateParam(envTemplate);
 		GlobalConfigParam param = new GlobalConfigParam();
 		param.setItemType(GlobalConfigItemTypeEnum.ENV_TEMPLATE.getCode());
 		param.setItemValue(JsonUtils.toJsonString(envTemplate, "id", "pageSize", "itemType"));
@@ -273,12 +283,28 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		if(envTemplate.getId() == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
 		}
+		valideTemplateParam(envTemplate);
 		GlobalConfigParam param = new GlobalConfigParam();
 		param.setId(envTemplate.getId());
 		param.setItemType(GlobalConfigItemTypeEnum.ENV_TEMPLATE.getCode());
 		param.setItemValue(JsonUtils.toJsonString(envTemplate, "id", "pageSize", "itemType"));
 		globalConfigRepository.update(param);
 		return null;
+	}
+	
+	private void valideTemplateParam(EnvTemplate envTemplate) {
+		if(envTemplate.getEnvName().length() > 16) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "环境名称不能大于16个字符");
+		}
+		if(envTemplate.getTag().length() > 16) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "环境标识不能大于16个字符");
+		}
+		if(envTemplate.getJvmArgs() != null && envTemplate.getJvmArgs().length() > 1024) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Jvm参数不能大于1024个字符");
+		}
+		if(envTemplate.getDescription() != null && envTemplate.getDescription().length() > 128) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "环境描述不能大于128个字符");
+		}
 	}
 	
 	public PageData<TraceTemplate> traceTemplatePage(GlolabConfigPageParam pageParam) {
@@ -300,6 +326,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	}
 	
 	public Void addTraceTemplate(TraceTemplate taceTemplate) {
+		checkTraceTemplateParam(taceTemplate);
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
@@ -323,6 +350,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		if(taceTemplate.getId() == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
 		}
+		checkTraceTemplateParam(taceTemplate);
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
@@ -341,6 +369,21 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		param.setItemValue(JsonUtils.toJsonString(taceTemplate, "id", "pageSize", "itemType"));
 		globalConfigRepository.update(param);
 		return null;
+	}
+	
+	private void checkTraceTemplateParam(TraceTemplate taceTemplate) {
+		if(StringUtils.isBlank(taceTemplate.getName())) {
+			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_NAME_IS_EMPTY);
+		}
+		if(StringUtils.isBlank(taceTemplate.getServiceUrl())) {
+			LogUtils.throwException(logger, MessageCodeEnum.SERVICE_URL_IS_EMPTY);
+		}
+		if(null == taceTemplate.getLanguageType()) {
+			LogUtils.throwException(logger, MessageCodeEnum.AGENT_LANGUAGE_TYPE_IS_EMPTY);
+		}
+		if(taceTemplate.getServiceUrl().startsWith("http")) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "服务地址格式不正确");
+		}
 	}
 	
 	private void buildAgentImage(TraceTemplate taceTemplate, GlobalConfigAgg globalConfigAgg) {

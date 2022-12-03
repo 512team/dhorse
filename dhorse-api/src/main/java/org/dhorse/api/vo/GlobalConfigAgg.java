@@ -627,7 +627,7 @@ public class GlobalConfigAgg implements Serializable {
 		/**
 		 * 服务地址，如：127.0.0.1:1800
 		 */
-		private String serverUrl;
+		private String serviceUrl;
 
 		/**
 		 * 语言类型
@@ -657,12 +657,12 @@ public class GlobalConfigAgg implements Serializable {
 			this.name = name;
 		}
 
-		public String getServerUrl() {
-			return serverUrl;
+		public String getServiceUrl() {
+			return serviceUrl;
 		}
 
-		public void setServerUrl(String serverUrl) {
-			this.serverUrl = serverUrl;
+		public void setServiceUrl(String serviceUrl) {
+			this.serviceUrl = serviceUrl;
 		}
 
 		public Integer getAgentImageSource() {

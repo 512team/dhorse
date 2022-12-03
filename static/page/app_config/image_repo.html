@@ -81,6 +81,10 @@
 		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
+			if(data.field.url.substr(0, 4) !== 'http'){
+				layer.msg('仓库地址格式不正确', {icon: 5, shift: 6});
+				return false;
+			}
 			if(data.field.authName == ''){
 				layer.msg("认证名称不能为空", {icon: 5, shift: 6});
 				return false;

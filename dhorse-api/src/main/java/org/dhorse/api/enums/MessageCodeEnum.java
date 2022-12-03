@@ -3,6 +3,8 @@ package org.dhorse.api.enums;
 public enum MessageCodeEnum {
 	
 	SUCESS("000000", "成功"),
+	
+	INVALID_PARAM("200000", "非法的参数"),
 	FAILURE("100000", "操作失败，请查看详细日志信息"),
 	SYS_USER_NOT_LOGINED("300000", "用户未登录"),
 	NO_ACCESS_RIGHT("200000", "无权限"),
@@ -51,6 +53,11 @@ public enum MessageCodeEnum {
 	NAMESPACE_EXISTENCE("200000", "命名空间已经存在"),
 	NAMESPACE_INEXISTENCE("200000", "命名空间不存在"),
 	NAMESPACE_NOT_ALLOWED_DELETION("200000", "该命名空间不允许删除"),
+	
+	//系统配置
+	TEMPLATE_NAME_IS_EMPTY("200000", "模板名称不能为空"),
+	SERVICE_URL_IS_EMPTY("200000", "服务地址不能为空"),
+	AGENT_LANGUAGE_TYPE_IS_EMPTY("200000", "Agent语言类型不能为空"),
 	
 	//应用
 	APP_ID_IS_NULL("200000", "应用编号不能为空"),

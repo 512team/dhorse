@@ -385,8 +385,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 		properties.put("maven.compiler.source", javaVersion);
 		properties.put("maven.compiler.target", javaVersion);
 		properties.put("maven.compiler.compilerVersion", javaVersion);
-		properties.put("app.build.sourceEncoding", "UTF-8");
-		properties.put("app.reporting.outputEncoding", "UTF-8");
+		properties.put("project.build.sourceEncoding", "UTF-8");
+		properties.put("project.reporting.outputEncoding", "UTF-8");
 		profile.setProperties(properties);
 		MavenExecutionRequest executionRequest = request.getRequest();
 		executionRequest.setProfiles(Arrays.asList(profile));

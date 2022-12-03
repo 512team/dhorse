@@ -15,6 +15,7 @@ import org.dhorse.api.param.app.AppPageParam;
 import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.App;
+import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.AppExtendJavaParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
@@ -156,6 +157,27 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		}
 		if(Objects.isNull(addParam.getLanguageType())){
 			LogUtils.throwException(logger, MessageCodeEnum.LANGUAGE_TYPE_IS_EMPTY);
+		}
+		if(addParam.getAppName().length() > 32) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用名称不能大于32个字符");
+		}
+		if(addParam.getBaseImage() != null && addParam.getBaseImage().length() > 128) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "依赖镜像不能大于128个字符");
+		}
+		if(addParam.getCodeRepoPath().length() > 64) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "代码仓库地址不能大于64个字符");
+		}
+		if(addParam.getFirstDepartment() != null && addParam.getFirstDepartment().length() > 16) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "一级部门不能大于16个字符");
+		}
+		if(addParam.getSecondDepartment() != null && addParam.getSecondDepartment().length() > 16) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "二级部门不能大于16个字符");
+		}
+		if(addParam.getThirdDepartment() != null && addParam.getThirdDepartment().length() > 16) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "三级部门不能大于16个字符");
+		}
+		if(addParam.getDescription() != null && addParam.getDescription().length() > 128) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用描述不能大于128个字符");
 		}
 	}
 	

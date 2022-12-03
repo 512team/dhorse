@@ -19,6 +19,7 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.Cluster;
 import org.dhorse.api.vo.LogCollectorStatus;
 import org.dhorse.infrastructure.param.ClusterParam;
+import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
@@ -136,24 +137,38 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		return null;
 	}
 
-	private void validateAddParam(ClusterCreationParam clusterCreationParam) {
-		if(clusterCreationParam.getAuthType() == null) {
+	private void validateAddParam(ClusterCreationParam addParam) {
+		if(addParam.getAuthType() == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.AUTH_TYPE_IS_EMPTY);
 		}
-		if (StringUtils.isBlank(clusterCreationParam.getClusterName())) {
+		if (StringUtils.isBlank(addParam.getClusterName())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_NAME_IS_EMPTY);
 		}
-		if (StringUtils.isBlank(clusterCreationParam.getClusterUrl())) {
+		if (StringUtils.isBlank(addParam.getClusterUrl())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_URL_IS_EMPTY);
 		}
-		if (AuthTypeEnum.TOKEN.getCode().equals(clusterCreationParam.getAuthType())
-				&& StringUtils.isBlank(clusterCreationParam.getAuthToken())) {
-			LogUtils.throwException(logger, MessageCodeEnum.AUTH_TOKEN_IS_EMPTY);
+		if (AuthTypeEnum.TOKEN.getCode().equals(addParam.getAuthType())) {
+			if(StringUtils.isBlank(addParam.getAuthToken())) {
+				LogUtils.throwException(logger, MessageCodeEnum.AUTH_TOKEN_IS_EMPTY);
+			}
+			addParam.setAuthToken(addParam.getAuthToken().trim());
 		}
-		if (AuthTypeEnum.ACCOUNT.getCode().equals(clusterCreationParam.getAuthType())
-				&& (StringUtils.isNotBlank(clusterCreationParam.getAuthName())
-				|| StringUtils.isBlank(clusterCreationParam.getAuthPassword()))) {
+		if (AuthTypeEnum.ACCOUNT.getCode().equals(addParam.getAuthType())
+				&& (StringUtils.isNotBlank(addParam.getAuthName())
+				|| StringUtils.isBlank(addParam.getAuthPassword()))) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSTER_AUTHP_ASSWORD_IS_EMPTY);
+		}
+		if(addParam.getClusterName().length() > 16) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "集群名称不能大于16个字符");
+		}
+		if(!addParam.getClusterUrl().startsWith("http")) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "集群地址格式不正确");
+		}
+		if(addParam.getClusterUrl().length() > 128) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "集群地址不能大于128个字符");
+		}
+		if(addParam.getDescription() != null && addParam.getDescription().length() > 128) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "集群描述不能大于128个字符");
 		}
 	}
 
