@@ -211,7 +211,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 	
-	
 	public boolean deleteDeployment(ClusterPO clusterPO, AppPO appPO, AppEnvPO appEnvPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		AppsV1Api api = new AppsV1Api(apiClient);
@@ -763,11 +762,18 @@ public class K8sClusterStrategy implements ClusterStrategy {
 						null, null);
 			}
 		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
+			clusterError(e);
 		} catch (Exception e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
 		}
+	}
+	
+	private void clusterError(ApiException e) {
+		String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+		if(message.contains("SocketTimeoutException")) {
+			LogUtils.throwException(logger, message, MessageCodeEnum.CONNECT_CLUSTER_FAILURE);
+		}
+		LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
 	}
 
 	public boolean logSwitchStatus(ClusterPO clusterPO) {
@@ -782,8 +788,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			return !CollectionUtils.isEmpty(configMapList.getItems())
 					&& !CollectionUtils.isEmpty(daemonSetList.getItems());
 		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
+			clusterError(e);
 		} catch (Exception e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
 		}
@@ -928,8 +933,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			namespace.setMetadata(metaData);
 			coreApi.createNamespace(namespace, null, null, null, null);
 		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.ADD_NAMESPACE_FAILURE);
+			clusterError(e);
+		}catch (Exception e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
 		}
 		return true;
 	}
@@ -951,6 +957,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
 			LogUtils.throwException(logger, message, MessageCodeEnum.DELETE_NAMESPACE_FAILURE);
+		}catch (Exception e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
 		}
 		return true;
 	}
