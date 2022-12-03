@@ -198,6 +198,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 			appBranch.setBranchName(e.getName());
 			appBranch.setMergedStatus(e.getMerged() ? 1 : 0);
 			appBranch.setUpdateTime(e.getCommit().getCommittedDate());
+			appBranch.setCommitMessage(e.getCommit().getMessage());
 			return appBranch;
 		}).collect(Collectors.toList()));
 		pageData.setPageNum(pageNum);

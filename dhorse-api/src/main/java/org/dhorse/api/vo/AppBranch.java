@@ -19,6 +19,11 @@ public class AppBranch extends BaseDto {
 	 */
 	private Integer mergedStatus;
 
+	/**
+	 * 最后提交信息
+	 */
+	private String commitMessage;
+
 	public String getBranchName() {
 		return branchName;
 	}
@@ -33,6 +38,14 @@ public class AppBranch extends BaseDto {
 
 	public void setMergedStatus(Integer mergedStatus) {
 		this.mergedStatus = mergedStatus;
+	}
+
+	public String getCommitMessage() {
+		return commitMessage;
+	}
+
+	public void setCommitMessage(String commitMessage) {
+		this.commitMessage = commitMessage;
 	}
 
 }
