@@ -68,9 +68,7 @@ public enum MessageCodeEnum {
 	LANGUAGE_TYPE_IS_EMPTY("200000", "语言类型不能为空"),
 	PACKAGE_TARGET_PATH_IS_EMPTY("200000", "打包路径不能为空"),
 	PACKAGE_BUILD_TYPE_IS_EMPTY("200000", "构建方式不能为空"),
-	PACKAGE_FILE_TYPE_IS_EMPTY("200000", "打包文件类型不能为空"),
-	APP_EXTEND_EXISTENCE("200000", "应用扩展信息已经存在"),
-	APP_EXTEND_INEXISTENCE("200000", "应用扩展信息不存在"),
+	PACKAGE_FILE_TYPE_IS_EMPTY("200000", "文件类型不能为空"),
 	APP_ENV_DELETED("200000", "请先删除关联的环境"),
 	APP_USER_IS_EXISTENCE("200000", "应用成员已经存在"),
 	
@@ -84,6 +82,7 @@ public enum MessageCodeEnum {
 	APP_ENV_TRACE_STATUS_IS_EMPTY("200000", "链路追踪状态不能为空"),
 	APP_ENV_TRACE_IMAGE_IS_EMPTY("200000", "链路追踪镜像不能为空"),
 	TRACE_TEMPLATE_IS_EMPTY("200000", "链路模板不存在"),
+	WAR_APP_SERVICE_PORT_8080("200000", "构建文件类型是War时，服务端口必须是8080"),
 	
 	//镜像仓库
 	IMAGE_REPO_PROJECT_FAILURE("200000", "创建镜像仓库项目失败"),
@@ -103,7 +102,7 @@ public enum MessageCodeEnum {
 	BRANCH_DEPLOYED_DETAIL_ID_IS_EMPTY("200000", "明细编号不能为空"),
 	DEPLOYED_STATUS_NOT_ROLLBACK("200000", "当前部署状态不能回滚"),
 	DEPLOYMENT_DELETED_FAILURE("200000", "删除部署失败"),
-	UNFINISHED_MERGE_REQUEST_EXSITS("200000", "合并失败，该应用存在未完成的合并请求，请手工合并"),
+	UNFINISHED_MERGE_REQUEST_EXISTS("200000", "合并失败，该应用存在未完成的合并请求，请手工合并"),
 	MERGE_BRANCH("200000", "合并分支失败，请手工合并"),
 	CREATE_BRANCH_FAILURE("200000", "创建分支失败"),
 	DELETE_BRANCH_FAILURE("200000", "删除分支失败"),

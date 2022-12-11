@@ -1,5 +1,7 @@
 package org.dhorse.api.vo;
 
+import java.io.Serializable;
+
 /**
  * 应用信息
  * 
@@ -20,7 +22,7 @@ public class App extends BaseDto {
 	private Integer languageType;
 
 	/**
-	 * 依赖镜像，如：openjdk:8-jdk-alpine
+	 * 基础镜像，如：openjdk:11.0.16-jdk
 	 */
 	private String baseImage;
 
@@ -127,21 +129,9 @@ public class App extends BaseDto {
 		this.appExtend = appExtend;
 	}
 
-	public static abstract class AppExtend extends BaseDto {
+	public static abstract class AppExtend implements Serializable {
 
 		private static final long serialVersionUID = 1L;
-
-		/**
-		 * 应用编号
-		 */
-		private String appId;
-
-		public String getAppId() {
-			return appId;
-		}
-
-		public void setAppId(String appId) {
-			this.appId = appId;
-		}
+		
 	}
 }
