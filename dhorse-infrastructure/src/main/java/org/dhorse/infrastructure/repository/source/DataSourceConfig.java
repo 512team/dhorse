@@ -6,7 +6,7 @@ import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.apache.ibatis.session.AutoMappingBehavior;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.dhorse.infrastructure.component.ComponentConstants;
-import org.dhorse.infrastructure.component.ComponentConstants.Mysql;
+import org.dhorse.infrastructure.component.MysqlConfig;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +57,7 @@ public class DataSourceConfig{
 		HikariDataSource dataSource = null;
 		if(componentConstants.getMysql().isEnable()) {
 			dataSource = new HikariDataSource();
-			dataSource.setDriverClassName(Mysql.DRIVER_CLASS);
+			dataSource.setDriverClassName(MysqlConfig.DRIVER_CLASS);
 			dataSource.setJdbcUrl(componentConstants.getMysql().getUrl());
 			dataSource.setUsername(componentConstants.getMysql().getUser());
 			dataSource.setPassword(componentConstants.getMysql().getPassword());

@@ -18,7 +18,7 @@ public class ComponentConstants {
 	private String logPath;
 
 	@Autowired
-	private Mysql mysql;
+	private MysqlConfig mysqlConfig;
 
 	@Value("${data.path:#{null}}")
 	private void setDataPath(String dataPath) {
@@ -54,41 +54,8 @@ public class ComponentConstants {
 		return logPath;
 	}
 
-	public Mysql getMysql() {
-		return mysql;
+	public MysqlConfig getMysql() {
+		return mysqlConfig;
 	}
 
-	@Component
-	public class Mysql {
-		
-		public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-		
-		@Value("${mysql.enable:#{false}}")
-		private boolean enable;
-		
-		@Value("${mysql.url:#{null}}")
-		private String url;
-		
-		@Value("${mysql.user:#{null}}")
-		private String user;
-		
-		@Value("${mysql.password:#{null}}")
-		private String password;
-
-		public boolean isEnable() {
-			return enable;
-		}
-
-		public String getUrl() {
-			return url;
-		}
-
-		public String getUser() {
-			return user;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-	}
 }
