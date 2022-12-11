@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.LanguageTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.AppEnvCreationParam;
 import org.dhorse.api.param.app.env.AppEnvDeletionParam;
@@ -19,6 +21,7 @@ import org.dhorse.api.param.app.env.AppEnvUpdateParam;
 import org.dhorse.api.param.app.env.TraceUpdateParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.AppEnv;
+import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
@@ -266,7 +269,18 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		if(addParam.getDescription() != null && addParam.getDescription().length() > 128) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "环境描述不能大于128个字符");
 		}
-		validateApp(addParam.getAppId());
+		AppPO appPO = validateApp(addParam.getAppId());
+		if(warFileType(appPO) && 8080 != addParam.getServicePort()) {
+			LogUtils.throwException(logger, MessageCodeEnum.WAR_APP_SERVICE_PORT_8080);
+		}
+	}
+	
+	private boolean warFileType(AppPO appPO) {
+		if(!LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+			return false;
+		}
+		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
+		return PackageFileTypeEnum.WAR.getCode().equals(appExtend.getPackageFileType());
 	}
 	
 	private void initAddParam(AppEnvCreationParam addParam) {

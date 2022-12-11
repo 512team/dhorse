@@ -26,7 +26,7 @@ public class AppPO extends BasePO {
 	private Integer languageType;
 
 	/**
-	 * 依赖镜像，如：openjdk:8-jdk-alpine
+	 * 基础镜像，如：openjdk:11.0.16-jdk
 	 */
 	private String baseImage;
 
@@ -60,6 +60,11 @@ public class AppPO extends BasePO {
 	 */
 	@TableField(exist = false)
 	private AppExtendPO appExtendPO;
+
+	/**
+	 * 每种语言的扩展信息，json结构
+	 */
+	private String ext;
 
 	public String getAppName() {
 		return appName;
@@ -132,6 +137,14 @@ public class AppPO extends BasePO {
 
 	public void setAppExtendPO(AppExtendPO appExtendPO) {
 		this.appExtendPO = appExtendPO;
+	}
+
+	public String getExt() {
+		return ext;
+	}
+
+	public void setExt(String ext) {
+		this.ext = ext;
 	}
 
 	@Override

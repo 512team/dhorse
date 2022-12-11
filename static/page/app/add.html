@@ -10,6 +10,12 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
+						<label class="layui-form-label required">代码仓库地址</label>
+						<div class="layui-input-block">
+							<input name="codeRepoPath" lay-verify="required" lay-reqtext="代码仓库地址不能为空" placeholder="如：GitLab的项目ID" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
 						<label class="layui-form-label required">语言类型</label>
 						<div class="layui-input-block">
 							<select name="languageType" id="languageType" lay-filter="languageType">
@@ -20,18 +26,6 @@
 								<option value="3">Node</option>
 								-->
 							</select>
-						</div>
-					</div>
-					<div class="layui-form-item">
-						<label class="layui-form-label required">代码仓库地址</label>
-						<div class="layui-input-block">
-							<input name="codeRepoPath" lay-verify="required" lay-reqtext="代码仓库地址不能为空" placeholder="如GitLab应用的id" autocomplete="off"  class="layui-input">
-						</div>
-					</div>
-					<div class="layui-form-item">
-						<label class="layui-form-label">依赖镜像</label>
-						<div class="layui-input-block">
-							<input type="text" name="baseImage" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -68,7 +62,7 @@
 			<div>
 				<div class="layui-form layuimini-form" id="secondForm">
 					<div class="layui-form-item">
-						<label class="layui-form-label required">打包构建方式</label>
+						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
 							<select name="extendParam.packageBuildType">
 								<option value="">请选择</option>
@@ -80,23 +74,28 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
-						<label class="layui-form-label required">打包文件类型</label>
+						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<select name="extendParam.packageFileType">
+							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">文件类型</label>
+						<div class="layui-input-block">
+							<select name="extendParam.packageFileType" lay-filter="extendParam.packageFileType">
 								<option value="">请选择</option>
 								<option value="1">Jar</option>
-								<!--
 								<option value="2">War</option>
+								<!--
 								<option value="3">Zip</option>
 								-->
 							</select>
 						</div>
 					</div>
-					
 					<div class="layui-form-item">
-						<label class="layui-form-label">打包相对路径</label>
+						<label class="layui-form-label">基础镜像</label>
 						<div class="layui-input-block">
-							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+							<input type="text" name="baseImage" id="baseImage" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -133,6 +132,14 @@
 				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 			}else{
 				$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
+			}
+        });
+		
+		form.on('select(extendParam.packageFileType)', function(data) {
+			if(data.value == 1){
+				$("#baseImage").attr("placeholder", "如：openjdk:11.0.16-jdk");
+			}else if(data.value == 2){
+				$("#baseImage").attr("placeholder", "如：tomcat:9.0.70-jre11-temurin-focal");
 			}
         });
 		

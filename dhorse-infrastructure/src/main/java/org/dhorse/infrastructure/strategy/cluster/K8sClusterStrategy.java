@@ -17,13 +17,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.LanguageTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.enums.PackageFileTypeTypeEnum;
+import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.result.PageData;
+import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppEnv;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
@@ -35,6 +37,7 @@ import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
@@ -66,11 +69,13 @@ import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1DeploymentSpec;
 import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource;
+import io.kubernetes.client.openapi.models.V1EnvVar;
 import io.kubernetes.client.openapi.models.V1ExecAction;
 import io.kubernetes.client.openapi.models.V1HTTPGetAction;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscaler;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerList;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerSpec;
+import io.kubernetes.client.openapi.models.V1HostPathVolumeSource;
 import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1Lifecycle;
 import io.kubernetes.client.openapi.models.V1LifecycleHandler;
@@ -112,8 +117,20 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if(deployment == null || CollectionUtils.isEmpty(deployment.getItems())) {
 				return null;
 			}
+			V1PodSpec podSpec = deployment.getItems().get(0).getSpec().getTemplate().getSpec();
+			//从镜像名称中截取版本号
+			String imageName = null;
+			if(jarFileType(appPO)) {
+				imageName = podSpec.getContainers().get(0).getImage();
+			}else if(warFileType(appPO)) {
+				for(V1Container initC : podSpec.getInitContainers()){
+					if("war".equals(initC.getName())) {
+						imageName = initC.getImage();
+					}
+				}
+			}
 			Replica replica = new Replica();
-			replica.setImageName(deployment.getItems().get(0).getSpec().getTemplate().getSpec().getContainers().get(0).getImage());
+			replica.setImageName(imageName);
 			return replica;
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
@@ -369,10 +386,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private List<V1Container> containers(DeployContext context) {
 		V1Container container = new V1Container();
 		container.setName(context.getDeploymentAppName());
-		container.setImage(context.getFullNameOfImage());
-		commands(container, context);
-		args(container, context);
-		container.setImagePullPolicy("Always");
+		containerOfJar(context, container);
+		envVars(context, container);
+		container.setImagePullPolicy("IfNotPresent");
 		V1ContainerPort containerPort = new V1ContainerPort();
 		containerPort.setContainerPort(context.getAppEnv().getServicePort());
 		container.setPorts(Arrays.asList(containerPort));
@@ -393,6 +409,48 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		lifecycle(container, context);
 		
 		return Arrays.asList(container);
+	}
+	
+	private void containerOfJar(DeployContext context, V1Container container) {
+		if(!jarFileType(context.getApp())) {
+			return;
+		}
+		container.setImage(context.getFullNameOfImage());
+		commands(container, context);
+		args(container, context);
+	}
+	
+	private void envVars(DeployContext context, V1Container container) {
+		List<V1EnvVar> envVars = new ArrayList<>();
+		V1EnvVar envVar = new V1EnvVar();
+		envVar.setName("TZ");
+		envVar.setValue("Asia/Shanghai");
+		envVars.add(envVar);
+		container.setEnv(envVars);
+		containerOfWar(context, container);
+	}
+	
+	private void containerOfWar(DeployContext context, V1Container container) {
+		if(!warFileType(context.getApp())) {
+			return;
+		}
+		
+		container.setImage(context.getApp().getBaseImage());
+		
+		//DHorse定义的Jvm参数
+		StringBuilder argsStr = new StringBuilder();
+		List<String> jvmArgsOfDHorse = jvmArgsOfDHorse(context);
+		for(String arg : jvmArgsOfDHorse) {
+			argsStr.append(" ").append(arg);
+		}
+		//用户定义的Jvm参数
+		if(!StringUtils.isBlank(context.getAppEnv().getJvmArgs())) {
+			argsStr.append(" ").append(context.getAppEnv().getJvmArgs());
+		}
+		V1EnvVar envVar = new V1EnvVar();
+		envVar.setName("JAVA_OPTS");
+		envVar.setValue(argsStr.toString());
+		container.getEnv().add(envVar);
 	}
 	
 	private void lifecycle(V1Container container, DeployContext context) {
@@ -454,30 +512,41 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private void commands(V1Container container, DeployContext context){
 		List<String> commands = new ArrayList<>();
 		commands.add("java");
-		//jvm参数
+		//DHorse定义的Jvm参数
+		List<String> jvmArgsOfDHorse = jvmArgsOfDHorse(context);
+		for(String arg : jvmArgsOfDHorse) {
+			commands.add(arg);
+		}
+		//用户自定义Jvm参数
 		if (!StringUtils.isBlank(context.getAppEnv().getJvmArgs())) {
 			String[] jvmArgs = context.getAppEnv().getJvmArgs().split("\\s+");
 			for (String arg : jvmArgs) {
 				commands.add(arg);
 			}
 		}
-		//skywalking-agent参数
-		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
-			TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getAppEnv().getTraceTemplateId());
-			if(traceTemplate == null) {
-				LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
-			}
-			commands.add("-javaagent:/tmp/skywalking-agent/skywalking-agent.jar");
-			commands.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServiceUrl());
-			commands.add("-Dskywalking.agent.service_name=" + context.getApp().getAppName());
-		}
-		commands.add("-Duser.timezone=Asia/Shanghai");
-		commands.add("-Denv=" + context.getAppEnv().getTag());
 		commands.add("-jar");
-		String packageFileType = PackageFileTypeTypeEnum.getByCode(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType()).getValue();
+		String packageFileType = PackageFileTypeEnum.getByCode(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType()).getValue();
 		commands.add(context.getApp().getAppName() + "." + packageFileType);
 		
 		container.setCommand(commands);
+	}
+	
+	private List<String> jvmArgsOfDHorse(DeployContext context) {
+		List<String> args = new ArrayList<>();
+		args.add("-Duser.timezone=Asia/Shanghai");
+		args.add("-Denv=" + context.getAppEnv().getTag());
+		if(!YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
+			return args;
+		}
+		//skywalking-agent参数
+		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getAppEnv().getTraceTemplateId());
+		if(traceTemplate == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
+		}
+		args.add("-javaagent:/tmp/skywalking-agent/skywalking-agent.jar");
+		args.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServiceUrl());
+		args.add("-Dskywalking.agent.service_name=" + context.getApp().getAppName());
+		return args;
 	}
 	
 	private void args(V1Container container, DeployContext context){
@@ -487,8 +556,15 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private List<V1Container> initContainer(DeployContext context) {
+		List<V1Container> containers = new ArrayList<>();
+		initContainerOfWar(context, containers);
+		initContainerOfAgent(context, containers);
+		return containers;
+	}
+	
+	private void initContainerOfAgent(DeployContext context, List<V1Container> containers) {
 		if(YesOrNoEnum.NO.getCode().equals(context.getAppEnv().getTraceStatus())) {
-			return null;
+			return;
 		}
 		
 		TraceTemplate traceTemplate = context.getGlobalConfigAgg().getTraceTemplate(context.getAppEnv().getTraceTemplateId());
@@ -499,34 +575,85 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Container initContainer = new V1Container();
 		initContainer.setName("skywalking-agent");
 		initContainer.setImage(context.getFullNameOfAgentImage());
-		initContainer.setImagePullPolicy("Always");
-		List<String> command = Arrays.asList("/bin/sh", "-c");
-		initContainer.setCommand(command);
-		List<String> args = Arrays.asList("cp -rf /skywalking-agent /tmp");
-		initContainer.setArgs(args);
+		initContainer.setImagePullPolicy("IfNotPresent");
+		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
+		initContainer.setArgs(Arrays.asList("cp -rf /skywalking-agent /tmp"));
 		
-		V1VolumeMount agentVolumeMount = new V1VolumeMount();
-		agentVolumeMount.setMountPath("/tmp");
-		agentVolumeMount.setName("skw-agent-volume");
-		initContainer.setVolumeMounts(Arrays.asList(agentVolumeMount));
-		return Arrays.asList(initContainer);
+		V1VolumeMount volumeMount = new V1VolumeMount();
+		volumeMount.setMountPath("/tmp");
+		volumeMount.setName("skw-agent-volume");
+		initContainer.setVolumeMounts(Arrays.asList(volumeMount));
+		containers.add(initContainer);
+	}
+	
+	private void initContainerOfWar(DeployContext context, List<V1Container> containers) {
+		if(!warFileType(context.getApp())) {
+			return;
+		}
+		
+		V1Container container = new V1Container();
+		container.setName("war");
+		container.setImage(context.getFullNameOfImage());
+		container.setImagePullPolicy("IfNotPresent");
+		container.setCommand(Arrays.asList("/bin/sh", "-c"));
+		String warFile = context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
+		container.setArgs(Arrays.asList("cp -rf " + warFile + " /usr/local/tomcat/webapps"));
+		
+		V1VolumeMount volumeMount = new V1VolumeMount();
+		volumeMount.setMountPath("/usr/local/tomcat/webapps");
+		volumeMount.setName("war-volume");
+		container.setVolumeMounts(Arrays.asList(volumeMount));
+		containers.add(container);
+	}
+	
+	private boolean warFileType(App app) {
+		return LanguageTypeEnum.JAVA.getCode().equals(app.getLanguageType())
+				&& PackageFileTypeEnum.WAR.getCode().equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
+	}
+	
+	private boolean warFileType(AppPO appPO) {
+		if(!LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+			return false;
+		}
+		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
+		return PackageFileTypeEnum.WAR.getCode().equals(appExtend.getPackageFileType());
+	}
+	
+	private boolean jarFileType(App app) {
+		return LanguageTypeEnum.JAVA.getCode().equals(app.getLanguageType())
+				&& PackageFileTypeEnum.JAR.getCode().equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
+	}
+	
+	private boolean jarFileType(AppPO appPO) {
+		if(!LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+			return false;
+		}
+		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
+		return PackageFileTypeEnum.JAR.getCode().equals(appExtend.getPackageFileType());
 	}
 	
 	private List<V1VolumeMount> volumeMounts(DeployContext context) {
 		List<V1VolumeMount> volumeMounts = new ArrayList<>();
 		
 		//指定时区
-//		V1VolumeMount volumeMountTime = new V1VolumeMount();
-//		volumeMountTime.setName("timezone");
-//		volumeMountTime.setMountPath("/etc/localtime");
-//		volumeMountTime.setReadOnly(true);
-//		volumeMounts.add(volumeMountTime);
+		V1VolumeMount volumeMountTime = new V1VolumeMount();
+		volumeMountTime.setName("timezone");
+		volumeMountTime.setMountPath("/etc/localtime");
+		volumeMounts.add(volumeMountTime);
 		
 		//data目录
 		V1VolumeMount volumeMountData = new V1VolumeMount();
 		volumeMountData.setMountPath(K8sUtils.DATA_PATH);
 		volumeMountData.setName("data-volume");
 		volumeMounts.add(volumeMountData);
+		
+		//war
+		if(warFileType(context.getApp())) {
+			V1VolumeMount volumeMountWar = new V1VolumeMount();
+			volumeMountWar.setMountPath("/usr/local/tomcat/webapps");
+			volumeMountWar.setName("war-volume");
+			volumeMounts.add(volumeMountWar);
+		}
 		
 		//skyWalking-agent
 		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
@@ -542,12 +669,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private List<V1Volume> volumes(DeployContext context) {
 		List<V1Volume> volumes = new ArrayList<>();
 		
-//		V1Volume volumeTime = new V1Volume();
-//		volumeTime.setName("timezone");
-//		V1HostPathVolumeSource hostPathVolumeSource = new V1HostPathVolumeSource();
-//		hostPathVolumeSource.setPath("/usr/share/zoneinfo/Asia/Shanghai");
-//		volumeTime.setHostPath(hostPathVolumeSource);
-//		volumes.add(volumeTime);
+		V1Volume volumeTime = new V1Volume();
+		volumeTime.setName("timezone");
+		V1HostPathVolumeSource hostPathVolumeSource = new V1HostPathVolumeSource();
+		hostPathVolumeSource.setPath("/etc/localtime");
+		hostPathVolumeSource.setType("");
+		volumeTime.setHostPath(hostPathVolumeSource);
+		volumes.add(volumeTime);
 		
 		//data目录
 		V1Volume volumeData = new V1Volume();
@@ -555,6 +683,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1EmptyDirVolumeSource emptyDirData = new V1EmptyDirVolumeSource();
 		volumeData.setEmptyDir(emptyDirData);
 		volumes.add(volumeData);
+		
+		if(warFileType(context.getApp())) {
+			V1Volume volumeWar = new V1Volume();
+			volumeWar.setName("war-volume");
+			V1EmptyDirVolumeSource emptyDirWar = new V1EmptyDirVolumeSource();
+			volumeWar.setEmptyDir(emptyDirWar);
+			volumes.add(volumeWar);
+		}
 		
 		//skyWalking-agent
 		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
@@ -626,9 +762,19 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		endOffset = endOffset > dataCount ? dataCount : endOffset;
 		List<V1Pod> pagePod = podList.getItems().subList(startOffset, endOffset);
 		List<EnvReplica> pods = pagePod.stream().map(e -> {
+			//从镜像名称中截取版本号
+			String imageName = null;
+			if(jarFileType(appPO)) {
+				imageName = e.getSpec().getContainers().get(0).getImage();
+			}else if(warFileType(appPO)) {
+				for(V1Container initC : e.getSpec().getInitContainers()){
+					if("war".equals(initC.getName())) {
+						imageName = initC.getImage();
+					}
+				}
+			}
+			
 			EnvReplica r = new EnvReplica();
-			//目前只有一个container
-			String imageName = e.getSpec().getContainers().get(0).getImage();
 			r.setVersionName(imageName.substring(imageName.lastIndexOf("/") + 1));
 			r.setIp(e.getStatus().getPodIP());
 			r.setName(e.getMetadata().getName());
@@ -638,9 +784,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			//todo 这里为了解决k8s的时区问题，强制加8小时
 			r.setStartTime(e.getMetadata().getCreationTimestamp().atZoneSameInstant(ZoneOffset.of("+08:00"))
 					.format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS)));
-			//k8s 1.19版本以下的api
-			//r.setStartTime(e.getMetadata().getCreationTimestamp().withZone(DateTimeZone.forOffsetHours(8))
-			//		.toString(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS));
 			r.setStatus(podStatus(e.getStatus()));
 			return r;
 		}).collect(Collectors.toList());

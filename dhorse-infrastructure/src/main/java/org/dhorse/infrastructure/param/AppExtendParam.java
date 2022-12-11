@@ -1,6 +1,8 @@
 package org.dhorse.infrastructure.param;
 
-public class AppExtendParam extends PageParam {
+import java.io.Serializable;
+
+public class AppExtendParam implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 

@@ -1,6 +1,6 @@
 package org.dhorse.api.enums;
 
-public enum PackageFileTypeTypeEnum {
+public enum PackageFileTypeEnum {
 
 	JAR(1, "jar"),
 	WAR(2, "war"),
@@ -11,13 +11,13 @@ public enum PackageFileTypeTypeEnum {
 
 	private String value;
 
-	private PackageFileTypeTypeEnum(Integer code, String value) {
+	private PackageFileTypeEnum(Integer code, String value) {
 		this.code = code;
 		this.value = value;
 	}
 	
-	public static PackageFileTypeTypeEnum getByCode(Integer code) {
-		for(PackageFileTypeTypeEnum item : PackageFileTypeTypeEnum.values()) {
+	public static PackageFileTypeEnum getByCode(Integer code) {
+		for(PackageFileTypeEnum item : PackageFileTypeEnum.values()) {
 			if(item.getCode() == code) {
 				return item;
 			}

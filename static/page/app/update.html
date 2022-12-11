@@ -16,21 +16,17 @@
 							<select name="languageType" disabled="">
 								<option value="">请选择</option>
 								<option value="1">Java</option>
+								<!--
 								<option value="2">Python</option>
 								<option value="3">Node</option>
+								-->
 							</select>
 						</div>
 					</div>
 					<div class="layui-form-item">
 						<label class="layui-form-label required">代码仓库地址</label>
 						<div class="layui-input-block">
-							<input name="codeRepoPath" lay-verify="required" lay-reqtext="代码仓库地址不能为空" placeholder="如GitLab应用的id" autocomplete="off"  class="layui-input">
-						</div>
-					</div>
-					<div class="layui-form-item">
-						<label class="layui-form-label">依赖镜像</label>
-						<div class="layui-input-block">
-							<input type="text" name="baseImage" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
+							<input name="codeRepoPath" lay-verify="required" lay-reqtext="代码仓库地址不能为空" placeholder="如：GitLab的项目ID" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -68,31 +64,40 @@
 			<div>
 				<div class="layui-form layuimini-form" id="secondForm" lay-filter="second-form">
 					<div class="layui-form-item">
-						<label class="layui-form-label required">打包构建方式</label>
+						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
 							<select name="extendParam.packageBuildType">
 								<option value="">请选择</option>
 								<option value="1">Maven</option>
+								<!--
 								<option value="2">Gradle</option>
+								-->
 							</select>
 						</div>
 					</div>
 					<div class="layui-form-item">
-						<label class="layui-form-label required">打包文件类型</label>
+						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<select name="extendParam.packageFileType">
+							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">文件类型</label>
+						<div class="layui-input-block">
+							<select name="extendParam.packageFileType" lay-filter="extendParam.packageFileType">
 								<option value="">请选择</option>
 								<option value="1">Jar</option>
 								<option value="2">War</option>
+								<!--
 								<option value="3">Zip</option>
+								-->
 							</select>
 						</div>
 					</div>
-					
 					<div class="layui-form-item">
-						<label class="layui-form-label">打包相对路径</label>
+						<label class="layui-form-label">基础镜像</label>
 						<div class="layui-input-block">
-							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+							<input type="text" name="baseImage" id="baseImageUpdate" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -150,7 +155,6 @@
 					"appName": res.data.appName
 					,"languageType": res.data.languageType
 					,"codeRepoPath": res.data.codeRepoPath
-					,"baseImage": res.data.baseImage
 					,"firstDepartment": res.data.firstDepartment
 					,"secondDepartment": res.data.secondDepartment
 					,"thirdDepartment": res.data.thirdDepartment
@@ -165,6 +169,7 @@
 						"extendParam.packageBuildType": res.data.appExtend.packageBuildType
 						,"extendParam.packageFileType": res.data.appExtend.packageFileType
 						,"extendParam.packageTargetPath": res.data.appExtend.packageTargetPath
+						,"baseImage": res.data.baseImage
 					});
 				}else{
 					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
@@ -187,6 +192,14 @@
 			$("#secondForm").append(firstFormData);
             step.next('#stepForm');
             return false;
+        });
+
+		form.on('select(extendParam.packageFileType)', function(data) {
+			if(data.value == 1){
+				$("#baseImageUpdate").attr("placeholder", "如：openjdk:11.0.16-jdk");
+			}else if(data.value == 2){
+				$("#baseImageUpdate").attr("placeholder", "如：tomcat:9.0.70-jre11-temurin-focal");
+			}
         });
 
         $('.pre').click(function () {

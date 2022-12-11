@@ -112,12 +112,6 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		if(appId == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
-//		QueryWrapper<AppPO> wrapper = new QueryWrapper<>();
-//		wrapper.eq("id", appId);
-//		wrapper.eq("deletion_status", 0);
-//		if(appMapper.selectCount(wrapper) == 0) {
-//			LogUtils.throwException(logger, MessageCodeEnum.APP_IS_INEXISTENCE);
-//		}
 	}
 	
 	protected abstract E updateCondition(P bizParam);

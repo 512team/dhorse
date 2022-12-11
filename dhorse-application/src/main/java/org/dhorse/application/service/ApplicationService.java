@@ -24,7 +24,6 @@ import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
 import org.dhorse.infrastructure.repository.AppEnvRepository;
-import org.dhorse.infrastructure.repository.AppExtendJavaRepository;
 import org.dhorse.infrastructure.repository.AppMemberRepository;
 import org.dhorse.infrastructure.repository.AppRepository;
 import org.dhorse.infrastructure.repository.ClusterRepository;
@@ -73,9 +72,6 @@ public abstract class ApplicationService {
 	@Autowired
 	protected AppRepository appRepository;
 	
-	@Autowired
-	protected AppExtendJavaRepository appExtendJavaRepository;
-
 	@Autowired
 	protected AppMemberRepository appMemberRepository;
 

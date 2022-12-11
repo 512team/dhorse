@@ -24,21 +24,21 @@ import org.dhorse.api.enums.DeploymentVersionStatusEnum;
 import org.dhorse.api.enums.LanguageTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
-import org.dhorse.api.enums.PackageFileTypeTypeEnum;
+import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.branch.VersionBuildParam;
-import org.dhorse.api.vo.GlobalConfigAgg;
-import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppExtendJava;
+import org.dhorse.api.vo.GlobalConfigAgg;
+import org.dhorse.api.vo.GlobalConfigAgg.Maven;
+import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.DeployParam;
 import org.dhorse.infrastructure.param.DeploymentDetailParam;
 import org.dhorse.infrastructure.param.DeploymentVersionParam;
-import org.dhorse.infrastructure.param.AppEnvParam;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
-import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
-import com.google.cloud.tools.jib.api.JibContainerBuilder;
 import com.google.cloud.tools.jib.api.LogEvent;
 import com.google.cloud.tools.jib.api.RegistryImage;
 import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
@@ -413,13 +412,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 		File packageTargetPath = Paths.get(fullTargetPath).toFile();
 		if (!packageTargetPath.exists()) {
-			logger.error("The target path does not exsit");
+			logger.error("The target path does not exist");
 			return false;
 		}
 
 		List<Path> targetFiles = new ArrayList<>();
 		for (File file : packageTargetPath.listFiles()) {
-			String packageFileType = PackageFileTypeTypeEnum.getByCode(appExtend.getPackageFileType()).getValue();
+			String packageFileType = PackageFileTypeEnum.getByCode(appExtend.getPackageFileType()).getValue();
 			if (file.getName().endsWith("." + packageFileType)) {
 				File targetFile = new File(file.getParent() + "/" + context.getApp().getAppName() + "." + packageFileType);
 				file.renameTo(targetFile);
@@ -429,13 +428,21 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 
 		if (targetFiles.size() == 0) {
-			logger.error("The target file does not exsit");
+			logger.error("The target file does not exist");
 			return false;
 		} else if (targetFiles.size() > 1) {
 			logger.error("Multiple target files exist");
 			return false;
 		}
 
+		//基础镜像
+		String baseImage = context.getApp().getBaseImage();
+		if (LanguageTypeEnum.JAVA.getCode().equals(context.getApp().getLanguageType())) {
+			if(PackageFileTypeEnum.WAR.getCode().equals(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType())) {
+				baseImage = "busybox:latest";
+			}
+		}
+		
 		//连接镜像仓库5秒超时
 		System.setProperty("jib.httpTimeout", "5000");
 		System.setProperty("sendCredentialsOverHttp", "true");
@@ -446,14 +453,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 			RegistryImage registryImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
 					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
 					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
-			
-			JibContainerBuilder jibContainerBuilder = null;
-			if (StringUtils.isBlank(context.getApp().getBaseImage())) {
-				jibContainerBuilder = Jib.fromScratch();
-			} else {
-				jibContainerBuilder = Jib.from(context.getApp().getBaseImage());
-			}
-			jibContainerBuilder.addLayer(targetFiles, AbsoluteUnixPath.get("/"))
+			Jib.from(baseImage)
+				.addLayer(targetFiles, AbsoluteUnixPath.get("/"))
 				.setEntrypoint(entrypoint)
 				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效。
 				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也无法使用，

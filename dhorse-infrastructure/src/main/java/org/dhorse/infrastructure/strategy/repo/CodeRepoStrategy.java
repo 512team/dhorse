@@ -40,7 +40,7 @@ public abstract class CodeRepoStrategy {
 		String localPathOfBranch = localPathOfBranch(context);
 		File pathFile = new File(localPathOfBranch);
 		if (!pathFile.exists()) {
-			logger.info("The local path of branch does not exsit, and create it");
+			logger.info("The local path of branch does not exist, and create it");
 			if(pathFile.mkdirs()) {
 				logger.info("Create local path of branch successfully");
 			}else {

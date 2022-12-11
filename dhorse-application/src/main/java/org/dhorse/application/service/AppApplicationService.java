@@ -1,27 +1,24 @@
 package org.dhorse.application.service;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.AppUserRoleTypeEnum;
 import org.dhorse.api.enums.LanguageTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.enums.AppUserRoleTypeEnum;
 import org.dhorse.api.param.app.AppCreationParam;
-import org.dhorse.api.param.app.AppCreationParam.AppExtendJavaCreationParam;
 import org.dhorse.api.param.app.AppDeletionParam;
 import org.dhorse.api.param.app.AppPageParam;
 import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.App;
+import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
-import org.dhorse.infrastructure.param.AppExtendJavaParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.AppParam;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
-import org.dhorse.infrastructure.repository.po.AppExtendJavaPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
@@ -43,7 +40,12 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 	private static final Logger logger = LoggerFactory.getLogger(AppApplicationService.class);
 	
 	public PageData<App> page(LoginUser loginUser, AppPageParam param) {
-		return appRepository.page(loginUser, buildBizParam(param));
+		AppParam bizParam = new AppParam();
+		bizParam.setLanguageType(param.getLanguageType());
+		bizParam.setAppName(param.getAppName());
+		bizParam.setPageNum(param.getPageNum());
+		bizParam.setPageSize(param.getPageSize());
+		return appRepository.page(loginUser, bizParam);
 	}
 	
 	public App query(LoginUser loginUser, String appId) {
@@ -62,23 +64,6 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(porjectId == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
-		AppExtendJavaCreationParam extendCreationParam = addParam.getExtendParam();
-		if(extendCreationParam == null) {
-			return null;
-		}
-		
-		//添加扩展信息
-		if(LanguageTypeEnum.JAVA.getCode().equals(addParam.getLanguageType())) {
-			AppExtendJavaParam bizParam = new AppExtendJavaParam();
-			bizParam.setAppId(porjectId);
-			bizParam.setPackageBuildType(extendCreationParam.getPackageBuildType());
-			bizParam.setPackageFileType(extendCreationParam.getPackageFileType());
-			bizParam.setPackageTargetPath(extendCreationParam.getPackageTargetPath());
-			if(appExtendJavaRepository.add(bizParam) == null) {
-				LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
-			}
-		}
-		
 		//添加管理员
 		AppMemberParam appMemberParam = new AppMemberParam();
 		appMemberParam.setUserId(loginUser.getId());
@@ -103,20 +88,6 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(!appRepository.update(loginUser, appParam)) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
-		//修改扩展信息
-		AppExtendJavaParam bizParam = new AppExtendJavaParam();
-		bizParam.setAppId(updateParam.getAppId());
-		AppExtendJavaPO appExtendJavaPO = appExtendJavaRepository.query(bizParam);
-		if(appExtendJavaPO == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.APP_EXTEND_INEXISTENCE);
-		}
-		bizParam.setId(appExtendJavaPO.getId());
-		bizParam.setPackageBuildType(updateParam.getExtendParam().getPackageBuildType());
-		bizParam.setPackageFileType(updateParam.getExtendParam().getPackageFileType());
-		bizParam.setPackageTargetPath(updateParam.getExtendParam().getPackageTargetPath());
-		if(!appExtendJavaRepository.updateById(bizParam)) {
-			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
-		}
 		return null;
 	}
 	
@@ -133,16 +104,12 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ENV_DELETED);
 		}
 		//2.然后才能删除应用
-		AppPO appPO = appRepository.queryById(deleteParam.getAppId());
 		AppParam appParam = new AppParam();
 		appParam.setId(deleteParam.getAppId());
-		boolean isSuccessful = appRepository.delete(loginUser, appParam);
-		if(LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())){
-			appExtendJavaRepository.deleteByAppId(deleteParam.getAppId());
-		}
+		boolean successful = appRepository.delete(loginUser, appParam);
 		appMemberRepository.deleteByAppId(deleteParam.getAppId());
 		deploymentDetailRepository.deleteByAppId(deleteParam.getAppId());
-		if(!isSuccessful) {
+		if(!successful) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
 		return null;
@@ -162,7 +129,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用名称不能大于32个字符");
 		}
 		if(addParam.getBaseImage() != null && addParam.getBaseImage().length() > 128) {
-			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "依赖镜像不能大于128个字符");
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "基础镜像不能大于128个字符");
 		}
 		if(addParam.getCodeRepoPath().length() > 64) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "代码仓库地址不能大于64个字符");
@@ -181,9 +148,14 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		}
 	}
 	
-	private AppParam buildBizParam(Serializable requestParam) {
+	private AppParam buildBizParam(AppCreationParam requestParam) {
 		AppParam bizParam = new AppParam();
 		BeanUtils.copyProperties(requestParam, bizParam);
+		if(LanguageTypeEnum.JAVA.getCode().equals(requestParam.getLanguageType())) {
+			AppExtendJava appExtend = new AppExtendJava();
+			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
+			bizParam.setAppExtend(appExtend);
+		}
 		return bizParam;
 	}
 }

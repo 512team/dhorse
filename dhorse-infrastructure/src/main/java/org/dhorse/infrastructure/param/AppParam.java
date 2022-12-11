@@ -1,5 +1,7 @@
 package org.dhorse.infrastructure.param;
 
+import org.dhorse.api.vo.App.AppExtend;
+
 /**
  * 应用信息参数
  * 
@@ -20,7 +22,7 @@ public class AppParam extends PageParam {
 	private Integer languageType;
 
 	/**
-	 * 依赖镜像，如：openjdk:8-jdk-alpine
+	 * 基础镜像，如：openjdk:11.0.16-jdk
 	 */
 	private String baseImage;
 
@@ -48,6 +50,11 @@ public class AppParam extends PageParam {
 	 * 应用描述
 	 */
 	private String description;
+
+	/**
+	 * 应用扩展信息，分页查询时不返回数据
+	 */
+	private AppExtend appExtend;
 
 	public String getAppId() {
 		return appId;
@@ -115,6 +122,14 @@ public class AppParam extends PageParam {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public AppExtend getAppExtend() {
+		return appExtend;
+	}
+
+	public void setAppExtend(AppExtend appExtend) {
+		this.appExtend = appExtend;
 	}
 
 }

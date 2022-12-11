@@ -50,12 +50,14 @@ CREATE TABLE app (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '应用编号',
 	app_name VARCHAR (32) NOT NULL COMMENT IS '应用名称',
 	language_type TINYINT DEFAULT 0 COMMENT IS '开发语言类型，1：Java，2：Python，3：Node，4：App，5：H5，6：C，7：C++，8：Go',
-	base_image VARCHAR (128) DEFAULT NULL COMMENT IS '依赖镜像',
+	base_image_source TINYINT DEFAULT 0 COMMENT IS '基础镜像来源，1：版本号，2：自定义',
+	base_image VARCHAR (128) DEFAULT NULL COMMENT IS '基础镜像',
 	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT IS '代码仓库路径',
 	first_department VARCHAR (16) DEFAULT NULL COMMENT IS '一级部门',
 	second_department VARCHAR (16) DEFAULT NULL COMMENT IS '二级部门',
 	third_department VARCHAR (16) DEFAULT NULL COMMENT IS '三级部门',
 	description VARCHAR (128) DEFAULT NULL COMMENT IS '应用描述',
+	ext VARCHAR (8192) DEFAULT NULL COMMENT IS '每种语言的扩展信息，json结构',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
@@ -63,19 +65,6 @@ CREATE TABLE app (
 COMMENT ON TABLE app IS '应用信息';
 CREATE INDEX index_app_app_name ON app(app_name);
 CREATE INDEX index_app_update_time ON app(update_time);
-
-CREATE TABLE app_extend_java (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
-	package_build_type TINYINT DEFAULT 0 COMMENT IS '打包构建方式，1：Maven，2：Gradle',
-	package_file_type TINYINT DEFAULT 0 COMMENT IS '打包文件类型，1：jar，2：war，3：zip',
-	package_target_path VARCHAR (64) DEFAULT 'target/' COMMENT IS '打包相对路径',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
-);
-COMMENT ON TABLE app_extend_java IS 'java应用信息';
-CREATE INDEX index_extend_java_app_id ON app_extend_java(app_id);
 
 CREATE TABLE app_member (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',

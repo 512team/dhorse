@@ -8,24 +8,25 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.LanguageTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.App;
+import org.dhorse.api.vo.App.AppExtend;
 import org.dhorse.api.vo.AppExtendJava;
-import org.dhorse.infrastructure.param.AppExtendJavaParam;
-import org.dhorse.infrastructure.param.AppParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
-import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
+import org.dhorse.infrastructure.param.AppParam;
 import org.dhorse.infrastructure.repository.mapper.AppMapper;
-import org.dhorse.infrastructure.repository.po.AppExtendJavaPO;
-import org.dhorse.infrastructure.repository.po.AppPO;
+import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
+import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,6 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 
 	@Autowired
 	private AppMapper appMapper;
-
-	@Autowired
-	private AppExtendJavaRepository appExtendJavaRepository;
 
 	@Autowired
 	private AppMemberRepository appMemberRepository;
@@ -93,32 +91,30 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		return pageDto;
 	}
 
-	public App query(LoginUser loginUser, AppParam bizParam) {
-		if(bizParam.getId() == null) {
-			return null;
-		}
-		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
-			return po2Dto(super.query(bizParam));
-		}
-		AppMemberPO appMember = appMemberRepository
-				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getId());
-		if (appMember == null) {
-			return null;
-		}
-		return po2Dto(super.query(bizParam));
-	}
-
 	public App queryWithExtendById(String id) {
-		App app = po2Dto(super.queryById(id));
-		queryAppExtend(app);
+		AppPO appPO = super.queryById(id);
+		App app = po2Dto(appPO);
+		app.setAppExtend(queryAppExtend(appPO));
 		return app;
 	}
 
 	public App queryWithExtendById(LoginUser loginUser, String id) {
-		AppParam appParam = new AppParam();
-		appParam.setId(id);
-		App app = query(loginUser, appParam);
-		queryAppExtend(app);
+		if(StringUtils.isBlank(id)) {
+			return null;
+		}
+		if (!RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
+			AppMemberPO appMember = appMemberRepository
+					.queryByLoginNameAndAppId(loginUser.getLoginName(), id);
+			if (appMember == null) {
+				return null;
+			}
+		}
+		AppPO appPO = super.queryById(id);
+		if(appPO == null) {
+			return null;
+		}
+		App app = po2Dto(appPO);
+		app.setAppExtend(queryAppExtend(appPO));
 		return app;
 	}
 
@@ -128,18 +124,14 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		return super.query(appInfoParam);
 	}
 
-	private void queryAppExtend(App app) {
-		if(app == null) {
-			return;
+	private AppExtend queryAppExtend(AppPO appPO) {
+		if(appPO == null) {
+			return null;
 		}
-		if (LanguageTypeEnum.JAVA.getCode().equals(app.getLanguageType())) {
-			AppExtendJavaParam appJavaInfoParam = new AppExtendJavaParam();
-			appJavaInfoParam.setAppId(app.getId());
-			AppExtendJavaPO appExtendJavaPO = appExtendJavaRepository.query(appJavaInfoParam);
-			AppExtendJava appExtendJava = new AppExtendJava();
-			BeanUtils.copyProperties(appExtendJavaPO, appExtendJava);
-			app.setAppExtend(appExtendJava);
+		if (LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
 		}
+		return null;
 	}
 
 	public boolean update(LoginUser loginUser, AppParam bizParam) {
@@ -229,4 +221,12 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		return po;
 	}
 
+	@Override
+	protected AppPO param2Entity(AppParam bizParam) {
+		AppPO po = super.param2Entity(bizParam);
+		if(bizParam.getAppExtend() != null) {
+			po.setExt(JsonUtils.toJsonString(bizParam.getAppExtend()));
+		}
+		return po;
+	}
 }

@@ -15,17 +15,17 @@ public class AppExtendJavaPO extends AppExtendPO {
 	private String appId;
 
 	/**
-	 * 打包构建方式，1：maven，2：gradle
+	 * 构建方式，1：maven，2：gradle
 	 */
 	private Integer packageBuildType;
 
 	/**
-	 * 打包文件类型，1：jar，2：war，3：zip
+	 * 文件类型，1：jar，2：war，3：zip
 	 */
 	private Integer packageFileType;
 
 	/**
-	 * 打包相对路径
+	 * 文件路径
 	 */
 	private String packageTargetPath;
 

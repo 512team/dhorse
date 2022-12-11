@@ -109,7 +109,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 			//1.如果存在未合并的请求，直接报错
 			Stream<MergeRequest> stream = mergeRequestApi.getMergeRequestsStream(filter);
 			if (stream != null && stream.count() > 0) {
-				LogUtils.throwException(logger, MessageCodeEnum.UNFINISHED_MERGE_REQUEST_EXSITS);
+				LogUtils.throwException(logger, MessageCodeEnum.UNFINISHED_MERGE_REQUEST_EXISTS);
 			}
 			// 提交合请求
 			MergeRequestParams mergeRequestParams = new MergeRequestParams();
