@@ -1,5 +1,5 @@
 # DHorse项目
-DHorse是一个简单易用的DevOps开发平台，主要特点：部署简单、功能快速、操作简洁。
+DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具有持续集成、持续部署、微服务治理等功能，主要特点：部署简单、操作简洁、功能快速。
 
 ## 架构
  ![Image text](./static/images/architecture.jpg)
@@ -88,7 +88,7 @@ $  bin/dhorse-stop.sh
 
 ## 社区交流
 
-感谢您的支持和关注，如想了解更多内容，可以加入如下群聊。
+如果您对该项目感兴趣，请加个star，您的支持和关注，是我们最大的动力。如想了解更多内容，可以加入如下群聊。
 
  ![Image text](./static/images/weixin.jpg)
 
