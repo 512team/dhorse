@@ -26,8 +26,8 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 下载安装文件：
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
-| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-1.8-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-1.8-x64_bin-windows.zip)
-| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.10.1-beta/dhorse-0.10.1-beta-x64_bin-windows.zip)
+| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-1.8-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-1.8-x64_bin-windows.zip)
+| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-x64_bin-windows.zip)
 
 下载文件之后，然后解压：
 
