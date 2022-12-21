@@ -78,7 +78,7 @@ public enum MessageCodeEnum {
 	APP_ENV_TAG_IS_EMPTY("200000", "环境标识不能为空"),
 	APP_ENV_TAG_INEXISTENCE("200000", "环境标识已经存在"),
 	APP_ENV_INEXISTENCE("200000", "环境不存在"),
-	TEMPLATE_ID_IS_EMPTY("200000", "编号不能为空"),
+	ID_IS_EMPTY("200000", "编号不能为空"),
 	APP_ENV_TRACE_STATUS_IS_EMPTY("200000", "链路追踪状态不能为空"),
 	APP_ENV_TRACE_IMAGE_IS_EMPTY("200000", "链路追踪镜像不能为空"),
 	TRACE_TEMPLATE_IS_EMPTY("200000", "链路模板不存在"),
@@ -116,6 +116,7 @@ public enum MessageCodeEnum {
 	DELETE_AUTO_SCALING_FAILURE("200000", "删除自动扩容失败"),
 	REPLICA_NAME_INVALIDE("200000", "无效的副本名称"),
 	DOWNLOAD_FILE_FAILURE("200000", "下载文件失败"),
+	RENAME_FILE_FAILURE("200000", "重命名文件失败"),
 	
 	//部署
 	INIT_GLOBAL_CONFIG("200000", "未进行全局配置"),

@@ -23,11 +23,17 @@ public class Constants {
 	
 	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	
-	public static final String DATE_FORMAT_YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
+	public static final String DATE_FORMAT_YYYYMMDDHHMMSS = "yyyyMMdd_HHmmss";
 	
 	public static final int DEPLOYED_LOG_EXIST_DAYS = 14;
 	
-	public static final String IMAGE_REPO_APP = "dhorse";
+	public static final String CONTAINER_WORK_HOME = "/usr/local/";
+	
+	public static final String IMAGE_REPOSITORY = "dhorse";
+	
+	public static final String IMAGE_NAME_JDK = "jdk";
+	
+	public static final String IMAGE_NAME_TOMCAT = "tomcat";
 	
 	/**
 	 * 部署目录

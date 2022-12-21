@@ -3,6 +3,7 @@ package org.dhorse.infrastructure.repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.infrastructure.param.PageParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
@@ -81,6 +82,9 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 	}
 
 	public boolean updateById(P bizParam) {
+		if(StringUtils.isBlank(bizParam.getId())) {
+			LogUtils.throwException(logger, MessageCodeEnum.ID_IS_EMPTY);
+		}
 		UpdateWrapper<E> wrapper = new UpdateWrapper<>();
 		wrapper.eq("id", bizParam.getId());
 		wrapper.eq("deletion_status", 0);

@@ -2,7 +2,7 @@
 	<div class="layui-carousel" id="stepForm" lay-filter="stepForm" style="margin: 0 auto;">
 		<div carousel-item>
 			<div>
-				<div class="layui-form layuimini-form">
+				<div class="layui-form layuimini-form" lay-filter="first-form">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">应用名称</label>
 						<div class="layui-input-block">
@@ -18,7 +18,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label required">语言类型</label>
 						<div class="layui-input-block">
-							<select name="languageType" id="languageType" lay-filter="languageType">
+							<select name="languageType" lay-filter="languageType">
 								<option value="">请选择</option>
 								<option value="1">Java</option>
 								<!--
@@ -60,7 +60,7 @@
 				</div>
 			</div>
 			<div>
-				<div class="layui-form layuimini-form" id="secondForm">
+				<div class="layui-form layuimini-form" id="secondForm" lay-filter="second-form">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
@@ -82,7 +82,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label required">文件类型</label>
 						<div class="layui-input-block">
-							<select name="extendParam.packageFileType" lay-filter="extendParam.packageFileType">
+							<select name="extendParam.packageFileType" lay-filter="extendParam.packageFileType" lay-verify="required" lay-reqtext="文件类型不能为空" id="packageFileType2">
 								<option value="">请选择</option>
 								<option value="1">Jar</option>
 								<option value="2">War</option>
@@ -93,12 +93,35 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
-						<label class="layui-form-label">基础镜像</label>
+						<label class="layui-form-label required">基础镜像来源</label>
 						<div class="layui-input-block">
-							<input type="text" name="baseImage" id="baseImage" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
+							<select name="baseImageSource" lay-filter="baseImageSource" id="baseImageSource2" lay-verify="required" lay-reqtext="基础镜像来源不能为空">
+								<option value="">请选择</option>
+								<option value="1">版本号</option>
+								<option value="2">自定义</option>
+							</select>
 						</div>
 					</div>
-					<div class="layui-form-item">
+					<div class="layui-form-item" style="display:none" id="baseImageVersionDiv">
+						<label class="layui-form-label required" id="baseImageLabel">Tomcat版本</label>
+						<div class="layui-input-inline">
+							<select name="baseImageVersion" lay-filter="baseImageVersion" id="baseImageVersion2">
+								<option value="">请选择</option>
+								<option value="10">v10.x</option>
+								<option value="9">v9.x</option>
+								<option value="8">v8.x</option>
+							</select>
+						</div>
+						<div class="layui-form-mid layui-word-aux" id="baseImageVersionDesc">会自动下载依赖包，请确保能够访问外网</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="baseImageDiv">
+						<label class="layui-form-label required">基础镜像</label>
+						<div class="layui-input-inline" style="width: 500px;">
+							<input type="text" name="baseImage" id="baseImage2" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
+						</div>
+						<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="#" target="_blank">《镜像制作指引》</a></div>
+					</div>
+					<div class="layui-form-item required">
 						<div class="layui-input-block">
 							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
 							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
@@ -136,12 +159,13 @@
         });
 		
 		form.on('select(extendParam.packageFileType)', function(data) {
-			if(data.value == 1){
-				$("#baseImage").attr("placeholder", "如：openjdk:11.0.16-jdk");
-			}else if(data.value == 2){
-				$("#baseImage").attr("placeholder", "如：tomcat:9.0.70-jre11-temurin-focal");
-			}
+			initBaseImage(data.value, '', '', '', $, form);
         });
+		
+		form.on('select(baseImageSource)', function(data) {
+			var packageFileType = $('#packageFileType2').val();
+			initBaseImage(packageFileType, data.value, '', '', $, form);
+		});
 		
 		form.on('submit(formStep)', function (data) {
 			var fields = data.field;
@@ -161,6 +185,19 @@
         });
 		
         form.on('submit(saveBtn)', function(data) {
+			if(data.field.baseImageSource == 1){
+				if(data.field.baseImageVersion == ''){
+					layer.msg('基础镜像版本不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.baseImage = '';
+			}else if(data.field.baseImageSource == 2){
+				if(data.field.baseImage == ''){
+					layer.msg('基础镜像不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.baseImageVersion = '';
+			}
 			var fields = data.field;
 			var allParams = {};
 			var extendParams = {};
@@ -201,4 +238,141 @@
             return false;
         });
     });
+	
+	function initBaseImage(packageFileType, baseImageSource, selectedVersion, baseImageValue, $, form){
+		//在非Linux环境下，基础镜像来源不能有“版本号”选项，因为只有制作Linux环境下的Jdk镜像才有意义
+		if(packageFileType != ''){
+			$.ajax({
+				url: '/globalConfig/queryOsName',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({'1': '1'}),
+				success: function(res){
+					if(res.code != "000000"){
+						return false;
+					}
+					//在非Linux环境下，基础镜像来源不能有“版本号”选项，因为只有制作Linux环境下的Jdk镜像才有意义
+					var opt = '<option value="">请选择</option>';
+					if(res.data.indexOf('Linux') >= 0){
+						if(baseImageSource == 1){
+							opt = opt.concat('<option value="1" selected>版本号</option>');
+						}else{
+							opt = opt.concat('<option value="1">版本号</option>');
+						}
+					}
+					if(baseImageSource == 2){
+						opt = opt.concat('<option value="2" selected>自定义</option>');
+					}else{
+						opt = opt.concat('<option value="2">自定义</option>');
+					}
+					
+					$("#baseImageSource2").html(opt);
+					form.render();
+				}
+			});
+		}else{
+			var opt = '<option value="">请选择</option>';
+			if(baseImageSource == 1){
+				opt = opt.concat('<option value="1" selected>版本号</option>');
+			}else{
+				opt = opt.concat('<option value="1">版本号</option>');
+			}
+			if(baseImageSource == 2){
+				opt = opt.concat('<option value="2" selected>自定义</option>');
+			}else{
+				opt = opt.concat('<option value="2">自定义</option>');
+			}
+			$("#baseImageSource2").html(opt);
+			form.render();
+		}
+	
+		//选择了版本号
+		if(baseImageSource == 1 && packageFileType != ''){
+			initVersion(packageFileType, selectedVersion, baseImageValue, $, form);
+			$('#baseImageVersionDiv').show();
+			$('#baseImageDiv').hide();
+		//选择了自定义
+		}else if(baseImageSource == 2 && packageFileType != ''){
+			baseImagePlaceholder(packageFileType, baseImageValue, $, form);
+			$('#baseImageVersionDiv').hide();
+			$('#baseImageDiv').show();
+		}else{
+			$('#baseImageVersionDiv').hide();
+			$('#baseImageDiv').hide();
+		}
+	}
+	
+	function baseImagePlaceholder(packageFileType, baseImageValue, $, form){
+		//Jar
+		if(packageFileType == 1){
+			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：openjdk:11.0.16-jdk");
+			$("#baseImageDesc a").attr("href", "https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/JDK%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
+		//War
+		}else if(packageFileType == 2){
+			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：tomcat:9.0.70-jdk11");
+			$("#baseImageDesc a").attr("href", "https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Tomcat%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
+		}
+	}
+	
+	function initVersion(packageFileType, selectedVersion, $, form){
+		//选择了Jar
+		if(packageFileType == 1){
+			$('#baseImageLabel').text('Java版本');
+			$('#baseImageVersionDesc').text('来自Maven配置或DHorse所在的环境');
+			initJavaVersion(selectedVersion, $, form);
+		 //选择了War
+		}else if(packageFileType == 2){
+			$('#baseImageLabel').text('Tomcat版本');
+			$('#baseImageVersionDesc').text('会自动下载依赖包，请确保能够访问外网');
+			initTomcatVersion(selectedVersion, $, form);
+		}
+	}
+	
+	function initJavaVersion(selectedVersion, $, form){
+		$.ajax({
+			url: '/globalConfig/queryJavaVersion',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'1': '1'}),
+			success: function(res){
+				var opt = '<option value="">请选择</option>';
+				versions = res.data;
+				for(var v in versions){
+					if(selectedVersion === versions[v]){
+						opt = opt.concat("<option value='"+ versions[v] +"' selected>"+ versions[v] + "</option>");
+					}else{
+						opt = opt.concat("<option value='"+ versions[v] +"'>"+ versions[v] + "</option>");
+					}
+				}
+				$("#baseImageVersion2").html(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	function initTomcatVersion(selectedVersion, $, form){
+		var opt = '<option value="">请选择</option>';
+		if(selectedVersion === "10"){
+			opt = opt.concat('<option value="10" selected>v10.x</option>');
+		}else{
+			opt = opt.concat('<option value="10">v10.x</option>');
+		}
+		if(selectedVersion === "9"){
+			opt = opt.concat('<option value="9" selected>v9.x</option>');
+		}else{
+			opt = opt.concat('<option value="9">v9.x</option>');
+		}
+		if(selectedVersion === "8"){
+			opt = opt.concat('<option value="8" selected>v8.x</option>');
+		}else{
+			opt = opt.concat('<option value="8">v8.x</option>');
+		}
+		$("#baseImageVersion2").html(opt);
+		form.render('select');
+	}
 </script>

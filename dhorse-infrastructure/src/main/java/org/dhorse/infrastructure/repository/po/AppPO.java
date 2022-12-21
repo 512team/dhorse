@@ -26,6 +26,16 @@ public class AppPO extends BasePO {
 	private Integer languageType;
 
 	/**
+	 * 基础镜像来源，1：版本号，2：自定义
+	 */
+	private Integer baseImageSource;
+
+	/**
+	 * 基础镜像版本
+	 */
+	private String baseImageVersion;
+
+	/**
 	 * 基础镜像，如：openjdk:11.0.16-jdk
 	 */
 	private String baseImage;
@@ -80,6 +90,22 @@ public class AppPO extends BasePO {
 
 	public void setLanguageType(Integer languageType) {
 		this.languageType = languageType;
+	}
+
+	public String getBaseImageVersion() {
+		return baseImageVersion;
+	}
+
+	public void setBaseImageVersion(String baseImageVersion) {
+		this.baseImageVersion = baseImageVersion;
+	}
+
+	public Integer getBaseImageSource() {
+		return baseImageSource;
+	}
+
+	public void setBaseImageSource(Integer baseImageSource) {
+		this.baseImageSource = baseImageSource;
 	}
 
 	public String getBaseImage() {

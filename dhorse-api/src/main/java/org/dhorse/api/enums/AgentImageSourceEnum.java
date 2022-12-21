@@ -2,7 +2,8 @@ package org.dhorse.api.enums;
 
 public enum AgentImageSourceEnum {
 
-	VERSION(1, "版本号"), CUSTOM(2, "自定义");
+	VERSION(1, "版本号"),
+	CUSTOM(2, "自定义");
 
 	private Integer code;
 

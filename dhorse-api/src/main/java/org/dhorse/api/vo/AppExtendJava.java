@@ -21,6 +21,11 @@ public class AppExtendJava extends AppExtend {
 	 */
 	private String packageTargetPath;
 
+	/**
+	 * Java版本
+	 */
+	private String javaVersion;
+
 	public Integer getPackageBuildType() {
 		return packageBuildType;
 	}
@@ -43,6 +48,14 @@ public class AppExtendJava extends AppExtend {
 
 	public void setPackageTargetPath(String packageTargetPath) {
 		this.packageTargetPath = packageTargetPath;
+	}
+
+	public String getJavaVersion() {
+		return javaVersion;
+	}
+
+	public void setJavaVersion(String javaVersion) {
+		this.javaVersion = javaVersion;
 	}
 
 }

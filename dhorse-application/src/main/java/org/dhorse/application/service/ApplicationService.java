@@ -1,5 +1,10 @@
 package org.dhorse.application.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -7,7 +12,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.dhorse.api.enums.ClusterTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
@@ -18,6 +31,7 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.param.AppMemberParam;
@@ -206,10 +220,96 @@ public abstract class ApplicationService {
 		if(ImageRepoTypeEnum.DOCKERHUB.getValue().equals(imageRepo.getType())) {
 			fullNameOfImage.append(imageRepo.getAuthName());
 		}else {
-			fullNameOfImage.append(Constants.IMAGE_REPO_APP);
+			fullNameOfImage.append(Constants.IMAGE_REPOSITORY);
 		}
 		fullNameOfImage.append("/").append(nameOfImage);
 		return fullNameOfImage.toString();
+	}
+	
+	protected String imageNameOfJdk(String baseImageVersion) {
+		return Constants.IMAGE_NAME_JDK + ":" + tagOfJdk(baseImageVersion);
+	}
+	
+	protected String tagOfJdk(String version) {
+		return "v" + version;
+	}
+	
+	protected CloseableHttpClient createHttpClient(String url) {
+		if(!url.startsWith("https")) {
+			return HttpClients.createDefault();
+		}
+		try {
+			SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
+				// 信任所有
+				public boolean isTrusted(X509Certificate[] chain, String authType) {
+					return true;
+				}
+			}).build();
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+			return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+		} catch (Exception e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.SSL_CLIENT_FAILURE);
+		}
+		
+		return HttpClients.createDefault();
+	}
+	
+	public List<String> queryJavaVersion(){
+		GlobalConfigParam bizParam = new GlobalConfigParam();
+		bizParam.setItemType(GlobalConfigItemTypeEnum.MAVEN.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
+		return queryJavaVersion(globalConfigAgg.getMaven());
+	}
+	
+	public String queryJavaMajorVersion(Maven mavenConf){
+		List<String> javaVersions = queryJavaVersion(mavenConf);
+		String[] versions = javaVersions.get(0).split("\\.");
+		if(Integer.valueOf(versions[0]) < 9) {
+			return versions[0] + "." + versions[1];
+		}
+		return versions[0];
+	}
+	
+	public List<String> queryJavaVersion(Maven mavenConf){
+		String javaHome = null;
+		if(mavenConf != null && !StringUtils.isBlank(mavenConf.getJavaHome())) {
+			javaHome = mavenConf.getJavaHome();
+		}
+		
+		List<String> javaVersions = new ArrayList<>();
+		
+		//如果没有配置Maven的Java安装目录，则取DHorse所在的Java版本
+		if(StringUtils.isBlank(javaHome)){
+			javaVersions.add(System.getProperty("java.version"));
+			return javaVersions;
+		}
+		
+		//从指定的Java安装目录中获取版本
+		if(!javaHome.endsWith("/")) {
+			javaHome = javaHome + "/";
+		}
+		Process process = null;
+		try {
+			process = Runtime.getRuntime().exec(new String[]{javaHome + "bin/java", "-version"});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
+			String versionStr = br.readLine().split("\\s+")[2].replace("\"", "");
+			javaVersions.add(versionStr);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if(process != null) {
+			process.destroy();
+		}
+		return javaVersions;
+	}
+	
+	public String queryOsName() {
+		//目前只支持自定义基础镜像
+		return "Windows";
+		//return System.getProperty("os.name");
 	}
 	
 	protected <D> PageData<D> zeroPageData(int pageSize) {

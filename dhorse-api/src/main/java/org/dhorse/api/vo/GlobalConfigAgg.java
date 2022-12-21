@@ -299,11 +299,6 @@ public class GlobalConfigAgg implements Serializable {
 		private String javaHome;
 
 		/**
-		 * java版本
-		 */
-		private String javaVersion;
-
-		/**
 		 * maven仓库地址
 		 */
 		private String mavenRepoUrl;
@@ -314,14 +309,6 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setJavaHome(String javaHome) {
 			this.javaHome = javaHome;
-		}
-
-		public String getJavaVersion() {
-			return javaVersion;
-		}
-
-		public void setJavaVersion(String javaVersion) {
-			this.javaVersion = javaVersion;
 		}
 
 		public String getMavenRepoUrl() {

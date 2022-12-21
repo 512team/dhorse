@@ -1,5 +1,7 @@
 package org.dhorse.rest.resource;
 
+import java.util.List;
+
 import org.dhorse.api.param.global.GlolabConfigDeletionParam;
 import org.dhorse.api.param.global.GlolabConfigPageParam;
 import org.dhorse.api.result.PageData;
@@ -183,5 +185,25 @@ public class GlobalConfigRest extends AbstractRest {
 	@PostMapping("/envTemplate/query")
 	public RestResponse<GlobalConfigAgg> envTemplateQuery(@RequestBody GlobalConfigQueryParam queryParam) {
 		return this.success(globalConfigApplicationService.envTemplateQuery(queryParam));
+	}
+	
+	/**
+	 * 查询Java版本
+	 * 
+	 * @return Java版本列表
+	 */
+	@PostMapping("/queryJavaVersion")
+	public RestResponse<List<String>> queryJavaVersion() {
+		return this.success(globalConfigApplicationService.queryJavaVersion());
+	}
+	
+	/**
+	 * 查询操作系统名称
+	 * 
+	 * @return 操作系统名称
+	 */
+	@PostMapping("/queryOsName")
+	public RestResponse<String> queryOsName() {
+		return this.success(globalConfigApplicationService.queryOsName());
 	}
 }

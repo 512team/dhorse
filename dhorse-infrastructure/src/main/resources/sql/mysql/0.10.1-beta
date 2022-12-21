@@ -48,6 +48,7 @@ CREATE TABLE app (
 	app_name VARCHAR (32) NOT NULL COMMENT '应用名称',
 	language_type TINYINT DEFAULT 0 COMMENT '开发语言类型，1：Java，2：Python，3：Node，4：App，5：H5，6：C，7：C++，8：Go',
 	base_image_source TINYINT DEFAULT 0 COMMENT '基础镜像来源，1：版本号，2：自定义',
+	base_image_version VARCHAR (16) DEFAULT NULL COMMENT '基础镜像版本',
 	base_image VARCHAR (128) DEFAULT NULL COMMENT '基础镜像',
 	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT '代码仓库路径',
 	first_department VARCHAR (16) DEFAULT NULL COMMENT '一级部门',

@@ -30,12 +30,6 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">基础镜像：</label>
-			<div class="layui-input-block">
-				<label class="layui-form-label text-value" id="baseImage"></label>
-			</div>
-		</div>
-		<div class="layui-form-item">
 			<label class="layui-form-label">代码仓库地址：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="codeRepoPath"></label>
@@ -48,15 +42,33 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">文件路径：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="packageTargetPath"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">文件类型：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="packageFileType"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">打包文件路径：</label>
+			<label class="layui-form-label">基础镜像来源：</label>
 			<div class="layui-input-block">
-				<label class="layui-form-label text-value" id="packageTargetPath"></label>
+				<label class="layui-form-label text-value" id="baseImageSource"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" style="display:none" id="baseImageVersionDiv">
+			<label class="layui-form-label">基础镜像版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="baseImageVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" style="display:none" id="baseImageDiv">
+			<label class="layui-form-label">基础镜像：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="baseImage"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -151,11 +163,20 @@
 					languageType = "Node";
 				}
 				$("#languageType").text(languageType);
-				$("#baseImage").text(res.data.baseImage);
 				$("#codeRepoPath").text(res.data.codeRepoPath);
 				$("#creationTime").text(res.data.creationTime);
 				$("#updateTime").text(res.data.updateTime);
 				$("#description").text(res.data.description);
+				$("#baseImageVersion").text(res.data.baseImageVersion);
+				$("#baseImage").text(res.data.baseImage);
+				
+				if(res.data.baseImageSource == 1){
+					$("#baseImageSource").text("版本号");
+					$("#baseImageVersionDiv").show();
+				}else if(res.data.baseImageSource == 2){
+					$("#baseImageSource").text("自定义");
+					$("#baseImageDiv").show();
+				}
 				var department = res.data.firstDepartment;
 				if(department != ''){
 					department += ' - ';

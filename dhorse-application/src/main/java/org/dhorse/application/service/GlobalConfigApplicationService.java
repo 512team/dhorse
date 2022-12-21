@@ -5,26 +5,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.net.ssl.SSLContext;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
@@ -60,7 +51,6 @@ import org.springframework.util.ResourceUtils;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
-import com.google.cloud.tools.jib.api.JibContainerBuilder;
 import com.google.cloud.tools.jib.api.LogEvent;
 import com.google.cloud.tools.jib.api.RegistryImage;
 import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
@@ -193,26 +183,6 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
         }
 	}
 	
-	private CloseableHttpClient createHttpClient(String url) {
-		if(!url.startsWith("https")) {
-			return HttpClients.createDefault();
-		}
-		try {
-			SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-				// 信任所有
-				public boolean isTrusted(X509Certificate[] chain, String authType) {
-					return true;
-				}
-			}).build();
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-			return HttpClients.custom().setSSLSocketFactory(sslsf).build();
-		} catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.SSL_CLIENT_FAILURE);
-		}
-		
-		return HttpClients.createDefault();
-	}
-	
 	public Void addOrUpdateLdap(Ldap ldap) {
 		ldap.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
 		return addOrUpdateGlobalConfig(ldap);
@@ -281,7 +251,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	
 	public Void updateEnvTemplate(EnvTemplate envTemplate) {
 		if(envTemplate.getId() == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
+			LogUtils.throwException(logger, MessageCodeEnum.ID_IS_EMPTY);
 		}
 		valideTemplateParam(envTemplate);
 		GlobalConfigParam param = new GlobalConfigParam();
@@ -348,7 +318,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	
 	public Void updateTraceTemplate(TraceTemplate taceTemplate) {
 		if(taceTemplate.getId() == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.TEMPLATE_ID_IS_EMPTY);
+			LogUtils.throwException(logger, MessageCodeEnum.ID_IS_EMPTY);
 		}
 		checkTraceTemplateParam(taceTemplate);
 		GlobalConfigParam bizParam = new GlobalConfigParam();
@@ -411,7 +381,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		logger.info("Start to build agent image");
 		
 		//3.制作Agent镜像并上传到仓库
-		System.setProperty("jib.httpTimeout", "5000");
+		System.setProperty("jib.httpTimeout", "10000");
 		System.setProperty("sendCredentialsOverHttp", "true");
 		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		String imageName = "skywalking-agent:v" + taceTemplate.getAgentVersion();
@@ -419,13 +389,13 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage(imageRepo, imageName)).addCredential(
 					imageRepo.getAuthName(),
 					imageRepo.getAuthPassword());
-			JibContainerBuilder jibContainerBuilder = Jib.from("busybox:latest");
-			jibContainerBuilder.addLayer(Arrays.asList(Paths.get(parentFile + "/skywalking-agent")), AbsoluteUnixPath.get("/"))
+			Jib.from("busybox:latest")
+				.addLayer(Arrays.asList(Paths.get(parentFile + "/skywalking-agent")), AbsoluteUnixPath.get("/"))
 				.containerize(Containerizer.to(registryImage)
 						.setAllowInsecureRegistries(true)
 						.addEventHandler(LogEvent.class, logEvent -> logger.info(logEvent.getMessage())));
 		} catch (Exception e) {
-			logger.error("Failed to build image", e);
+			logger.error("Failed to build agent image", e);
 		}finally {
 			try {
 				FileUtils.deleteDirectory(parentFile);

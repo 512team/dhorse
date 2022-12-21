@@ -18,6 +18,7 @@ import org.apache.maven.model.Activation;
 import org.apache.maven.model.Profile;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
+import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.DeploymentVersionStatusEnum;
@@ -223,7 +224,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		//构建版本编号
 		String nameOfImage = new StringBuilder()
 				.append(context.getApp().getAppName())
-				.append(":")
+				.append(":v")
 				.append(new SimpleDateFormat(Constants.DATE_FORMAT_YYYYMMDDHHMMSS).format(new Date()))
 				.toString();
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), nameOfImage);
@@ -328,7 +329,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		System.setProperty(MavenCli.LOCAL_REPO_PROPERTY, localRepoPath);
 		System.setProperty(MavenCli.MULTIMODULE_PROJECT_DIRECTORY, localRepoPath);
 		
-		//首先使用指定的javahome
+		//首先使用指定的javaHome
 		String javaHome = null;
 		if(mavenConf != null && !StringUtils.isBlank(mavenConf.getJavaHome())) {
 			javaHome = mavenConf.getJavaHome();
@@ -340,16 +341,14 @@ public abstract class DeployApplicationService extends ApplicationService {
 			LogUtils.throwException(logger, MessageCodeEnum.JAVA_HOME_IS_EMPTY);
 		}
 		
-		String javaVersion = null;
-		if(mavenConf != null && !StringUtils.isBlank(mavenConf.getJavaVersion())) {
-			javaVersion = mavenConf.getJavaVersion();
-		}else {
-			javaVersion = System.getProperty("java.version");
-		}
-		
+		String javaVersion = queryJavaMajorVersion(mavenConf);
 		if(javaVersion == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.JAVA_VERSION_IS_EMPTY);
 		}
+		
+		logger.info("Java home is {}", javaHome);
+		
+		logger.info("Java version is {}", javaVersion);
 		
 		String[] commands = new String[] {"clean", "package", "-Dmaven.test.skip"};
 		DefaultCliRequest request = new DefaultCliRequest(commands, null);
@@ -436,15 +435,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 
 		//基础镜像
-		String baseImage = context.getApp().getBaseImage();
-		if (LanguageTypeEnum.JAVA.getCode().equals(context.getApp().getLanguageType())) {
-			if(PackageFileTypeEnum.WAR.getCode().equals(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType())) {
-				baseImage = "busybox:latest";
-			}
-		}
+		String baseImage = baseImage(context);
 		
 		//连接镜像仓库5秒超时
-		System.setProperty("jib.httpTimeout", "5000");
+		System.setProperty("jib.httpTimeout", "10000");
 		System.setProperty("sendCredentialsOverHttp", "true");
 		String fileNameWithExtension = targetFiles.get(0).toFile().getName();
 		List<String> entrypoint = Arrays.asList("java", "-jar", fileNameWithExtension);
@@ -454,7 +448,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
 					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
 			Jib.from(baseImage)
-				.addLayer(targetFiles, AbsoluteUnixPath.get("/"))
+				.addLayer(targetFiles, AbsoluteUnixPath.get(Constants.CONTAINER_WORK_HOME))
 				.setEntrypoint(entrypoint)
 				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效。
 				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也无法使用，
@@ -471,6 +465,29 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 
+	private String baseImage(DeployContext context) {
+		String baseImage = context.getApp().getBaseImage();
+		if (!LanguageTypeEnum.JAVA.getCode().equals(context.getApp().getLanguageType())) {
+			return baseImage;
+		}
+		AppExtendJava extend = (AppExtendJava)context.getApp().getAppExtend();
+		//Jar类型文件的基础镜像都是Jdk镜像
+		if(PackageFileTypeEnum.JAR.getCode().equals(extend.getPackageFileType())) {
+			if(AgentImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
+				return fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(),
+						imageNameOfJdk(context.getApp().getBaseImageVersion()));
+			}
+			if(AgentImageSourceEnum.CUSTOM.getCode().equals(context.getApp().getBaseImageSource())) {
+				return baseImage;
+			}
+		}
+		//War类型文件的基础镜像都是busybox镜像
+		if(PackageFileTypeEnum.WAR.getCode().equals(extend.getPackageFileType())) {
+			baseImage = "busybox:latest";
+		}
+		return baseImage;
+	}
+	
 	private boolean updateDeployStatus(DeployContext context, DeploymentStatusEnum status, Date startTime, Date endTime) {
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
 		deploymentDetailParam.setId(context.getId());

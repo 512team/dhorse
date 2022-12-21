@@ -388,7 +388,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setName(context.getDeploymentAppName());
 		containerOfJar(context, container);
 		envVars(context, container);
-		container.setImagePullPolicy("IfNotPresent");
+		container.setImagePullPolicy("Always");
 		V1ContainerPort containerPort = new V1ContainerPort();
 		containerPort.setContainerPort(context.getAppEnv().getServicePort());
 		container.setPorts(Arrays.asList(containerPort));
@@ -509,26 +509,31 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.livenessProbe(livenessProbe);
 	}
 	
+	/**
+	 *   使用Jib通过Jdk的安装目录构建的Jdk镜像，缺少java命令的执行权限，故首先进行赋权。
+	 *   需要执行多条shell指令，因此只能使用sh -c模式。
+	 */
 	private void commands(V1Container container, DeployContext context){
-		List<String> commands = new ArrayList<>();
-		commands.add("java");
+		StringBuilder commands = new StringBuilder();
+		commands.append("chmod +x $JAVA_HOME/bin/java &&");
+		commands.append(" $JAVA_HOME/bin/java");
 		//DHorse定义的Jvm参数
 		List<String> jvmArgsOfDHorse = jvmArgsOfDHorse(context);
 		for(String arg : jvmArgsOfDHorse) {
-			commands.add(arg);
+			commands.append(" ").append(arg);
 		}
 		//用户自定义Jvm参数
 		if (!StringUtils.isBlank(context.getAppEnv().getJvmArgs())) {
 			String[] jvmArgs = context.getAppEnv().getJvmArgs().split("\\s+");
 			for (String arg : jvmArgs) {
-				commands.add(arg);
+				commands.append(" ").append(arg);
 			}
 		}
-		commands.add("-jar");
+		commands.append(" ").append("-jar");
 		String packageFileType = PackageFileTypeEnum.getByCode(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType()).getValue();
-		commands.add(context.getApp().getAppName() + "." + packageFileType);
+		commands.append(" ").append(Constants.CONTAINER_WORK_HOME + context.getApp().getAppName() + "." + packageFileType);
 		
-		container.setCommand(commands);
+		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
 	}
 	
 	private List<String> jvmArgsOfDHorse(DeployContext context) {
@@ -575,7 +580,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Container initContainer = new V1Container();
 		initContainer.setName("skywalking-agent");
 		initContainer.setImage(context.getFullNameOfAgentImage());
-		initContainer.setImagePullPolicy("IfNotPresent");
+		initContainer.setImagePullPolicy("Always");
 		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
 		initContainer.setArgs(Arrays.asList("cp -rf /skywalking-agent /tmp"));
 		
@@ -594,9 +599,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Container container = new V1Container();
 		container.setName("war");
 		container.setImage(context.getFullNameOfImage());
-		container.setImagePullPolicy("IfNotPresent");
+		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
-		String warFile = context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
+		String warFile = Constants.CONTAINER_WORK_HOME + context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
 		container.setArgs(Arrays.asList("cp -rf " + warFile + " /usr/local/tomcat/webapps"));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();

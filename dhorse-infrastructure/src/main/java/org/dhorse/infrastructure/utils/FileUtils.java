@@ -27,7 +27,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 		try (TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(
 				new GzipCompressorInputStream(Files.newInputStream(sourceTarGzFile.toPath())))) {
 			TarArchiveEntry entry;
-			// 将 tar 文件解压到 targetDir 目录下
 			// 将 tar.gz文件解压成tar包,然后读取tar包里的文件元组，复制文件到指定目录
 			while ((entry = tarArchiveInputStream.getNextTarEntry()) != null) {
 				if (entry.isDirectory()) {
