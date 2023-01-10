@@ -495,14 +495,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.startupProbe(startupProbe);
 		//就绪检查
 		readinessProbe.setInitialDelaySeconds(6);
-		readinessProbe.setPeriodSeconds(30);
+		readinessProbe.setPeriodSeconds(5);
 		readinessProbe.setTimeoutSeconds(1);
 		readinessProbe.setSuccessThreshold(1);
 		readinessProbe.setFailureThreshold(3);
 		container.setReadinessProbe(readinessProbe);
 		//存活检查
 		livenessProbe.setInitialDelaySeconds(30);
-		livenessProbe.setPeriodSeconds(30);
+		livenessProbe.setPeriodSeconds(5);
 		livenessProbe.setTimeoutSeconds(1);
 		livenessProbe.setSuccessThreshold(1);
 		livenessProbe.setFailureThreshold(3);
