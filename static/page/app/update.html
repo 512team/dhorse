@@ -2,8 +2,8 @@
 <div class="layuimini-main">
 	<div class="layui-carousel" id="stepForm" lay-filter="stepForm" style="margin: 0 auto;">
 		<div carousel-item>
-			<div>
-				<div class="layui-form layuimini-form" lay-filter="first-form">
+			<div id="firstForm">
+				<div class="layui-form layuimini-form" lay-filter="baseFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">应用名称</label>
 						<div class="layui-input-block">
@@ -16,10 +16,7 @@
 							<select name="languageType" disabled="">
 								<option value="">请选择</option>
 								<option value="1">Java</option>
-								<!--
-								<option value="2">Python</option>
-								<option value="3">Node</option>
-								-->
+								<option value="2">Node</option>
 							</select>
 						</div>
 					</div>
@@ -61,8 +58,8 @@
 					</div>
 				</div>
 			</div>
-			<div>
-				<div class="layui-form layuimini-form" id="secondForm" lay-filter="second-form">
+			<div id="secondForm">
+				<div class="layui-form layuimini-form" id="springBootFormItem" lay-filter="springBootFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
@@ -130,6 +127,61 @@
 						</div>
 					</div>
 				</div>
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				<div class="layui-form layuimini-form" id="nodeFormItem" lay-filter="nodeFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label">文件路径</label>
+						<div class="layui-input-block">
+							<input name="extendParam.packageTargetPath" placeholder="默认路径：dist/" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">基础镜像来源</label>
+						<div class="layui-input-block">
+							<select name="baseImageSourceNode" lay-filter="baseImageSourceNode" id="baseImageSourceNode" lay-verify="required" lay-reqtext="基础镜像来源不能为空">
+								<option value="">请选择</option>
+								<option value="1">版本号</option>
+								<option value="2">自定义</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="baseImageVersionNodeDiv">
+						<label class="layui-form-label required" id="baseImageLabel">Nginx版本</label>
+						<div class="layui-input-inline">
+							<select name="baseImageVersionNode" lay-filter="baseImageVersionNode" id="baseImageVersionNode">
+								<option value="">请选择</option>
+								<option value="1.23.3">v1.23.3</option>
+								<option value="1.22.1">v1.22.1</option>
+								<option value="1.21.6">v1.21.6</option>
+								<option value="1.20.2">v1.20.2</option>
+								<option value="1.19.10">v1.19.10</option>
+								<option value="1.18.0">v1.18.0</option>
+							</select>
+						</div>
+						<div class="layui-form-mid layui-word-aux">会自动下载依赖包，请确保能够访问外网</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="baseImageNodeDiv">
+						<label class="layui-form-label required">基础镜像</label>
+						<div class="layui-input-inline" style="width: 350px;">
+							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：nginx:v1.23.3" autocomplete="off" class="layui-input">
+						</div>
+						<div class="layui-form-mid layui-word-aux"><a href="#" target="_blank">《镜像制作指引》</a></div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnNode">确认保存</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -174,7 +226,7 @@
 				$("#appId").val(res.data.id);
 				
 				//给表单赋值
-				form.val("first-form", {
+				form.val("baseFormItem", {
 					"appName": res.data.appName
 					,"languageType": res.data.languageType
 					,"codeRepoPath": res.data.codeRepoPath
@@ -184,11 +236,11 @@
 					,"description": res.data.description
 				});
 				
-				//如果是java语言，则初始化下个表单数据
+				//Java
 				if(res.data.languageType == 1){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					//初始化下个表单
-					form.val("second-form", {
+					form.val("springBootFormItem", {
 						"extendParam.packageBuildType": res.data.appExtend.packageBuildType
 						,"extendParam.packageFileType": res.data.appExtend.packageFileType
 						,"extendParam.packageTargetPath": res.data.appExtend.packageTargetPath
@@ -197,6 +249,29 @@
 					//初始化镜像
 					initBaseImage(res.data.appExtend.packageFileType, res.data.baseImageSource,
 						res.data.baseImageVersion, res.data.baseImage, $, form);
+					$("#springBootFormItem").show();
+					$("#nodeFormItem").hide();
+				//Node
+				}else if(res.data.languageType == 2){
+					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+					form.val("nodeFormItem", {
+						"extendParam.packageTargetPath": res.data.appExtend.packageTargetPath
+						,"baseImageSourceNode": res.data.baseImageSource
+						,"baseImageVersionNode": res.data.baseImageVersion
+						,"baseImageNode": res.data.baseImage
+					});
+					$("#springBootFormItem").hide();
+					$("#nodeFormItem").show();
+					
+					//版本号
+					if(res.data.baseImageSource == 1){
+						$("#baseImageVersionNodeDiv").show();
+						$("#baseImageNodeDiv").hide();
+					//自定义
+					}else if(res.data.baseImageSource == 2){
+						$("#baseImageVersionNodeDiv").hide();
+						$("#baseImageNodeDiv").show();
+					}
 				}else{
 					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 				}
@@ -217,6 +292,19 @@
 			initBaseImage(packageFileType, data.value, '', '', $, form);
 		});
 		
+		//Node的镜像来源
+		form.on('select(baseImageSourceNode)', function(data) {
+			//版本号
+			if(data.value == 1){
+				$("#baseImageVersionNodeDiv").show();
+				$("#baseImageNodeDiv").hide();
+			//自定义
+			}else if(data.value == 2){
+				$("#baseImageVersionNodeDiv").hide();
+				$("#baseImageNodeDiv").show();
+			}
+		});
+		
 		form.on('submit(formStep)', function (data) {
 			var fields = data.field;
 			var firstFormData = '<div id="firstFormData">';
@@ -224,7 +312,13 @@
 				firstFormData += '<input type="hidden" name="'+ fieldName +'" value="'+ fields[fieldName] +'">';
 			}
 			firstFormData += "</div>";
-			$("#secondForm").append(firstFormData);
+			//springBoot
+			if(data.field.languageType == 1){
+				$("#springBootFormItem").append(firstFormData);
+			//Node
+			}else if(data.field.languageType == 2){
+				$("#nodeFormItem").append(firstFormData);
+			}
             step.next('#stepForm');
             return false;
         });
@@ -235,6 +329,66 @@
         });
 		
         form.on('submit(saveBtn)', function(data) {
+			if(data.field.baseImageSource == 1){
+				if(data.field.baseImageVersion == ''){
+					layer.msg('基础镜像版本不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.baseImage = '';
+			}else if(data.field.baseImageSource == 2){
+				if(data.field.baseImage == ''){
+					layer.msg('基础镜像不能为空', {icon: 5, shift: 6});
+					return false;
+				}
+				data.field.baseImageVersion = '';
+			}
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendParam'] = extendParams;
+		
+			$.ajax({
+				url: '/app/update',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.initForm($, appId);
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+		
+		//Node
+		form.on('submit(saveBtnNode)', function(data) {
+		
+			data.field.baseImageSource = data.field.baseImageSourceNode;
+			data.field.baseImageVersion = data.field.baseImageVersionNode;
+			data.field.baseImage = data.field.baseImageNode;
+			
 			if(data.field.baseImageSource == 1){
 				if(data.field.baseImageVersion == ''){
 					layer.msg('基础镜像版本不能为空', {icon: 5, shift: 6});

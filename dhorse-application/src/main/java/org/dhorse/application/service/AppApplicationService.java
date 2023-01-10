@@ -28,7 +28,9 @@ import org.dhorse.api.param.app.AppPageParam;
 import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.App;
+import org.dhorse.api.vo.App.AppExtend;
 import org.dhorse.api.vo.AppExtendJava;
+import org.dhorse.api.vo.AppExtendNode;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.infrastructure.exception.ApplicationException;
@@ -366,11 +368,15 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 	private AppParam buildBizParam(AppCreationParam requestParam) {
 		AppParam bizParam = new AppParam();
 		BeanUtils.copyProperties(requestParam, bizParam);
+		AppExtend appExtend = null;
 		if(LanguageTypeEnum.JAVA.getCode().equals(requestParam.getLanguageType())) {
-			AppExtendJava appExtend = new AppExtendJava();
+			appExtend = new AppExtendJava();
 			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
-			bizParam.setAppExtend(appExtend);
+		}else if(LanguageTypeEnum.NODE.getCode().equals(requestParam.getLanguageType())) {
+			appExtend = new AppExtendNode();
+			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
 		}
+		bizParam.setAppExtend(appExtend);
 		return bizParam;
 	}
 }

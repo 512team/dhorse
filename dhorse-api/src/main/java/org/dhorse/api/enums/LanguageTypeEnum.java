@@ -3,13 +3,7 @@ package org.dhorse.api.enums;
 public enum LanguageTypeEnum {
 
 	JAVA(1, "Java"),
-	PYTHON(2, "Python"),
-	NODE(3, "Node"),
-	APP(4, "App"),
-	H5(5, "H5"),
-	C(6, "C"),
-	CC(7, "C++"),
-	GO(8, "Go"),
+	NODE(2, "Node"),
 	;
 
 	private Integer code;

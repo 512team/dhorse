@@ -17,6 +17,7 @@ import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.App.AppExtend;
 import org.dhorse.api.vo.AppExtendJava;
+import org.dhorse.api.vo.AppExtendNode;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.AppParam;
 import org.dhorse.infrastructure.repository.mapper.AppMapper;
@@ -128,8 +129,14 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		if(appPO == null) {
 			return null;
 		}
+		if(StringUtils.isBlank(appPO.getExt())) {
+			return null;
+		}
 		if (LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
+		}
+		if (LanguageTypeEnum.NODE.getCode().equals(appPO.getLanguageType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNode.class);
 		}
 		return null;
 	}

@@ -98,7 +98,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 
 		@Override
 		public void run() {
-			String localPathName = componentConstants.getDataPath() + "app/tmp/";
+			String localPathName = componentConstants.getDataPath() + "app/app_tmp/";
 			File localPathOfPom = new File(localPathName);
 			if (!localPathOfPom.exists()) {
 				localPathOfPom.mkdirs();
@@ -110,7 +110,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 
 		private void buildTmpApp(String localPath) {
 			Resource resource = new PathMatchingResourcePatternResolver()
-					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/pom.xml");
+					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/app_tmp_pom.xml");
 			try (InputStream in = resource.getInputStream();
 					FileOutputStream out = new FileOutputStream(localPath + "pom.xml")) {
 				byte[] buffer = new byte[1024 * 1024];

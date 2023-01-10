@@ -35,7 +35,7 @@
 				<label class="layui-form-label text-value" id="codeRepoPath"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="packageBuildTypeDiv">
 			<label class="layui-form-label">构建方式：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="packageBuildType"></label>
@@ -47,7 +47,7 @@
 				<label class="layui-form-label text-value" id="packageTargetPath"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="packageFileTypeDiv">
 			<label class="layui-form-label">文件类型：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="packageFileType"></label>
@@ -158,16 +158,16 @@
 				if(res.data.languageType == 1){
 					languageType = "Java";
 				}else if(res.data.languageType == 2){
-					languageType = "Python";
-				}else if(res.data.languageType == 3){
 					languageType = "Node";
+					$("#packageBuildTypeDiv").hide();
+					$("#packageFileTypeDiv").hide();
 				}
 				$("#languageType").text(languageType);
 				$("#codeRepoPath").text(res.data.codeRepoPath);
 				$("#creationTime").text(res.data.creationTime);
 				$("#updateTime").text(res.data.updateTime);
 				$("#description").text(res.data.description);
-				$("#baseImageVersion").text(res.data.baseImageVersion);
+				$("#baseImageVersion").text('v' + res.data.baseImageVersion);
 				$("#baseImage").text(res.data.baseImage);
 				
 				if(res.data.baseImageSource == 1){
@@ -211,6 +211,19 @@
 					packageFileType = "Zip";
 				}
 				$("#packageFileType").text(packageFileType);
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
 				
 				var packageTargetPath = '';
 				if(typeof(res.data.appExtend) == "undefined"){
