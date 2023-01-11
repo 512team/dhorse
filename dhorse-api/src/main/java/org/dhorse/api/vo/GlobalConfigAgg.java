@@ -617,9 +617,9 @@ public class GlobalConfigAgg implements Serializable {
 		private String serviceUrl;
 
 		/**
-		 * 语言类型
+		 * 技术类型
 		 */
-		private Integer languageType;
+		private Integer techType;
 
 		/**
 		 * agent镜像来源，1：版本号，2：自定义
@@ -668,12 +668,12 @@ public class GlobalConfigAgg implements Serializable {
 			this.agentImage = agentImage;
 		}
 
-		public Integer getLanguageType() {
-			return languageType;
+		public Integer getTechType() {
+			return techType;
 		}
 
-		public void setLanguageType(Integer languageType) {
-			this.languageType = languageType;
+		public void setTechType(Integer techType) {
+			this.techType = techType;
 		}
 
 		public String getAgentVersion() {

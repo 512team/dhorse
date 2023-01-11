@@ -22,7 +22,7 @@ import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.DeploymentVersionStatusEnum;
-import org.dhorse.api.enums.LanguageTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
@@ -302,7 +302,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 
 	private boolean pack(DeployContext context) {
-		if (!LanguageTypeEnum.JAVA.getCode().equals(context.getApp().getLanguageType())) {
+		if (!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			logger.info("No need to pack");
 			return true;
 		}
@@ -467,7 +467,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 	private String baseImage(DeployContext context) {
 		String baseImage = context.getApp().getBaseImage();
-		if (!LanguageTypeEnum.JAVA.getCode().equals(context.getApp().getLanguageType())) {
+		if (!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			return baseImage;
 		}
 		AppExtendJava extend = (AppExtendJava)context.getApp().getAppExtend();

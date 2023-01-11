@@ -18,7 +18,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.AppUserRoleTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
-import org.dhorse.api.enums.LanguageTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.TomcatVersionEnum;
@@ -75,7 +75,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 	
 	public PageData<App> page(LoginUser loginUser, AppPageParam param) {
 		AppParam bizParam = new AppParam();
-		bizParam.setLanguageType(param.getLanguageType());
+		bizParam.setTechType(param.getTechType());
 		bizParam.setAppName(param.getAppName());
 		bizParam.setPageNum(param.getPageNum());
 		bizParam.setPageSize(param.getPageSize());
@@ -137,7 +137,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 	}
 	
 	private void buildJdkImage(AppCreationParam addParam) {
-		if(!LanguageTypeEnum.JAVA.getCode().equals(addParam.getLanguageType())) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(addParam.getTechType())) {
 			return;
 		}
 		if(!AgentImageSourceEnum.VERSION.getCode().equals(addParam.getBaseImageSource())) {
@@ -157,7 +157,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 	}
 	
 	private void buildTomcatImage(AppCreationParam addParam, String appId) {
-		if(!LanguageTypeEnum.JAVA.getCode().equals(addParam.getLanguageType())) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(addParam.getTechType())) {
 			return;
 		}
 		if(!AgentImageSourceEnum.VERSION.getCode().equals(addParam.getBaseImageSource())) {
@@ -339,8 +339,8 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(StringUtils.isBlank(addParam.getCodeRepoPath())){
 			LogUtils.throwException(logger, MessageCodeEnum.CODE_REPO_PATH_IS_EMPTY);
 		}
-		if(Objects.isNull(addParam.getLanguageType())){
-			LogUtils.throwException(logger, MessageCodeEnum.LANGUAGE_TYPE_IS_EMPTY);
+		if(Objects.isNull(addParam.getTechType())){
+			LogUtils.throwException(logger, MessageCodeEnum.TECH_TYPE_IS_EMPTY);
 		}
 		if(addParam.getAppName().length() > 32) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用名称不能大于32个字符");
@@ -369,10 +369,10 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		AppParam bizParam = new AppParam();
 		BeanUtils.copyProperties(requestParam, bizParam);
 		AppExtend appExtend = null;
-		if(LanguageTypeEnum.JAVA.getCode().equals(requestParam.getLanguageType())) {
+		if(TechTypeEnum.SPRING_BOOT.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendJava();
 			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
-		}else if(LanguageTypeEnum.NODE.getCode().equals(requestParam.getLanguageType())) {
+		}else if(TechTypeEnum.NODE.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendNode();
 			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
 		}

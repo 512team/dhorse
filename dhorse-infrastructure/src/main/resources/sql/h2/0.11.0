@@ -49,7 +49,7 @@ CREATE INDEX index_config_item_type ON global_config(item_type);
 CREATE TABLE app (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '应用编号',
 	app_name VARCHAR (32) NOT NULL COMMENT IS '应用名称',
-	language_type TINYINT DEFAULT 0 COMMENT IS '开发语言类型，1：Java，2：Python，3：Node，4：App，5：H5，6：C，7：C++，8：Go',
+	tech_type TINYINT DEFAULT 0 COMMENT IS '技术类型，1：SpringBoot，2：Node',
 	base_image_source TINYINT DEFAULT 0 COMMENT IS '基础镜像来源，1：版本号，2：自定义',
 	base_image_version VARCHAR (16) DEFAULT NULL COMMENT IS '基础镜像版本',
 	base_image VARCHAR (128) DEFAULT NULL COMMENT IS '基础镜像',

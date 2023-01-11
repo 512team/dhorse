@@ -17,9 +17,9 @@ public class AppCreationParam implements Serializable {
 	private String appName;
 
 	/**
-	 * 语言类型，1：java，2：python，3：node，4：app，5：h5，6：c，7：c，8：go
+	 * 技术类型，1：SpringBoot，2：Node
 	 */
-	private Integer languageType;
+	private Integer techType;
 
 	/**
 	 * 基础镜像来源，1：版本号，2：自定义
@@ -74,12 +74,12 @@ public class AppCreationParam implements Serializable {
 		this.appName = appName;
 	}
 
-	public Integer getLanguageType() {
-		return languageType;
+	public Integer getTechType() {
+		return techType;
 	}
 
-	public void setLanguageType(Integer languageType) {
-		this.languageType = languageType;
+	public void setTechType(Integer techType) {
+		this.techType = techType;
 	}
 
 	public String getBaseImageVersion() {

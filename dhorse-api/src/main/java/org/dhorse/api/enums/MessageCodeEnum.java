@@ -57,7 +57,7 @@ public enum MessageCodeEnum {
 	//系统配置
 	TEMPLATE_NAME_IS_EMPTY("200000", "模板名称不能为空"),
 	SERVICE_URL_IS_EMPTY("200000", "服务地址不能为空"),
-	AGENT_LANGUAGE_TYPE_IS_EMPTY("200000", "Agent语言类型不能为空"),
+	AGENT_TECH_TYPE_IS_EMPTY("200000", "Agent技术类型不能为空"),
 	
 	//应用
 	APP_ID_IS_NULL("200000", "应用编号不能为空"),
@@ -65,7 +65,7 @@ public enum MessageCodeEnum {
 	APP_NAME_EXISTENCE("200000", "应用名称已经存在"),
 	APP_NAME_IS_EMPTY("200000", "应用名称不能为空"),
 	CODE_REPO_PATH_IS_EMPTY("200000", "代码仓库路径不能为空"),
-	LANGUAGE_TYPE_IS_EMPTY("200000", "语言类型不能为空"),
+	TECH_TYPE_IS_EMPTY("200000", "技术类型不能为空"),
 	PACKAGE_TARGET_PATH_IS_EMPTY("200000", "打包路径不能为空"),
 	PACKAGE_BUILD_TYPE_IS_EMPTY("200000", "构建方式不能为空"),
 	PACKAGE_FILE_TYPE_IS_EMPTY("200000", "文件类型不能为空"),

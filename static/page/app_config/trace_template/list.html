@@ -7,22 +7,22 @@
 
 	<table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
 	
-	<script type="text/html" id="languageTypeBar">
-		{{#	if (d.languageType == 1) {			}}
+	<script type="text/html" id="techTypeBar">
+		{{#	if (d.techType == 1) {			}}
 		{{#		return 'Java' 					}}
-		{{#	} else if (d.languageType == 2){	}}
+		{{#	} else if (d.techType == 2){	}}
 		{{#		return 'Python'   				}}
-		{{#	} else if (d.languageType == 3){	}}
+		{{#	} else if (d.techType == 3){	}}
 		{{#		return 'Node'   				}}
-		{{#	} else if (d.languageType == 4){	}}
+		{{#	} else if (d.techType == 4){	}}
 		{{#		return 'App'   					}}
-		{{#	} else if (d.languageType == 5){	}}
+		{{#	} else if (d.techType == 5){	}}
 		{{#		return 'H5'   					}}
-		{{#	} else if (d.languageType == 6){	}}
+		{{#	} else if (d.techType == 6){	}}
 		{{#		return 'C'   					}}
-		{{#	} else if (d.languageType == 7){	}}
+		{{#	} else if (d.techType == 7){	}}
 		{{#		return 'C++'   					}}
-		{{#	} else if (d.languageType == 8){	}}
+		{{#	} else if (d.techType == 8){	}}
 		{{#		return 'Go'   					}}
 		{{#	}                     				}}
 	</script>
@@ -94,7 +94,7 @@
             cols: [[
                 {field: 'name', title: '模板名称'},
                 {field: 'serviceUrl', title: '服务地址', width: '14%'},
-				{field: 'languageType', title: 'Agent语言类型', templet: '#languageTypeBar'},
+				{field: 'techType', title: 'Agent技术类型', templet: '#techTypeBar'},
 				{field: 'agentImageSource', title: 'Agent镜像来源', templet: '#agentImageSourceBar'},
 				{field: 'agentVersion', title: 'Agent版本', templet: '#agentVersionBar'},
                 {field: 'agentImage', title: 'Agent镜像', width: '30%'},

@@ -24,9 +24,9 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">语言类型：</label>
+			<label class="layui-form-label">技术类型：</label>
 			<div class="layui-input-block">
-				<label class="layui-form-label text-value" id="languageType"></label>
+				<label class="layui-form-label text-value" id="techType"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -154,15 +154,15 @@
 				$("#id").text(res.data.id);
 				$("#appName").text(res.data.appName);
 				
-				var languageType = '';
-				if(res.data.languageType == 1){
-					languageType = "Java";
-				}else if(res.data.languageType == 2){
-					languageType = "Node";
+				var techType = '';
+				if(res.data.techType == 1){
+					techType = "Java";
+				}else if(res.data.techType == 2){
+					techType = "Node";
 					$("#packageBuildTypeDiv").hide();
 					$("#packageFileTypeDiv").hide();
 				}
-				$("#languageType").text(languageType);
+				$("#techType").text(techType);
 				$("#codeRepoPath").text(res.data.codeRepoPath);
 				$("#creationTime").text(res.data.creationTime);
 				$("#updateTime").text(res.data.updateTime);

@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.LanguageTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
@@ -132,10 +132,10 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		if(StringUtils.isBlank(appPO.getExt())) {
 			return null;
 		}
-		if (LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+		if (TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
 		}
-		if (LanguageTypeEnum.NODE.getCode().equals(appPO.getLanguageType())) {
+		if (TechTypeEnum.NODE.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNode.class);
 		}
 		return null;

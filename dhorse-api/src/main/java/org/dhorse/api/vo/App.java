@@ -17,9 +17,9 @@ public class App extends BaseDto {
 	private String appName;
 
 	/**
-	 * 开发语言类型，1：Java，2：Python，3：Node，4：App，5：H5，6：C，7：C++，8：Go
+	 * 技术类型，1：SpringBoot，2：Node
 	 */
-	private Integer languageType;
+	private Integer techType;
 
 	/**
 	 * 基础镜像来源，1：版本号，2：自定义
@@ -74,12 +74,12 @@ public class App extends BaseDto {
 		this.appName = appName;
 	}
 
-	public Integer getLanguageType() {
-		return languageType;
+	public Integer getTechType() {
+		return techType;
 	}
 
-	public void setLanguageType(Integer languageType) {
-		this.languageType = languageType;
+	public void setTechType(Integer techType) {
+		this.techType = techType;
 	}
 
 	public String getBaseImageVersion() {

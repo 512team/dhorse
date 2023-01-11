@@ -11,9 +11,9 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
-						<label class="layui-form-label required">语言类型</label>
+						<label class="layui-form-label required">技术类型</label>
 						<div class="layui-input-block">
-							<select name="languageType" disabled="">
+							<select name="techType" disabled="">
 								<option value="">请选择</option>
 								<option value="1">Java</option>
 								<option value="2">Node</option>
@@ -228,7 +228,7 @@
 				//给表单赋值
 				form.val("baseFormItem", {
 					"appName": res.data.appName
-					,"languageType": res.data.languageType
+					,"techType": res.data.techType
 					,"codeRepoPath": res.data.codeRepoPath
 					,"firstDepartment": res.data.firstDepartment
 					,"secondDepartment": res.data.secondDepartment
@@ -237,7 +237,7 @@
 				});
 				
 				//Java
-				if(res.data.languageType == 1){
+				if(res.data.techType == 1){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					//初始化下个表单
 					form.val("springBootFormItem", {
@@ -252,7 +252,7 @@
 					$("#springBootFormItem").show();
 					$("#nodeFormItem").hide();
 				//Node
-				}else if(res.data.languageType == 2){
+				}else if(res.data.techType == 2){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					form.val("nodeFormItem", {
 						"extendParam.packageTargetPath": res.data.appExtend.packageTargetPath
@@ -313,10 +313,10 @@
 			}
 			firstFormData += "</div>";
 			//springBoot
-			if(data.field.languageType == 1){
+			if(data.field.techType == 1){
 				$("#springBootFormItem").append(firstFormData);
 			//Node
-			}else if(data.field.languageType == 2){
+			}else if(data.field.techType == 2){
 				$("#nodeFormItem").append(firstFormData);
 			}
             step.next('#stepForm');

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.LanguageTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
@@ -276,7 +276,7 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 	}
 	
 	private boolean warFileType(AppPO appPO) {
-		if(!LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
 			return false;
 		}
 		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);

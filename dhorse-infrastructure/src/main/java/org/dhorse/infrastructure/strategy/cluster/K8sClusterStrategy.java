@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.LanguageTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
@@ -612,12 +612,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean warFileType(App app) {
-		return LanguageTypeEnum.JAVA.getCode().equals(app.getLanguageType())
+		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType())
 				&& PackageFileTypeEnum.WAR.getCode().equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
 	}
 	
 	private boolean warFileType(AppPO appPO) {
-		if(!LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
 			return false;
 		}
 		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
@@ -625,12 +625,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean jarFileType(App app) {
-		return LanguageTypeEnum.JAVA.getCode().equals(app.getLanguageType())
+		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType())
 				&& PackageFileTypeEnum.JAR.getCode().equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
 	}
 	
 	private boolean jarFileType(AppPO appPO) {
-		if(!LanguageTypeEnum.JAVA.getCode().equals(appPO.getLanguageType())) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
 			return false;
 		}
 		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);

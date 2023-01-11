@@ -348,8 +348,8 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		if(StringUtils.isBlank(taceTemplate.getServiceUrl())) {
 			LogUtils.throwException(logger, MessageCodeEnum.SERVICE_URL_IS_EMPTY);
 		}
-		if(null == taceTemplate.getLanguageType()) {
-			LogUtils.throwException(logger, MessageCodeEnum.AGENT_LANGUAGE_TYPE_IS_EMPTY);
+		if(null == taceTemplate.getTechType()) {
+			LogUtils.throwException(logger, MessageCodeEnum.AGENT_TECH_TYPE_IS_EMPTY);
 		}
 		if(taceTemplate.getServiceUrl().startsWith("http")) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "服务地址格式不正确");

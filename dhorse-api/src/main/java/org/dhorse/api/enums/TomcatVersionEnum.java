@@ -2,9 +2,9 @@ package org.dhorse.api.enums;
 
 public enum TomcatVersionEnum {
 
-	JAR(10, "10.1.4"),
-	WAR(8, "8.5.84"),
-	ZIP(9, "9.0.70"),
+	V10(10, "10.1.4"),
+	V9(9, "9.0.70"),
+	V8(8, "8.5.84"),
 	;
 
 	private Integer code;
