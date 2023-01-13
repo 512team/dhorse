@@ -8,7 +8,9 @@
 	<artifactId>app-vue</artifactId>
 	<packaging>pom</packaging>
 	<version>0.11.0</version>
-
+	
+	<!-- 该文件的代码行数是固定的，在解析时会用到行号，文件内容谨慎改动 -->
+	
 	<build>
 		<plugins>
 			<plugin>
