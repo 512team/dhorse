@@ -111,6 +111,10 @@ public class AppEnvCreationParam implements Serializable {
 	 */
 	private String description;
 
+	private EnvExtendSpringBootParam extendSpringBootParam;
+
+	private EnvExtendNodeParam extendNodeParam;
+
 	public String getAppId() {
 		return appId;
 	}
@@ -271,4 +275,71 @@ public class AppEnvCreationParam implements Serializable {
 		this.description = description;
 	}
 
+	public EnvExtendSpringBootParam getExtendSpringBootParam() {
+		return extendSpringBootParam;
+	}
+
+	public void setExtendSpringBootParam(EnvExtendSpringBootParam extendSpringBootParam) {
+		this.extendSpringBootParam = extendSpringBootParam;
+	}
+
+	public EnvExtendNodeParam getExtendNodeParam() {
+		return extendNodeParam;
+	}
+
+	public void setExtendNodeParam(EnvExtendNodeParam extendNodeParam) {
+		this.extendNodeParam = extendNodeParam;
+	}
+
+	public static class EnvExtendNodeParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		private String ingressHost;
+
+		public String getIngressHost() {
+			return ingressHost;
+		}
+
+		public void setIngressHost(String ingressHost) {
+			this.ingressHost = ingressHost;
+		}
+
+	}
+
+	public static class EnvExtendSpringBootParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		private Integer traceStatus;
+
+		private String traceTemplateId;
+
+		private String jvmArgs;
+
+		public Integer getTraceStatus() {
+			return traceStatus;
+		}
+
+		public void setTraceStatus(Integer traceStatus) {
+			this.traceStatus = traceStatus;
+		}
+
+		public String getTraceTemplateId() {
+			return traceTemplateId;
+		}
+
+		public void setTraceTemplateId(String traceTemplateId) {
+			this.traceTemplateId = traceTemplateId;
+		}
+
+		public String getJvmArgs() {
+			return jvmArgs;
+		}
+
+		public void setJvmArgs(String jvmArgs) {
+			this.jvmArgs = jvmArgs;
+		}
+
+	}
 }

@@ -61,7 +61,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
-							<select name="extendParam.packageBuildType">
+							<select name="extendSpringBootParam.packageBuildType">
 								<option value="">请选择</option>
 								<option value="1">Maven</option>
 								<!--
@@ -73,13 +73,13 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<input name="extendParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
+							<input name="extendSpringBootParam.packageTargetPath" placeholder="默认路径：target/" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
 						<label class="layui-form-label required">文件类型</label>
 						<div class="layui-input-block">
-							<select name="extendParam.packageFileType" lay-filter="extendParam.packageFileType" lay-verify="required" lay-reqtext="文件类型不能为空" id="packageFileType2">
+							<select name="extendSpringBootParam.packageFileType" lay-filter="extendSpringBootParam.packageFileType" lay-verify="required" lay-reqtext="文件类型不能为空" id="packageFileType2">
 								<option value="">请选择</option>
 								<option value="1">Jar</option>
 								<option value="2">War</option>
@@ -104,9 +104,9 @@
 						<div class="layui-input-inline">
 							<select name="baseImageVersion" lay-filter="baseImageVersion" id="baseImageVersion2">
 								<option value="">请选择</option>
-								<option value="10">v10.x</option>
-								<option value="9">v9.x</option>
-								<option value="8">v8.x</option>
+								<option value="10">v10</option>
+								<option value="9">v9</option>
+								<option value="8">v8</option>
 							</select>
 						</div>
 						<div class="layui-form-mid layui-word-aux" id="baseImageVersionDesc">会自动下载依赖包，请确保能够访问外网</div>
@@ -127,9 +127,21 @@
 				</div>
 				<div class="layui-form layuimini-form" id="nodeFormItem" lay-filter="nodeFormItem">
 					<div class="layui-form-item">
+						<label class="layui-form-label">Node版本</label>
+						<div class="layui-input-block">
+							<input name="extendNodeParam.nodeVersion" placeholder="如：v16.15.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">Npm版本</label>
+						<div class="layui-input-block">
+							<input name="extendNodeParam.npmVersion" placeholder="如：v8.11.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
 						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<input name="extendParam.packageTargetPath" placeholder="默认路径：dist/" autocomplete="off"  class="layui-input">
+							<input name="extendNodeParam.packageTargetPath" placeholder="默认路径：dist/" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -147,12 +159,12 @@
 						<div class="layui-input-inline">
 							<select name="baseImageVersionNode" lay-filter="baseImageVersionNode" id="baseImageVersionNode">
 								<option value="">请选择</option>
-								<option value="1.23.3">v1.23.3</option>
-								<option value="1.22.1">v1.22.1</option>
-								<option value="1.21.6">v1.21.6</option>
-								<option value="1.20.2">v1.20.2</option>
-								<option value="1.19.10">v1.19.10</option>
-								<option value="1.18.0">v1.18.0</option>
+								<option value="1.23">v1.23</option>
+								<option value="1.22">v1.22</option>
+								<option value="1.21">v1.21</option>
+								<option value="1.20">v1.20</option>
+								<option value="1.19">v1.19</option>
+								<option value="1.18">v1.18</option>
 							</select>
 						</div>
 						<div class="layui-form-mid layui-word-aux">会自动下载依赖包，请确保能够访问外网</div>
@@ -209,7 +221,7 @@
 			}
         });
 		
-		form.on('select(extendParam.packageFileType)', function(data) {
+		form.on('select(extendSpringBootParam.packageFileType)', function(data) {
 			initBaseImage(data.value, '', '', '', $, form);
         });
 		
@@ -279,7 +291,7 @@
 					allParams[fieldName] = fields[fieldName];
 				}
 			}
-			allParams['extendParam'] = extendParams;
+			allParams['extendSpringBootParam'] = extendParams;
 		
 			$.ajax({
 				url: '/app/add',
@@ -338,7 +350,7 @@
 					allParams[fieldName] = fields[fieldName];
 				}
 			}
-			allParams['extendParam'] = extendParams;
+			allParams['extendNodeParam'] = extendParams;
 		
 			$.ajax({
 				url: '/app/add',
@@ -487,19 +499,19 @@
 	function initTomcatVersion(selectedVersion, $, form){
 		var opt = '<option value="">请选择</option>';
 		if(selectedVersion === "10"){
-			opt = opt.concat('<option value="10" selected>v10.x</option>');
+			opt = opt.concat('<option value="10" selected>v10</option>');
 		}else{
-			opt = opt.concat('<option value="10">v10.x</option>');
+			opt = opt.concat('<option value="10">v10</option>');
 		}
 		if(selectedVersion === "9"){
-			opt = opt.concat('<option value="9" selected>v9.x</option>');
+			opt = opt.concat('<option value="9" selected>v9</option>');
 		}else{
-			opt = opt.concat('<option value="9">v9.x</option>');
+			opt = opt.concat('<option value="9">v9</option>');
 		}
 		if(selectedVersion === "8"){
-			opt = opt.concat('<option value="8" selected>v8.x</option>');
+			opt = opt.concat('<option value="8" selected>v8</option>');
 		}else{
-			opt = opt.concat('<option value="8">v8.x</option>');
+			opt = opt.concat('<option value="8">v8</option>');
 		}
 		$("#baseImageVersion2").html(opt);
 		form.render('select');

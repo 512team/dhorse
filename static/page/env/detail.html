@@ -108,14 +108,13 @@
 				<label class="text-value" id="servicePort"></label>
 			</div>
 		</div>
-
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="traceStatusDiv" style="display:none">
 			<label class="layui-form-label">链路追踪状态：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="traceStatus"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="traceTemplateNameDiv" style="display:none">
 			<label class="layui-form-label">链路追踪模板名称：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="traceTemplateName"></label>
@@ -127,10 +126,16 @@
 				<label class="text-value" id="healthPath"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="jvmArgsDiv" style="display:none">
 			<label class="layui-form-label">Jvm参数：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="jvmArgs"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="ingressHostDiv" style="display:none">
+			<label class="layui-form-label">访问域名：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="ingressHost"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -218,7 +223,9 @@
 				$("#deploymentTime").text(res.data.deploymentTime);
 				$("#creationTime").text(res.data.creationTime);
 				$("#updateTime").text(res.data.updateTime);
-
+				
+				initApp(form, $, appId, res.data);
+				
 				layer.close(loadIndex);
 			},
 			error: function(res){
@@ -227,4 +234,31 @@
 			}
 		});
     });
+	
+	function initApp(form, $, appId, data){
+		$.ajax({
+			url: '/app/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'appId': appId}),
+			success: function(res){
+				//SpringBoot
+				if(res.data.techType == 1){
+					$("#traceStatusDiv").show();
+					$("#traceTemplateNameDiv").show();
+					$("#jvmArgsDiv").show();
+				//Node
+				}else if(res.data.techType == 2){
+					if(data.envExtend != null){
+						$("#ingressHost").text(data.envExtend.ingressHost);
+					}
+					$("#ingressHostDiv").show();
+				}
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
 </script>

@@ -43,6 +43,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		String appId = context.getApp().getCodeRepoPath();
 		String branchName = context.getBranchName();
 		GitLabApi gitLabApi = gitLabApi(context.getGlobalConfigAgg().getCodeRepo());
+		logger.info("Start to download branch");
 		try {
 			Project project = gitLabApi.getProjectApi().getProject(appId);
 			if (project == null) {
@@ -85,6 +86,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		} finally {
 			gitLabApi.close();
 		}
+		logger.error("End to download branch");
 		return true;
 	}
 

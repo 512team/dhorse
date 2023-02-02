@@ -35,10 +35,22 @@
 				<label class="layui-form-label text-value" id="codeRepoPath"></label>
 			</div>
 		</div>
-		<div class="layui-form-item" id="packageBuildTypeDiv">
+		<div class="layui-form-item" id="packageBuildTypeDiv" style="display: none">
 			<label class="layui-form-label">构建方式：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="packageBuildType"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="nodeVersionDiv" style="display: none">
+			<label class="layui-form-label">Node版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="nodeVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="npmVersionDiv" style="display: none">
+			<label class="layui-form-label">Npm版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="npmVersion"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -47,7 +59,7 @@
 				<label class="layui-form-label text-value" id="packageTargetPath"></label>
 			</div>
 		</div>
-		<div class="layui-form-item" id="packageFileTypeDiv">
+		<div class="layui-form-item" id="packageFileTypeDiv" style="display: none">
 			<label class="layui-form-label">文件类型：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="packageFileType"></label>
@@ -155,12 +167,18 @@
 				$("#appName").text(res.data.appName);
 				
 				var techType = '';
+				//SpringBoot
 				if(res.data.techType == 1){
-					techType = "Java";
+					techType = "SpringBoot";
+					$("#packageBuildTypeDiv").show();
+					$("#packageFileTypeDiv").show();
+				//Node
 				}else if(res.data.techType == 2){
 					techType = "Node";
-					$("#packageBuildTypeDiv").hide();
-					$("#packageFileTypeDiv").hide();
+					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#npmVersion").text(res.data.appExtend.npmVersion);
+					$("#nodeVersionDiv").show();
+					$("#npmVersionDiv").show();
 				}
 				$("#techType").text(techType);
 				$("#codeRepoPath").text(res.data.codeRepoPath);
@@ -211,20 +229,6 @@
 					packageFileType = "Zip";
 				}
 				$("#packageFileType").text(packageFileType);
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
 				var packageTargetPath = '';
 				if(typeof(res.data.appExtend) == "undefined"){
 					packageTargetPath = '';

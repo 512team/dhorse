@@ -1,6 +1,6 @@
 package org.dhorse.api.enums;
 
-public enum AgentImageSourceEnum {
+public enum ImageSourceEnum {
 
 	VERSION(1, "版本号"),
 	CUSTOM(2, "自定义");
@@ -9,7 +9,7 @@ public enum AgentImageSourceEnum {
 
 	private String value;
 
-	private AgentImageSourceEnum(Integer code, String value) {
+	private ImageSourceEnum(Integer code, String value) {
 		this.code = code;
 		this.value = value;
 	}

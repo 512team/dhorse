@@ -97,7 +97,7 @@
 				<input type="radio" name="requiredMerge" value="1" title="是">
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item"  style="display:none" id="traceStatusDiv">
 			<label class="layui-form-label">链路追踪状态</label>
 			<div class="layui-input-block">
 				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="0" title="否" checked>
@@ -111,10 +111,16 @@
 				</select>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item"  style="display:none" id="jvmArgsDiv">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
 				<textarea name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
+			</div>
+		</div>
+		<div class="layui-form-item" style="display:none" id="ingressHostDiv">
+			<label class="layui-form-label">访问域名</label>
+			<div class="layui-input-block">
+				<input type="text" name="extendNodeParam.ingressHost" id="ingressHost" placeholder="请输入Ingress域名" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -170,6 +176,7 @@
 					,"description": data.description
 				});
 				
+				initApp(form, $, appId, data);
 				initCluster(form, $, data.clusterId);
 				initNamespaceName(form, $, data.clusterId, data.namespaceName);
 				initTraceTemplate(form, $, data.traceTemplateId, data.traceStatus);
@@ -199,12 +206,26 @@
 					return false;
 				}
 			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendNodeParam'] = extendParams;
+			
 			$.ajax({
 				url: '/app/env/update',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(data.field),
+				data: JSON.stringify(allParams),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});
@@ -227,6 +248,32 @@
             return false;
         });
     });
+	
+	function initApp(form, $, appId, data){
+		$.ajax({
+			url: '/app/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'appId': appId}),
+			success: function(res){
+				//SpringBoot
+				if(res.data.techType == 1){
+					$("#traceStatusDiv").show();
+					$("#jvmArgsDiv").show();
+				//Node
+				}else if(res.data.techType == 2){
+					if(data.envExtend != null){
+						$("#ingressHost").val(data.envExtend.ingressHost);
+					}
+					$("#ingressHostDiv").show();
+				}
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
 	
 	function initCluster(form, $, selectedClusterId){
 		$.ajax({

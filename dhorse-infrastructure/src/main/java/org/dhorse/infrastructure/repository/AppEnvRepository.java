@@ -2,11 +2,20 @@ package org.dhorse.infrastructure.repository;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.RoleTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.vo.AppEnv;
+import org.dhorse.api.vo.AppEnv.EnvExtendNode;
+import org.dhorse.api.vo.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.infrastructure.param.AppEnvParam;
-import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.AppEnvMapper;
+import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
+import org.dhorse.infrastructure.repository.po.AppMemberPO;
+import org.dhorse.infrastructure.repository.po.AppPO;
+import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +26,9 @@ public class AppEnvRepository extends RightRepository<AppEnvParam, AppEnvPO, App
 
 	@Autowired
 	private AppEnvMapper mapper;
+	
+	@Autowired
+	private AppRepository appRepository;
 
 	@Override
 	protected CustomizedBaseMapper<AppEnvPO> getMapper() {
@@ -30,11 +42,34 @@ public class AppEnvRepository extends RightRepository<AppEnvParam, AppEnvPO, App
 		return mapper.selectList(wrapper);
 	}
 	
+	public AppEnv query(LoginUser loginUser, AppEnvParam bizParam) {
+		validateApp(bizParam.getAppId());
+		AppEnv dto = null;
+		AppEnvPO appEnvPO = super.query(bizParam);
+		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
+			dto = po2Dto(appEnvPO);
+		}
+		AppMemberPO appMember = appMemberRepository
+				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+		if (appMember == null) {
+			return null;
+		}
+		dto = po2Dto(appEnvPO);
+		if(!StringUtils.isBlank(appEnvPO.getExt())){
+			AppPO appPO = appRepository.queryById(bizParam.getAppId());
+			if(TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
+				dto.setEnvExtend(JsonUtils.parseToObject(appEnvPO.getExt(), EnvExtendSpringBoot.class));
+			}else if(TechTypeEnum.NODE.getCode().equals(appPO.getTechType())) {
+				dto.setEnvExtend(JsonUtils.parseToObject(appEnvPO.getExt(), EnvExtendNode.class));
+			}
+		}
+		return dto;
+	}
+	
 	@Override
 	protected AppEnvPO updateCondition(AppEnvParam bizParam) {
 		AppEnvPO po = new AppEnvPO();
 		po.setId(bizParam.getId());
 		return po;
 	}
-
 }

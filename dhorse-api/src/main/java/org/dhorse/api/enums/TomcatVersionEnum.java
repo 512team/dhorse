@@ -18,7 +18,7 @@ public enum TomcatVersionEnum {
 	
 	public static TomcatVersionEnum getByCode(Integer code) {
 		for(TomcatVersionEnum item : TomcatVersionEnum.values()) {
-			if(item.getCode() == code) {
+			if(item.getCode().equals(code)) {
 				return item;
 			}
 		}

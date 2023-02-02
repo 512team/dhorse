@@ -44,7 +44,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label required">服务端口</label>
 			<div class="layui-input-block">
-				<input type="text" name="servicePort" placeholder="如：8080" lay-verify="required" lay-reqtext="服务端口不能为空" autocomplete="off" class="layui-input">
+				<input type="text" name="servicePort" id="servicePort" placeholder="如：8080" lay-verify="required" lay-reqtext="服务端口不能为空" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -103,7 +103,7 @@
 				<input type="radio" name="requiredMerge" value="1" title="是">
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" style="display:none" id="traceStatusDiv">
 			<label class="layui-form-label">链路追踪状态</label>
 			<div class="layui-input-block">
 				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="0" title="否" checked>
@@ -117,10 +117,16 @@
 				</select>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" style="display:none" id="jvmArgsDiv">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
 				<textarea name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
+			</div>
+		</div>
+		<div class="layui-form-item" style="display:none" id="ingressHostDiv">
+			<label class="layui-form-label">访问域名</label>
+			<div class="layui-input-block">
+				<input type="text" name="extendNodeParam.ingressHost" placeholder="请输入Ingress域名" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -141,11 +147,14 @@
         var form = layui.form,
             layer = layui.layer,
 			parentIndex = layer.index,
-            $ = layui.$;
+            $ = layui.$,
+			appId = localStorage.getItem('appId_' + $("#userName").val());
 		
-		$("#appId2").val(localStorage.getItem('appId_' + $("#userName").val()));
+		$("#appId2").val(appId);
 		
 		form.render();
+		
+		initApp(form, $, appId);
 		
 		initEnvTemplate(form, $);
 		
@@ -198,12 +207,26 @@
 					return false;
 				}
 			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendNodeParam'] = extendParams;
+			
 			$.ajax({
 				url: '/app/env/add',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(data.field),
+				data: JSON.stringify(allParams),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});
@@ -225,6 +248,30 @@
             return false;
         });
     });
+	
+	function initApp(form, $, appId){
+		$.ajax({
+			url: '/app/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'appId': appId}),
+			success: function(res){
+				//SpringBoot
+				if(res.data.techType == 1){
+					$("#traceStatusDiv").show();
+					$("#jvmArgsDiv").show();
+				//Node
+				}else if(res.data.techType == 2){
+					$("#ingressHostDiv").show();
+					$("#servicePort").val("80").attr("disabled", "disabled");
+				}
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
 	
 	function initEnvTemplate(form, $){
 		$.ajax({

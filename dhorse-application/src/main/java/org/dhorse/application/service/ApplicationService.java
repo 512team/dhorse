@@ -140,6 +140,10 @@ public abstract class ApplicationService {
 		return globalConfigAgg;
 	}
 	
+	protected String mavenRepo() {
+		return componentConstants.getDataPath() + "repository/";
+	}
+	
 	public AppPO validateApp(String appId) {
 		AppPO appPO = appRepository.queryById(appId);
 		if(appPO == null) {

@@ -6,11 +6,12 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.dhorse.api.result.PageData;
-import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.vo.AppBranch;
+import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +20,20 @@ public abstract class CodeRepoStrategy {
 	public static final Logger logger = LoggerFactory.getLogger(CodeRepoStrategy.class);
 	
 	void clearOldBranch(DeployContext context) {
-		File pathFile = new File(localPathOfBranch(context));
-		try {
-			FileUtils.deleteDirectory(pathFile.getParentFile());
-		} catch (IOException e) {
-			logger.error("Failed to clear app code", e);
-		}
+		File[] hisBranchs = new File(localPathOfBranch(context)).getParentFile().listFiles();
+		//异步清除历史代码
+		ThreadPoolUtils.async(new Runnable() {
+			@Override
+			public void run() {
+				for(File h : hisBranchs) {
+					try {
+						FileUtils.deleteDirectory(h);
+					} catch (IOException e) {
+						logger.error("Failed to clear branch file", e);
+					}
+				}
+			}
+		});
 	}
 	
 	public boolean downloadBranch(DeployContext context) {

@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.dhorse.api.enums.AgentImageSourceEnum;
+import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.AppUserRoleTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
@@ -140,10 +140,10 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(addParam.getTechType())) {
 			return;
 		}
-		if(!AgentImageSourceEnum.VERSION.getCode().equals(addParam.getBaseImageSource())) {
+		if(!ImageSourceEnum.VERSION.getCode().equals(addParam.getBaseImageSource())) {
 			return;
 		}
-		if(!PackageFileTypeEnum.JAR.getCode().equals(addParam.getExtendParam().getPackageFileType())) {
+		if(!PackageFileTypeEnum.JAR.getCode().equals(addParam.getExtendSpringBootParam().getPackageFileType())) {
 			return;
 		}
 		
@@ -160,10 +160,10 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(addParam.getTechType())) {
 			return;
 		}
-		if(!AgentImageSourceEnum.VERSION.getCode().equals(addParam.getBaseImageSource())) {
+		if(!ImageSourceEnum.VERSION.getCode().equals(addParam.getBaseImageSource())) {
 			return;
 		}
-		if(!PackageFileTypeEnum.WAR.getCode().equals(addParam.getExtendParam().getPackageFileType())) {
+		if(!PackageFileTypeEnum.WAR.getCode().equals(addParam.getExtendSpringBootParam().getPackageFileType())) {
 			return;
 		}
 		
@@ -371,10 +371,10 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		AppExtend appExtend = null;
 		if(TechTypeEnum.SPRING_BOOT.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendJava();
-			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
+			BeanUtils.copyProperties(requestParam.getExtendSpringBootParam(), appExtend);
 		}else if(TechTypeEnum.NODE.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendNode();
-			BeanUtils.copyProperties(requestParam.getExtendParam(), appExtend);
+			BeanUtils.copyProperties(requestParam.getExtendNodeParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);
 		return bizParam;

@@ -44,7 +44,7 @@ public class DeployContext {
 
 	private Date startTime;
 
-	private String deploymentAppName;
+	private String deploymentName;
 
 	/**
 	 * 日志文件路径
@@ -64,12 +64,12 @@ public class DeployContext {
 		this.cluster = cluster;
 	}
 
-	public String getDeploymentAppName() {
-		return deploymentAppName;
+	public String getDeploymentName() {
+		return deploymentName;
 	}
 
-	public void setDeploymentAppName(String deploymentAppName) {
-		this.deploymentAppName = deploymentAppName;
+	public void setDeploymentName(String deploymentName) {
+		this.deploymentName = deploymentName;
 	}
 
 	public String getBranchName() {

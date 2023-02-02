@@ -18,7 +18,7 @@ public enum PackageFileTypeEnum {
 	
 	public static PackageFileTypeEnum getByCode(Integer code) {
 		for(PackageFileTypeEnum item : PackageFileTypeEnum.values()) {
-			if(item.getCode() == code) {
+			if(item.getCode().equals(code)) {
 				return item;
 			}
 		}

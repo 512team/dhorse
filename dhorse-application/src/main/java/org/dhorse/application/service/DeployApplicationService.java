@@ -1,6 +1,9 @@
 package org.dhorse.application.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -10,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.cli.DefaultCliRequest;
 import org.apache.maven.cli.MavenCli;
@@ -18,18 +22,19 @@ import org.apache.maven.model.Activation;
 import org.apache.maven.model.Profile;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
-import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.DeploymentVersionStatusEnum;
-import org.dhorse.api.enums.TechTypeEnum;
+import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.branch.VersionBuildParam;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppExtendJava;
+import org.dhorse.api.vo.AppExtendNode;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.infrastructure.param.AppEnvParam;
@@ -51,6 +56,9 @@ import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.ResourceUtils;
 
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
@@ -275,7 +283,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setClusterStrategy(clusterStrategy(context.getCluster().getClusterType()));
 		context.setId(deployParam.getDeploymentDetailId());
 		context.setStartTime(deployParam.getDeploymentStartTime());
-		context.setDeploymentAppName(K8sUtils.getReplicaAppName(app.getAppName(), appEnvPO.getTag()));
+		context.setDeploymentName(K8sUtils.getDeploymentName(app.getAppName(), appEnvPO.getTag()));
 		context.setNameOfImage(deployParam.getVersionName());
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), deployParam.getVersionName());
 		context.setFullNameOfImage(fullNameOfImage);
@@ -302,15 +310,40 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 
 	private boolean pack(DeployContext context) {
-		if (!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
-			logger.info("No need to pack");
-			return true;
+		//SpringBoot应用
+		if (TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
+			AppExtendJava appExtend = context.getApp().getAppExtend();
+			if(PackageBuildTypeEnum.MAVEN.getCode().equals(appExtend.getPackageBuildType())) {
+				return doMavenPack(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
+			}
 		}
-		AppExtendJava appExtend = context.getApp().getAppExtend();
-		if (PackageBuildTypeEnum.MAVEN.getCode().equals(appExtend.getPackageBuildType())) {
+		//Node应用
+		if (TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
+			AppExtendNode appExtend =  context.getApp().getAppExtend();
+			Resource resource = new PathMatchingResourcePatternResolver()
+					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/app_node_pom.xml");
+			try (FileOutputStream out = new FileOutputStream(context.getLocalPathOfBranch() + "pom.xml")) {
+				List<String> lines = FileUtils.readLines(resource.getFile(), Charset.forName("UTF-8"));
+				StringBuilder lineStr = new StringBuilder();
+				for(int i = 0; i < lines.size(); i++) {
+					String l = lines.get(i);
+					//为了提高替换效率，判断文件的行号
+					if(i == 50) {
+						l = l.replace("${nodeVersion}", appExtend.getNodeVersion());
+					}else if(i == 51) {
+						l = l.replace("${npmVersion}", appExtend.getNpmVersion().substring(0));
+					}else if(i == 52) {
+						l = l.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
+					}
+					lineStr.append(l).append("\n");
+				}
+				out.write(lineStr.toString().getBytes("UTF-8"));
+			} catch (IOException e) {
+				logger.error("Failed to build tmp app", e);
+			}
 			return doMavenPack(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
 		}
-
+		
 		return true;
 	}
 
@@ -325,7 +358,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 	public boolean doMavenPack(Maven mavenConf, String localPathOfBranch) {
 		logger.info("Start to pack using maven");
 		
-		String localRepoPath = componentConstants.getDataPath() + "repository";
+		String localRepoPath = mavenRepo();
 		System.setProperty(MavenCli.LOCAL_REPO_PROPERTY, localRepoPath);
 		System.setProperty(MavenCli.MULTIMODULE_PROJECT_DIRECTORY, localRepoPath);
 		
@@ -401,7 +434,19 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return status == 0;
 	}
 
-	public boolean buildImage(DeployContext context) {
+	private boolean buildImage(DeployContext context) {
+		if(TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())){
+			return buildSpringBootImage(context);
+		}
+		
+		if(TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())){
+			return buildNodeImage(context);
+		}
+		
+		return false;
+	}
+	
+	private boolean buildSpringBootImage(DeployContext context) {
 		AppExtendJava appExtend = context.getApp().getAppExtend();
 		String fullTargetPath = context.getLocalPathOfBranch();
 		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
@@ -436,13 +481,45 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 		//基础镜像
 		String baseImage = baseImage(context);
-		
-		//连接镜像仓库5秒超时
-		System.setProperty("jib.httpTimeout", "10000");
-		System.setProperty("sendCredentialsOverHttp", "true");
 		String fileNameWithExtension = targetFiles.get(0).toFile().getName();
 		List<String> entrypoint = Arrays.asList("java", "-jar", fileNameWithExtension);
+		doBuildImage(context, baseImage, entrypoint, targetFiles);
+
+		return true;
+	}
+	
+	private boolean buildNodeImage(DeployContext context) {
+		AppExtendNode appExtend = context.getApp().getAppExtend();
+		String fullDistPath = context.getLocalPathOfBranch();
+		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
+			fullDistPath += "dist/";
+		}else {
+			fullDistPath += appExtend.getPackageTargetPath();
+		}
+		File fullDistPathFile = new File(fullDistPath);
+		if (!fullDistPathFile.exists()) {
+			logger.error("The target path does not exist");
+			return false;
+		}
 		
+		//创建app的编译文件
+		File appPathFile = new File(context.getLocalPathOfBranch() + context.getApp().getAppName());
+		appPathFile.mkdirs();
+		try {
+			FileUtils.copyDirectory(fullDistPathFile, appPathFile);
+		} catch (IOException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.COPY_FILE_FAILURE);
+		}
+		
+		doBuildImage(context, "busybox:latest", null, Arrays.asList(appPathFile.toPath()));
+
+		return true;
+	}
+
+	private void doBuildImage(DeployContext context, String baseImage, List<String> entrypoint, List<Path> targetFiles) {
+		//设置连接仓库的超时时间
+		System.setProperty("jib.httpTimeout", "15000");
+		System.setProperty("sendCredentialsOverHttp", "true");
 		try {
 			RegistryImage registryImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
 					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
@@ -458,13 +535,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 						.setAllowInsecureRegistries(true)
 						.addEventHandler(LogEvent.class, logEvent -> logger.info(logEvent.getMessage())));
 		} catch (Exception e) {
-			logger.error("Failed to build image", e);
-			return false;
+			LogUtils.throwException(logger, e, MessageCodeEnum.BUILD_IMAGE);
 		}
-
-		return true;
 	}
-
+	
 	private String baseImage(DeployContext context) {
 		String baseImage = context.getApp().getBaseImage();
 		if (!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
@@ -473,11 +547,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 		AppExtendJava extend = (AppExtendJava)context.getApp().getAppExtend();
 		//Jar类型文件的基础镜像都是Jdk镜像
 		if(PackageFileTypeEnum.JAR.getCode().equals(extend.getPackageFileType())) {
-			if(AgentImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
+			if(ImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
 				return fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(),
 						imageNameOfJdk(context.getApp().getBaseImageVersion()));
 			}
-			if(AgentImageSourceEnum.CUSTOM.getCode().equals(context.getApp().getBaseImageSource())) {
+			if(ImageSourceEnum.CUSTOM.getCode().equals(context.getApp().getBaseImageSource())) {
 				return baseImage;
 			}
 		}

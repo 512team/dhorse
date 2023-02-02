@@ -62,9 +62,14 @@ public class AppCreationParam implements Serializable {
 	private String description;
 
 	/**
-	 * 应用扩展信息
+	 * SpringBoot应用扩展参数
 	 */
-	private AppExtendJavaCreationParam extendParam;
+	private AppExtendSpringBootCreationParam extendSpringBootParam;
+
+	/**
+	 * Node应用扩展参数
+	 */
+	private AppExtendNodeCreationParam extendNodeParam;
 
 	public String getAppName() {
 		return appName;
@@ -146,20 +151,28 @@ public class AppCreationParam implements Serializable {
 		this.description = description;
 	}
 
-	public AppExtendJavaCreationParam getExtendParam() {
-		return extendParam;
+	public AppExtendSpringBootCreationParam getExtendSpringBootParam() {
+		return extendSpringBootParam;
 	}
 
-	public void setExtendParam(AppExtendJavaCreationParam extendParam) {
-		this.extendParam = extendParam;
+	public void setExtendSpringBootParam(AppExtendSpringBootCreationParam extendSpringBootParam) {
+		this.extendSpringBootParam = extendSpringBootParam;
+	}
+
+	public AppExtendNodeCreationParam getExtendNodeParam() {
+		return extendNodeParam;
+	}
+
+	public void setExtendNodeParam(AppExtendNodeCreationParam extendNodeParam) {
+		this.extendNodeParam = extendNodeParam;
 	}
 
 	/**
-	 * 新增java扩展应用参数模型。
+	 * SpringBoot应用扩展参数模型
 	 * 
 	 * @author Dahai 2021-09-08
 	 */
-	public static class AppExtendJavaCreationParam implements Serializable {
+	public static class AppExtendSpringBootCreationParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
@@ -214,5 +227,55 @@ public class AppCreationParam implements Serializable {
 		public void setPackageTargetPath(String packageTargetPath) {
 			this.packageTargetPath = packageTargetPath;
 		}
+	}
+
+	/**
+	 * Node应用扩展参数模型
+	 * 
+	 * @author Dahai 2022-12-08
+	 */
+	public static class AppExtendNodeCreationParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * Node版本
+		 */
+		private String nodeVersion;
+
+		/**
+		 * npm版本
+		 */
+		private String npmVersion;
+
+		/**
+		 * 打包文件路径
+		 */
+		private String packageTargetPath;
+
+		public String getNodeVersion() {
+			return nodeVersion;
+		}
+
+		public void setNodeVersion(String nodeVersion) {
+			this.nodeVersion = nodeVersion;
+		}
+
+		public String getNpmVersion() {
+			return npmVersion;
+		}
+
+		public void setNpmVersion(String npmVersion) {
+			this.npmVersion = npmVersion;
+		}
+
+		public String getPackageTargetPath() {
+			return packageTargetPath;
+		}
+
+		public void setPackageTargetPath(String packageTargetPath) {
+			this.packageTargetPath = packageTargetPath;
+		}
+
 	}
 }

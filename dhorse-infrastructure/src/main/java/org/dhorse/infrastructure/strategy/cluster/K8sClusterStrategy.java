@@ -17,10 +17,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.TechTypeEnum;
+import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.NginxVersionEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
@@ -30,6 +32,7 @@ import org.dhorse.api.vo.AppEnv;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
+import org.dhorse.api.vo.AppEnv.EnvExtendNode;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -55,6 +58,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.AutoscalingV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.apis.NetworkingV1Api;
 import io.kubernetes.client.openapi.apis.VersionApi;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
@@ -76,6 +80,12 @@ import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscaler;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerList;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerSpec;
 import io.kubernetes.client.openapi.models.V1HostPathVolumeSource;
+import io.kubernetes.client.openapi.models.V1Ingress;
+import io.kubernetes.client.openapi.models.V1IngressBackend;
+import io.kubernetes.client.openapi.models.V1IngressList;
+import io.kubernetes.client.openapi.models.V1IngressRule;
+import io.kubernetes.client.openapi.models.V1IngressServiceBackend;
+import io.kubernetes.client.openapi.models.V1IngressSpec;
 import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1Lifecycle;
 import io.kubernetes.client.openapi.models.V1LifecycleHandler;
@@ -90,6 +100,7 @@ import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.openapi.models.V1Probe;
 import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1ServiceBackendPort;
 import io.kubernetes.client.openapi.models.V1ServiceList;
 import io.kubernetes.client.openapi.models.V1ServicePort;
 import io.kubernetes.client.openapi.models.V1ServiceSpec;
@@ -118,19 +129,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				return null;
 			}
 			V1PodSpec podSpec = deployment.getItems().get(0).getSpec().getTemplate().getSpec();
-			//从镜像名称中截取版本号
-			String imageName = null;
-			if(jarFileType(appPO)) {
-				imageName = podSpec.getContainers().get(0).getImage();
-			}else if(warFileType(appPO)) {
-				for(V1Container initC : podSpec.getInitContainers()){
-					if("war".equals(initC.getName())) {
-						imageName = initC.getImage();
-					}
-				}
-			}
 			Replica replica = new Replica();
-			replica.setImageName(imageName);
+			replica.setImageName(imageName(appPO, podSpec));
 			return replica;
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
@@ -144,29 +144,31 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Deployment deployment = new V1Deployment();
 		deployment.apiVersion("apps/v1");
 		deployment.setKind("Deployment");
-		deployment.setMetadata(deploymentMetaData(context.getDeploymentAppName()));
+		deployment.setMetadata(deploymentMetaData(context.getDeploymentName()));
 		deployment.setSpec(deploymentSpec(context));
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		AppsV1Api api = new AppsV1Api(apiClient);
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		String namespace = context.getAppEnv().getNamespaceName();
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(context.getDeploymentAppName());
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(context.getDeploymentName());
 		try {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
 				deployment = api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				deployment = api.replaceNamespacedDeployment(context.getDeploymentAppName(), namespace, deployment, null, null,
+				deployment = api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
 						null, null);
 			}
 			
 			// 自动扩容任务
-			createAutoScaling(context.getAppEnv(), context.getDeploymentAppName(), apiClient);
+			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), apiClient);
 
 			//部署service
 			createService(context);
+			
+			createIngress(context);
 			
 			// 检查pod状态
 			for (int i = 0; i < 60; i++) {
@@ -208,24 +210,82 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				context.getCluster().getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		String namespace = context.getAppEnv().getNamespaceName();
-		String appName = context.getApp().getAppName();
+		String deploymentName = context.getDeploymentName();
 		V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-				"app=" + appName, 1, null, null, null, null);
+				"app=" + deploymentName, 1, null, null, null, null);
 		V1Service service = null;
 		if (CollectionUtils.isEmpty(serviceList.getItems())) {
 			service = new V1Service();
 			service.apiVersion("v1");
 			service.setKind("Service");
-			service.setMetadata(serviceMeta(appName));
+			service.setMetadata(serviceMeta(deploymentName));
 			service.setSpec(serviceSpec(context));
 			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
 		} else {
 			service = serviceList.getItems().get(0);
 			modifyServiceSpec(context, service);
-			service = coreApi.replaceNamespacedService(context.getApp().getAppName(), namespace, service, null, null, null, null);
+			service = coreApi.replaceNamespacedService(deploymentName, namespace, service, null, null, null, null);
 		}
 		logger.info("End to create service");
 		return true;
+	}
+	
+	private boolean createIngress(DeployContext context) throws ApiException {
+		if(!this.nodeApp(context.getApp())) {
+			return true;
+		}
+		if(StringUtils.isBlank(context.getAppEnv().getExt())){
+			return true;
+		}
+		logger.info("Start to create ingress");
+		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
+				context.getCluster().getAuthToken());
+		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
+		String namespace = context.getAppEnv().getNamespaceName();
+		String deploymentName = context.getDeploymentName();
+		V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
+				"app=" + deploymentName, 1, null, null, null, null);
+		V1Ingress ingress = null;
+		if (CollectionUtils.isEmpty(list.getItems())) {
+			ingress = new V1Ingress();
+			ingress.apiVersion("networking.k8s.io/v1");
+			ingress.setKind("Ingress");
+			ingress.setMetadata(ingressMeta(deploymentName));
+			ingress.setSpec(ingressSpec(context));
+			ingress = networkingApi.createNamespacedIngress(namespace, ingress, null, null, null, null);
+		} else {
+			ingress = list.getItems().get(0);
+			ingress.setSpec(ingressSpec(context));
+			ingress = networkingApi.replaceNamespacedIngress(deploymentName, namespace, ingress, null, null, null, null);
+		}
+		logger.info("End to create ingress");
+		return true;
+	}
+	
+	private V1ObjectMeta ingressMeta(String appName) {
+		V1ObjectMeta metadata = new V1ObjectMeta();
+		metadata.setName(appName);
+		metadata.setLabels(Collections.singletonMap("app", appName));
+		return metadata;
+	}
+	
+	private V1IngressSpec ingressSpec(DeployContext context) {
+		V1ServiceBackendPort serviceBackendPort = new V1ServiceBackendPort();
+		serviceBackendPort.setNumber(context.getAppEnv().getServicePort());
+		V1IngressServiceBackend ingressServiceBackend = new V1IngressServiceBackend();
+		ingressServiceBackend.setName(context.getDeploymentName());
+		ingressServiceBackend.setPort(serviceBackendPort);
+		V1IngressBackend ingressBackend = new V1IngressBackend();
+		ingressBackend.setService(ingressServiceBackend);
+		
+		V1IngressRule ingressRule = new V1IngressRule();
+		ingressRule.setHost(JsonUtils.parseToObject(context.getAppEnv().getExt(), EnvExtendNode.class).getIngressHost());
+		
+		V1IngressSpec spec = new V1IngressSpec();
+		spec.setDefaultBackend(ingressBackend);
+		spec.setIngressClassName("nginx");
+		spec.setRules(Arrays.asList(ingressRule));
+		return spec;
 	}
 	
 	public boolean deleteDeployment(ClusterPO clusterPO, AppPO appPO, AppEnvPO appEnvPO) {
@@ -257,11 +317,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 
 	public boolean autoScaling(AppPO appPO, AppEnvPO appEnvPO, ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		String appName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
-		return createAutoScaling(appEnvPO, appName, apiClient);
+		String deploymentAppName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
+		return createAutoScaling(appEnvPO, deploymentAppName, apiClient);
 	}
 
-	private boolean createAutoScaling(AppEnvPO appEnvPO, String appName, ApiClient apiClient) {
+	private boolean createAutoScaling(AppEnvPO appEnvPO, String deploymentName, ApiClient apiClient) {
 		AutoscalingV1Api autoscalingApi = new AutoscalingV1Api(apiClient);
 		V1HorizontalPodAutoscaler body = new V1HorizontalPodAutoscaler();
 		body.setKind("HorizontalPodAutoscaler");
@@ -272,12 +332,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1CrossVersionObjectReference scaleTargetRef = new V1CrossVersionObjectReference();
 		scaleTargetRef.setApiVersion("apps/v1");
 		scaleTargetRef.setKind("Deployment");
-		scaleTargetRef.setName(appName);
+		scaleTargetRef.setName(deploymentName);
 		spec.setScaleTargetRef(scaleTargetRef);
 		spec.setTargetCPUUtilizationPercentage(appEnvPO.getAutoScalingCpu());
-		body.setMetadata(deploymentMetaData(appName));
+		body.setMetadata(deploymentMetaData(deploymentName));
 		body.setSpec(spec);
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(appName);
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(deploymentName);
 		try {
 			V1HorizontalPodAutoscalerList autoscalerList = autoscalingApi.listNamespacedHorizontalPodAutoscaler(
 					appEnvPO.getNamespaceName(), null, null, null, null, labelSelector, 1, null, null, null,
@@ -286,7 +346,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				autoscalingApi.createNamespacedHorizontalPodAutoscaler(appEnvPO.getNamespaceName(), body, null,
 						null, null, null);
 			} else {
-				autoscalingApi.replaceNamespacedHorizontalPodAutoscaler(appName, appEnvPO.getNamespaceName(),
+				autoscalingApi.replaceNamespacedHorizontalPodAutoscaler(deploymentName, appEnvPO.getNamespaceName(),
 						body, null, null, null, null);
 			}
 		} catch (ApiException e) {
@@ -296,16 +356,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 	
-	private boolean deleteAutoScaling(String namespace, String appName, ApiClient apiClient) {
+	private boolean deleteAutoScaling(String namespace, String deploymentName, ApiClient apiClient) {
 		AutoscalingV1Api autoscalingApi = new AutoscalingV1Api(apiClient);
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(appName);
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(deploymentName);
 		try {
 			V1HorizontalPodAutoscalerList autoscalerList = autoscalingApi.listNamespacedHorizontalPodAutoscaler(
 					namespace, null, null, null, null, labelSelector, 1, null, null, null, null);
 			if (CollectionUtils.isEmpty(autoscalerList.getItems())) {
 				return true;
 			}
-			V1Status status = autoscalingApi.deleteNamespacedHorizontalPodAutoscaler(appName,
+			V1Status status = autoscalingApi.deleteNamespacedHorizontalPodAutoscaler(deploymentName,
 					namespace, null, null, null, null, null, null);
 			if(status == null || !KubernetesConstants.V1STATUS_SUCCESS.equals(status.getStatus())){
 				return false;
@@ -337,8 +397,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		port.setTargetPort(new IntOrString(context.getAppEnv().getServicePort()));
 		
 		V1ServiceSpec spec = new V1ServiceSpec();
-		spec.setSelector(Collections.singletonMap("app", context.getDeploymentAppName()));
+		spec.setSelector(Collections.singletonMap("app", context.getDeploymentName()));
 		spec.setPorts(Arrays.asList(port));
+		spec.setType("ClusterIP");
 		return spec;
 	}
 	
@@ -352,7 +413,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1DeploymentSpec deploymentSpec(DeployContext context) {
 		V1DeploymentSpec spec = new V1DeploymentSpec();
 		spec.setReplicas(context.getAppEnv().getMinReplicas());
-		spec.setSelector(specSelector(context.getDeploymentAppName()));
+		spec.setSelector(specSelector(context.getDeploymentName()));
 		spec.setTemplate(specTemplate(context));
 		return spec;
 	}
@@ -365,7 +426,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private V1PodTemplateSpec specTemplate(DeployContext context) {
 		Map<String, String> labels = new HashMap<>();
-		labels.put("app", context.getDeploymentAppName());
+		labels.put("app", context.getDeploymentName());
 		labels.put("version", String.valueOf(System.currentTimeMillis()));
 		V1ObjectMeta specMetadata = new V1ObjectMeta();
 		specMetadata.setLabels(labels);
@@ -385,8 +446,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private List<V1Container> containers(DeployContext context) {
 		V1Container container = new V1Container();
-		container.setName(context.getDeploymentAppName());
+		container.setName(context.getDeploymentName());
 		containerOfJar(context, container);
+		containerOfNode(context, container);
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
 		V1ContainerPort containerPort = new V1ContainerPort();
@@ -416,8 +478,15 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			return;
 		}
 		container.setImage(context.getFullNameOfImage());
-		commands(container, context);
-		args(container, context);
+		commandsOfJar(container, context);
+		argsOfJar(container, context);
+	}
+	
+	private void containerOfNode(DeployContext context, V1Container container) {
+		if(!TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		container.setImage(nginxImage(context));
 	}
 	
 	private void envVars(DeployContext context, V1Container container) {
@@ -513,7 +582,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	 *   使用Jib通过Jdk的安装目录构建的Jdk镜像，缺少java命令的执行权限，故首先进行赋权。
 	 *   需要执行多条shell指令，因此只能使用sh -c模式。
 	 */
-	private void commands(V1Container container, DeployContext context){
+	private void commandsOfJar(V1Container container, DeployContext context){
 		StringBuilder commands = new StringBuilder();
 		commands.append("chmod +x $JAVA_HOME/bin/java &&");
 		commands.append(" $JAVA_HOME/bin/java");
@@ -554,7 +623,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return args;
 	}
 	
-	private void args(V1Container container, DeployContext context){
+	private void argsOfJar(V1Container container, DeployContext context){
 		List<String> args = new ArrayList<>();
 		args.add("--server.port=" + context.getAppEnv().getServicePort());
 		container.setArgs(args);
@@ -564,10 +633,22 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		List<V1Container> containers = new ArrayList<>();
 		initContainerOfWar(context, containers);
 		initContainerOfAgent(context, containers);
+		initContainerOfNode(context, containers);
 		return containers;
 	}
 	
+	private String nginxImage(DeployContext context) {
+		//如：nginx:1.23.3-alpine
+		if(ImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
+			return "nginx:" + NginxVersionEnum.getByCode(context.getApp().getBaseImageVersion()).getValue() + "-alpine";
+		}
+		return context.getApp().getBaseImage();
+	}
+	
 	private void initContainerOfAgent(DeployContext context, List<V1Container> containers) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
 		if(YesOrNoEnum.NO.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			return;
 		}
@@ -611,13 +692,33 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		containers.add(container);
 	}
 	
+	private void initContainerOfNode(DeployContext context, List<V1Container> containers) {
+		if(!TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		
+		V1Container container = new V1Container();
+		container.setName("node");
+		container.setImage(context.getFullNameOfImage());
+		container.setImagePullPolicy("Always");
+		container.setCommand(Arrays.asList("/bin/sh", "-c"));
+		String file = Constants.CONTAINER_WORK_HOME + context.getApp().getAppName();
+		container.setArgs(Arrays.asList("cp -rf " + file + "/* /usr/share/nginx/html"));
+		
+		V1VolumeMount volumeMount = new V1VolumeMount();
+		volumeMount.setMountPath("/usr/share/nginx/html");
+		volumeMount.setName("node-volume");
+		container.setVolumeMounts(Arrays.asList(volumeMount));
+		containers.add(container);
+	}
+	
 	private boolean warFileType(App app) {
-		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType())
-				&& PackageFileTypeEnum.WAR.getCode().equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
+		return springBootApp(app) && PackageFileTypeEnum.WAR.getCode()
+					.equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
 	}
 	
 	private boolean warFileType(AppPO appPO) {
-		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
+		if(!springBootApp(appPO)) {
 			return false;
 		}
 		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
@@ -625,16 +726,32 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean jarFileType(App app) {
-		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType())
-				&& PackageFileTypeEnum.JAR.getCode().equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
+		return springBootApp(app) && PackageFileTypeEnum.JAR.getCode()
+					.equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
 	}
 	
 	private boolean jarFileType(AppPO appPO) {
-		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
+		if(!springBootApp(appPO)) {
 			return false;
 		}
 		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
 		return PackageFileTypeEnum.JAR.getCode().equals(appExtend.getPackageFileType());
+	}
+	
+	private boolean springBootApp(AppPO appPO) {
+		return TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType());
+	}
+
+	private boolean springBootApp(App app) {
+		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType());
+	}
+	
+	private boolean nodeApp(AppPO appPO) {
+		return TechTypeEnum.NODE.getCode().equals(appPO.getTechType());
+	}
+
+	private boolean nodeApp(App app) {
+		return TechTypeEnum.NODE.getCode().equals(app.getTechType());
 	}
 	
 	private List<V1VolumeMount> volumeMounts(DeployContext context) {
@@ -668,6 +785,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			volumeMounts.add(volumeMountAgent);
 		}
 		
+		//Node
+		if(nodeApp(context.getApp())) {
+			V1VolumeMount volumeMountWar = new V1VolumeMount();
+			volumeMountWar.setMountPath("/usr/share/nginx/html");
+			volumeMountWar.setName("node-volume");
+			volumeMounts.add(volumeMountWar);
+		}
+		
 		return volumeMounts;
 	}
 
@@ -689,6 +814,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		volumeData.setEmptyDir(emptyDirData);
 		volumes.add(volumeData);
 		
+		//War
 		if(warFileType(context.getApp())) {
 			V1Volume volumeWar = new V1Volume();
 			volumeWar.setName("war-volume");
@@ -704,6 +830,15 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			V1EmptyDirVolumeSource emptyDir = new V1EmptyDirVolumeSource();
 			volumeAgent.setEmptyDir(emptyDir);
 			volumes.add(volumeAgent);
+		}
+		
+		//Node
+		if(nodeApp(context.getApp())) {
+			V1Volume volumeWar = new V1Volume();
+			volumeWar.setName("node-volume");
+			V1EmptyDirVolumeSource emptyDirWar = new V1EmptyDirVolumeSource();
+			volumeWar.setEmptyDir(emptyDirWar);
+			volumes.add(volumeWar);
 		}
 		
 		return volumes;
@@ -767,18 +902,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		endOffset = endOffset > dataCount ? dataCount : endOffset;
 		List<V1Pod> pagePod = podList.getItems().subList(startOffset, endOffset);
 		List<EnvReplica> pods = pagePod.stream().map(e -> {
-			//从镜像名称中截取版本号
-			String imageName = null;
-			if(jarFileType(appPO)) {
-				imageName = e.getSpec().getContainers().get(0).getImage();
-			}else if(warFileType(appPO)) {
-				for(V1Container initC : e.getSpec().getInitContainers()){
-					if("war".equals(initC.getName())) {
-						imageName = initC.getImage();
-					}
-				}
-			}
-			
+			String imageName = imageName(appPO, e.getSpec());
 			EnvReplica r = new EnvReplica();
 			r.setVersionName(imageName.substring(imageName.lastIndexOf("/") + 1));
 			r.setIp(e.getStatus().getPodIP());
@@ -799,6 +923,25 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		pageData.setItemCount(dataCount);
 
 		return pageData;
+	}
+	
+	private String imageName(AppPO appPO, V1PodSpec podSpec) {
+		if(jarFileType(appPO)) {
+			return podSpec.getContainers().get(0).getImage();
+		}else if(warFileType(appPO)) {
+			for(V1Container initC : podSpec.getInitContainers()){
+				if("war".equals(initC.getName())) {
+					return initC.getImage();
+				}
+			}
+		}else if(nodeApp(appPO)) {
+			for(V1Container initC : podSpec.getInitContainers()){
+				if("node".equals(initC.getName())) {
+					return initC.getImage();
+				}
+			}
+		}
+		return null;
 	}
 	
 	private Integer podStatus(V1PodStatus podStatus) {

@@ -1,7 +1,6 @@
 package org.dhorse.application.service;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
@@ -16,9 +15,9 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.dhorse.api.enums.AgentImageSourceEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
+import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.global.GlolabConfigDeletionParam;
@@ -111,13 +110,8 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		private void buildTmpApp(String localPath) {
 			Resource resource = new PathMatchingResourcePatternResolver()
 					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/app_tmp_pom.xml");
-			try (InputStream in = resource.getInputStream();
-					FileOutputStream out = new FileOutputStream(localPath + "pom.xml")) {
-				byte[] buffer = new byte[1024 * 1024];
-				int offset = 0;
-				while ((offset = in.read(buffer)) != -1) {
-					out.write(buffer, 0, offset);
-				}
+			try (InputStream in = resource.getInputStream()) {
+				FileUtils.copyInputStreamToFile(in, new File(localPath + "pom.xml"));
 			} catch (IOException e) {
 				logger.error("Failed to build tmp app", e);
 			}
@@ -357,7 +351,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	}
 	
 	private void buildAgentImage(TraceTemplate taceTemplate, GlobalConfigAgg globalConfigAgg) {
-		if(!AgentImageSourceEnum.VERSION.getCode().equals(taceTemplate.getAgentImageSource())) {
+		if(!ImageSourceEnum.VERSION.getCode().equals(taceTemplate.getAgentImageSource())) {
 			return;
 		}
 		

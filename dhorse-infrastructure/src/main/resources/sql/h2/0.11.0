@@ -58,7 +58,7 @@ CREATE TABLE app (
 	second_department VARCHAR (16) DEFAULT NULL COMMENT IS '二级部门',
 	third_department VARCHAR (16) DEFAULT NULL COMMENT IS '三级部门',
 	description VARCHAR (128) DEFAULT NULL COMMENT IS '应用描述',
-	ext VARCHAR (8192) DEFAULT NULL COMMENT IS '每种语言的扩展信息，json结构',
+	ext VARCHAR (16384) DEFAULT NULL COMMENT IS '每种技术类型的扩展信息，json结构',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
 	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
@@ -105,6 +105,7 @@ CREATE TABLE app_env (
 	health_path VARCHAR (32) DEFAULT NULL COMMENT IS '健康检查路径，端口后的uri，如：/health',
 	jvm_args VARCHAR (1024) DEFAULT NULL COMMENT IS 'jvm参数',
 	description VARCHAR (128) DEFAULT NULL COMMENT IS '环境描述',
+	ext VARCHAR (16384) DEFAULT NULL COMMENT IS '每种技术类型的扩展信息，json结构',
 	deployment_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '部署时间',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',

@@ -111,6 +111,11 @@ public class AppEnvParam extends PageParam {
 	 */
 	private Date deploymentTime;
 
+	/**
+	 * 扩展参数
+	 */
+	private String ext;
+
 	public String getTag() {
 		return tag;
 	}
@@ -269,6 +274,14 @@ public class AppEnvParam extends PageParam {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getExt() {
+		return ext;
+	}
+
+	public void setExt(String ext) {
+		this.ext = ext;
 	}
 
 }

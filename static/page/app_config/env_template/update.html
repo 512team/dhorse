@@ -110,19 +110,6 @@
 				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="1" title="是">
 			</div>
 		</div>
-		<div class="layui-form-item" style="display:none" id="traceTemplateDiv">
-			<label class="layui-form-label">链路追踪模板</label>
-			<div class="layui-input-block">
-				<select name="traceTemplateId" id="traceTemplateId" lay-filter="traceTemplateId" lay-verify="required" lay-reqtext="链路追踪模板不能为空">
-				</select>
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">Jvm参数</label>
-			<div class="layui-input-block">
-				<textarea name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
-			</div>
-		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">描述</label>
 			<div class="layui-input-block">
@@ -170,37 +157,19 @@
 					,"requiredDeployApproval": data.requiredDeployApproval
 					,"requiredMerge": data.requiredMerge
 					,"autoScalingMemory": data.autoScalingMemory
-					,"traceStatus": data.traceStatus
 					,"healthPath": data.healthPath
-					,"jvmArgs": data.jvmArgs
 					,"description": data.description
 				});
 				//初始化集群列表
 				initCluster(form, $, data.clusterId);
 				initNamespaceName(form, $, data.clusterId, data.namespaceName);
-				initTraceTemplate(form, $, data.traceTemplateId, data.traceStatus);
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});
 			}
 		});
 		
-		form.on('radio(traceStatus)', function(data) {
-			if(data.value == 1){
-				initTraceTemplate(form, $, 0, 1);
-			}else{
-				$("#traceTemplateId").children().remove();
-				$("#traceTemplateDiv").hide();
-			}
-		});
-		
         form.on('submit(saveBtn)', function(data) {
-			if(data.field.traceStatus == 1){
-				if(data.field.traceTemplateId == ''){
-					layer.msg('链路追踪模板编号不能为空', {icon: 5, shift: 6});
-					return false;
-				}
-			}
 			$.ajax({
 				url: '/globalConfig/envTemplate/update',
 				type: 'POST',
@@ -281,38 +250,6 @@
 					}
 				}
 				$("#namespaceName").html(opt);
-				form.render('select');
-			},
-			error: function(data){
-				layer.msg(data.message, {icon: 5, shift: 6});
-			}
-		});
-	}
-	
-	function initTraceTemplate(form, $, traceTemplateId, traceStatus){
-		if(traceStatus == 0){
-			return false;
-		}
-		$.ajax({
-			url: '/globalConfig/traceTemplate/page',
-			type: 'POST',
-			dataType: "json",
-			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'itemType': 5, 'pageSize': 1000, 'pageNum': 1}),
-			success: function(res){
-				var opt = '<option value="">请选择或输入</option>';
-				if(res.data.itemCount != 0){	
-					data = res.data.items;
-					for(var k in data){
-						if(traceTemplateId == data[k].id){
-							opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].name +"</option>");
-						}else{
-							opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].name +"</option>");
-						}
-					}
-				}
-				$("#traceTemplateId").html(opt);
-				$("#traceTemplateDiv").show();
 				form.render('select');
 			},
 			error: function(data){

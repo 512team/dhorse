@@ -114,29 +114,10 @@
 				<label class="text-value" id="servicePort"></label>
 			</div>
 		</div>
-
-		<div class="layui-form-item">
-			<label class="layui-form-label">链路追踪状态：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="traceStatus"></label>
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">链路追踪模板名称：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="traceTemplateName"></label>
-			</div>
-		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">健康检查路径：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="healthPath"></label>
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">Jvm参数：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="jvmArgs"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -207,14 +188,7 @@
 					$("#requiredMerge").text('是');
 				}
 				$("#servicePort").text(data.servicePort);
-				if(data.traceStatus == 0){
-					$("#traceStatus").text('关闭');
-				}else{
-					$("#traceStatus").text('开启');
-				}
-				$("#traceTemplateName").text(data.traceTemplateName);
 				$("#healthPath").text(data.healthPath);
-				$("#jvmArgs").text(data.jvmArgs);
 				$("#description").text(data.description);
 				$("#creationTime").text(data.creationTime);
 				$("#updateTime").text(data.updateTime);

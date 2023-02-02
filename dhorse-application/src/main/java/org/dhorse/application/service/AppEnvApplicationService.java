@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.AppEnvCreationParam;
 import org.dhorse.api.param.app.env.AppEnvDeletionParam;
@@ -25,11 +25,11 @@ import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
+import org.dhorse.infrastructure.repository.po.AppEnvPO;
+import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
-import org.dhorse.infrastructure.repository.po.AppEnvPO;
-import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -129,7 +129,7 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 	}
 	
 	public Void add(AppEnvCreationParam addParam) {
-		validateAddParam(addParam);
+		AppPO appPO = validateAddParam(addParam);
 		initAddParam(addParam);
 		AppEnvParam param = new AppEnvParam();
 		param.setTag(addParam.getTag());
@@ -137,7 +137,8 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		if(appEnvRepository.query(param) != null) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ENV_TAG_INEXISTENCE);
 		}
-		if(appEnvRepository.add(buildBizParam(addParam)) == null) {
+		AppEnvParam appEnvParam = buildCreationParam(appPO, addParam);
+		if(appEnvRepository.add(appEnvParam) == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
 		return null;
@@ -169,8 +170,8 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 	}
 	
 	public Void update(LoginUser loginUser, AppEnvUpdateParam updateParam) {
-		validateAddParam(updateParam);
-		AppEnvParam appEnvParam = buildBizParam(updateParam);
+		AppPO appPO = validateAddParam(updateParam);
+		AppEnvParam appEnvParam = buildCreationParam(appPO, updateParam);
 		appEnvParam.setId(updateParam.getAppEnvId());
 		if(!appEnvRepository.update(loginUser, appEnvParam)) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
@@ -234,7 +235,7 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		return null;
 	}
 	
-	private void validateAddParam(AppEnvCreationParam addParam) {
+	private AppPO validateAddParam(AppEnvCreationParam addParam) {
 		if(StringUtils.isBlank(addParam.getEnvName())){
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ENV_NAME_IS_EMPTY);
 		}
@@ -273,6 +274,7 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		if(warFileType(appPO) && 8080 != addParam.getServicePort()) {
 			LogUtils.throwException(logger, MessageCodeEnum.WAR_APP_SERVICE_PORT_8080);
 		}
+		return appPO;
 	}
 	
 	private boolean warFileType(AppPO appPO) {
@@ -314,6 +316,16 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		if(Objects.isNull(addParam.getTraceStatus())){
 			addParam.setTraceStatus(0);
 		}
+	}
+	
+	private AppEnvParam buildCreationParam(AppPO appPO, AppEnvCreationParam addParam) {
+		AppEnvParam appEnvParam = buildBizParam(addParam);
+		if(TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())){
+			appEnvParam.setExt(JsonUtils.toJsonString(addParam.getExtendSpringBootParam()));
+		}else if(TechTypeEnum.NODE.getCode().equals(appPO.getTechType())){
+			appEnvParam.setExt(JsonUtils.toJsonString(addParam.getExtendNodeParam()));
+		}
+		return appEnvParam;
 	}
 	
 	private AppEnvParam buildBizParam(Serializable requestParam) {

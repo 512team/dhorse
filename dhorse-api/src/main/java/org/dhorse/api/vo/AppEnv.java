@@ -1,5 +1,6 @@
 package org.dhorse.api.vo;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -135,6 +136,11 @@ public class AppEnv extends BaseDto {
 	 * 部署时间
 	 */
 	private Date deploymentTime;
+	
+	/**
+	 * 环境扩展信息，分页查询时不返回数据
+	 */
+	private EnvExtend envExtend;
 
 	public String getAppId() {
 		return appId;
@@ -335,5 +341,71 @@ public class AppEnv extends BaseDto {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends EnvExtend> T getEnvExtend() {
+		return (T) envExtend;
+	}
 
+	public void setEnvExtend(EnvExtend envExtend) {
+		this.envExtend = envExtend;
+	}
+
+	public static abstract class EnvExtend implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+	}
+	
+	public static class EnvExtendNode extends EnvExtend {
+
+		private static final long serialVersionUID = 1L;
+
+		private String ingressHost;
+
+		public String getIngressHost() {
+			return ingressHost;
+		}
+
+		public void setIngressHost(String ingressHost) {
+			this.ingressHost = ingressHost;
+		}
+
+	}
+	
+	public static class EnvExtendSpringBoot extends EnvExtend {
+
+		private static final long serialVersionUID = 1L;
+
+		private Integer traceStatus;
+
+		private String traceTemplateId;
+
+		private String jvmArgs;
+
+		public Integer getTraceStatus() {
+			return traceStatus;
+		}
+
+		public void setTraceStatus(Integer traceStatus) {
+			this.traceStatus = traceStatus;
+		}
+
+		public String getTraceTemplateId() {
+			return traceTemplateId;
+		}
+
+		public void setTraceTemplateId(String traceTemplateId) {
+			this.traceTemplateId = traceTemplateId;
+		}
+
+		public String getJvmArgs() {
+			return jvmArgs;
+		}
+
+		public void setJvmArgs(String jvmArgs) {
+			this.jvmArgs = jvmArgs;
+		}
+
+	}
 }

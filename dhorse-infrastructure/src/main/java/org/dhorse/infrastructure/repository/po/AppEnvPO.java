@@ -120,6 +120,11 @@ public class AppEnvPO extends BaseAppPO {
 	 */
 	private Date deploymentTime;
 
+	/**
+	 * 扩展数据
+	 */
+	private String ext;
+
 	public String getTag() {
 		return tag;
 	}
@@ -302,4 +307,13 @@ public class AppEnvPO extends BaseAppPO {
 	public Integer getDeletionStatus() {
 		return this.deletionStatus;
 	}
+
+	public String getExt() {
+		return ext;
+	}
+
+	public void setExt(String ext) {
+		this.ext = ext;
+	}
+
 }

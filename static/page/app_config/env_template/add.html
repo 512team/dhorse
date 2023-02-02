@@ -103,26 +103,6 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">链路追踪状态</label>
-			<div class="layui-input-block">
-				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="0" title="否" checked>
-				<input type="radio" name="traceStatus" lay-filter="traceStatus" value="1" title="是">
-			</div>
-		</div>
-		<div class="layui-form-item" style="display:none" id="traceTemplateDiv">
-			<label class="layui-form-label">链路追踪模板</label>
-			<div class="layui-input-block">
-				<select name="traceTemplateId" id="traceTemplateId" lay-filter="traceTemplateId" lay-verify="required" lay-reqtext="链路追踪模板不能为空">
-				</select>
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">Jvm参数</label>
-			<div class="layui-input-block">
-				<textarea name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
-			</div>
-		</div>
-		<div class="layui-form-item">
 			<label class="layui-form-label">描述</label>
 			<div class="layui-input-block">
 				<input type="text" name="description" placeholder="不超过100字" autocomplete="off" class="layui-input">
@@ -169,25 +149,10 @@
 			initNamespaceName(form, $, data.value);
 		});
 		
-		form.on('radio(traceStatus)', function(data) {
-			if(data.value == 1){
-				initTraceTemplate(form, $);
-			}else{
-				$("#traceTemplateId").children().remove();
-				$("#traceTemplateDiv").hide();
-			}
-		});
-		
         form.on('submit(saveBtn)', function(data) {
 			if($("#appId").val() == ''){
 				layer.msg('请选择应用', {icon: 5, shift: 6});
 				return false;
-			}
-			if(data.field.traceStatus == 1){
-				if(data.field.traceTemplateId == ''){
-					layer.msg('链路追踪模板编号不能为空', {icon: 5, shift: 6});
-					return false;
-				}
 			}
 			$.ajax({
 				url: '/globalConfig/envTemplate/add',
@@ -233,31 +198,6 @@
 					}
 				}
 				$("#namespaceName").html(opt);
-				form.render('select');
-			},
-			error: function(data){
-				layer.msg(data.message, {icon: 5, shift: 6});
-			}
-		});
-	}
-	
-	function initTraceTemplate(form, $){
-		$.ajax({
-			url: '/globalConfig/traceTemplate/page',
-			type: 'POST',
-			dataType: "json",
-			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'itemType': 5, 'pageSize': 1000, 'pageNum': 1}),
-			success: function(res){
-				var opt = '<option value="">请选择或输入</option>';
-				if(res.data.itemCount != 0){	
-					data = res.data.items;
-					for(var k in data){
-						opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].name +"</option>");
-					}
-				}
-				$("#traceTemplateId").html(opt);
-				$("#traceTemplateDiv").show();
 				form.render('select');
 			},
 			error: function(data){

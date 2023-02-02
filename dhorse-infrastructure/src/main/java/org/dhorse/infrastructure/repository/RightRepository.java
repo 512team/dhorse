@@ -29,7 +29,7 @@ public abstract class RightRepository<P extends PageParam, E extends BaseAppPO, 
 	private static final Logger logger = LoggerFactory.getLogger(RightRepository.class);
 	
 	@Autowired
-	private AppMemberRepository appMemberRepository;
+	protected AppMemberRepository appMemberRepository;
 	
 	public PageData<D> page(LoginUser loginUser, P bizParam) {
 		if(bizParam.getPageNum() == null){
