@@ -29,10 +29,10 @@ import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppEnv;
+import org.dhorse.api.vo.AppEnv.EnvExtendNode;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
-import org.dhorse.api.vo.AppEnv.EnvExtendNode;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -210,21 +210,21 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				context.getCluster().getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		String namespace = context.getAppEnv().getNamespaceName();
-		String deploymentName = context.getDeploymentName();
+		String serviceName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-				"app=" + deploymentName, 1, null, null, null, null);
+				"app=" + serviceName, 1, null, null, null, null);
 		V1Service service = null;
 		if (CollectionUtils.isEmpty(serviceList.getItems())) {
 			service = new V1Service();
 			service.apiVersion("v1");
 			service.setKind("Service");
-			service.setMetadata(serviceMeta(deploymentName));
+			service.setMetadata(serviceMeta(serviceName));
 			service.setSpec(serviceSpec(context));
 			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
 		} else {
 			service = serviceList.getItems().get(0);
 			modifyServiceSpec(context, service);
-			service = coreApi.replaceNamespacedService(deploymentName, namespace, service, null, null, null, null);
+			service = coreApi.replaceNamespacedService(serviceName, namespace, service, null, null, null, null);
 		}
 		logger.info("End to create service");
 		return true;
@@ -242,21 +242,21 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				context.getCluster().getAuthToken());
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
 		String namespace = context.getAppEnv().getNamespaceName();
-		String deploymentName = context.getDeploymentName();
+		String serviceName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
-				"app=" + deploymentName, 1, null, null, null, null);
+				"app=" + serviceName, 1, null, null, null, null);
 		V1Ingress ingress = null;
 		if (CollectionUtils.isEmpty(list.getItems())) {
 			ingress = new V1Ingress();
 			ingress.apiVersion("networking.k8s.io/v1");
 			ingress.setKind("Ingress");
-			ingress.setMetadata(ingressMeta(deploymentName));
+			ingress.setMetadata(ingressMeta(serviceName));
 			ingress.setSpec(ingressSpec(context));
 			ingress = networkingApi.createNamespacedIngress(namespace, ingress, null, null, null, null);
 		} else {
 			ingress = list.getItems().get(0);
 			ingress.setSpec(ingressSpec(context));
-			ingress = networkingApi.replaceNamespacedIngress(deploymentName, namespace, ingress, null, null, null, null);
+			ingress = networkingApi.replaceNamespacedIngress(serviceName, namespace, ingress, null, null, null, null);
 		}
 		logger.info("End to create ingress");
 		return true;
@@ -273,7 +273,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1ServiceBackendPort serviceBackendPort = new V1ServiceBackendPort();
 		serviceBackendPort.setNumber(context.getAppEnv().getServicePort());
 		V1IngressServiceBackend ingressServiceBackend = new V1IngressServiceBackend();
-		ingressServiceBackend.setName(context.getDeploymentName());
+		ingressServiceBackend.setName(K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag()));
 		ingressServiceBackend.setPort(serviceBackendPort);
 		V1IngressBackend ingressBackend = new V1IngressBackend();
 		ingressBackend.setService(ingressServiceBackend);
@@ -297,14 +297,20 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		try {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
-			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
-				return true;
-			}
-			V1Status status = api.deleteNamespacedDeployment(depolymentName, namespace, null, null, null, null, null, null);
-			if(status == null || !KubernetesConstants.V1STATUS_SUCCESS.equals(status.getStatus())){
-				return false;
+			if (!CollectionUtils.isEmpty(oldDeployment.getItems())) {
+				V1Status status = api.deleteNamespacedDeployment(depolymentName, namespace, null, null, null, null, null, null);
+				if(status == null || !KubernetesConstants.V1STATUS_SUCCESS.equals(status.getStatus())){
+					return false;
+				}
 			}
 			if(!deleteAutoScaling(namespace, depolymentName, apiClient)) {
+				return false;
+			}
+			String serviceName = K8sUtils.getServiceName(appPO.getAppName(), appEnvPO.getTag());
+			if(!deleteService(namespace, serviceName, apiClient)) {
+				return false;
+			}
+			if(!deleteIngress(namespace, serviceName, apiClient)) {
 				return false;
 			}
 		} catch (ApiException e) {
@@ -317,8 +323,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 
 	public boolean autoScaling(AppPO appPO, AppEnvPO appEnvPO, ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		String deploymentAppName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
-		return createAutoScaling(appEnvPO, deploymentAppName, apiClient);
+		String deploymentName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
+		return createAutoScaling(appEnvPO, deploymentName, apiClient);
 	}
 
 	private boolean createAutoScaling(AppEnvPO appEnvPO, String deploymentName, ApiClient apiClient) {
@@ -366,6 +372,56 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				return true;
 			}
 			V1Status status = autoscalingApi.deleteNamespacedHorizontalPodAutoscaler(deploymentName,
+					namespace, null, null, null, null, null, null);
+			if(status == null || !KubernetesConstants.V1STATUS_SUCCESS.equals(status.getStatus())){
+				return false;
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.DELETE_AUTO_SCALING_FAILURE);
+		}
+		return true;
+	}
+	
+	/**
+	 * coreApi.deleteNamespacedService方法返回值会报json转化异常，
+	 * 从返回结果来看应该是V1Status对象，而非V1Service对象，
+	 * 这可能是client版本的bug。
+	 * 所以该方法会暂时忽略抛出的异常。
+	 */
+	private boolean deleteService(String namespace, String serviceName, ApiClient apiClient) {
+		CoreV1Api coreApi = new CoreV1Api(apiClient);
+		try {
+			V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
+					"app=" + serviceName, 1, null, null, null, null);
+			if (CollectionUtils.isEmpty(serviceList.getItems())) {
+				return true;
+			}
+			V1Service service = coreApi.deleteNamespacedService(serviceName,
+					namespace, null, null, null, null, null, null);
+			if(service == null || !KubernetesConstants.V1STATUS_SUCCESS.equals(service.getStatus().getConditions().get(0).getStatus())){
+				return false;
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.DELETE_AUTO_SCALING_FAILURE);
+		} catch (Exception e) {
+			//LogUtils.throwException(logger, message, MessageCodeEnum.DELETE_AUTO_SCALING_FAILURE);
+			//暂时忽略抛出的异常
+			logger.error("Faile to delete service", e);
+		}
+		return true;
+	}
+	
+	private boolean deleteIngress(String namespace, String serviceName, ApiClient apiClient) {
+		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
+		try {
+			V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
+					"app=" + serviceName, 1, null, null, null, null);
+			if (CollectionUtils.isEmpty(list.getItems())) {
+				return true;
+			}
+			V1Status status = networkingApi.deleteNamespacedIngress(serviceName,
 					namespace, null, null, null, null, null, null);
 			if(status == null || !KubernetesConstants.V1STATUS_SUCCESS.equals(status.getStatus())){
 				return false;

@@ -18,12 +18,23 @@ public class K8sUtils {
 		SYSTEM_NAMESPACES.add("dhorse-system");
 	}
 	
+	public static String getDeploymentName(String appName, String appEnvTag) {
+		return getReplicaAppName(appName, appEnvTag);
+	}
+	
 	public static String getReplicaAppName(String appName, String appEnvTag) {
 		return new StringBuilder()
 				.append(appName).append("-")
 				.append("1").append("-")
 				.append(appEnvTag).append("-")
 				.append("dhorse")
+				.toString();
+	}
+	
+	public static String getServiceName(String appName, String appEnvTag) {
+		return new StringBuilder()
+				.append(appName).append("-")
+				.append(appEnvTag)
 				.toString();
 	}
 	
@@ -37,10 +48,6 @@ public class K8sUtils {
 	
 	public static String getDeploymentLabelSelector(String appName) {
 		return "app=" + appName;
-	}
-	
-	public static String getDeploymentName(String appName, String appEnvTag) {
-		return getReplicaAppName(appName, appEnvTag);
 	}
 	
 	public static String getDeploymentLabelSelector(String appName, String appEnvTag) {
