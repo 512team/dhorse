@@ -6,7 +6,8 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 
 ## 主要特性
 * 简洁的操作界面
-* 支持Springboot应用部署
+* 支持SpringBoot应用部署
+* 支持Node应用部署
 * 无需安装Maven即可打包
 * 无需安装Docker即可构建镜像
 * 支持多环境部署
@@ -21,13 +22,13 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 环境要求：
 | Harbor | kubernetes
 | :----: | :----: |
-| >=2.0.0 | [1.13.x, 1.24.x]
+| >=2.0.0 | [1.18.x, 1.25.x]
 
 下载安装文件：
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
-| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-1.8-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-1.8-x64_bin-windows.zip)
-| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.11.0/dhorse-0.11.0-x64_bin-windows.zip)
+| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-1.8-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-1.8-x64_bin-windows.zip)
+| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-x64_bin-windows.zip)
 
 下载文件之后，然后解压：
 
