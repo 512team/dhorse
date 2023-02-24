@@ -9,6 +9,7 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 * 支持SpringBoot应用部署
 * 支持Node应用部署
 * 无需安装Maven即可打包
+* 无需安装Node即可打包
 * 无需安装Docker即可构建镜像
 * 支持多环境部署
 * 支持日志收集
@@ -27,8 +28,8 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 下载安装文件：
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
-| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-1.8-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-1.8-x64_bin-windows.zip)
-| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-x64_bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/release-0.12.0/dhorse-0.12.0-x64_bin-windows.zip)
+| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-jdk1.8-bin-windows.zip)
+| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-bin-windows.zip)
 
 下载文件之后，然后解压：
 
