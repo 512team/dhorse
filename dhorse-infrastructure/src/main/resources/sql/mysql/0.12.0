@@ -100,7 +100,7 @@ CREATE TABLE app_env (
 	health_path VARCHAR (32) DEFAULT NULL COMMENT '健康检查路径，端口后的uri，如：/health',
 	jvm_args VARCHAR (1024) DEFAULT NULL COMMENT 'jvm参数',
 	description VARCHAR (128) DEFAULT NULL COMMENT '环境描述',
-	ext VARCHAR (16384) DEFAULT NULL COMMENT IS '每种技术类型的扩展信息，json结构',
+	ext VARCHAR (16384) DEFAULT NULL COMMENT '每种技术类型的扩展信息，json结构',
 	deployment_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '部署时间',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
