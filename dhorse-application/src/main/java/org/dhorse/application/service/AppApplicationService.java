@@ -16,7 +16,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.dhorse.api.enums.ImageSourceEnum;
-import org.dhorse.api.enums.AppUserRoleTypeEnum;
+import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -103,7 +103,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		appMemberParam.setUserId(loginUser.getId());
 		appMemberParam.setLoginName(loginUser.getLoginName());
 		appMemberParam.setAppId(appId);
-		appMemberParam.setRoleTypes(Arrays.asList(AppUserRoleTypeEnum.ADMIN.getCode()));
+		appMemberParam.setRoleTypes(Arrays.asList(AppMemberRoleTypeEnum.ADMIN.getCode()));
 		appMemberRepository.add(appMemberParam);
 		
 		//异步制作镜像

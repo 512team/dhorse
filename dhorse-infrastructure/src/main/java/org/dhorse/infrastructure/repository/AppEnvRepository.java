@@ -44,17 +44,16 @@ public class AppEnvRepository extends RightRepository<AppEnvParam, AppEnvPO, App
 	
 	public AppEnv query(LoginUser loginUser, AppEnvParam bizParam) {
 		validateApp(bizParam.getAppId());
-		AppEnv dto = null;
+		if (!RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
+			AppMemberPO appMember = appMemberRepository
+					.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
+			if (appMember == null) {
+				return null;
+			}
+		}
+		
 		AppEnvPO appEnvPO = super.query(bizParam);
-		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
-			dto = po2Dto(appEnvPO);
-		}
-		AppMemberPO appMember = appMemberRepository
-				.queryByLoginNameAndAppId(loginUser.getLoginName(), bizParam.getAppId());
-		if (appMember == null) {
-			return null;
-		}
-		dto = po2Dto(appEnvPO);
+		AppEnv dto = po2Dto(appEnvPO);
 		if(!StringUtils.isBlank(appEnvPO.getExt())){
 			AppPO appPO = appRepository.queryById(bizParam.getAppId());
 			if(TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {

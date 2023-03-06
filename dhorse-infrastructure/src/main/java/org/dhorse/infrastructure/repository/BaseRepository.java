@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.infrastructure.param.PageParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
@@ -14,6 +17,7 @@ import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -24,6 +28,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 
 	private static final Logger logger = LoggerFactory.getLogger(BaseRepository.class);
+	
+	@Autowired
+	private SqlSessionFactory sqlSessionFactory;
 	
 	public long count(P bizParam) {
 		QueryWrapper<E> queryWrapper = buildQueryWrapper(bizParam, null);
@@ -69,12 +76,13 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		return e.getId();
 	}
 	
-	public List<String> addList(List<P> bizParams) {
+	public void addList(List<P> bizParams) {
 		List<E> es = bizParams.stream().map(b -> param2Entity(b)).collect(Collectors.toList());
-		return es.stream().map(e -> {
+		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false);
+		es.stream().forEach(e -> {
 			getMapper().insert(e);
-			return e.getId();
-		}).collect(Collectors.toList());
+		});
+		sqlSession.commit();
 	}
 	
 	public boolean update(P bizParam) {

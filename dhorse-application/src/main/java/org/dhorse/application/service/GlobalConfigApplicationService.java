@@ -221,7 +221,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 			addParam.setMaxReplicas(1);
 		}
 		if(Objects.isNull(addParam.getReplicaCpu())){
-			addParam.setReplicaCpu(2);
+			addParam.setReplicaCpu(1000);
 		}
 		if(Objects.isNull(addParam.getReplicaMemory())){
 			addParam.setReplicaMemory(1024);

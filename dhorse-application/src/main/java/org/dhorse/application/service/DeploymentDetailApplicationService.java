@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
@@ -61,11 +62,16 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 		
 		AppMemberPO appUser = appMemberRepository
 				.queryByLoginNameAndAppId(loginUser.getLoginName(), param.getAppId());
-		String[] roleTypes = appUser.getRoleType().split(",");
 		Set<Integer> roleSet = new HashSet<>();
-		for (String role : roleTypes) {
-			roleSet.add(Integer.valueOf(role));
+		if(RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
+			roleSet.add(AppMemberRoleTypeEnum.ADMIN.getCode());
+		}else {
+			String[] roleTypes = appUser.getRoleType().split(",");
+			for (String role : roleTypes) {
+				roleSet.add(Integer.valueOf(role));
+			}
 		}
+		
 		String currentVersionName = currentVersionName(appEnvPO);
 		for(DeploymentDetail e : page.getItems()) {
 			e.setEnvName(appEnvPO.getEnvName());

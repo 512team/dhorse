@@ -68,12 +68,12 @@ public class AppEnv extends BaseDto {
 	private Integer maxReplicas;
 
 	/**
-	 * 每个副本的cpu核心数
+	 * 每副本CPU，单位m
 	 */
 	private Integer replicaCpu;
 
 	/**
-	 * 每个副本的内存大小，单位m
+	 * 每副本内存，单位MB
 	 */
 	private Integer replicaMemory;
 

@@ -6,7 +6,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * 应用环境配置表
+ * 环境表
  * 
  * @author Dahai 2021-09-08
  */
@@ -14,11 +14,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 public class AppEnvPO extends BaseAppPO {
 
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * 应用编号
-	 */
-	private String appId;
 
 	/**
 	 * 环境名称，如：开发、测试、预发、生产等
@@ -56,12 +51,12 @@ public class AppEnvPO extends BaseAppPO {
 	private Integer maxReplicas;
 
 	/**
-	 * 每个副本的cpu核心数
+	 * 每副本CPU，单位m
 	 */
 	private Integer replicaCpu;
 
 	/**
-	 * 每个副本的内存大小，单位m
+	 * 每副本内存，单位MB
 	 */
 	private Integer replicaMemory;
 
@@ -131,14 +126,6 @@ public class AppEnvPO extends BaseAppPO {
 
 	public void setTag(String tag) {
 		this.tag = tag;
-	}
-
-	public String getAppId() {
-		return appId;
-	}
-
-	public void setAppId(String appId) {
-		this.appId = appId;
 	}
 
 	public String getClusterId() {
