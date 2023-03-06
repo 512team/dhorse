@@ -88,8 +88,8 @@ CREATE TABLE app_env (
 	deployment_order TINYINT DEFAULT 0 COMMENT '部署序号（值越小越往前）',
 	min_replicas INT DEFAULT 1 COMMENT '最小副本数',
 	max_replicas INT DEFAULT 0 COMMENT '最大副本数',
-	replica_cpu INT DEFAULT 0 COMMENT '每个副本的cpu核心数',
-	replica_memory INT DEFAULT 0 COMMENT '每个副本的内存大小，单位M',
+	replica_cpu INT DEFAULT 0 COMMENT '每副本CPU，单位m',
+	replica_memory INT DEFAULT 0 COMMENT '每副本内存，单位MB',
 	auto_scaling_cpu INT DEFAULT 0 COMMENT '自动扩容，cpu使用率',
 	auto_scaling_memory INT DEFAULT 0 COMMENT '自动扩容，内存使用率',
 	required_deploy_approval TINYINT DEFAULT 0 COMMENT '是否需要部署审批，0：否，1：是',
@@ -100,7 +100,7 @@ CREATE TABLE app_env (
 	health_path VARCHAR (32) DEFAULT NULL COMMENT '健康检查路径，端口后的uri，如：/health',
 	jvm_args VARCHAR (1024) DEFAULT NULL COMMENT 'jvm参数',
 	description VARCHAR (128) DEFAULT NULL COMMENT '环境描述',
-	ext VARCHAR (16384) DEFAULT NULL COMMENT '每种技术类型的扩展信息，json结构',
+	ext text DEFAULT NULL COMMENT '每种技术类型的扩展信息，json结构',
 	deployment_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '部署时间',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
@@ -142,3 +142,18 @@ CREATE TABLE deployment_detail (
 CREATE INDEX index_detail_env_id ON deployment_detail(env_id);
 CREATE INDEX index_detail_version_name ON deployment_detail(version_name);
 CREATE INDEX index_detail_update_time ON deployment_detail(update_time);
+
+CREATE TABLE replica_metrics (
+	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
+	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
+	replica_name VARCHAR (64) DEFAULT NULL COMMENT '副本名称',
+	metrics_type TINYINT DEFAULT 0 COMMENT '指标类型，1：CPU，2：内存',
+	current_value BIGINT DEFAULT 0 COMMENT '当前值',
+	min_value BIGINT DEFAULT 0 COMMENT '最小值',
+	max_value BIGINT DEFAULT 0 COMMENT '最大值',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
+)COMMENT '副本指标';
+CREATE INDEX index_replica_metrics_creation_time ON replica_metrics(creation_time);
+CREATE INDEX index_replica_metrics ON replica_metrics(replica_name, creation_time);
