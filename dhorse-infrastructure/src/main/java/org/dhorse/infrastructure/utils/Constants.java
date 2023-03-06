@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.dhorse.api.enums.AppUserRoleTypeEnum;
+import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.infrastructure.component.SpringBootApplicationHome;
 
 
@@ -102,7 +102,7 @@ public class Constants {
 	 * 可以操作应用成员的角色
 	 */
 	public static final List<Integer> ROLE_OF_OPERATE_APP_USER = Arrays.asList(
-			AppUserRoleTypeEnum.ADMIN.getCode(),
-			AppUserRoleTypeEnum.ARCHITECT.getCode(),
-			AppUserRoleTypeEnum.CHECKER.getCode());
+			AppMemberRoleTypeEnum.ADMIN.getCode(),
+			AppMemberRoleTypeEnum.ARCHITECT.getCode(),
+			AppMemberRoleTypeEnum.CHECKER.getCode());
 }

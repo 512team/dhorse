@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -50,8 +51,10 @@ import org.springframework.util.CollectionUtils;
 import io.kubernetes.client.Copy;
 import io.kubernetes.client.Exec;
 import io.kubernetes.client.KubernetesConstants;
+import io.kubernetes.client.Metrics;
 import io.kubernetes.client.PodLogs;
 import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.custom.PodMetricsList;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
@@ -501,6 +504,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private List<V1Container> containers(DeployContext context) {
+		AppEnvPO appEnvPO = context.getAppEnv();
 		V1Container container = new V1Container();
 		container.setName(context.getDeploymentName());
 		containerOfJar(context, container);
@@ -508,16 +512,18 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
 		V1ContainerPort containerPort = new V1ContainerPort();
-		containerPort.setContainerPort(context.getAppEnv().getServicePort());
+		containerPort.setContainerPort(appEnvPO.getServicePort());
 		container.setPorts(Arrays.asList(containerPort));
 		
 		// 设置资源
+		Quantity cpu = new Quantity(new BigDecimal(appEnvPO.getReplicaCpu()).movePointLeft(3).toPlainString());
+		Quantity memory = new Quantity(appEnvPO.getReplicaMemory() + "Mi");
 		Map<String, Quantity> requests = new HashMap<>();
-		requests.put("memory", new Quantity(context.getAppEnv().getReplicaMemory() + "Mi"));
-		requests.put("cpu", new Quantity(context.getAppEnv().getReplicaCpu().toString()));
+		requests.put("cpu", cpu);
+		requests.put("memory", memory);
 		Map<String, Quantity> limits = new HashMap<>();
-		limits.put("memory", new Quantity(context.getAppEnv().getReplicaMemory() + "Mi"));
-		limits.put("cpu", new Quantity(context.getAppEnv().getReplicaCpu().toString()));
+		limits.put("cpu", cpu);
+		limits.put("memory", memory);
 		V1ResourceRequirements resources = new V1ResourceRequirements();
 		resources.setRequests(requests);
 		resources.setLimits(limits);
@@ -1007,6 +1013,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		for(V1ContainerStatus containerStatus : podStatus.getContainerStatuses()) {
 			V1ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
 			if(terminated != null) {
+				if("Error".equals(terminated.getReason())) {
+					return ReplicaStatusEnum.FAILED.getCode();
+				}
 				return ReplicaStatusEnum.DESTROYING.getCode();
 			}
 			if(!containerStatus.getStarted().booleanValue() || !containerStatus.getReady().booleanValue()) {
@@ -1016,6 +1025,17 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return ReplicaStatusEnum.RUNNING.getCode();
 	}
 
+	public PodMetricsList replicaMetrics(ClusterPO clusterPO, String namespace) {
+		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		Metrics metrics = new Metrics(apiClient);
+		try {
+			return metrics.getPodMetrics(namespace);
+		} catch (ApiException e) {
+			logger.error("Failed to list pod metrics", e);
+		}
+		return null;
+	}
+	
 	@Override
 	public boolean rebuildReplica(ClusterPO clusterPO, String replicaName, String namespace) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
@@ -1231,13 +1251,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	public List<ClusterNamespace> namespaceList(ClusterPO clusterPO,
-			ClusterNamespacePageParam clusterNamespacePageParam) {
+			ClusterNamespacePageParam pageParam) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		List<ClusterNamespace> namespaces = new ArrayList<>();
 		String labelSelector = null;
-		if(!StringUtils.isBlank(clusterNamespacePageParam.getNamespaceName())) {
-			labelSelector = "kubernetes.io/metadata.name=" + clusterNamespacePageParam.getNamespaceName();
+		if(pageParam != null && !StringUtils.isBlank(pageParam.getNamespaceName())) {
+			labelSelector = "kubernetes.io/metadata.name=" + pageParam.getNamespaceName();
 		}
 		try {
 			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, labelSelector, null, null, null, null, null);

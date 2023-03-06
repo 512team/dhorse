@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 引导服务入口。
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.PropertySource;
  *
  */
 @ServletComponentScan
+@EnableScheduling
 @PropertySource(value = {"classpath:dhorse.yml",
 		"classpath:application-private.yml"})
 @SpringBootApplication(scanBasePackages = {

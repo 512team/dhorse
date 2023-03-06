@@ -15,6 +15,8 @@ import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.DeployContext;
 
+import io.kubernetes.client.custom.PodMetricsList;
+
 public interface ClusterStrategy {
 
 	Replica readDeployment(ClusterPO clusterPO, AppEnv appEnv, AppPO appPO);
@@ -51,5 +53,7 @@ public interface ClusterStrategy {
 	boolean addNamespace(ClusterPO clusterPO, String namespaceName);
 	
 	boolean deleteNamespace(ClusterPO clusterPO, String namespaceName);
+	
+	PodMetricsList replicaMetrics(ClusterPO clusterPO, String namespace);
 
 }

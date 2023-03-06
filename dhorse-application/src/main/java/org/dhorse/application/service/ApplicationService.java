@@ -44,6 +44,7 @@ import org.dhorse.infrastructure.repository.ClusterRepository;
 import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
 import org.dhorse.infrastructure.repository.DeploymentVersionRepository;
 import org.dhorse.infrastructure.repository.GlobalConfigRepository;
+import org.dhorse.infrastructure.repository.ReplicaMetricsRepository;
 import org.dhorse.infrastructure.repository.SysUserRepository;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -100,6 +101,9 @@ public abstract class ApplicationService {
 	
 	@Autowired
 	protected ComponentConstants componentConstants;
+	
+	@Autowired
+	protected ReplicaMetricsRepository replicaMetricsRepository;
 	
 	protected ApiClient apiClient(String basePath, String accessToken) {
 		ApiClient apiClient = new ClientBuilder().setBasePath(basePath).setVerifyingSsl(false)

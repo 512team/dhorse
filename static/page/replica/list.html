@@ -30,6 +30,8 @@
 			{{#	}                     		}}
 		</script>
         <script type="text/html" id="currentTableBar">
+			<a href="javascript:;" class="layui-font-blue" lay-event="metrics">资源监控</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="rebuild">重建</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="log">日志</a>
@@ -72,7 +74,18 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
 			replicaName = obj.data.name;
-			if (obj.event === 'rebuild') {
+			if (obj.event === 'metrics') {
+                var index = layer.open({
+                    title: '资源监控',
+                    type: 2,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['70%', '80%'],
+					offset: ['5%', '18%'],
+					content: ['page/replica/metrics.html']
+                });
+            }else if (obj.event === 'rebuild') {
                 rebuild($, obj.data.name);
             }else if (obj.event === 'log') {
                 var index = layer.open({

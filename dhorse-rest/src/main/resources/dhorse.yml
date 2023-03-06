@@ -22,13 +22,12 @@
 
 #====================================================================================================
 # Mysql配置
-# 如果启用，则优先使用Mysql，如果由系统自动创建表结构，则需要保证所配置的账号具有相应的权限。
+# 如果启用，则优先使用Mysql，但需要所配账号具有建表权限。
 #====================================================================================================
 #mysql.enable: true
 #mysql.url: jdbc:mysql://localhost:3306/dhorse?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true
 #mysql.user: username
 #mysql.password: password
-
 
 
 

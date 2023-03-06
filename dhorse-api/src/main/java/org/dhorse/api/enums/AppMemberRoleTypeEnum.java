@@ -3,7 +3,7 @@ package org.dhorse.api.enums;
 /**
  * 应用成员角色类型
  */
-public enum AppUserRoleTypeEnum {
+public enum AppMemberRoleTypeEnum {
 
 	ADMIN(1, "管理员"),
 	DEVELOPER(2, "开发"),
@@ -18,7 +18,7 @@ public enum AppUserRoleTypeEnum {
 
 	private String value;
 
-	private AppUserRoleTypeEnum(Integer code, String value) {
+	private AppMemberRoleTypeEnum(Integer code, String value) {
 		this.code = code;
 		this.value = value;
 	}

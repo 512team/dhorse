@@ -1,29 +1,41 @@
 package org.dhorse.application.service;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.MetricsTypeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.param.app.env.replica.DownloadFileParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
 import org.dhorse.api.param.app.env.replica.QueryFilesParam;
+import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
 import org.dhorse.api.result.PageData;
+import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
+import org.dhorse.api.vo.ReplicaMetrics;
 import org.dhorse.infrastructure.context.AppEnvClusterContext;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
-import org.dhorse.infrastructure.repository.po.BaseAppPO;
-import org.dhorse.infrastructure.repository.po.ClusterPO;
-import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
+import org.dhorse.infrastructure.param.AppParam;
+import org.dhorse.infrastructure.param.ClusterParam;
+import org.dhorse.infrastructure.param.ReplicaMetricsParam;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
+import org.dhorse.infrastructure.repository.po.BaseAppPO;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.K8sUtils;
@@ -31,6 +43,11 @@ import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import io.kubernetes.client.custom.PodMetrics;
+import io.kubernetes.client.custom.PodMetricsList;
+import io.kubernetes.client.custom.Quantity;
 
 /**
  * 
@@ -161,5 +178,74 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 				appEnvClusterEntity.getClusterPO().getClusterType());
 		return clusterStrategy.podLog(appEnvClusterEntity.getClusterPO(),
 				replicaName, appEnvClusterEntity.getAppEnvPO().getNamespaceName());
+	}
+	
+	public void clearHistoryReplicaMetrics() {
+		//删除3天前的数据
+		replicaMetricsRepository.delete(DateUtils.addDays(new Date(), -3));
+	}
+	
+	public void collectReplicaMetrics() {
+		List<ClusterPO> clusters = clusterRepository.list(new ClusterParam());
+		if(CollectionUtils.isEmpty(clusters)) {
+			return;
+		}
+		List<AppEnvPO> envs = appEnvRepository.list(new AppEnvParam());
+		if(CollectionUtils.isEmpty(envs)) {
+			return;
+		}
+		List<AppPO> apps = appRepository.list(new AppParam());
+		if(CollectionUtils.isEmpty(apps)) {
+			return;
+		}
+		
+		Map<String, AppPO> appMap = apps.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+		Map<String, AppEnvPO> envMap = envs.stream().collect(Collectors.toMap(e ->
+			appMap.get(e.getAppId()).getAppName() + "-1-" + e.getTag() + "-dhorse", e -> e));
+		
+		List<ReplicaMetricsParam> metricsList = new ArrayList<>();
+		for(ClusterPO cluster : clusters){
+			ClusterStrategy clusterStrategy = clusterStrategy(cluster.getClusterType());
+			List<ClusterNamespace> namespaces = clusterStrategy.namespaceList(cluster, null);
+			for(ClusterNamespace n : namespaces) {
+				PodMetricsList podMetricsList = clusterStrategy.replicaMetrics(cluster, n.getNamespaceName());
+				List<PodMetrics> metrics = podMetricsList.getItems();
+				for(PodMetrics metric : metrics) {
+					String replicaName = metric.getMetadata().getName();
+					AppEnvPO appEnvPO = envMap.get(replicaName.substring(0, replicaName.indexOf("-dhorse-") + 7));
+					if(appEnvPO == null) {
+						continue;
+					}
+					long maxCpu = new BigDecimal(appEnvPO.getReplicaCpu()).movePointRight(6).longValue();
+					Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
+					ReplicaMetricsParam cpu = new ReplicaMetricsParam();
+					cpu.setAppId(appEnvPO.getAppId());
+					cpu.setReplicaName(replicaName);
+					cpu.setMetricsType(MetricsTypeEnum.CPU.getCode());
+					cpu.setCurrentValue(usage.get("cpu").getNumber().movePointRight(9).longValue());
+					cpu.setMinValue(maxCpu);
+					cpu.setMaxValue(maxCpu);
+					metricsList.add(cpu);
+					
+					ReplicaMetricsParam memory = new ReplicaMetricsParam();
+					memory.setAppId(appEnvPO.getAppId());
+					memory.setReplicaName(replicaName);
+					memory.setMetricsType(MetricsTypeEnum.MEMORY.getCode());
+					memory.setCurrentValue(usage.get("memory").getNumber().longValue());
+					memory.setMinValue(Long.valueOf(appEnvPO.getReplicaMemory()));
+					memory.setMaxValue(Long.valueOf(appEnvPO.getReplicaMemory()));
+					metricsList.add(memory);
+				}
+			}
+		}
+		replicaMetricsRepository.addList(metricsList);
+	}
+	
+	public List<ReplicaMetrics> replicaMetricsList(LoginUser loginUser, ReplicaMetricsQueryParam queryParam) {
+		ReplicaMetricsParam bizParam = new ReplicaMetricsParam();
+		bizParam.setReplicaName(queryParam.getReplicaName());
+		bizParam.setStartTime(queryParam.getStartTime());
+		bizParam.setEndTime(queryParam.getEndTime());
+		return replicaMetricsRepository.list(loginUser, bizParam);
 	}
 }
