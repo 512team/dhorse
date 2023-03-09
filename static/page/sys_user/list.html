@@ -78,6 +78,8 @@
 
 	//全局变量，在子页面里使用
 	var data;
+	var loginName;
+	var userName;
 	
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
@@ -143,9 +145,9 @@
 					  ,id: 'delete'
 					}]
 					,click: function(data, othis){
-						var elem = $(this.elem)
-						,loginName = elem.data('login-name')
-						,userName = elem.data('user-name');
+						var elem = $(this.elem);
+						loginName = elem.data('login-name');
+						userName = elem.data('user-name');
 						if(data.id == 'delete'){
 							deleteUser($, loginName, userName);
 						}else if(data.id == 'reset-password'){
@@ -157,11 +159,7 @@
 								shadeClose: false,
 								area: ['40%', '40%'],
 								offset: ['25%', '32%'],
-								content: miniPage.getHrefContent('page/sys_user/set_password.html'),
-								success: function(layero, index){
-									var body = layer.getChildFrame('body', index);
-									$(body.contents().find("#loginName")).val(loginName);
-								}
+								content: miniPage.getHrefContent('page/sys_user/set_password.html')
 							});
 						}
 					}

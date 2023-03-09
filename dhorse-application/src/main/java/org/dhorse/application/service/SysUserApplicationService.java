@@ -305,6 +305,9 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 	 * @return
 	 */
 	public Void setPassword(PasswordSetParam passwordSetParam) {
+		if(StringUtils.isBlank(passwordSetParam.getLoginName())) {
+			LogUtils.throwException(logger, MessageCodeEnum.LOGIN_NAME_IS_EMPTY);
+		}
 		checkPassword(passwordSetParam.getPassword(), passwordSetParam.getConfirmPassword());
 		SysUserPO sysUserPO = sysUserRepository.queryByLoginName(passwordSetParam.getLoginName());
 		if (sysUserPO == null) {
