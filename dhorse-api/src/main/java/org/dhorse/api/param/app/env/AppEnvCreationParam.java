@@ -72,6 +72,11 @@ public class AppEnvCreationParam implements Serializable {
 	private Integer autoScalingMemory;
 
 	/**
+	 * 事件通知地址，格式如：http(s)://notify_server:port/receive
+	 */
+	private String eventNofigyUrl;
+
+	/**
 	 * 是否需要部署审批，0：否，1：是
 	 */
 	private Integer requiredDeployApproval;
@@ -161,6 +166,14 @@ public class AppEnvCreationParam implements Serializable {
 
 	public void setMinReplicas(Integer minReplicas) {
 		this.minReplicas = minReplicas;
+	}
+
+	public String getEventNofigyUrl() {
+		return eventNofigyUrl;
+	}
+
+	public void setEventNofigyUrl(String eventNofigyUrl) {
+		this.eventNofigyUrl = eventNofigyUrl;
 	}
 
 	public Integer getMaxReplicas() {

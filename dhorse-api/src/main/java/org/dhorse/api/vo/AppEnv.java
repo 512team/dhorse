@@ -88,6 +88,11 @@ public class AppEnv extends BaseDto {
 	private Integer autoScalingMemory;
 
 	/**
+	 * 事件通知地址，格式如：http(s)://notify_server:port/receive
+	 */
+	private String eventNofigyUrl;
+
+	/**
 	 * 是否需要部署审批，0：否，1：是
 	 */
 	private Integer requiredDeployApproval;
@@ -136,7 +141,7 @@ public class AppEnv extends BaseDto {
 	 * 部署时间
 	 */
 	private Date deploymentTime;
-	
+
 	/**
 	 * 环境扩展信息，分页查询时不返回数据
 	 */
@@ -164,6 +169,14 @@ public class AppEnv extends BaseDto {
 
 	public void setVersionName(String versionName) {
 		this.versionName = versionName;
+	}
+
+	public String getEventNofigyUrl() {
+		return eventNofigyUrl;
+	}
+
+	public void setEventNofigyUrl(String eventNofigyUrl) {
+		this.eventNofigyUrl = eventNofigyUrl;
 	}
 
 	public String getBranchName() {
@@ -341,7 +354,7 @@ public class AppEnv extends BaseDto {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T extends EnvExtend> T getEnvExtend() {
 		return (T) envExtend;
@@ -356,7 +369,7 @@ public class AppEnv extends BaseDto {
 		private static final long serialVersionUID = 1L;
 
 	}
-	
+
 	public static class EnvExtendNode extends EnvExtend {
 
 		private static final long serialVersionUID = 1L;
@@ -372,7 +385,7 @@ public class AppEnv extends BaseDto {
 		}
 
 	}
-	
+
 	public static class EnvExtendSpringBoot extends EnvExtend {
 
 		private static final long serialVersionUID = 1L;

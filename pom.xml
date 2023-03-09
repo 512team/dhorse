@@ -21,6 +21,7 @@
 	
 	<modules>
 		<module>dhorse-api</module>
+		<module>dhorse-agent</module>
 		<module>dhorse-infrastructure</module>
 		<module>dhorse-application</module>
 		<module>dhorse-rest</module>
@@ -39,6 +40,11 @@
 			<dependency>
 				<groupId>org.dhorse</groupId>
 				<artifactId>dhorse-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dhorse</groupId>
+				<artifactId>dhorse-agent</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

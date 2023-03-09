@@ -25,6 +25,10 @@
 			<groupId>org.dhorse</groupId>
 			<artifactId>dhorse-application</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.dhorse</groupId>
+			<artifactId>dhorse-agent</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
