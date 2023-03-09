@@ -20,7 +20,7 @@ public class ReplicaMetricsPO extends BaseAppPO {
 	private String replicaName;
 
 	/**
-	 * 指标类型，1：cpu，2：内存
+	 * 指标类型，1：CPU（m），2：内存（MB）
 	 */
 	private int metricsType;
 
@@ -35,9 +35,9 @@ public class ReplicaMetricsPO extends BaseAppPO {
 	private Long maxValue;
 
 	/**
-	 * 当前值
+	 * 使用值
 	 */
-	private Long currentValue;
+	private Long usedValue;
 
 	public String getReplicaName() {
 		return replicaName;
@@ -71,12 +71,12 @@ public class ReplicaMetricsPO extends BaseAppPO {
 		this.maxValue = maxValue;
 	}
 
-	public Long getCurrentValue() {
-		return currentValue;
+	public Long getUsedValue() {
+		return usedValue;
 	}
 
-	public void setCurrentValue(Long currentValue) {
-		this.currentValue = currentValue;
+	public void setUsedValue(Long usedValue) {
+		this.usedValue = usedValue;
 	}
 
 	@Override

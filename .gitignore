@@ -48,3 +48,7 @@ hs_err_pid*
 /target
 /data
 /log
+/dhorse-agent/.classpath
+/dhorse-agent/.project
+/dhorse-agent/.settings
+/dhorse-agent/target

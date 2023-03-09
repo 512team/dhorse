@@ -22,6 +22,11 @@ public class ReplicaMetricsQueryParam implements Serializable {
 	private String replicaName;
 
 	/**
+	 * 指标类型，1：CPU（m），2：内存（MB）
+	 */
+	private Integer metricsType;
+
+	/**
 	 * 开始时间
 	 */
 	private String startTime;
@@ -45,6 +50,14 @@ public class ReplicaMetricsQueryParam implements Serializable {
 
 	public void setReplicaName(String replicaName) {
 		this.replicaName = replicaName;
+	}
+
+	public Integer getMetricsType() {
+		return metricsType;
+	}
+
+	public void setMetricsType(Integer metricsType) {
+		this.metricsType = metricsType;
 	}
 
 	public String getStartTime() {

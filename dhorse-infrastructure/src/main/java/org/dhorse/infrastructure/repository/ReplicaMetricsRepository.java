@@ -10,6 +10,7 @@ import org.dhorse.infrastructure.repository.po.ReplicaMetricsPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 @Repository
@@ -21,7 +22,7 @@ public class ReplicaMetricsRepository
 
 	public void delete(Date time) {
 		LambdaUpdateWrapper<ReplicaMetricsPO> deleteWrapper = new LambdaUpdateWrapper<>();
-		deleteWrapper.le(ReplicaMetricsPO::getCreationTime, time);
+		deleteWrapper.le(ReplicaMetricsPO::getUpdateTime, time);
 		mapper.delete(deleteWrapper);
 	}
 	
@@ -37,4 +38,13 @@ public class ReplicaMetricsRepository
 		return po;
 	}
 
+	@Override
+	protected QueryWrapper<ReplicaMetricsPO> buildQueryWrapper(ReplicaMetricsParam bizParam, String orderField) {
+		QueryWrapper<ReplicaMetricsPO> wrapper = super.buildQueryWrapper(bizParam, orderField);
+		wrapper.ge("update_time", bizParam.getStartTime());
+		wrapper.le("update_time", bizParam.getEndTime());
+		return wrapper;
+	}
+
+	
 }

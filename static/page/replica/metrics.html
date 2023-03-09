@@ -4,41 +4,110 @@
 	<form class="layui-form layui-form-pane" action="">
 		<div class="layui-form-item">
 			<div class="layui-inline">
-				<select name="appEnvId" id="appEnvId">
-					<option value="1">容器监控</option>
-					<option value="2">JVM监控</option>
+				<select name="metricsType">
+					<option value="">请选择</option>
+					<option value="1" selected>容器指标</option>
+					<!--<option value="2">JVM指标</option>-->
 				</select>
+			</div>
+			<div class="layui-inline">
+				<input type="text" name="startTime" id="startTime" lay-verify="datetime" placeholder="起始时间" autocomplete="off" class="layui-input">
+			</div>
+			<div class="layui-inline" style="color: #c2c2c2">
+				-
+			</div>
+			<div class="layui-inline">
+				<input type="text" name="endTime" id="endTime" lay-verify="datetime" placeholder="结束时间" autocomplete="off" class="layui-input">
 			</div>
 			<input type="hidden" name="appId" id="appId"/>
 			<div class="layui-inline">
-				<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+				<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i>查 询</button>
 			</div>
 		</div>
 	</form>
 	<div class="layui-row layui-col-space15">
-        <div id="echarts-records" style="background-color:#ffffff;min-height:400px;padding: 10px"></div>
+        <div id="cpu-records" style="min-height:400px;"></div>
     </div>
 	<div class="layui-row layui-col-space15">
-        <div id="echarts-records2" style="background-color:#ffffff;min-height:400px;padding: 10px"></div>
+        <div id="memory-records" style="min-height:400px;"></div>
     </div>
 </div>
 <script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
 <script>
-    layui.use(['layer', 'echarts'], function () {
+    layui.use(['form', 'layer', 'echarts', 'laydate'], function () {
         var $ = layui.jquery,
+			form = layui.form,
             layer = layui.layer,
             echarts = layui.echarts,
-			appId = localStorage.getItem('appId_' + $("#userName").val());
+			laydate = layui.laydate;
 		
-        draw('echarts-records', 'CPU');
+		var onHour = 1000 * 60 * 60
+		var now = new Date();
+		var before = new Date(now - onHour);//前一个小时
+		laydate.render({
+            elem: '#startTime',
+			type: 'datetime',
+			value: before
+        });
+		
+		laydate.render({
+            elem: '#endTime',
+			type: 'datetime',
+			value: now
+        });
+		
+		replicaMetrics($, $("#startTime").val(), $("#endTime").val());
+
+		// 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+			var startTime = data.field.startTime;
+			var endTime = data.field.endTime;
+			if(endTime < startTime){
+				layer.msg('开始时间须大于或等于结束时间', {icon: 5, shift: 6, offset: ['20%', '40%']});
+				return false;
+			}
+			var hours = parseInt(new Date(endTime) - new Date(startTime)) / onHour;
+			if(hours > 24){
+				layer.msg('时间跨度不能超过一天', {icon: 5, shift: 6, offset: ['20%', '40%']});
+				return false;
+			}
+			
+			//副本指标
+			if(data.field.metricsType == 1){
+				replicaMetrics($, startTime, endTime);
+			//JVM指标
+			}else if(data.field.metricsType == 2){
+				//待实现
+			}
+            return false;
+        });
 	});
 	
-	function draw(records, metricsName){
+	function replicaMetrics($, startTime, endTime){
+		draw($, 'cpu-records', 'CPU', 'm', 1, startTime, endTime);
+		draw($, 'memory-records', '内存', 'MB', 2, startTime, endTime);
+	}
 	
-		var echartsRecords = echarts.init(document.getElementById(records), 'walden');
-		
+	function draw($, records, metricsName, unit, metricsType, startTime, endTime){
+		var appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val());
+		var replicaName = parent.replicaName;
+		$.ajax({
+			url: '/app/env/replica/metrics/list',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'appId': appId, 'replicaName': replicaName, 'metricsType': metricsType, 'startTime': startTime, 'endTime': endTime}),
+			success: function(res){
+				doDraw(records, metricsName, unit, res.data);
+			},
+			error: function(data){
+			}
+		});
+	}
+	
+	function doDraw(records, metricsName, unit, data){
         var optionRecords = {
             title: {
                 text: metricsName + '-使用情况'
@@ -56,7 +125,7 @@
 				x:'center',
 				y:'bottom',
 				padding:[100,0,0,0],
-                data: ['最大值', '当前值']
+                data: ['最大值', '使用值']
             },
             toolbox: {
                 feature: {
@@ -73,42 +142,41 @@
                 {
                     type: 'category',
                     boundaryGap: false,
-                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+					axisLabel:{
+						show: true,
+						formatter: function(value){
+							return value.substring(10);
+						}
+					},
+                    data: data.times
                 }
             ],
             yAxis: [
                 {
-                    type: 'value'
+                    type: 'value',
+					axisLabel:{
+						show: true,
+						formatter: '{value}' + unit
+					}
                 }
             ],
             series: [
                 {
                     name: '最大值',
                     type: 'line',
-                    stack: '总量',
-					label: {
-                        normal: {
-                            show: true,
-                            position: 'top'
-                        }
-                    },
                     areaStyle: {},
-                    data: [120, 132, 101, 134, 90, 230, 210]
+                    data: data.maxValues
                 },
                 {
-                    name: '当前值',
+                    name: '使用值',
                     type: 'line',
-					label: {
-                        normal: {
-                            show: true,
-                            position: 'top'
-                        }
-                    },
                     areaStyle: {},
-                    data: [220, 182, 191, 234, 290, 330, 310]
+                    data: data.usedValues
                 }
             ]
         };
+		
+		var echartsRecords = echarts.init(document.getElementById(records), 'walden');
         echartsRecords.setOption(optionRecords);	
 	}
 </script>

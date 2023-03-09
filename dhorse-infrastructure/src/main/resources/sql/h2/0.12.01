@@ -97,6 +97,7 @@ CREATE TABLE app_env (
 	replica_memory INT DEFAULT 0 COMMENT IS '每副本内存，单位MB',
 	auto_scaling_cpu INT DEFAULT 0 COMMENT IS '自动扩容，cpu使用率',
 	auto_scaling_memory INT DEFAULT 0 COMMENT IS '自动扩容，内存使用率',
+	event_notify_url VARCHAR (128) DEFAULT NULL COMMENT IS '事件通知地址',
 	required_deploy_approval TINYINT DEFAULT 0 COMMENT IS '是否需要部署审批，0：否，1：是',
 	required_merge TINYINT DEFAULT 0 COMMENT IS '是否需要合并分支，0：否，1：是',
 	service_port INT DEFAULT NULL COMMENT IS '服务端口',
@@ -155,8 +156,8 @@ CREATE TABLE replica_metrics (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
 	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
 	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型，1：CPU，2：内存',
-	current_value BIGINT DEFAULT 0 COMMENT IS '当前值',
+	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型，1：CPU（m），2：内存（MB）',
+	used_value BIGINT DEFAULT 0 COMMENT IS '使用值',
 	min_value BIGINT DEFAULT 0 COMMENT IS '最小值',
 	max_value BIGINT DEFAULT 0 COMMENT IS '最大值',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
@@ -164,4 +165,4 @@ CREATE TABLE replica_metrics (
 	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
 );
 COMMENT ON TABLE replica_metrics IS '副本指标';
-CREATE INDEX index_replica_metrics ON replica_metrics(creation_time, replica_name);
+CREATE INDEX index_replica_metrics ON replica_metrics(update_time, replica_name);

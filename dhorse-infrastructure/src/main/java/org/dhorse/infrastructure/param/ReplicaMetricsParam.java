@@ -15,9 +15,9 @@ public class ReplicaMetricsParam extends PageParam {
 	private String replicaName;
 
 	/**
-	 * 指标类型，1：cpu，2：内存
+	 * 指标类型，1：CPU（m），2：内存（MB）
 	 */
-	private int metricsType;
+	private Integer metricsType;
 
 	/**
 	 * 最小值
@@ -30,9 +30,9 @@ public class ReplicaMetricsParam extends PageParam {
 	private Long maxValue;
 
 	/**
-	 * 当前值
+	 * 使用值
 	 */
-	private Long currentValue;
+	private Long usedValue;
 	
 	/**
 	 * 开始时间
@@ -52,11 +52,11 @@ public class ReplicaMetricsParam extends PageParam {
 		this.replicaName = replicaName;
 	}
 
-	public int getMetricsType() {
+	public Integer getMetricsType() {
 		return metricsType;
 	}
 
-	public void setMetricsType(int metricsType) {
+	public void setMetricsType(Integer metricsType) {
 		this.metricsType = metricsType;
 	}
 
@@ -76,12 +76,12 @@ public class ReplicaMetricsParam extends PageParam {
 		this.maxValue = maxValue;
 	}
 
-	public Long getCurrentValue() {
-		return currentValue;
+	public Long getUsedValue() {
+		return usedValue;
 	}
 
-	public void setCurrentValue(Long currentValue) {
-		this.currentValue = currentValue;
+	public void setUsedValue(Long usedValue) {
+		this.usedValue = usedValue;
 	}
 
 	public String getStartTime() {

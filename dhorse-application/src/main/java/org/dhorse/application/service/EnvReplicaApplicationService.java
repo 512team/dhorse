@@ -2,6 +2,7 @@ package org.dhorse.application.service;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,7 +11,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.MetricsTypeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
@@ -23,7 +23,7 @@ import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
-import org.dhorse.api.vo.ReplicaMetrics;
+import org.dhorse.api.vo.ReplicaMetricsAgg;
 import org.dhorse.infrastructure.context.AppEnvClusterContext;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
@@ -36,8 +36,10 @@ import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.BaseAppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
+import org.dhorse.infrastructure.repository.po.ReplicaMetricsPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
+import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
@@ -216,22 +218,21 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 					if(appEnvPO == null) {
 						continue;
 					}
-					long maxCpu = new BigDecimal(appEnvPO.getReplicaCpu()).movePointRight(6).longValue();
 					Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
 					ReplicaMetricsParam cpu = new ReplicaMetricsParam();
 					cpu.setAppId(appEnvPO.getAppId());
 					cpu.setReplicaName(replicaName);
 					cpu.setMetricsType(MetricsTypeEnum.CPU.getCode());
-					cpu.setCurrentValue(usage.get("cpu").getNumber().movePointRight(9).longValue());
-					cpu.setMinValue(maxCpu);
-					cpu.setMaxValue(maxCpu);
+					cpu.setUsedValue(usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue());
+					cpu.setMinValue(Long.valueOf(appEnvPO.getReplicaCpu()));
+					cpu.setMaxValue(Long.valueOf(appEnvPO.getReplicaCpu()));
 					metricsList.add(cpu);
 					
 					ReplicaMetricsParam memory = new ReplicaMetricsParam();
 					memory.setAppId(appEnvPO.getAppId());
 					memory.setReplicaName(replicaName);
 					memory.setMetricsType(MetricsTypeEnum.MEMORY.getCode());
-					memory.setCurrentValue(usage.get("memory").getNumber().longValue());
+					memory.setUsedValue(usage.get("memory").getNumber().divide(new BigDecimal(1024 * 1024)).setScale(0, RoundingMode.HALF_UP).longValue());
 					memory.setMinValue(Long.valueOf(appEnvPO.getReplicaMemory()));
 					memory.setMaxValue(Long.valueOf(appEnvPO.getReplicaMemory()));
 					metricsList.add(memory);
@@ -241,11 +242,36 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 		replicaMetricsRepository.addList(metricsList);
 	}
 	
-	public List<ReplicaMetrics> replicaMetricsList(LoginUser loginUser, ReplicaMetricsQueryParam queryParam) {
+	public ReplicaMetricsAgg replicaMetricsAgg(LoginUser loginUser, ReplicaMetricsQueryParam queryParam) {
+		this.hasRights(loginUser, queryParam.getAppId());
+		
 		ReplicaMetricsParam bizParam = new ReplicaMetricsParam();
+		bizParam.setAppId(queryParam.getAppId());
 		bizParam.setReplicaName(queryParam.getReplicaName());
+		bizParam.setMetricsType(queryParam.getMetricsType());
 		bizParam.setStartTime(queryParam.getStartTime());
 		bizParam.setEndTime(queryParam.getEndTime());
-		return replicaMetricsRepository.list(loginUser, bizParam);
+		List<ReplicaMetricsPO> pos = replicaMetricsRepository.list(bizParam);
+		ReplicaMetricsAgg agg = new ReplicaMetricsAgg();
+		if(CollectionUtils.isEmpty(pos)) {
+			return agg;
+		}
+		
+		List<Long> maxValues = new ArrayList<>();
+		List<Long> usedValues = new ArrayList<>();
+		List<String> times = new ArrayList<>();
+		for(int i = pos.size() - 1; i >= 0; i--) {
+			ReplicaMetricsPO po = pos.get(i);
+			maxValues.add(po.getMaxValue());
+			usedValues.add(po.getUsedValue());
+			times.add(DateUtils.formatDefault(po.getCreationTime()));
+		}
+		
+		agg.setReplicaName(queryParam.getReplicaName());
+		agg.setMetricsType(queryParam.getMetricsType());
+		agg.setMaxValues(maxValues);
+		agg.setUsedValues(usedValues);
+		agg.setTimes(times);
+		return agg;
 	}
 }

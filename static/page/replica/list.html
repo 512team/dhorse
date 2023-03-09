@@ -34,18 +34,15 @@
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="rebuild">重建</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
-			<a href="javascript:;" class="layui-font-blue" lay-event="log">日志</a>
-			<a href="/app/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a>
-			<span style="color: rgb(179, 179, 179);"> | </span>
-			<a href="javascript:;" class="layui-font-blue" lay-event="terminal">终端</a>
+			<a href="javascript:;" class="layui-font-blue dropdown-operate" data-replica-name="{{d.name}}">更多 <i class="layui-icon layui-font-12 layui-icon-down"></i></a>
+			<!-- <a href="/app/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a> -->
 		</script>
     </div>
 </div>
 <script>
 
 	var replicaName;
-	var ws;
-
+	
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
             form = layui.form,
@@ -58,7 +55,7 @@
 		form.render('select');
 		
         //初始化环境
-		initEnv(form, table, $, appId);
+		initEnv(form, table, $, appId, dropdown, $);
 
 		// 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -87,7 +84,9 @@
                 });
             }else if (obj.event === 'rebuild') {
                 rebuild($, obj.data.name);
-            }else if (obj.event === 'log') {
+            }
+			/**
+			else if (obj.event === 'log') {
                 var index = layer.open({
                     title: '日志',
                     type: 2,
@@ -110,6 +109,7 @@
 					content: ['page/replica/terminal.html', 'no']
                 });
             }
+			**/
 			return false;
         });
     });
@@ -145,7 +145,7 @@
 		});
 	}
 	
-	function initTable(table, appId, appEnvId){
+	function initTable(table, appId, appEnvId, dropdown, $){
 		table.render({
             elem: '#currentTableId',
             url: '/app/env/replica/page',
@@ -191,11 +191,56 @@
             limit: 10,
             page: true,
             skin: 'row',
-			even: true
+			even: true,
+			done: function(res, curr, count){
+				dropdown.render({
+					elem: '.dropdown-operate'
+					,trigger: 'hover'
+					,data: [{
+					  title: '日志'
+					  ,id: 'log'
+					}, {
+					  title: '日志下载'
+					  ,id: 'log-download'
+					},{
+					  title: '终端'
+					  ,id: 'terminal'
+					}]
+					,click: function(data, othis){
+						var elem = $(this.elem);
+						replicaName = elem.data('replica-name');
+						if (data.id === 'log') {
+							var index = layer.open({
+								title: '日志',
+								type: 2,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['70%', '80%'],
+								offset: ['5%', '18%'],
+								content: ['page/replica/log.html', 'no']
+							});
+						}else if(data.id === 'log-download'){
+							$("<a>").attr("href","/app/env/replica/downloadLog?replicaName=" + replicaName)[0].click();
+						}else if (data.id === 'terminal') {
+							var index = layer.open({
+								title: '终端',
+								type: 2,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['70%', '80%'],
+								offset: ['5%', '18%'],
+								content: ['page/replica/terminal.html', 'no']
+							});
+						}
+					}
+				});
+			}
         });
 	}
 	
-	function initEnv(form, table, $, appId) {
+	function initEnv(form, table, $, appId, dropdown, $) {
 		$.ajax({
 			url: '/app/env/search',
 			type: 'POST',
@@ -218,7 +263,7 @@
 				}
 				
 				//初始化表格
-				initTable(table, appId, firstEnv);
+				initTable(table, appId, firstEnv, dropdown, $);
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});

@@ -1013,10 +1013,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		for(V1ContainerStatus containerStatus : podStatus.getContainerStatuses()) {
 			V1ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
 			if(terminated != null) {
-				if("Error".equals(terminated.getReason())) {
+				if(terminated.getExitCode() == null) {
 					return ReplicaStatusEnum.FAILED.getCode();
 				}
-				return ReplicaStatusEnum.DESTROYING.getCode();
+				if(terminated.getExitCode() == 1 || terminated.getExitCode() == 137
+						|| terminated.getExitCode() == 139 || terminated.getExitCode() == 143) {
+					return ReplicaStatusEnum.DESTROYING.getCode();
+				}
+				return ReplicaStatusEnum.FAILED.getCode();
 			}
 			if(!containerStatus.getStarted().booleanValue() || !containerStatus.getReady().booleanValue()) {
 				return ReplicaStatusEnum.PENDING.getCode();

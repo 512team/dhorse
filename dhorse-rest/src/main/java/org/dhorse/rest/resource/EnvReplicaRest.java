@@ -17,7 +17,7 @@ import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
 import org.dhorse.api.result.PageData;
 import org.dhorse.api.result.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
-import org.dhorse.api.vo.ReplicaMetrics;
+import org.dhorse.api.vo.ReplicaMetricsAgg;
 import org.dhorse.application.service.EnvReplicaApplicationService;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
@@ -138,10 +138,10 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @param queryParam 分页参数
 	 * @return 符合条件的数据集
 	 */
-	@PostMapping("/metrics/page")
-	public RestResponse<List<ReplicaMetrics>> metricsPage(@CookieValue("login_token") String loginToken,
+	@PostMapping("/metrics/list")
+	public RestResponse<ReplicaMetricsAgg> metricsList(@CookieValue("login_token") String loginToken,
 			@RequestBody ReplicaMetricsQueryParam queryParam) {
 		return success(
-				envReplicaApplicationService.replicaMetricsList(queryLoginUserByToken(loginToken), queryParam));
+				envReplicaApplicationService.replicaMetricsAgg(queryLoginUserByToken(loginToken), queryParam));
 	}
 }
