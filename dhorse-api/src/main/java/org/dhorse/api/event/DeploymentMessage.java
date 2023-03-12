@@ -8,7 +8,9 @@ package org.dhorse.api.event;
  */
 public class DeploymentMessage extends BuildMessage {
 
-	//审批人
+	/**
+	 * 审批人
+	 */
 	private String approver;
 
 	public String getApprover() {

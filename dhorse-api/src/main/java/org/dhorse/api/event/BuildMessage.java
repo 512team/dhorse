@@ -8,17 +8,37 @@ package org.dhorse.api.event;
  */
 public class BuildMessage {
 
+	/**
+	 * 提交人
+	 */
 	private String submitter;
 
+	/**
+	 * 分支
+	 */
 	private String branchName;
 
+	/**
+	 * tag
+	 */
 	private String tagName;
 
+	/**
+	 * 应用名称
+	 */
 	private String appName;
 
+	/**
+	 * 版本名称
+	 */
 	private String verionName;
 
-	// 构建状态，1：构建成功，2：构建失败
+	/**
+	 * 状态
+	 * <p>
+	 * 构建事件：参见：DeploymentVersionStatusEnum
+	 * 部署事件，参见：DeploymentStatusEnum
+	 */
 	private Integer status;
 
 	public String getSubmitter() {
