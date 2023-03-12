@@ -22,38 +22,44 @@
 			"target": "_self"
 		},
 		{
-			"title": "系统配置",
+			"title": "公共配置",
 			"href": "",
 			"icon": "fa fa-cogs",
 			"target": "_self",
 			"child": [
 				{
 					"title": "代码仓库",
-					"href": "page/app_config/code_repo.html",
+					"href": "page/common_config/code_repo.html",
 					"icon": "fa fa-cog",
 					"target": "_self"
 				},
 				{
 					"title": "镜像仓库",
-					"href": "page/app_config/image_repo.html",
+					"href": "page/common_config/image_repo.html",
 					"icon": "fa fa-cog",
 					"target": "_self"
 				},
 				{
 					"title": "Maven",
-					"href": "page/app_config/maven.html",
+					"href": "page/common_config/maven.html",
 					"icon": "fa fa-cog",
 					"target": "_self"
 				},
 				{
 					"title": "环境模板",
-					"href": "page/app_config/env_template/list.html",
+					"href": "page/common_config/env_template/list.html",
 					"icon": "fa fa-cog",
 					"target": "_self"
 				},
 				{
 					"title": "链路追踪模板",
-					"href": "page/app_config/trace_template/list.html",
+					"href": "page/common_config/trace_template/list.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
+					"title": "更多",
+					"href": "page/common_config/more.html",
 					"icon": "fa fa-cog",
 					"target": "_self"
 				}

@@ -30,7 +30,7 @@
 			{{#	}                     		}}
 		</script>
         <script type="text/html" id="currentTableBar">
-			<a href="javascript:;" class="layui-font-blue" lay-event="metrics">资源监控</a>
+			<a href="javascript:;" class="layui-font-blue" lay-event="metrics" id="metrics">资源监控</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="rebuild">重建</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
@@ -45,6 +45,7 @@
 	
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
+			layer = layui.layer,
             form = layui.form,
             table = layui.table,
 			dropdown = layui.dropdown,
@@ -193,6 +194,12 @@
             skin: 'row',
 			even: true,
 			done: function(res, curr, count){
+				
+				//提示
+				$('#metrics').on('mouseover', function(){
+					layer.tips('<span style="color:#000;">集群需要安装Metrics Server，<a class="layui-font-blue" target="_blank" href="https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%AE%89%E8%A3%85Metrics%20Server.md">参考文档</a></span>', this, {tips:[3, '#fff'], time:1000});
+				});
+				
 				dropdown.render({
 					elem: '.dropdown-operate'
 					,trigger: 'hover'

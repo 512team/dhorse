@@ -1,0 +1,79 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label">事件通知地址</label>
+			<div class="layui-input-block">
+				<input type="text" name="eventNotifyUrl" placeholder="格式如：http(s)://notify_server:port/receive" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+		form.render();
+
+		$.ajax({
+			url: '/globalConfig/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 100}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				if(JSON.stringify(res.data) === '{}'){
+					return false;
+				}
+				//给表单赋值
+				form.val("form-data", {
+				  "eventNotifyUrl": res.data.more.eventNotifyUrl
+				});
+			},
+			error: function(res){
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+			//增加类型
+			data.field.itemType = 100;
+			$.ajax({
+				url: '/globalConfig/more/addOrUpdate',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}	
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+</script>

@@ -6,11 +6,45 @@
 	</script>
 
 	<table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
-
+	
+	<script type="text/html" id="techTypeBar">
+		{{#	if (d.techType == 1) {			}}
+		{{#		return 'Java' 					}}
+		{{#	} else if (d.techType == 2){	}}
+		{{#		return 'Python'   				}}
+		{{#	} else if (d.techType == 3){	}}
+		{{#		return 'Node'   				}}
+		{{#	} else if (d.techType == 4){	}}
+		{{#		return 'App'   					}}
+		{{#	} else if (d.techType == 5){	}}
+		{{#		return 'H5'   					}}
+		{{#	} else if (d.techType == 6){	}}
+		{{#		return 'C'   					}}
+		{{#	} else if (d.techType == 7){	}}
+		{{#		return 'C++'   					}}
+		{{#	} else if (d.techType == 8){	}}
+		{{#		return 'Go'   					}}
+		{{#	}                     				}}
+	</script>
+	
+	<script type="text/html" id="agentVersionBar">
+		{{#	if(typeof d.agentVersion !== 'undefined'){	}}
+		{{#		return 'v' + d.agentVersion 			}}
+		{{# } else {									}}
+		{{#		return ''   							}}
+		{{#	}                     						}}
+	</script>
+	
+	<script type="text/html" id="agentImageSourceBar">
+		{{#	if (d.agentImageSource == 1) {			}}
+		{{#		return '版本号' 					}}
+		{{#	} else if (d.agentImageSource == 2){	}}
+		{{#		return '自定义'   					}}
+		{{#	} 										}}
+	</script>
+	
 	<script type="text/html" id="currentTableBar">
-		<a href="javascript:;" class="layui-font-blue" lay-event="detail">详情</a>
-		<span style="color: rgb(179, 179, 179);"> | </span>
-		<a href="javascript:;" class="layui-font-blue" lay-event="update">修改</a>
+		<a href="javascript:;" class="layui-font-blue" lay-event="edit">修改</a>
 		<span style="color: rgb(179, 179, 179);"> | </span>
 		<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
 	</script>
@@ -18,7 +52,7 @@
 <script>
 
 	//全局变量，在子页面里使用
-	var data2;
+	var data;
 	
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
@@ -26,17 +60,18 @@
             table = layui.table,
 			dropdown = layui.dropdown,
 			miniPage = layui.miniPage;
-			
+				
         table.render({
+			id: 'currentTableId',
             elem: '#currentTableId',
-            url: '/globalConfig/envTemplate/page',
+            url: '/globalConfig/traceTemplate/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"itemType": 6},
+			where: {itemType: 5},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -57,11 +92,13 @@
 				};
 			},
             cols: [[
-                {field: 'templateName', title: '模板名称', sort: true},
-                {field: 'envName', title: '环境名称'},
-                {field: 'tag', title: '环境标识'},
-				{field: 'deploymentOrder', title: '部署序号'},
-                {title: '操作', toolbar: '#currentTableBar', width: '13%'}
+                {field: 'name', title: '模板名称'},
+                {field: 'serviceUrl', title: '服务地址', width: '14%'},
+				{field: 'techType', title: 'Agent技术类型', templet: '#techTypeBar'},
+				{field: 'agentImageSource', title: 'Agent镜像来源', templet: '#agentImageSourceBar'},
+				{field: 'agentVersion', title: 'Agent版本', templet: '#agentVersionBar'},
+                {field: 'agentImage', title: 'Agent镜像', width: '30%'},
+                {title: '操作', toolbar: '#currentTableBar', width: '15%'}
             ]],
             limits: [10, 20],
             limit: 10,
@@ -75,51 +112,36 @@
          */
         table.on('toolbar(currentTableFilter)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
-                var index = layer.open({
-                    title: '添加环境',
+				var index = layer.open({
+                    title: '添加模板',
                     type: 1,
                     shade: 0.5,
                     maxmin: false,
                     shadeClose: false,
-                    area: ['50%', '90%'],
-					offset: ['5%', '28%'],
-					content: miniPage.getHrefContent('page/app_config/env_template/add.html')
+                    area: ['50%', '60%'],
+                    offset: ['18%', '25%'],
+                    content: miniPage.getHrefContent('page/common_config/trace_template/add.html')
                 });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = table.checkStatus('currentTableId')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
             }
         });
 
         table.on('tool(currentTableFilter)', function (obj) {
-			data2 = JSON.stringify({'id': obj.data.id});
-			if (obj.event === 'detail') {
+            if (obj.event === 'edit') {
+				data = JSON.stringify(obj.data);
                 var index = layer.open({
-                    title: '详情',
+                    title: '修改模板',
                     type: 1,
                     shade: 0.5,
                     maxmin: false,
                     shadeClose: false,
-                    area: ['50%', '90%'],
-					offset: ['5%', '28%'],
-					content: miniPage.getHrefContent('page/app_config/env_template/detail.html')
+                    area: ['50%', '60%'],
+                    offset: ['18%', '25%'],
+                    content: miniPage.getHrefContent('page/common_config/trace_template/edit.html')
                 });
-            }else if (obj.event === 'update') {
-                var index = layer.open({
-                    title: '修改',
-                    type: 1,
-                    shade: 0.5,
-                    maxmin: false,
-                    shadeClose: false,
-                    area: ['50%', '90%'],
-					offset: ['5%', '28%'],
-					content: miniPage.getHrefContent('page/app_config/env_template/update.html')
-                });
+                return false;
             }else if (obj.event === 'delete') {
-                doDelete($, obj.data.templateName, obj.data.id);
-            }
-			return false;
+				doDelete($, obj.data.name, obj.data.id);
+			}
         });
     });
 	
