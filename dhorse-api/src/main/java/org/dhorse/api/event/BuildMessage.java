@@ -36,8 +36,9 @@ public class BuildMessage {
 	/**
 	 * 状态
 	 * <p>
-	 * 构建事件：参见：DeploymentVersionStatusEnum
-	 * 部署事件，参见：DeploymentStatusEnum
+	 * 构建事件，参见：org.dhorse.api.enums.BuildStatusEnum
+	 * <P>
+	 * 部署事件，参见：org.dhorse.api.enums.DeploymentStatusEnum
 	 */
 	private Integer status;
 

@@ -24,7 +24,7 @@ import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
-import org.dhorse.api.enums.DeploymentVersionStatusEnum;
+import org.dhorse.api.enums.BuildStatusEnum;
 import org.dhorse.api.enums.EventCodeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -35,6 +35,7 @@ import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.event.BuildMessage;
 import org.dhorse.api.event.DeploymentMessage;
 import org.dhorse.api.param.app.branch.BuildParam;
+import org.dhorse.api.response.EventResponse;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.AppExtendNode;
@@ -91,7 +92,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		//异步构建
 		ThreadPoolUtils.buildVersion(() -> {
 			
-			Integer status = DeploymentVersionStatusEnum.BUILDED_SUCCESS.getCode();
+			Integer status = BuildStatusEnum.BUILDED_SUCCESS.getCode();
 			ThreadLocalUtils.putDeployContext(context);
 			
 			try {
@@ -120,7 +121,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 				
 				updateDeploymentVersionStatus(context.getId(), status);
 			} catch (Throwable e) {
-				status = DeploymentVersionStatusEnum.BUILDED_FAILUR.getCode();
+				status = BuildStatusEnum.BUILDED_FAILUR.getCode();
 				updateDeploymentVersionStatus(context.getId(), status);
 				logger.error("Failed to build version", e);
 			} finally {
@@ -150,7 +151,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 		//message.setTagName(context.get);
 		message.setVerionName(context.getVersionName());
 		
-		doNotify(url, JsonUtils.toJsonString(message), EventCodeEnum.BUILD_VERSION);
+		EventResponse<BuildMessage> response = new EventResponse<>();
+		response.setEventCode(EventCodeEnum.BUILD_VERSION.getCode());
+		response.setData(message);
+		doNotify(url, JsonUtils.toJsonString(response));
 	}
 	
 	private void updateDeploymentVersionStatus(String id, Integer status) {
@@ -221,6 +225,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 			return;
 		}
 		DeploymentMessage message = new DeploymentMessage();
+		message.setEnvTag(context.getAppEnv().getTag());
 		message.setAppName(context.getApp().getAppName());
 		message.setBranchName(context.getBranchName());
 		message.setSubmitter(context.getSubmitter());
@@ -230,7 +235,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 		//message.setTagName(context.get);
 		message.setVerionName(context.getVersionName());
 		
-		doNotify(url, JsonUtils.toJsonString(message), EventCodeEnum.DEPLOY_ENV);
+		EventResponse<DeploymentMessage> response = new EventResponse<>();
+		response.setEventCode(EventCodeEnum.DEPLOY_ENV.getCode());
+		response.setData(message);
+		doNotify(url, JsonUtils.toJsonString(response));
 	}
 	
 	protected boolean rollback(DeployParam deployParam) {
@@ -293,7 +301,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		
 		//同一个应用，不允许同时构建多个版本
 		DeploymentVersionParam bizParam = new DeploymentVersionParam();
-		bizParam.setStatus(DeploymentVersionStatusEnum.BUILDING.getCode());
+		bizParam.setStatus(BuildStatusEnum.BUILDING.getCode());
 		bizParam.setAppId(buildParam.getAppId());
 		DeploymentVersionPO deploymentVersionPO = deploymentVersionRepository.query(bizParam);
 		if(deploymentVersionPO != null) {

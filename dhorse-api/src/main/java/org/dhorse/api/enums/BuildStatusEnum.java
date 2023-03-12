@@ -1,12 +1,12 @@
 package org.dhorse.api.enums;
 
 /**
- * 部署版本状态
+ * 构建版本状态
  * 
  * @author Dahai
  * @date 2022-8-13 17:12:50
  */
-public enum DeploymentVersionStatusEnum {
+public enum BuildStatusEnum {
 
 	BUILDING(0, "构建中"),
 	BUILDED_SUCCESS(1, "构建成功"),
@@ -16,7 +16,7 @@ public enum DeploymentVersionStatusEnum {
 
 	private String value;
 
-	private DeploymentVersionStatusEnum(Integer code, String value) {
+	private BuildStatusEnum(Integer code, String value) {
 		this.code = code;
 		this.value = value;
 	}

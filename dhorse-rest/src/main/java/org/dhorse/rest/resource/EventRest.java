@@ -1,5 +1,6 @@
 package org.dhorse.rest.resource;
 
+import org.dhorse.api.event.DeploymentMessage;
 import org.dhorse.api.response.EventResponse;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.infrastructure.annotation.AccessNotLogin;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EventRest extends AbstractRest {
 	
 	@PostMapping("/receive")
-	public RestResponse<Void> receive(@RequestBody EventResponse reponse) {
+	public RestResponse<Void> receive(@RequestBody EventResponse<DeploymentMessage> reponse) {
 		return success();
 	}
 }
