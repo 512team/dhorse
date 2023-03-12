@@ -1,6 +1,6 @@
 package org.dhorse.rest.resource;
 
-import org.dhorse.api.result.RestResponse;
+import org.dhorse.api.response.RestResponse;
 import org.dhorse.application.service.SysUserApplicationService;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;

@@ -4,14 +4,15 @@ import java.util.List;
 
 import org.dhorse.api.param.global.GlolabConfigDeletionParam;
 import org.dhorse.api.param.global.GlolabConfigPageParam;
-import org.dhorse.api.result.PageData;
-import org.dhorse.api.result.RestResponse;
+import org.dhorse.api.response.PageData;
+import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
+import org.dhorse.api.vo.GlobalConfigAgg.More;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.application.service.GlobalConfigApplicationService;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
@@ -185,6 +186,18 @@ public class GlobalConfigRest extends AbstractRest {
 	@PostMapping("/envTemplate/query")
 	public RestResponse<GlobalConfigAgg> envTemplateQuery(@RequestBody GlobalConfigQueryParam queryParam) {
 		return this.success(globalConfigApplicationService.envTemplateQuery(queryParam));
+	}
+	
+	/**
+	 * 更多
+	 * 
+	 * @param more 更多配置参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/more/addOrUpdate")
+	public RestResponse<Void> more(@RequestBody More more) {
+		return this.success(globalConfigApplicationService.addOrUpdateMore(more));
 	}
 	
 	/**

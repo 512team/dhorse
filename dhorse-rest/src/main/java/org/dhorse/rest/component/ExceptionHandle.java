@@ -1,8 +1,7 @@
 package org.dhorse.rest.component;
 
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.result.RestResponse;
-import org.dhorse.api.result.Result;
+import org.dhorse.api.response.RestResponse;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,7 @@ public class ExceptionHandle {
 
 	@ResponseBody
 	@ExceptionHandler(value = ApplicationException.class)
-	public Result<String> handleApplicationException(ApplicationException e) {
+	public RestResponse<String> handleApplicationException(ApplicationException e) {
 		RestResponse<String> response = new RestResponse<>();
 		response.setCode(e.getCode());
 		response.setMessage(e.getMessage());
@@ -32,7 +31,7 @@ public class ExceptionHandle {
 	
 	@ResponseBody
 	@ExceptionHandler(value = Throwable.class)
-	public Result<String> handleThrowable(Throwable e) {
+	public RestResponse<String> handleThrowable(Throwable e) {
 		logger.error("Server error", e);
 		RestResponse<String> response = new RestResponse<>();
 		response.setCode(MessageCodeEnum.SERVER_ERROR.getCode());

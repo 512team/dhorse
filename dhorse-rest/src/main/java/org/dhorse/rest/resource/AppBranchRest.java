@@ -6,9 +6,9 @@ import org.dhorse.api.param.app.branch.AppBranchCreationParam;
 import org.dhorse.api.param.app.branch.AppBranchDeletionParam;
 import org.dhorse.api.param.app.branch.AppBranchListParam;
 import org.dhorse.api.param.app.branch.AppBranchPageParam;
-import org.dhorse.api.param.app.branch.VersionBuildParam;
-import org.dhorse.api.result.PageData;
-import org.dhorse.api.result.RestResponse;
+import org.dhorse.api.param.app.branch.BuildParam;
+import org.dhorse.api.response.PageData;
+import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.AppBranch;
 import org.dhorse.application.service.AppBranchApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,13 +86,13 @@ public class AppBranchRest extends AbstractRest {
 	/**
 	 * 构建版本
 	 * 
-	 * @param versionBuildParam 参数
+	 * @param buildParam 参数
 	 * @return 无
 	 */
 	@RequestMapping("/buildVersion")
 	public RestResponse<String> buildVersion(@CookieValue("login_token") String loginToken,
-			@RequestBody VersionBuildParam versionBuildParam) {
+			@RequestBody BuildParam buildParam) {
 		return this.success(appBranchApplicationService
-				.buildVersion(this.queryLoginUserByToken(loginToken), versionBuildParam));
+				.buildVersion(this.queryLoginUserByToken(loginToken), buildParam));
 	}
 }
