@@ -21,7 +21,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = {
 		"org.dhorse.infrastructure",
 		"org.dhorse.application",
-		"org.dhorse.web",
 		"org.dhorse.rest"})
 public class DHorseBootstrap {
 
