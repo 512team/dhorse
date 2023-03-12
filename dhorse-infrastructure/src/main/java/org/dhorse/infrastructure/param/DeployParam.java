@@ -38,12 +38,12 @@ public class DeployParam implements Serializable {
 	private String envId;
 
 	/**
-	 * 部署者
+	 * 部署人
 	 */
 	private String deployer;
 
 	/**
-	 * 审核者
+	 * 审核人
 	 */
 	private String approver;
 

@@ -2,11 +2,11 @@ package org.dhorse.infrastructure.utils;
 
 import java.util.Date;
 
-import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.App;
+import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
-import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 
@@ -17,6 +17,12 @@ import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
  * @author Dahai 2021-9-20 11:37:16
  */
 public class DeployContext {
+
+	// 提交人
+	private String submitter;
+
+	// 审批人
+	private String approver;
 
 	private GlobalConfigAgg globalConfigAgg;
 
@@ -36,7 +42,7 @@ public class DeployContext {
 
 	private String localPathOfBranch;
 
-	private String nameOfImage;
+	private String versionName;
 
 	private String fullNameOfImage;
 
@@ -55,6 +61,22 @@ public class DeployContext {
 	 * 代理镜像名称
 	 */
 	private String fullNameOfAgentImage;
+
+	public String getSubmitter() {
+		return submitter;
+	}
+
+	public void setSubmitter(String submitter) {
+		this.submitter = submitter;
+	}
+
+	public String getApprover() {
+		return approver;
+	}
+
+	public void setApprover(String approver) {
+		this.approver = approver;
+	}
 
 	public ClusterPO getCluster() {
 		return cluster;
@@ -96,12 +118,12 @@ public class DeployContext {
 		this.globalConfigAgg = globalConfigAgg;
 	}
 
-	public String getNameOfImage() {
-		return nameOfImage;
+	public String getVersionName() {
+		return versionName;
 	}
 
-	public void setNameOfImage(String nameOfImage) {
-		this.nameOfImage = nameOfImage;
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
 	}
 
 	public String getFullNameOfImage() {

@@ -7,7 +7,7 @@ import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespaceCreationParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespaceDeletionParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;

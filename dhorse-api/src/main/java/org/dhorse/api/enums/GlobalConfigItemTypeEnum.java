@@ -2,12 +2,13 @@ package org.dhorse.api.enums;
 
 public enum GlobalConfigItemTypeEnum {
 
-	LDAP(1, "ldap"),
-	CODEREPO(2, "codeRepo"),
-	IMAGEREPO(3, "imageRepo"),
-	MAVEN(4, "maven"),
-	TRACE_TEMPLATE(5, "traceTemplate"),
-	ENV_TEMPLATE(6, "envTemplate"),
+	LDAP(1, "Ldap"),
+	CODEREPO(2, "代码仓库"),
+	IMAGEREPO(3, "镜像仓库"),
+	MAVEN(4, "Maven"),
+	TRACE_TEMPLATE(5, "链路追踪模板"),
+	ENV_TEMPLATE(6, "环境模板"),
+	MORE(100, "更多"),
 	;
 
 	private Integer code;

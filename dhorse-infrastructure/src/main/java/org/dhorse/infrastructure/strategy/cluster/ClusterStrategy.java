@@ -4,8 +4,8 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
-import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.AppEnv;

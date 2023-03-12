@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.ClassUtils;
 import org.springframework.util.CollectionUtils;

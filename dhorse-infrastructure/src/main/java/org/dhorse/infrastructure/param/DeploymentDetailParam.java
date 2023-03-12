@@ -40,7 +40,7 @@ public class DeploymentDetailParam extends PageParam {
 	private List<Integer> deploymentStatuss;
 
 	/**
-	 * 部署者
+	 * 部署人
 	 */
 	private String deployer;
 

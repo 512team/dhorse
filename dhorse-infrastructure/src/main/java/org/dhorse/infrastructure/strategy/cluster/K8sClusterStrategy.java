@@ -27,7 +27,7 @@ import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppEnv;
 import org.dhorse.api.vo.AppEnv.EnvExtendNode;
@@ -174,7 +174,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			createIngress(context);
 			
 			// 检查pod状态
-			for (int i = 0; i < 60; i++) {
+			for (int i = 0; i < 60 * 10; i++) {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {

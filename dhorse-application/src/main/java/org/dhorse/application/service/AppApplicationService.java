@@ -15,18 +15,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
-import org.dhorse.api.enums.TechTypeEnum;
+import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.TomcatVersionEnum;
 import org.dhorse.api.param.app.AppCreationParam;
 import org.dhorse.api.param.app.AppDeletionParam;
 import org.dhorse.api.param.app.AppPageParam;
 import org.dhorse.api.param.app.AppUpdateParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.App.AppExtend;
 import org.dhorse.api.vo.AppExtendJava;
@@ -44,6 +44,7 @@ import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
+import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
@@ -300,7 +301,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
         http.setHeader("Content-Type", "application/json;charset=UTF-8");
         http.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthName()
         		+ ":" + imageRepo.getAuthPassword()).getBytes()));
-        try (CloseableHttpResponse response = createHttpClient(imageRepo.getUrl()).execute(http)){
+        try (CloseableHttpResponse response = HttpUtils.createHttpClient(imageRepo.getUrl()).execute(http)){
             return response.getStatusLine().getStatusCode() == 200;
         } catch (IOException e) {
         	logger.error("Failed to query image tag", e);

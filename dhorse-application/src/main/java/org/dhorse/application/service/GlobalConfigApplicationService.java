@@ -22,7 +22,7 @@ import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.global.GlolabConfigDeletionParam;
 import org.dhorse.api.param.global.GlolabConfigPageParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.BaseGlobalConfig;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
@@ -30,6 +30,7 @@ import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
+import org.dhorse.api.vo.GlobalConfigAgg.More;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
@@ -37,6 +38,7 @@ import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
+import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
@@ -166,7 +168,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
         httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthName() + ":" + imageRepo.getAuthPassword()).getBytes()));
         String param = "{\"project_name\": \"dhorse\", \"public\": " + publicType + "}";
         httpPost.setEntity(new StringEntity(param, "UTF-8"));
-        try (CloseableHttpResponse response = createHttpClient(imageRepo.getUrl()).execute(httpPost)){
+        try (CloseableHttpResponse response = HttpUtils.createHttpClient(imageRepo.getUrl()).execute(httpPost)){
             if (response.getStatusLine().getStatusCode() != 201
             		&& response.getStatusLine().getStatusCode() != 409) {
             	LogUtils.throwException(logger, response.getStatusLine().getReasonPhrase(),
@@ -398,6 +400,17 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 			}
 			logger.info("End to build agent image");
 		}
+	}
+	
+	public Void addOrUpdateMore(More more) {
+		if(StringUtils.isBlank(more.getEventNotifyUrl())){
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "事件通知地址不能为空");
+		}
+		if(!more.getEventNotifyUrl().startsWith("http")) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "事件通知地址格式不正确");
+		}
+		more.setItemType(GlobalConfigItemTypeEnum.MORE.getCode());
+		return addOrUpdateGlobalConfig(more);
 	}
 	
 	public Void delete(GlolabConfigDeletionParam deleteParam) {

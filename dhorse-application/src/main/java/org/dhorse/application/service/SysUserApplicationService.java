@@ -22,7 +22,7 @@ import org.dhorse.api.param.user.UserPageParam;
 import org.dhorse.api.param.user.UserQueryParam;
 import org.dhorse.api.param.user.UserSearchParam;
 import org.dhorse.api.param.user.UserUpdateParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.SysUser;
 import org.dhorse.infrastructure.param.GlobalConfigParam;

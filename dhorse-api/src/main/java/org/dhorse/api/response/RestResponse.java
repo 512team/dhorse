@@ -1,10 +1,10 @@
-package org.dhorse.api.result;
+package org.dhorse.api.response;
 
 import java.io.Serializable;
 
 import org.dhorse.api.enums.MessageCodeEnum;
 
-public class RestResponse<D> implements Result<D>, Serializable {
+public class RestResponse<D> implements Response, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

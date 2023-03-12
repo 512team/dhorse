@@ -20,7 +20,7 @@ import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
 import org.dhorse.api.param.app.env.replica.QueryFilesParam;
 import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.ReplicaMetricsAgg;

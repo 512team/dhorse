@@ -2,8 +2,8 @@ package org.dhorse.infrastructure.strategy.repo;
 
 import java.util.List;
 
-import org.dhorse.api.result.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.AppBranch;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;

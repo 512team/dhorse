@@ -42,7 +42,7 @@ public class DeploymentDetail extends BaseDto {
 	private Integer deploymentStatus;
 
 	/**
-	 * 部署者
+	 * 部署人
 	 */
 	private String deployer;
 

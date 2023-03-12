@@ -19,7 +19,7 @@ import org.dhorse.api.param.app.env.AppEnvResoureUpdateParam;
 import org.dhorse.api.param.app.env.AppEnvSearchParam;
 import org.dhorse.api.param.app.env.AppEnvUpdateParam;
 import org.dhorse.api.param.app.env.TraceUpdateParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.AppEnv;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;

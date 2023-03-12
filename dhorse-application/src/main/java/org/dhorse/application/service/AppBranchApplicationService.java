@@ -10,8 +10,8 @@ import org.dhorse.api.param.app.branch.AppBranchCreationParam;
 import org.dhorse.api.param.app.branch.AppBranchDeletionParam;
 import org.dhorse.api.param.app.branch.AppBranchListParam;
 import org.dhorse.api.param.app.branch.AppBranchPageParam;
-import org.dhorse.api.param.app.branch.VersionBuildParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.param.app.branch.BuildParam;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.AppBranch;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
@@ -112,15 +112,16 @@ public class AppBranchApplicationService extends DeployApplicationService {
 		}
 	}
 
-	public String buildVersion(LoginUser loginUser, VersionBuildParam versionBuildParam) {
-		if (StringUtils.isBlank(versionBuildParam.getAppId())) {
+	public String buildVersion(LoginUser loginUser, BuildParam buildParam) {
+		if (StringUtils.isBlank(buildParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
-		hasRights(loginUser, versionBuildParam.getAppId());
+		hasRights(loginUser, buildParam.getAppId());
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		if (globalConfigRepository.count(globalConfigParam) < 1) {
 			LogUtils.throwException(logger, MessageCodeEnum.INIT_GLOBAL_CONFIG);
 		}
-		return buildVersion(versionBuildParam);
+		buildParam.setSubmitter(loginUser.getLoginName());
+		return buildVersion(buildParam);
 	}
 }

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.BaseDto;
 import org.dhorse.infrastructure.param.PageParam;
 import org.dhorse.infrastructure.repository.po.BaseAppPO;

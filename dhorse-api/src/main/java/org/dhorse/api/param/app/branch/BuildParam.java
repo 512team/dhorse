@@ -7,7 +7,7 @@ import java.io.Serializable;
  * 
  * @author Dahai 2021-09-08
  */
-public class VersionBuildParam implements Serializable {
+public class BuildParam implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -20,6 +20,11 @@ public class VersionBuildParam implements Serializable {
 	 * 分支编号
 	 */
 	private String branchName;
+
+	/**
+	 * 提交人
+	 */
+	private String submitter;
 
 	public String getAppId() {
 		return appId;
@@ -36,4 +41,13 @@ public class VersionBuildParam implements Serializable {
 	public void setBranchName(String branchName) {
 		this.branchName = branchName;
 	}
+
+	public String getSubmitter() {
+		return submitter;
+	}
+
+	public void setSubmitter(String submitter) {
+		this.submitter = submitter;
+	}
+
 }

@@ -21,6 +21,8 @@ public class GlobalConfigAgg implements Serializable {
 
 	private EnvTemplate envTemplate;
 
+	private More more;
+
 	public Maven getMaven() {
 		return maven;
 	}
@@ -67,6 +69,14 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setEnvTemplate(EnvTemplate envTemplate) {
 		this.envTemplate = envTemplate;
+	}
+
+	public More getMore() {
+		return more;
+	}
+
+	public void setMore(More more) {
+		this.more = more;
 	}
 
 	public static abstract class BaseGlobalConfig implements Serializable {
@@ -682,6 +692,28 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setAgentVersion(String agentVersion) {
 			this.agentVersion = agentVersion;
+		}
+
+	}
+
+	/**
+	 * 更多
+	 */
+	public static class More extends BaseGlobalConfig {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * 事件通知地址
+		 */
+		private String eventNotifyUrl;
+
+		public String getEventNotifyUrl() {
+			return eventNotifyUrl;
+		}
+
+		public void setEventNotifyUrl(String eventNotifyUrl) {
+			this.eventNotifyUrl = eventNotifyUrl;
 		}
 
 	}

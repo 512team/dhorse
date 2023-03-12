@@ -15,7 +15,7 @@ import org.dhorse.api.param.cluster.ClusterQueryParam;
 import org.dhorse.api.param.cluster.ClusterSearchParam;
 import org.dhorse.api.param.cluster.ClusterUpdateParam;
 import org.dhorse.api.param.cluster.LogSwitchParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.Cluster;
 import org.dhorse.api.vo.LogCollectorStatus;
 import org.dhorse.infrastructure.param.ClusterParam;

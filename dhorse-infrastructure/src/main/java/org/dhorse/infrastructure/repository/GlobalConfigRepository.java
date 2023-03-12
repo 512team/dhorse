@@ -9,6 +9,7 @@ import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
+import org.dhorse.api.vo.GlobalConfigAgg.More;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
@@ -72,6 +73,11 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 				template.setCreationTime(po.getCreationTime());
 				template.setUpdateTime(po.getUpdateTime());
 				globalConfig.setEnvTemplate(template);
+				continue;
+			}
+			if(GlobalConfigItemTypeEnum.MORE.getCode().equals(po.getItemType())) {
+				More more = JsonUtils.parseToObject(po.getItemValue(), More.class);
+				globalConfig.setMore(more);
 				continue;
 			}
 		}

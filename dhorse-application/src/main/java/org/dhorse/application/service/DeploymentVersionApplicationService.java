@@ -11,7 +11,7 @@ import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.branch.DeploymentApplicationParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionPageParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.DeploymentVersion;
 import org.dhorse.infrastructure.param.DeployParam;
 import org.dhorse.infrastructure.param.DeploymentDetailParam;

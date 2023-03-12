@@ -36,8 +36,8 @@ CREATE INDEX index_cluster_update_time ON cluster(update_time);
 
 CREATE TABLE global_config (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	item_type tinyint DEFAULT NULL COMMENT IS '配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境模板',
-	item_value VARCHAR (8192) DEFAULT NULL COMMENT IS '配置项值，json结构',
+	item_type tinyint DEFAULT NULL COMMENT IS '配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境模板，100：更多',
+	item_value text DEFAULT NULL COMMENT IS '配置项值，json结构',
 	remark VARCHAR (64) DEFAULT NULL COMMENT IS '备注',
 	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
 	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
@@ -97,7 +97,6 @@ CREATE TABLE app_env (
 	replica_memory INT DEFAULT 0 COMMENT IS '每副本内存，单位MB',
 	auto_scaling_cpu INT DEFAULT 0 COMMENT IS '自动扩容，cpu使用率',
 	auto_scaling_memory INT DEFAULT 0 COMMENT IS '自动扩容，内存使用率',
-	event_notify_url VARCHAR (128) DEFAULT NULL COMMENT IS '事件通知地址',
 	required_deploy_approval TINYINT DEFAULT 0 COMMENT IS '是否需要部署审批，0：否，1：是',
 	required_merge TINYINT DEFAULT 0 COMMENT IS '是否需要合并分支，0：否，1：是',
 	service_port INT DEFAULT NULL COMMENT IS '服务端口',

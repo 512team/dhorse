@@ -17,7 +17,7 @@ import org.dhorse.api.param.app.branch.deploy.DeploymentApprovementParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentDetailDeletionParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentDetailPageParam;
 import org.dhorse.api.param.app.branch.deploy.RollbackApplicationParam;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.DeploymentDetail;
 import org.dhorse.api.vo.AppEnv;
 import org.dhorse.infrastructure.param.DeployParam;
@@ -134,6 +134,7 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 			LogUtils.throwException(logger, MessageCodeEnum.DEPLOYING_BRANCH_IS_APPROVED);
 		}
 		DeployParam deployParam = new DeployParam();
+		deployParam.setDeployer(deploymentDetailPO.getDeployer());
 		deployParam.setApprover(loginUser.getLoginName());
 		deployParam.setVersionName(deploymentDetailPO.getVersionName());
 		deployParam.setBranchName(deploymentDetailPO.getBranchName());

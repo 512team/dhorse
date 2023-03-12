@@ -25,13 +25,16 @@ import org.apache.maven.model.RepositoryPolicy;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.DeploymentVersionStatusEnum;
+import org.dhorse.api.enums.EventCodeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.app.branch.VersionBuildParam;
+import org.dhorse.api.event.BuildMessage;
+import org.dhorse.api.event.DeploymentMessage;
+import org.dhorse.api.param.app.branch.BuildParam;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.AppExtendNode;
@@ -50,6 +53,7 @@ import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadLocalUtils;
@@ -80,13 +84,16 @@ public abstract class DeployApplicationService extends ApplicationService {
 	
 	private static final String MAVEN_REPOSITORY_URL = "https://repo.maven.apache.org/maven2";
 
-	protected String buildVersion(VersionBuildParam versionBuildParam) {
+	protected String buildVersion(BuildParam buildParam) {
 
-		DeployContext context = buildVersionContext(versionBuildParam);
+		DeployContext context = buildVersionContext(buildParam);
 		
 		//异步构建
 		ThreadPoolUtils.buildVersion(() -> {
+			
+			Integer status = DeploymentVersionStatusEnum.BUILDED_SUCCESS.getCode();
 			ThreadLocalUtils.putDeployContext(context);
+			
 			try {
 				logger.info("Start to build version");
 
@@ -111,17 +118,39 @@ public abstract class DeployApplicationService extends ApplicationService {
 					LogUtils.throwException(logger, MessageCodeEnum.BUILD_IMAGE);
 				}
 				
-				updateDeploymentVersionStatus(context.getId(), DeploymentVersionStatusEnum.BUILDED_SUCCESS.getCode());
+				updateDeploymentVersionStatus(context.getId(), status);
 			} catch (Throwable e) {
-				updateDeploymentVersionStatus(context.getId(), DeploymentVersionStatusEnum.BUILDED_FAILUR.getCode());
+				status = DeploymentVersionStatusEnum.BUILDED_FAILUR.getCode();
+				updateDeploymentVersionStatus(context.getId(), status);
 				logger.error("Failed to build version", e);
 			} finally {
+				buildNotify(context, status);
 				logger.info("End to build version");
 				ThreadLocalUtils.removeDeployContext();
 			}
 		});
 		
-		return context.getNameOfImage();
+		return context.getVersionName();
+	}
+	
+	private void buildNotify(DeployContext context, int status) {
+		if(context.getGlobalConfigAgg().getMore() == null) {
+			return;
+		}
+		String url = context.getGlobalConfigAgg().getMore().getEventNotifyUrl();
+		if(StringUtils.isBlank(url)){
+			return;
+		}
+		BuildMessage message = new BuildMessage();
+		message.setAppName(context.getApp().getAppName());
+		message.setBranchName(context.getBranchName());
+		message.setSubmitter(context.getSubmitter());
+		message.setStatus(status);
+		//todo
+		//message.setTagName(context.get);
+		message.setVerionName(context.getVersionName());
+		
+		doNotify(url, JsonUtils.toJsonString(message), EventCodeEnum.BUILD_VERSION);
 	}
 	
 	private void updateDeploymentVersionStatus(String id, Integer status) {
@@ -175,6 +204,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 			logger.error("Failed to deploy", e);
 		} finally {
 			updateDeployStatus(context, deploymentStatus, null, new Date());
+			deployNotify(context, deploymentStatus);
 			logger.info("End to deploy");
 			ThreadLocalUtils.removeDeployContext();
 		}
@@ -182,6 +212,27 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 
+	private void deployNotify(DeployContext context, DeploymentStatusEnum status) {
+		if(context.getGlobalConfigAgg().getMore() == null) {
+			return;
+		}
+		String url = context.getGlobalConfigAgg().getMore().getEventNotifyUrl();
+		if(StringUtils.isBlank(url)){
+			return;
+		}
+		DeploymentMessage message = new DeploymentMessage();
+		message.setAppName(context.getApp().getAppName());
+		message.setBranchName(context.getBranchName());
+		message.setSubmitter(context.getSubmitter());
+		message.setApprover(context.getApprover());
+		message.setStatus(status.getCode());
+		//todo
+		//message.setTagName(context.get);
+		message.setVerionName(context.getVersionName());
+		
+		doNotify(url, JsonUtils.toJsonString(message), EventCodeEnum.DEPLOY_ENV);
+	}
+	
 	protected boolean rollback(DeployParam deployParam) {
 		// 1.准备数据
 		DeployContext context = checkAndBuildDeployContext(deployParam, DeploymentStatusEnum.ROLLBACKING);
@@ -219,12 +270,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 	
-	private DeployContext buildVersionContext(VersionBuildParam versionBuildParam) {
+	private DeployContext buildVersionContext(BuildParam buildParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
-		App app = appRepository.queryWithExtendById(versionBuildParam.getAppId());
+		App app = appRepository.queryWithExtendById(buildParam.getAppId());
 		DeployContext context = new DeployContext();
+		context.setSubmitter(buildParam.getSubmitter());
 		context.setGlobalConfigAgg(globalConfig);
-		context.setBranchName(versionBuildParam.getBranchName());
+		context.setBranchName(buildParam.getBranchName());
 		context.setApp(app);
 		context.setComponentConstants(componentConstants);
 		context.setCodeRepoStrategy(buildCodeRepo(context.getGlobalConfigAgg().getCodeRepo().getType()));
@@ -236,13 +288,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 				.append(new SimpleDateFormat(Constants.DATE_FORMAT_YYYYMMDDHHMMSS).format(new Date()))
 				.toString();
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), nameOfImage);
-		context.setNameOfImage(nameOfImage);
+		context.setVersionName(nameOfImage);
 		context.setFullNameOfImage(fullNameOfImage);
 		
 		//同一个应用，不允许同时构建多个版本
 		DeploymentVersionParam bizParam = new DeploymentVersionParam();
 		bizParam.setStatus(DeploymentVersionStatusEnum.BUILDING.getCode());
-		bizParam.setAppId(versionBuildParam.getAppId());
+		bizParam.setAppId(buildParam.getAppId());
 		DeploymentVersionPO deploymentVersionPO = deploymentVersionRepository.query(bizParam);
 		if(deploymentVersionPO != null) {
 			LogUtils.throwException(logger, MessageCodeEnum.VERSION_IS_BUILDING);
@@ -250,9 +302,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 		
 		//新增版本记录
 		bizParam = new DeploymentVersionParam();
-		bizParam.setBranchName(versionBuildParam.getBranchName());
-		bizParam.setVersionName(context.getNameOfImage());
-		bizParam.setAppId(versionBuildParam.getAppId());
+		bizParam.setBranchName(buildParam.getBranchName());
+		bizParam.setVersionName(context.getVersionName());
+		bizParam.setAppId(buildParam.getAppId());
 		Date now = new Date();
 		bizParam.setCreationTime(now);
 		String id = deploymentVersionRepository.add(bizParam);
@@ -273,6 +325,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);
 		}
 		DeployContext context = new DeployContext();
+		context.setSubmitter(deployParam.getDeployer());
+		context.setApprover(deployParam.getApprover());
 		context.setGlobalConfigAgg(globalConfig);
 		context.setCodeRepoStrategy(buildCodeRepo(context.getGlobalConfigAgg().getCodeRepo().getType()));
 		context.setCluster(clusterPO);
@@ -284,7 +338,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setId(deployParam.getDeploymentDetailId());
 		context.setStartTime(deployParam.getDeploymentStartTime());
 		context.setDeploymentName(K8sUtils.getDeploymentName(app.getAppName(), appEnvPO.getTag()));
-		context.setNameOfImage(deployParam.getVersionName());
+		context.setVersionName(deployParam.getVersionName());
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), deployParam.getVersionName());
 		context.setFullNameOfImage(fullNameOfImage);
 		context.setFullNameOfAgentImage(fullNameOfAgentImage(context));

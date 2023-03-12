@@ -45,7 +45,7 @@ public class DeploymentDetailPO extends BaseAppPO {
 	private List<Integer> deploymentStatuss;
 
 	/**
-	 * 部署者
+	 * 部署人
 	 */
 	private String deployer;
 

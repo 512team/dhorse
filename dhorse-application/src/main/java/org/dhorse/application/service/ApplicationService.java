@@ -3,7 +3,6 @@ package org.dhorse.application.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,22 +11,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.net.ssl.SSLContext;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.dhorse.api.enums.ClusterTypeEnum;
+import org.dhorse.api.enums.EventCodeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.result.PageData;
+import org.dhorse.api.response.EventResponse;
+import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
@@ -54,6 +48,8 @@ import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.HttpUtils;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +113,8 @@ public abstract class ApplicationService {
 				GlobalConfigItemTypeEnum.CODEREPO.getCode(),
 				GlobalConfigItemTypeEnum.IMAGEREPO.getCode(),
 				GlobalConfigItemTypeEnum.MAVEN.getCode(),
-				GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode()));
+				GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode(),
+				GlobalConfigItemTypeEnum.MORE.getCode()));
 		return globalConfigRepository.queryAgg(param);
 	}
 	
@@ -242,26 +239,6 @@ public abstract class ApplicationService {
 		return "v" + version;
 	}
 	
-	protected CloseableHttpClient createHttpClient(String url) {
-		if(!url.startsWith("https")) {
-			return HttpClients.createDefault();
-		}
-		try {
-			SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-				// 信任所有
-				public boolean isTrusted(X509Certificate[] chain, String authType) {
-					return true;
-				}
-			}).build();
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-			return HttpClients.custom().setSSLSocketFactory(sslsf).build();
-		} catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.SSL_CLIENT_FAILURE);
-		}
-		
-		return HttpClients.createDefault();
-	}
-	
 	public List<String> queryJavaVersion(){
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setItemType(GlobalConfigItemTypeEnum.MAVEN.getCode());
@@ -318,6 +295,33 @@ public abstract class ApplicationService {
 		//目前只支持自定义基础镜像
 		return "Windows";
 		//return System.getProperty("os.name");
+	}
+	
+	protected void doNotify(String url, String message, EventCodeEnum eventCodeEnum) {
+		if(StringUtils.isBlank(url)){
+			return;
+		}
+		
+		EventResponse response = new EventResponse();
+		response.setEventCode(eventCodeEnum.getCode());
+		response.setData(message);
+		
+		int httpCode = -1;
+		for(int i = 0; i < 5; i++) {
+			if(httpCode == 200){
+				break;
+			}
+			try(CloseableHttpResponse httResponse = HttpUtils.post(url, JsonUtils.toJsonString(response))){
+				httpCode = httResponse.getStatusLine().getStatusCode();
+				if(httpCode == 200) {
+					logger.info("Successfully to noifty url: {}", url);
+				}else {
+					logger.error("Failed to notify url: {}, http code: {}", url, httpCode);
+				}
+			}catch (Exception e) {
+				logger.error("Failed to notify url: " + url, e);
+			}
+		}
 	}
 	
 	protected <D> PageData<D> zeroPageData(int pageSize) {

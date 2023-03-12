@@ -1,4 +1,4 @@
-package org.dhorse.api.result;
+package org.dhorse.api.response;
 
 import java.io.Serializable;
 import java.util.List;
