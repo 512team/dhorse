@@ -11,8 +11,9 @@ import java.util.stream.Stream;
 import org.dhorse.api.enums.AuthTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.vo.AppBranch;
+import org.dhorse.api.vo.AppTag;
+import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -26,6 +27,7 @@ import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.models.MergeRequestFilter;
 import org.gitlab4j.api.models.MergeRequestParams;
 import org.gitlab4j.api.models.Project;
+import org.gitlab4j.api.models.Tag;
 import org.gitlab4j.api.models.TreeItem;
 import org.gitlab4j.api.models.TreeItem.Type;
 
@@ -39,7 +41,7 @@ import org.gitlab4j.api.models.TreeItem.Type;
 public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
-	public boolean doDownloadBranch(DeployContext context) {
+	public boolean doDownloadCode(DeployContext context) {
 		String appId = context.getApp().getCodeRepoPath();
 		String branchName = context.getBranchName();
 		GitLabApi gitLabApi = gitLabApi(context.getGlobalConfigAgg().getCodeRepo());
@@ -99,6 +101,24 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 				return;
 			}
 		} catch (GitLabApiException e) {
+			if(e.getHttpStatus() != 404) {
+				LogUtils.throwException(logger, e, MessageCodeEnum.APP_BRANCH_FAILURE);
+			}
+			
+			//404，如果分支不存在，则判断是否是标签
+			Tag tag = null;
+			try {
+				tag = gitLabApi.getTagsApi().getTag(context.getApp().getCodeRepoPath(), context.getBranchName());
+			} catch (GitLabApiException e1) {
+				logger.error("Failed to get tag, name: " + context.getBranchName(), e1);
+			}
+			
+			//如果是标签，不合并代码
+			if(tag != null) {
+				logger.info("No need to merge code");
+				return;
+			}
+			
 			LogUtils.throwException(logger, e, MessageCodeEnum.APP_BRANCH_FAILURE);
 		}
 		
@@ -138,10 +158,10 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	}
 
 	@Override
-	public void createBranch(CodeRepo codeRepo, String codeRepoPath, String branchName) {
+	public void createBranch(CodeRepo codeRepo, String codeRepoPath, String branchName, String orgBranchName) {
 		GitLabApi gitLabApi = gitLabApi(codeRepo);
 		try {
-			gitLabApi.getRepositoryApi().createBranch(codeRepoPath, branchName, "master");
+			gitLabApi.getRepositoryApi().createBranch(codeRepoPath, branchName, orgBranchName);
 		} catch (GitLabApiException e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.CREATE_BRANCH_FAILURE);
 		} finally {
@@ -236,6 +256,79 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 			appBranch.setUpdateTime(e.getCommit().getCommittedDate());
 			return appBranch;
 		}).collect(Collectors.toList());
+	}
+	
+	@Override
+	public PageData<AppTag> tagPage(CodeRepo codeRepo, BranchPageParam param) {
+		GitLabApi gitLabApi = gitLabApi(codeRepo);
+		List<Tag> list = null;
+		try {
+			list = gitLabApi.getTagsApi().getTags(param.getAppIdOrPath());
+		} catch (GitLabApiException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.APP_TAG_PAGE_FAILURE);
+		} finally {
+			gitLabApi.close();
+		}
+		
+		PageData<AppTag> pageData = new PageData<>();
+		int dataCount = list.size();
+		if (dataCount == 0) {
+			pageData.setPageNum(1);
+			pageData.setPageCount(0);
+			pageData.setPageSize(param.getPageSize());
+			pageData.setItemCount(0);
+			return pageData;
+		}
+		
+		//按照创建时间倒排序
+		list.sort((e1, e2) -> e2.getCommit().getAuthoredDate().compareTo(e1.getCommit().getAuthoredDate()));
+		
+		int pageCount = dataCount / param.getPageSize();
+		if (dataCount % param.getPageSize() > 0) {
+			pageCount += 1;
+		}
+		int pageNum = param.getPageNum() > pageCount ? pageCount : param.getPageNum();
+		int startOffset = (pageNum - 1) * param.getPageSize();
+		int endOffset = pageNum * param.getPageSize();
+		endOffset = endOffset > dataCount ? dataCount : endOffset;
+		List<Tag> page = list.subList(startOffset, endOffset);
+		pageData.setItems(page.stream().map(e ->{
+			AppTag appTag = new AppTag();
+			appTag.setTagName(e.getName());
+			appTag.setUpdateTime(e.getCommit().getCommittedDate());
+			appTag.setCommitMessage(e.getCommit().getMessage());
+			return appTag;
+		}).collect(Collectors.toList()));
+		pageData.setPageNum(pageNum);
+		pageData.setPageCount(pageCount);
+		pageData.setPageSize(param.getPageSize());
+		pageData.setItemCount(dataCount);
+		
+		return pageData;
+	}
+	
+	@Override
+	public void createTag(CodeRepo codeRepo, String codeRepoPath, String tagName, String branchName) {
+		GitLabApi gitLabApi = gitLabApi(codeRepo);
+		try {
+			gitLabApi.getTagsApi().createTag(codeRepoPath, tagName, branchName);
+		} catch (GitLabApiException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.CREATE_FAILURE);
+		} finally {
+			gitLabApi.close();
+		}
+	}
+
+	@Override
+	public void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName) {
+		GitLabApi gitLabApi = gitLabApi(codeRepo);
+		try {
+			gitLabApi.getTagsApi().deleteTag(codeRepoPath, branchName);
+		} catch (GitLabApiException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.DELETE_FAILURE);
+		} finally {
+			gitLabApi.close();
+		}
 	}
 	
 	private GitLabApi gitLabApi(CodeRepo codeRepo) {

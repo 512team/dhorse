@@ -8,7 +8,10 @@ public enum MessageCodeEnum {
 	FAILURE("100000", "操作失败，请查看详细日志信息"),
 	COPY_FILE_FAILURE("200000", "复制文件失败"),
 	HTT_POST_FAILURE("200000", "Post请求失败"),
-	
+	QUERY_FAILURE("200000", "查询失败"),
+	CREATE_FAILURE("200000", "创建失败"),
+	DELETE_FAILURE("200000", "删除失败"),
+	DOWNLOAD_FAILURE("200000", "下载失败"),
 	
 	SYS_USER_NOT_LOGINED("300000", "用户未登录"),
 	NO_ACCESS_RIGHT("200000", "无权限"),
@@ -97,7 +100,7 @@ public enum MessageCodeEnum {
 	JAVA_VERSION_IS_EMPTY("200000", "Java版本不能为空"),
 	BUILD_IMAGE("200000", "构建镜像失败"),
 	
-	//分支
+	//代码
 	APP_BRANCH_PAGE_FAILURE("200000", "获取分支列表失败"),
 	APP_BRANCH_FAILURE("200000", "获取分支失败"),
 	APP_BRANCH_NAME_INEXISTENCE("200000", "分支名称已经存在"),
@@ -111,6 +114,8 @@ public enum MessageCodeEnum {
 	CREATE_BRANCH_FAILURE("200000", "创建分支失败"),
 	DELETE_BRANCH_FAILURE("200000", "删除分支失败"),
 	DOWNLOAD_BRANCH("200000", "下载分支代码失败"),
+	APP_TAG_PAGE_FAILURE("200000", "获取标签列表失败"),
+	APP_TAG_NAME_IS_EMPTY("200000", "标签名称不能为空"),
 	
 	//副本
 	REQUIRED_REPLICA_NAME("200000", "副本名称不能为空"),

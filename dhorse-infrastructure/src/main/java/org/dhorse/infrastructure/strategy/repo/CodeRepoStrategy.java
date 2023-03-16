@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.AppBranch;
+import org.dhorse.api.vo.AppTag;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
@@ -19,7 +20,7 @@ public abstract class CodeRepoStrategy {
 
 	public static final Logger logger = LoggerFactory.getLogger(CodeRepoStrategy.class);
 	
-	void clearOldBranch(DeployContext context) {
+	void clearOldCode(DeployContext context) {
 		File[] hisBranchs = new File(localPathOfBranch(context)).getParentFile().listFiles();
 		//异步清除历史代码
 		ThreadPoolUtils.async(new Runnable() {
@@ -36,12 +37,12 @@ public abstract class CodeRepoStrategy {
 		});
 	}
 	
-	public boolean downloadBranch(DeployContext context) {
-		clearOldBranch(context);
-		return doDownloadBranch(context);
+	public boolean downloadCode(DeployContext context) {
+		clearOldCode(context);
+		return doDownloadCode(context);
 	}
 	
-	abstract boolean doDownloadBranch(DeployContext context);
+	abstract boolean doDownloadCode(DeployContext context);
 	
 	public abstract void mergeBranch(DeployContext context);
 	
@@ -76,11 +77,17 @@ public abstract class CodeRepoStrategy {
 				.toString();
 	}
 	
-	public abstract void createBranch(CodeRepo codeRepo, String codeRepoPath, String branchName);
+	public abstract void createBranch(CodeRepo codeRepo, String codeRepoPath, String branchName, String orgBranchName);
 	
 	public abstract void deleteBranch(CodeRepo codeRepo, String codeRepoPath, String branchName);
 	
 	public abstract PageData<AppBranch> branchPage(CodeRepo codeRepo, BranchPageParam param);
 	
 	public abstract List<AppBranch> branchList(CodeRepo codeRepo, BranchListParam param);
+	
+	public abstract PageData<AppTag> tagPage(CodeRepo codeRepo, BranchPageParam param);
+	
+	public abstract void createTag(CodeRepo codeRepo, String codeRepoPath, String tagName, String branchName);
+	
+	public abstract void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName);
 }

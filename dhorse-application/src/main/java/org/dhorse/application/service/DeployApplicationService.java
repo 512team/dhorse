@@ -99,7 +99,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 				logger.info("Start to build version");
 
 				// 2.下载分支代码
-				if (context.getCodeRepoStrategy().downloadBranch(context)) {
+				if (context.getCodeRepoStrategy().downloadCode(context)) {
 					logger.info("Download branch successfully");
 				} else {
 					LogUtils.throwException(logger, MessageCodeEnum.DOWNLOAD_BRANCH);

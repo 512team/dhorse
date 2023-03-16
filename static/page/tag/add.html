@@ -6,9 +6,9 @@
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form">
 		<div class="layui-form-item">
-			<label class="layui-form-label required">分支名称</label>
+			<label class="layui-form-label required">标签名称</label>
 			<div class="layui-input-block">
-				<input type="text" name="branchName" lay-verify="required" lay-reqtext="分支名称不能为空" placeholder="请输入分支名称" autocomplete="off" class="layui-input">
+				<input type="text" name="tagName" lay-verify="required" lay-reqtext="标签名称不能为空" placeholder="请输入标签名称" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -44,7 +44,7 @@
 		
         form.on('submit(saveBtn)', function(data) {
 			$.ajax({
-				url: '/app/branch/add',
+				url: '/app/tag/add',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',

@@ -6,14 +6,15 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
-import org.dhorse.api.param.app.branch.AppBranchCreationParam;
-import org.dhorse.api.param.app.branch.AppBranchDeletionParam;
 import org.dhorse.api.param.app.branch.AppBranchListParam;
-import org.dhorse.api.param.app.branch.AppBranchPageParam;
 import org.dhorse.api.param.app.branch.BuildParam;
+import org.dhorse.api.param.app.tag.AppTagCreationParam;
+import org.dhorse.api.param.app.tag.AppTagDeletionParam;
+import org.dhorse.api.param.app.tag.AppTagPageParam;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.AppBranch;
+import org.dhorse.api.vo.AppTag;
+import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -27,16 +28,16 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * 应用分支服务
+ * 应用标签服务
  * 
- * @author 天地之怪
+ * @author 无双
  */
 @Service
-public class AppBranchApplicationService extends DeployApplicationService {
+public class AppTagApplicationService extends DeployApplicationService {
 
-	private static final Logger logger = LoggerFactory.getLogger(AppBranchApplicationService.class);
+	private static final Logger logger = LoggerFactory.getLogger(AppTagApplicationService.class);
 
-	public PageData<AppBranch> page(LoginUser loginUser, AppBranchPageParam pageParam) {
+	public PageData<AppTag> page(LoginUser loginUser, AppTagPageParam pageParam) {
 		if (!RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			AppMemberPO appMember = appMemberRepository
 					.queryByLoginNameAndAppId(loginUser.getLoginName(), pageParam.getAppId());
@@ -50,9 +51,9 @@ public class AppBranchApplicationService extends DeployApplicationService {
 		branchPageParam.setPageNum(pageParam.getPageNum());
 		branchPageParam.setPageSize(pageParam.getPageSize());
 		branchPageParam.setAppIdOrPath(appPO.getCodeRepoPath());
-		branchPageParam.setBranchName(pageParam.getBranchName());
-		PageData<AppBranch> pageData = buildCodeRepo(globalConfigAgg.getCodeRepo().getType())
-				.branchPage(globalConfigAgg.getCodeRepo(), branchPageParam);
+		branchPageParam.setBranchName(pageParam.getTagName());
+		PageData<AppTag> pageData = buildCodeRepo(globalConfigAgg.getCodeRepo().getType())
+				.tagPage(globalConfigAgg.getCodeRepo(), branchPageParam);
 		return pageData;
 	}
 
@@ -73,19 +74,22 @@ public class AppBranchApplicationService extends DeployApplicationService {
 				.branchList(globalConfigAgg.getCodeRepo(), branchListParam);
 	}
 	
-	public Void add(LoginUser loginUser, AppBranchCreationParam addParam) {
+	public Void add(LoginUser loginUser, AppTagCreationParam addParam) {
 		validateAddParam(addParam);
+		if (StringUtils.isBlank(addParam.getOrgBranchName())) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_BRANCH_NAME_IS_EMPTY);
+		}
 		hasRights(loginUser, addParam.getAppId());
 		AppPO appPO = validateApp(addParam.getAppId());
 		// 创建仓库分支
 		GlobalConfigAgg globalConfigAgg = this.globalConfig();
 		buildCodeRepo(globalConfigAgg.getCodeRepo().getType())
-			.createBranch(globalConfigAgg.getCodeRepo(),
-				appPO.getCodeRepoPath(), addParam.getBranchName(), addParam.getOrgBranchName());
+			.createTag(globalConfigAgg.getCodeRepo(),
+				appPO.getCodeRepoPath(), addParam.getTagName(), addParam.getOrgBranchName());
 		return null;
 	}
 
-	public Void delete(LoginUser loginUser, AppBranchDeletionParam deleteParam) {
+	public Void delete(LoginUser loginUser, AppTagDeletionParam deleteParam) {
 		validateAddParam(deleteParam);
 		if (!RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			AppMemberPO appMember = appMemberRepository
@@ -95,20 +99,19 @@ public class AppBranchApplicationService extends DeployApplicationService {
 			}
 		}
 		AppPO appPO = validateApp(deleteParam.getAppId());
-		// 创建仓库分支
 		GlobalConfigAgg globalConfigAgg = this.globalConfig();
 		buildCodeRepo(globalConfigAgg.getCodeRepo().getType())
-			.deleteBranch(globalConfigAgg.getCodeRepo(),
-				appPO.getCodeRepoPath(), deleteParam.getBranchName());
+			.deleteTag(globalConfigAgg.getCodeRepo(),
+				appPO.getCodeRepoPath(), deleteParam.getTagName());
 		return null;
 	}
 
-	private void validateAddParam(AppBranchCreationParam addParam) {
+	private void validateAddParam(AppTagCreationParam addParam) {
 		if (StringUtils.isBlank(addParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
-		if (StringUtils.isBlank(addParam.getBranchName())) {
-			LogUtils.throwException(logger, MessageCodeEnum.APP_BRANCH_NAME_IS_EMPTY);
+		if (StringUtils.isBlank(addParam.getTagName())) {
+			LogUtils.throwException(logger, MessageCodeEnum.APP_TAG_NAME_IS_EMPTY);
 		}
 	}
 

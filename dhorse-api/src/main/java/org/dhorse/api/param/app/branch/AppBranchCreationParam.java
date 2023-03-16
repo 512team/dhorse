@@ -21,12 +21,25 @@ public class AppBranchCreationParam implements Serializable {
 	 */
 	private String branchName;
 
+	/**
+	 * 来源分支
+	 */
+	private String orgBranchName;
+
 	public String getBranchName() {
 		return branchName;
 	}
 
 	public void setBranchName(String branchName) {
 		this.branchName = branchName;
+	}
+
+	public String getOrgBranchName() {
+		return orgBranchName;
+	}
+
+	public void setOrgBranchName(String orgBranchName) {
+		this.orgBranchName = orgBranchName;
 	}
 
 	public String getAppId() {

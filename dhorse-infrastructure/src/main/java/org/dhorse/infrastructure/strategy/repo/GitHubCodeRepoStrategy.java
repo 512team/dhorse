@@ -2,9 +2,10 @@ package org.dhorse.infrastructure.strategy.repo;
 
 import java.util.List;
 
-import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.AppBranch;
+import org.dhorse.api.vo.AppTag;
+import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -12,7 +13,7 @@ import org.dhorse.infrastructure.utils.DeployContext;
 public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
-	public boolean doDownloadBranch(DeployContext context) {
+	public boolean doDownloadCode(DeployContext context) {
 		return true;
 	}
 
@@ -22,7 +23,7 @@ public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
 	}
 
 	@Override
-	public void createBranch(CodeRepo codeRepo, String codeRepoPath, String branchName) {
+	public void createBranch(CodeRepo codeRepo, String codeRepoPath, String branchName, String orgBranchName) {
 
 	}
 
@@ -39,6 +40,21 @@ public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
 	@Override
 	public List<AppBranch> branchList(CodeRepo codeRepo, BranchListParam param) {
 		return null;
+	}
+
+	@Override
+	public PageData<AppTag> tagPage(CodeRepo codeRepo, BranchPageParam param) {
+		return null;
+	}
+
+	@Override
+	public void createTag(CodeRepo codeRepo, String codeRepoPath, String tagName, String branchName) {
+		
+	}
+
+	@Override
+	public void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName) {
+		
 	}
 
 	/**

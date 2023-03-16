@@ -5,7 +5,7 @@
 				<div class="layui-form-item">
 					<div class="layui-inline">
 						<div class="layui-input-inline">
-							<input type="text" name="branchName" autocomplete="off" class="layui-input" placeholder="分支名称">
+							<input type="text" name="tagName" autocomplete="off" class="layui-input" placeholder="标签名称">
 							<input type="hidden" name="appId" id="appId"/>
 						</div>
 					</div>
@@ -17,7 +17,7 @@
 		</div>
         <script type="text/html" id="toolbarDemo">
             <div class="layui-btn-container">
-                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 创建分支 </button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 创建标签 </button>
             </div>
         </script>
 
@@ -28,14 +28,6 @@
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
         </script>
-
-		<script type="text/html" id="mergedStatusBar">
-		    {{#	if (d.mergedStatus == 0) {  }}
-			{{#		return '未合并'			}}
-			{{#	} else {              		}}
-			{{#		return '已合并'   		}}
-			{{#	}                     		}}
-		</script>
     </div>
 </div>
 <script>
@@ -52,7 +44,7 @@
 		
         table.render({
             elem: '#currentTableId',
-            url: '/app/branch/page',
+            url: '/app/tag/page',
 			method: 'post',
 			contentType: 'application/json;charset=UTF-8',
 			request: {
@@ -82,8 +74,7 @@
 				};
 			},
             cols: [[
-                {field: 'branchName', title: '分支名称'},
-                {field: 'mergedStatus', title: '合并状态', templet: '#mergedStatusBar'},
+                {field: 'tagName', title: '标签名称'},
                 {field: 'updateTime', title: '最后提交时间', width: '13%'},
 				{field: 'commitMessage', title: '最后提交信息'},
                 {title: '操作', toolbar: '#currentTableBar'}
@@ -112,14 +103,14 @@
         table.on('toolbar(currentTableFilter)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
-                    title: '创建分支',
+                    title: '创建标签',
                     type: 2,
                     shade: 0.5,
                     maxmin:false,
                     shadeClose: false,
                     area: ['30%', '40%'],
 					offset: ['30%', '35%'],
-					content: ['page/branch/add.html', 'no']
+					content: ['page/tag/add.html', 'no']
                 });
             } else if (obj.event === 'delete') {  // 监听删除操作
                 var checkStatus = table.checkStatus('currentTableId')
@@ -135,21 +126,21 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
             if (obj.event === 'buildVersion') {
-                buildVersion($, appId, obj.data.branchName);
+                buildVersion($, appId, obj.data.tagName);
             }else if (obj.event === 'delete') {
-                doDelete($, appId, obj.data.branchName);
+                doDelete($, appId, obj.data.tagName);
             }
 			return false;
         });
     });
 	
-	function buildVersion($, appId, branchName){
+	function buildVersion($, appId, tagName){
 		$.ajax({
 			url: '/app/branch/buildVersion',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"appId": appId, "branchName": branchName}),
+			data: JSON.stringify({"appId": appId, "branchName": tagName}),
 			success: function(res){
 				if(res.code != "000000"){
 					layer.msg(res.message, {icon: 5, shift: 6});
@@ -172,8 +163,8 @@
 	}
 	
 	//删除
-	function doDelete($, appId, branchName) {
-		var msg = '确定删除：' + branchName + "？";
+	function doDelete($, appId, tagName) {
+		var msg = '确定删除：' + tagName + "？";
 		layer.confirm(msg, {
 			shade: 0.4,
 			maxmin: false,
@@ -181,11 +172,11 @@
 			offset: ['35%', '40%']}, function (index) {
 			layer.close(index);
 			$.ajax({
-				url: '/app/branch/delete',
+				url: '/app/tag/delete',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"appId": appId, "branchName": branchName}),
+				data: JSON.stringify({"appId": appId, "tagName": tagName}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});

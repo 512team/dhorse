@@ -104,6 +104,12 @@
 					"target": "_self"
 				},
 				{
+					"title": "标签管理",
+					"href": "page/tag/list.html",
+					"icon": "fa fa-tag",
+					"target": "_self"
+				},
+				{
 					"title": "版本列表",
 					"href": "page/deployment_version/list.html",
 					"icon": "fa fa-th",
