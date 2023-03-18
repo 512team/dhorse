@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.dhorse</groupId>
 		<artifactId>dhorse-parent</artifactId>
-		<version>0.12.01</version>
+		<version>1.0.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>dhorse-agent</artifactId>
