@@ -26,6 +26,13 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
+						<label class="layui-form-label">亲密应用</label>
+						<div class="layui-input-inline" style="width: 65%">
+							<div id="affinityAppName"></div>
+						</div>
+						<div class="layui-form-mid layui-word-aux">会尽量与亲密应用部署在相同节点上</div>
+					</div>
+					<div class="layui-form-item">
 						<label class="layui-form-label">一级部门</label>
 						<div class="layui-input-block">
 							<input type="text" name="firstDepartment" placeholder="请输入一级部门" autocomplete="off" class="layui-input">
@@ -127,13 +134,13 @@
 				</div>
 				<div class="layui-form layuimini-form" id="nodeFormItem" lay-filter="nodeFormItem">
 					<div class="layui-form-item">
-						<label class="layui-form-label">Node版本</label>
+						<label class="layui-form-label required">Node版本</label>
 						<div class="layui-input-block">
 							<input name="extendNodeParam.nodeVersion" placeholder="如：v16.15.1" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
-						<label class="layui-form-label">Npm版本</label>
+						<label class="layui-form-label required">Npm版本</label>
 						<div class="layui-input-block">
 							<input name="extendNodeParam.npmVersion" placeholder="如：v8.11.0" autocomplete="off"  class="layui-input">
 						</div>
@@ -172,7 +179,7 @@
 					<div class="layui-form-item" style="display:none" id="baseImageNodeDiv">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-inline" style="width: 500px;">
-							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：nginx:v1.23.3" autocomplete="off" class="layui-input">
+							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：nginx:1.23.3" autocomplete="off" class="layui-input">
 						</div>
 						<div class="layui-form-mid layui-word-aux"><a href="#" target="_blank">《镜像制作指引》</a></div>
 					</div>
@@ -187,12 +194,15 @@
 		</div>
 	</div>
 </div>
+<script src="../../../js/xm-select.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'step'], function () {
         var form = layui.form,
             layer = layui.layer,
             $ = layui.$,
 			step = layui.step;
+		
+		var affinityAppName = initApp($);
 		
 		form.render();
 		
@@ -244,10 +254,12 @@
 		});
 		
 		form.on('submit(formStep)', function (data) {
-			var fields = data.field;
 			var firstFormData = '<div id="firstFormData">';
+			firstFormData += '<input type="hidden" name="affinityAppNames" value="'+ affinityAppName.getValue('value') +'"/>';
+			
+			var fields = data.field;
 			for(var fieldName in fields){
-				firstFormData += '<input type="hidden" name="'+ fieldName +'" value="'+ fields[fieldName] +'">';
+				firstFormData += '<input type="hidden" name="'+ fieldName +'" value="'+ fields[fieldName] +'"/>';
 			}
 			firstFormData += "</div>";
 			//springBoot
@@ -267,12 +279,14 @@
         });
 		
         form.on('submit(saveBtn)', function(data) {
+			//版本号来源
 			if(data.field.baseImageSource == 1){
 				if(data.field.baseImageVersion == ''){
 					layer.msg('基础镜像版本不能为空', {icon: 5, shift: 6});
 					return false;
 				}
 				data.field.baseImage = '';
+			//自定义来源
 			}else if(data.field.baseImageSource == 2){
 				if(data.field.baseImage == ''){
 					layer.msg('基础镜像不能为空', {icon: 5, shift: 6});
@@ -280,6 +294,13 @@
 				}
 				data.field.baseImageVersion = '';
 			}
+			
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
 			var fields = data.field;
 			var allParams = {};
 			var extendParams = {};
@@ -325,6 +346,11 @@
 			data.field.baseImageSource = data.field.baseImageSourceNode;
 			data.field.baseImageVersion = data.field.baseImageVersionNode;
 			data.field.baseImage = data.field.baseImageNode;
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
 			
 			if(data.field.baseImageSource == 1){
 				if(data.field.baseImageVersion == ''){
@@ -515,5 +541,46 @@
 		}
 		$("#baseImageVersion2").html(opt);
 		form.render('select');
+	}
+	
+	function initApp($){
+		var affinityAppName = xmSelect.render({
+			el: '#affinityAppName',
+			theme: {
+				color: '#1cbbb4',
+			},
+			filterable: true,
+			filterMethod: function(val, item, index, prop){
+				if(val == item.name){
+					return true;
+				}
+				if(item.name.indexOf(val) != -1){
+					return true;
+				}
+				return false;
+			},
+			data: [],
+	    });
+		
+		$.ajax({
+			url: '/app/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'1': '1'}),
+			success: function(res){
+				var orgData = res.data;
+				var data = new Array();
+				for(var i in orgData){
+					data.push({'name': orgData[i].appName, 'value': orgData[i].appName});
+				}
+				affinityAppName.update({
+					data: data,
+					autoRow: true
+				})
+			}
+		});
+		
+		return affinityAppName;
 	}
 </script>

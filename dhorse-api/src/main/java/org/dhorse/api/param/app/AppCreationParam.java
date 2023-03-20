@@ -1,6 +1,7 @@
 package org.dhorse.api.param.app;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 新增应用参数模型。
@@ -40,6 +41,11 @@ public class AppCreationParam implements Serializable {
 	 * 代码仓库地址
 	 */
 	private String codeRepoPath;
+
+	/**
+	 * 亲密应用名称
+	 */
+	private List<String> affinityAppNames;
 
 	/**
 	 * 一级部门
@@ -117,6 +123,14 @@ public class AppCreationParam implements Serializable {
 
 	public void setCodeRepoPath(String codeRepoPath) {
 		this.codeRepoPath = codeRepoPath;
+	}
+
+	public List<String> getAffinityAppNames() {
+		return affinityAppNames;
+	}
+
+	public void setAffinityAppNames(List<String> affinityAppNames) {
+		this.affinityAppNames = affinityAppNames;
 	}
 
 	public String getFirstDepartment() {

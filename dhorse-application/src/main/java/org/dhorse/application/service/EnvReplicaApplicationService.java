@@ -196,14 +196,23 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 		if(CollectionUtils.isEmpty(envs)) {
 			return;
 		}
-		List<AppPO> apps = appRepository.list(new AppParam());
+		List<String> appIds = envs.stream().map(e -> e.getAppId()).collect(Collectors.toList());
+		AppParam appParam = new AppParam();
+		appParam.setIds(appIds);
+		List<AppPO> apps = appRepository.list(appParam);
 		if(CollectionUtils.isEmpty(apps)) {
 			return;
 		}
 		
 		Map<String, AppPO> appMap = apps.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
-		Map<String, AppEnvPO> envMap = envs.stream().collect(Collectors.toMap(e ->
-			appMap.get(e.getAppId()).getAppName() + "-1-" + e.getTag() + "-dhorse", e -> e));
+		Map<String, AppEnvPO> envMap = new HashMap<>();
+		for(AppEnvPO env : envs) {
+			AppPO app = appMap.get(env.getAppId());
+			if(app == null) {
+				continue;
+			}
+			envMap.put(K8sUtils.getReplicaAppName(app.getAppName(), env.getTag()), env);
+		}
 		
 		List<ReplicaMetricsParam> metricsList = new ArrayList<>();
 		for(ClusterPO cluster : clusters){
@@ -216,6 +225,9 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 					String replicaName = metric.getMetadata().getName();
 					AppEnvPO appEnvPO = envMap.get(replicaName.substring(0, replicaName.indexOf("-dhorse-") + 7));
 					if(appEnvPO == null) {
+						continue;
+					}
+					if(CollectionUtils.isEmpty(metric.getContainers())) {
 						continue;
 					}
 					Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();

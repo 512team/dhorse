@@ -35,6 +35,12 @@
 				<label class="layui-form-label text-value" id="codeRepoPath"></label>
 			</div>
 		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">亲密应用：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="affinityAppNames"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="packageBuildTypeDiv" style="display: none">
 			<label class="layui-form-label">构建方式：</label>
 			<div class="layui-input-block">
@@ -181,6 +187,7 @@
 					$("#npmVersionDiv").show();
 				}
 				$("#techType").text(techType);
+				$("#affinityAppNames").text(res.data.affinityAppNames);
 				$("#codeRepoPath").text(res.data.codeRepoPath);
 				$("#creationTime").text(res.data.creationTime);
 				$("#updateTime").text(res.data.updateTime);

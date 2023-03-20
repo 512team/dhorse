@@ -257,6 +257,7 @@
 			contentType: 'application/json;charset=UTF-8',
 			data: JSON.stringify({'appId': appId}),
 			success: function(res){
+				$("#servicePort").attr("techType", res.data.techType);
 				//SpringBoot
 				if(res.data.techType == 1){
 					$("#traceStatusDiv").show();
@@ -351,6 +352,11 @@
 					,"jvmArgs": data.jvmArgs
 					,"description": data.description
 				});
+				
+				//如果是Node应用，默认80端口
+				if($("#servicePort").attr("techType") == 2){
+					$("#servicePort").val("80").attr("disabled", "disabled");
+				}
 				
 				initCluster(form, $, data.clusterId);
 				initNamespaceName(form, $, data.clusterId, data.namespaceName);

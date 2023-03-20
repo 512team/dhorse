@@ -1,5 +1,7 @@
 package org.dhorse.infrastructure.param;
 
+import java.util.List;
+
 import org.dhorse.api.vo.App.AppExtend;
 
 /**
@@ -40,6 +42,11 @@ public class AppParam extends PageParam {
 	 * 代码仓库地址
 	 */
 	private String codeRepoPath;
+
+	/**
+	 * 亲密应用名称
+	 */
+	private List<String> affinityAppNames;
 
 	/**
 	 * 一级部门
@@ -108,6 +115,14 @@ public class AppParam extends PageParam {
 
 	public void setBaseImage(String baseImage) {
 		this.baseImage = baseImage;
+	}
+
+	public List<String> getAffinityAppNames() {
+		return affinityAppNames;
+	}
+
+	public void setAffinityAppNames(List<String> affinityAppNames) {
+		this.affinityAppNames = affinityAppNames;
 	}
 
 	public String getCodeRepoPath() {

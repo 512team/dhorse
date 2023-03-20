@@ -62,7 +62,10 @@
 		});
 		
 		var roleType = xmSelect.render({
-			el: '#roleType', 
+			el: '#roleType',
+			theme: {
+				color: '#1cbbb4',
+			},
 			data: [
 				{name: '管理员', value: 1},
 				{name: '开发', value: 2},
@@ -72,7 +75,7 @@
 				{name: '告警接收', value: 6},
 				{name: '部署审批', value: 7}
 			],
-	   });
+	    });
 
         form.on('submit(saveBtn)', function(data) {
 			$("#roleTypes").val(JSON.stringify(roleType.getValue('value')));

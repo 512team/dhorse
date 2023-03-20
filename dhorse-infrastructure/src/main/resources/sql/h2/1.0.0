@@ -54,7 +54,7 @@ CREATE TABLE app (
 	base_image_version VARCHAR (16) DEFAULT NULL COMMENT IS '基础镜像版本',
 	base_image VARCHAR (128) DEFAULT NULL COMMENT IS '基础镜像',
 	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT IS '代码仓库路径',
-	affinity_app_name VARCHAR (32) DEFAULT NULL COMMENT IS '亲密应用名称，格式：应用1,应用2',
+	affinity_app_name VARCHAR (2048) DEFAULT NULL COMMENT IS '亲密应用名称，数组格式：[应用1,应用2]',
 	first_department VARCHAR (16) DEFAULT NULL COMMENT IS '一级部门',
 	second_department VARCHAR (16) DEFAULT NULL COMMENT IS '二级部门',
 	third_department VARCHAR (16) DEFAULT NULL COMMENT IS '三级部门',

@@ -1,6 +1,7 @@
 package org.dhorse.api.vo;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 应用信息
@@ -40,6 +41,11 @@ public class App extends BaseDto {
 	 * 代码仓库地址
 	 */
 	private String codeRepoPath;
+
+	/**
+	 * 亲密应用名称
+	 */
+	private List<String> affinityAppNames;
 
 	/**
 	 * 一级部门
@@ -104,6 +110,14 @@ public class App extends BaseDto {
 
 	public void setBaseImage(String baseImage) {
 		this.baseImage = baseImage;
+	}
+
+	public List<String> getAffinityAppNames() {
+		return affinityAppNames;
+	}
+
+	public void setAffinityAppNames(List<String> affinityAppNames) {
+		this.affinityAppNames = affinityAppNames;
 	}
 
 	public String getCodeRepoPath() {

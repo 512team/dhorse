@@ -203,6 +203,7 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		}
 		App dto = new App();
 		BeanUtils.copyProperties(e, dto);
+		dto.setAffinityAppNames(JsonUtils.parseToList(e.getAffinityAppName(), String.class));
 		return dto;
 	}
 
@@ -231,9 +232,8 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 	@Override
 	protected AppPO param2Entity(AppParam bizParam) {
 		AppPO po = super.param2Entity(bizParam);
-		if(bizParam.getAppExtend() != null) {
-			po.setExt(JsonUtils.toJsonString(bizParam.getAppExtend()));
-		}
+		po.setAffinityAppName(JsonUtils.toJsonString(bizParam.getAffinityAppNames()));
+		po.setExt(JsonUtils.toJsonString(bizParam.getAppExtend()));
 		return po;
 	}
 }

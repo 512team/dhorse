@@ -1,5 +1,7 @@
 package org.dhorse.rest.resource;
 
+import java.util.List;
+
 import org.dhorse.api.param.app.AppCreationParam;
 import org.dhorse.api.param.app.AppDeletionParam;
 import org.dhorse.api.param.app.AppPageParam;
@@ -42,6 +44,17 @@ public class AppRest extends AbstractRest {
 	}
 
 	/**
+	 * 搜索
+	 * 
+	 * @param searchParam 搜索参数
+	 * @return 符合条件的数据
+	 */
+	@PostMapping("/search")
+	public RestResponse<List<App>> search(@RequestBody AppPageParam searchParam) {
+		return success(appApplicationService.search(searchParam));
+	}
+
+	/**
 	 * 查询详情
 	 * 
 	 * @param appQueryParam 查询参数
@@ -50,8 +63,7 @@ public class AppRest extends AbstractRest {
 	@PostMapping("/query")
 	public RestResponse<App> query(@CookieValue("login_token") String loginToken,
 			@RequestBody AppQueryParam appQueryParam) {
-		return success(
-				appApplicationService.query(queryLoginUserByToken(loginToken), appQueryParam.getAppId()));
+		return success(appApplicationService.query(queryLoginUserByToken(loginToken), appQueryParam.getAppId()));
 	}
 
 	/**

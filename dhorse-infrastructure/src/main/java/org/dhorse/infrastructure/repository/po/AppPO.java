@@ -46,6 +46,11 @@ public class AppPO extends BasePO {
 	private String codeRepoPath;
 
 	/**
+	 * 亲密应用名称
+	 */
+	private String affinityAppName;
+
+	/**
 	 * 一级部门
 	 */
 	private String firstDepartment;
@@ -114,6 +119,14 @@ public class AppPO extends BasePO {
 
 	public void setBaseImage(String baseImage) {
 		this.baseImage = baseImage;
+	}
+
+	public String getAffinityAppName() {
+		return affinityAppName;
+	}
+
+	public void setAffinityAppName(String affinityAppName) {
+		this.affinityAppName = affinityAppName;
 	}
 
 	public String getCodeRepoPath() {

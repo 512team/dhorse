@@ -222,7 +222,7 @@ public abstract class ApplicationService {
 		if(ImageRepoTypeEnum.DOCKERHUB.getValue().equals(imageRepo.getType())) {
 			fullNameOfImage.append(imageRepo.getAuthName());
 		}else {
-			fullNameOfImage.append(Constants.IMAGE_REPOSITORY);
+			fullNameOfImage.append(Constants.DHORSE_TAG);
 		}
 		fullNameOfImage.append("/").append(nameOfImage);
 		return fullNameOfImage.toString();

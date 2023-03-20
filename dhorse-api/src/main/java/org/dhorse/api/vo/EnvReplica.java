@@ -20,6 +20,8 @@ public class EnvReplica implements Serializable {
 
 	private String namespace;
 
+	private String nodeName;
+
 	private String clusterName;
 
 	/**
@@ -73,6 +75,14 @@ public class EnvReplica implements Serializable {
 
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	public void setNodeName(String nodeName) {
+		this.nodeName = nodeName;
 	}
 
 	public String getStartTime() {

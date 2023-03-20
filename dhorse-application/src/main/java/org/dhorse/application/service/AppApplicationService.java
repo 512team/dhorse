@@ -6,10 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -52,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
@@ -81,6 +84,22 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		bizParam.setPageNum(param.getPageNum());
 		bizParam.setPageSize(param.getPageSize());
 		return appRepository.page(loginUser, bizParam);
+	}
+	
+	public List<App> search(AppPageParam param) {
+		AppParam bizParam = new AppParam();
+		bizParam.setTechType(param.getTechType());
+		bizParam.setAppName(param.getAppName());
+		List<AppPO> pos = appRepository.list(bizParam);
+		if(CollectionUtils.isEmpty(pos)) {
+			return Collections.emptyList();
+		}
+		return pos.stream().map(e ->{
+			App app = new App();
+			app.setId(e.getId());
+			app.setAppName(e.getAppName());
+			return app;
+		}).collect(Collectors.toList());
 	}
 	
 	public App query(LoginUser loginUser, String appId) {
@@ -287,7 +306,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 	}
 	
 	private boolean imageTagExisting(ImageRepo imageRepo, String imageName, String tag) {
-        String uri = "api/v2.0/projects/"+ Constants.IMAGE_REPOSITORY +"/repositories/" + imageName + "/artifacts/" + tag + "/tags";
+        String uri = "api/v2.0/projects/"+ Constants.DHORSE_TAG +"/repositories/" + imageName + "/artifacts/" + tag + "/tags";
         if(!imageRepo.getUrl().endsWith("/")) {
         	uri = "/" + uri;
         }
@@ -363,6 +382,14 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		}
 		if(addParam.getDescription() != null && addParam.getDescription().length() > 128) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用描述不能大于128个字符");
+		}
+		if(TechTypeEnum.NODE.getCode().equals(addParam.getTechType())){
+			if(StringUtils.isBlank(addParam.getExtendNodeParam().getNodeVersion())) {
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Node版本不能为空");
+			}
+			if(StringUtils.isBlank(addParam.getExtendNodeParam().getNpmVersion())) {
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Npm版本不能为空");
+			}
 		}
 	}
 	
