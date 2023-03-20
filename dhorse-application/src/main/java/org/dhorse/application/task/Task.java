@@ -21,7 +21,7 @@ public class Task {
 			replicaApplicationService.clearHistoryReplicaMetrics();
 			replicaApplicationService.collectReplicaMetrics();
 		}catch(Exception e) {
-			logger.error("Failed to collect pod metrics", e.getMessage());
+			logger.error("Failed to collect pod metrics", e);
 		}
 	}
 }
