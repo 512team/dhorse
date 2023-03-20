@@ -29,7 +29,7 @@ public class Constants {
 	
 	public static final String CONTAINER_WORK_HOME = "/usr/local/";
 	
-	public static final String IMAGE_REPOSITORY = "dhorse";
+	public static final String DHORSE_TAG = "dhorse";
 	
 	public static final String IMAGE_NAME_JDK = "jdk";
 	

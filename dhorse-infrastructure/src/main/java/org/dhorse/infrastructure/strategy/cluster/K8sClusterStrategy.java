@@ -63,6 +63,7 @@ import io.kubernetes.client.openapi.apis.AutoscalingV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.apis.NetworkingV1Api;
 import io.kubernetes.client.openapi.apis.VersionApi;
+import io.kubernetes.client.openapi.models.V1Affinity;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
 import io.kubernetes.client.openapi.models.V1Container;
@@ -90,12 +91,15 @@ import io.kubernetes.client.openapi.models.V1IngressRule;
 import io.kubernetes.client.openapi.models.V1IngressServiceBackend;
 import io.kubernetes.client.openapi.models.V1IngressSpec;
 import io.kubernetes.client.openapi.models.V1LabelSelector;
+import io.kubernetes.client.openapi.models.V1LabelSelectorRequirement;
 import io.kubernetes.client.openapi.models.V1Lifecycle;
 import io.kubernetes.client.openapi.models.V1LifecycleHandler;
 import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.openapi.models.V1NamespaceList;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodAffinity;
+import io.kubernetes.client.openapi.models.V1PodAffinityTerm;
 import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.openapi.models.V1PodSpec;
 import io.kubernetes.client.openapi.models.V1PodStatus;
@@ -111,6 +115,7 @@ import io.kubernetes.client.openapi.models.V1Status;
 import io.kubernetes.client.openapi.models.V1TCPSocketAction;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
+import io.kubernetes.client.openapi.models.V1WeightedPodAffinityTerm;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.Yaml;
 import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
@@ -147,7 +152,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Deployment deployment = new V1Deployment();
 		deployment.apiVersion("apps/v1");
 		deployment.setKind("Deployment");
-		deployment.setMetadata(deploymentMetaData(context.getDeploymentName()));
+		deployment.setMetadata(deploymentMetaData(context.getDeploymentName(), context.getAppEnv().getTag()));
 		deployment.setSpec(deploymentSpec(context));
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
@@ -173,8 +178,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			
 			createIngress(context);
 			
-			// 检查pod状态
-			for (int i = 0; i < 60 * 10; i++) {
+			// 检查pod状态，检查时长20分钟
+			for (int i = 0; i < 60 * 20; i++) {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -344,7 +349,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		scaleTargetRef.setName(deploymentName);
 		spec.setScaleTargetRef(scaleTargetRef);
 		spec.setTargetCPUUtilizationPercentage(appEnvPO.getAutoScalingCpu());
-		body.setMetadata(deploymentMetaData(deploymentName));
+		body.setMetadata(deploymentMetaData(deploymentName, appEnvPO.getTag()));
 		body.setSpec(spec);
 		String labelSelector = K8sUtils.getDeploymentLabelSelector(deploymentName);
 		try {
@@ -462,10 +467,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return spec;
 	}
 	
-	private V1ObjectMeta deploymentMetaData(String appName) {
+	private V1ObjectMeta deploymentMetaData(String appName, String envTag) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(Collections.singletonMap("app", appName));
+		Map<String, String> labelMap = new HashMap<>();
+		labelMap.put("app", appName);
+		labelMap.put("deployer", K8sUtils.getDhorseLabelSelector(envTag));
+		metadata.setLabels(labelMap);
 		return metadata;
 	}
 
@@ -477,15 +485,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return spec;
 	}
 
-	private V1LabelSelector specSelector(String appName) {
+	private V1LabelSelector specSelector(String deploymentName) {
 		V1LabelSelector selector = new V1LabelSelector();
-		selector.setMatchLabels(Collections.singletonMap("app", appName));
+		selector.setMatchLabels(Collections.singletonMap("app", deploymentName));
 		return selector;
 	}
 	
 	private V1PodTemplateSpec specTemplate(DeployContext context) {
 		Map<String, String> labels = new HashMap<>();
 		labels.put("app", context.getDeploymentName());
+		labels.put("deployer", K8sUtils.getDhorseLabelSelector(context.getAppEnv().getTag()));
 		labels.put("version", String.valueOf(System.currentTimeMillis()));
 		V1ObjectMeta specMetadata = new V1ObjectMeta();
 		specMetadata.setLabels(labels);
@@ -499,8 +508,44 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1PodSpec podSpec = new V1PodSpec();
 		podSpec.setInitContainers(initContainer(context));
 		podSpec.setContainers(containers(context));
+		podSpec.setAffinity(affinity(context));
 		podSpec.setVolumes(volumes(context));
 		return podSpec;
+	}
+	
+	private V1Affinity affinity(DeployContext context) {
+		List<String> affinityNames = context.getApp().getAffinityAppNames();
+		if(CollectionUtils.isEmpty(affinityNames)) {
+			return null;
+		}
+		
+		List<String> affinityValues = new ArrayList<>();
+		for(String appName : affinityNames) {
+			affinityValues.add(K8sUtils.getDeploymentName(appName, context.getAppEnv().getTag()));
+		}
+		
+		V1LabelSelectorRequirement sr = new V1LabelSelectorRequirement();
+		sr.setKey(K8sUtils.APP_KEY);
+		sr.setOperator("In");
+		sr.setValues(affinityValues);
+		
+		V1LabelSelector labelSelector = new V1LabelSelector();
+		labelSelector.setMatchExpressions(Arrays.asList(sr));
+		
+		V1PodAffinityTerm podAffinityTerm = new V1PodAffinityTerm();
+		podAffinityTerm.setLabelSelector(labelSelector);
+		podAffinityTerm.setTopologyKey("kubernetes.io/hostname");
+		
+		V1WeightedPodAffinityTerm weightedTerm = new V1WeightedPodAffinityTerm();
+		weightedTerm.setWeight(100);
+		weightedTerm.setPodAffinityTerm(podAffinityTerm);
+		
+		V1PodAffinity podAffinity = new V1PodAffinity();
+		podAffinity.setPreferredDuringSchedulingIgnoredDuringExecution(Arrays.asList(weightedTerm));
+		
+		V1Affinity affinity = new V1Affinity();
+		affinity.setPodAffinity(podAffinity);
+		return affinity;
 	}
 	
 	private List<V1Container> containers(DeployContext context) {
@@ -622,7 +667,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		startupProbe.setPeriodSeconds(1);
 		startupProbe.setTimeoutSeconds(1);
 		startupProbe.setSuccessThreshold(1);
-		startupProbe.setFailureThreshold(30);
+		//如果单个副本5分钟还没有启动，则重启服务
+		startupProbe.setFailureThreshold(300);
 		container.startupProbe(startupProbe);
 		//就绪检查
 		readinessProbe.setInitialDelaySeconds(6);
@@ -976,6 +1022,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			r.setStartTime(e.getMetadata().getCreationTimestamp().atZoneSameInstant(ZoneOffset.of("+08:00"))
 					.format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS)));
 			r.setStatus(podStatus(e.getStatus()));
+			r.setNodeName(e.getSpec().getNodeName());
 			return r;
 		}).collect(Collectors.toList());
 		pageData.setItems(pods);

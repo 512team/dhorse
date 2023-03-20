@@ -9,6 +9,8 @@ public class K8sUtils {
 	
 	public static final String DATA_PATH = "/tmp/data/";
 	
+	public static final String APP_KEY = "app";
+	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	
 	static {
@@ -52,6 +54,10 @@ public class K8sUtils {
 	
 	public static String getDeploymentLabelSelector(String appName, String appEnvTag) {
 		return "app=" + getReplicaAppName(appName, appEnvTag);
+	}
+	
+	public static String getDhorseLabelSelector(String envTag) {
+		return Constants.DHORSE_TAG + "-" + envTag;
 	}
 	
 	public static Set<String> getSystemNamspaces() {

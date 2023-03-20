@@ -8,6 +8,7 @@ import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -59,6 +60,9 @@ public class JsonUtils {
 	 * @return
 	 */
 	public static <T> List<T> parseToList(String json, Class<T> clazz) {
+		if(StringUtils.isBlank(json)) {
+			return null;
+		}
 		JavaType javaType = getObjectMapper().getTypeFactory().constructParametricType(List.class, clazz);
 		return parseToObject(json, javaType);
 	}
@@ -79,6 +83,9 @@ public class JsonUtils {
 	 * @return json字符串
 	 */
 	public static String toJsonString(Object object, String... ignoreFields) {
+		if(object == null) {
+			return null;
+		}
 		SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.serializeAllExcept(ignoreFields);
 		FilterProvider filterProvider = new SimpleFilterProvider()
 				.addFilter(IgnoreFieldsAnnotationIntrospector.FILTER_NAME, filter);
