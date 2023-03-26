@@ -1,0 +1,210 @@
+<div class="layuimini-main">
+	<div style="margin: 5px 5px 5px 5px">
+		<form class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<select name="schedulingType" id="schedulingType">
+							<option value="">调度类型</option>
+							<option value="1">节点亲和</option>
+							<option value="2">节点容忍</option>
+							<option value="3">副本亲和</option>
+							<option value="4">副本反亲和</option>
+						</select>
+					</div>
+				</div>
+				<input type="hidden" name="appId" id="appId"/>
+				<input type="hidden" name="envId" id="envId"/>
+				<div class="layui-inline">
+					<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	<script type="text/html" id="toolbarDemo">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+		</div>
+	</script>
+
+	<table class="layui-hide" id="currentTableId2" lay-filter="currentTableFilter"></table>
+	
+	<script type="text/html" id="currentTableBar2">
+		<a href="javascript:;" class="layui-font-blue" lay-event="update">修改</a>
+		<span style="color: rgb(179, 179, 179);"> | </span>
+		<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
+	</script>
+	
+	<script type="text/html" id="schedulingTypeBar">
+		{{#	if (d.schedulingType == 1) {    	}}
+		{{#		return '节点亲和' 				}}
+		{{#	} else if (d.schedulingType == 2) {	}}
+		{{#		return '节点容忍'   			}}
+		{{#	} else if (d.schedulingType == 3) { }}
+		{{#		return '副本亲和'   			}}
+		{{#	} else if (d.schedulingType == 4) { }}
+		{{#		return '副本反亲和'   			}}
+		{{#	}                     				}}
+	</script>
+	
+	<script type="text/html" id="affinityLevelBar">
+		{{#	if (d.affinityLevel == 1) {    		}}
+		{{#		return '硬亲和' 				}}
+		{{#	} else if (d.affinityLevel == 2) {	}}
+		{{#		return '软亲和'   				}}
+		{{#	}                     				}}
+	</script>
+</div>
+<script>
+
+	//全局变量，在子页面里使用
+	var data3;
+	
+    layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+			dropdown = layui.dropdown,
+			miniPage = layui.miniPage;
+			
+		var appId = localStorage.getItem('appId_' + $("#userName").val());
+		var envId = JSON.parse(parent.data2).envId;
+
+		$("#appId").val(appId);
+		
+		form.render();
+		
+        table.render({
+            elem: '#currentTableId2',
+            url: '/app/env/affinity/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+			where: {"appId": appId},
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+				{field: 'customizedName', title: '名称'},
+                {field: 'schedulingType', title: '调度类型', width: '9%', templet: '#schedulingTypeBar'},
+                {field: 'affinityLevel', title: '亲和程度', width: '10%', templet: '#affinityLevelBar'},
+                {field: 'weight', title: '权重值', width: '7%'},
+				{field: 'keyName', title: '键'},
+				{field: 'operator', title: '操作符', width: '8%'},
+                {field: 'valueList', title: '值', width: '8%'},
+                {field: 'effectType', title: '作用类型', width: '13%'},
+				{field: 'duration', title: '持续时间(秒)', width: '10%'},
+                {title: '操作', toolbar: '#currentTableBar2', width: '9%'}
+            ]],
+            limits: [10, 20],
+            limit: 10,
+            page: true,
+            skin: 'row',
+			even: true
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            table.reload('currentTableId2', {
+                page: {
+                    curr: 1
+                },
+                where: data.field,
+            }, 'data');
+
+            return false;
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+			data3 = JSON.stringify({'envId': envId});
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加配置',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['50%', '84%'],
+					offset: ['8%', '26%'],
+					content: miniPage.getHrefContent('page/env/affinity/add.html')
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId2')
+                    , data = checkStatus.data;
+                layer.alert(JSON.stringify(data));
+            }
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+			data3 = JSON.stringify({'envId': envId, 'affinityTolerationId': obj.data.id});
+			if (obj.event === 'update') {
+                var index = layer.open({
+                    title: '修改',
+                    type: 1,
+                    shade: 0.5,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['50%', '84%'],
+					offset: ['8%', '26%'],
+					content: miniPage.getHrefContent('page/env/affinity/update.html')
+                });
+            }else if (obj.event === 'delete') {
+                doDelete($, appId, envId, obj.data.id);
+            }
+			return false;
+        });
+    });
+	
+	function doDelete($, appId, envId, id) {
+		var msg = '确定删除吗？';
+		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/app/env/affinity/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"appId": appId, "envId": envId, "affinityTolerationId": id}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId2');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

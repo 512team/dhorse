@@ -187,7 +187,11 @@
 					$("#npmVersionDiv").show();
 				}
 				$("#techType").text(techType);
-				$("#affinityAppNames").text(res.data.affinityAppNames);
+				if(res.data.affinityAppNames){
+					$("#affinityAppNames").text(res.data.affinityAppNames);
+				}else{
+					$("#affinityAppNames").text('');
+				}
 				$("#codeRepoPath").text(res.data.codeRepoPath);
 				$("#creationTime").text(res.data.creationTime);
 				$("#updateTime").text(res.data.updateTime);

@@ -1,10 +1,12 @@
 package org.dhorse.infrastructure.utils;
 
 import java.util.Date;
+import java.util.List;
 
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
+import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
@@ -35,6 +37,8 @@ public class DeployContext {
 	private String branchName;
 
 	private AppEnvPO appEnv;
+
+	private List<AffinityTolerationPO> affinitys;
 
 	private CodeRepoStrategy codeRepoStrategy;
 
@@ -108,6 +112,14 @@ public class DeployContext {
 
 	public void setStartTime(Date startTime) {
 		this.startTime = startTime;
+	}
+
+	public List<AffinityTolerationPO> getAffinitys() {
+		return affinitys;
+	}
+
+	public void setAffinitys(List<AffinityTolerationPO> affinitys) {
+		this.affinitys = affinitys;
 	}
 
 	public GlobalConfigAgg getGlobalConfigAgg() {

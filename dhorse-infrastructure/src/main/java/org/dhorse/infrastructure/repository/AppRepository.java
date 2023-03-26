@@ -1,6 +1,7 @@
 package org.dhorse.infrastructure.repository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.App;
@@ -203,7 +204,9 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		}
 		App dto = new App();
 		BeanUtils.copyProperties(e, dto);
-		dto.setAffinityAppNames(JsonUtils.parseToList(e.getAffinityAppName(), String.class));
+		if(!StringUtils.isBlank(e.getAffinityAppName())) {
+			dto.setAffinityAppNames(Arrays.asList(e.getAffinityAppName().split(",")));
+		}
 		return dto;
 	}
 
@@ -232,7 +235,11 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 	@Override
 	protected AppPO param2Entity(AppParam bizParam) {
 		AppPO po = super.param2Entity(bizParam);
-		po.setAffinityAppName(JsonUtils.toJsonString(bizParam.getAffinityAppNames()));
+		if(!CollectionUtils.isEmpty(bizParam.getAffinityAppNames())) {
+			po.setAffinityAppName(String.join(",", bizParam.getAffinityAppNames()));
+		}else {
+			po.setAffinityAppName("");
+		}
 		po.setExt(JsonUtils.toJsonString(bizParam.getAppExtend()));
 		return po;
 	}

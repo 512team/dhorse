@@ -18,11 +18,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.AffinityLevelEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.NginxVersionEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
+import org.dhorse.api.enums.SchedulingTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
@@ -35,6 +37,7 @@ import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
+import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
@@ -96,14 +99,20 @@ import io.kubernetes.client.openapi.models.V1Lifecycle;
 import io.kubernetes.client.openapi.models.V1LifecycleHandler;
 import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.openapi.models.V1NamespaceList;
+import io.kubernetes.client.openapi.models.V1NodeAffinity;
+import io.kubernetes.client.openapi.models.V1NodeSelector;
+import io.kubernetes.client.openapi.models.V1NodeSelectorRequirement;
+import io.kubernetes.client.openapi.models.V1NodeSelectorTerm;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodAffinity;
 import io.kubernetes.client.openapi.models.V1PodAffinityTerm;
+import io.kubernetes.client.openapi.models.V1PodAntiAffinity;
 import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.openapi.models.V1PodSpec;
 import io.kubernetes.client.openapi.models.V1PodStatus;
 import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
+import io.kubernetes.client.openapi.models.V1PreferredSchedulingTerm;
 import io.kubernetes.client.openapi.models.V1Probe;
 import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import io.kubernetes.client.openapi.models.V1Service;
@@ -113,6 +122,7 @@ import io.kubernetes.client.openapi.models.V1ServicePort;
 import io.kubernetes.client.openapi.models.V1ServiceSpec;
 import io.kubernetes.client.openapi.models.V1Status;
 import io.kubernetes.client.openapi.models.V1TCPSocketAction;
+import io.kubernetes.client.openapi.models.V1Toleration;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
 import io.kubernetes.client.openapi.models.V1WeightedPodAffinityTerm;
@@ -509,14 +519,229 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		podSpec.setInitContainers(initContainer(context));
 		podSpec.setContainers(containers(context));
 		podSpec.setAffinity(affinity(context));
+		podSpec.setTolerations(toleration(context));
 		podSpec.setVolumes(volumes(context));
 		return podSpec;
 	}
 	
 	private V1Affinity affinity(DeployContext context) {
+		V1Affinity affinity = new V1Affinity();
+		affinity.setNodeAffinity(nodeAffinity(context));
+		affinity.setPodAffinity(podAffinity(context));
+		affinityApp(affinity, context);
+		affinity.setPodAntiAffinity(podAntiAffinity(context));
+		return affinity;
+	}
+	
+	private V1NodeAffinity nodeAffinity(DeployContext context) {
+		List<AffinityTolerationPO> nodeAffinitys = context.getAffinitys().stream()
+				.filter(e -> SchedulingTypeEnum.NODE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(CollectionUtils.isEmpty(nodeAffinitys)) {
+			return null;
+		}
+		
+		V1NodeAffinity nodeAffinity = new V1NodeAffinity();
+		
+		//1.强亲和
+		List<AffinityTolerationPO> affinityForce = nodeAffinitys.stream()
+				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(!CollectionUtils.isEmpty(affinityForce)) {
+			List<V1NodeSelectorRequirement> requirements = new ArrayList<>();
+			for(AffinityTolerationPO affintiy : affinityForce) {
+				V1NodeSelectorRequirement requirement = new V1NodeSelectorRequirement();
+				requirement.setKey(affintiy.getKeyName());
+				requirement.setOperator(affintiy.getOperator());
+				if(!StringUtils.isBlank(affintiy.getValueList())) {
+					requirement.setValues(Arrays.asList(affintiy.getValueList().split(",")));
+				}
+				requirements.add(requirement);
+			}
+			V1NodeSelectorTerm nodeSelectorTerm = new V1NodeSelectorTerm();
+			nodeSelectorTerm.setMatchExpressions(requirements);
+			V1NodeSelector nodeSelector = new V1NodeSelector();
+			nodeSelector.setNodeSelectorTerms(Arrays.asList(nodeSelectorTerm));
+			
+			nodeAffinity.setRequiredDuringSchedulingIgnoredDuringExecution(nodeSelector);
+		}
+		
+		//2.软亲和
+		List<AffinityTolerationPO> affinitySoft = nodeAffinitys.stream()
+				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(!CollectionUtils.isEmpty(affinitySoft)) {
+			List<V1PreferredSchedulingTerm> schedulingTerms = new ArrayList<>();
+			for(AffinityTolerationPO affintiy : affinitySoft) {
+				V1NodeSelectorRequirement requirement = new V1NodeSelectorRequirement();
+				requirement.setKey(affintiy.getKeyName());
+				requirement.setOperator(affintiy.getOperator());
+				if(!StringUtils.isBlank(affintiy.getValueList())) {
+					requirement.setValues(Arrays.asList(affintiy.getValueList().split(",")));
+				}
+				
+				V1NodeSelectorTerm nodeSelectorTerm = new V1NodeSelectorTerm();
+				nodeSelectorTerm.setMatchExpressions(Arrays.asList(requirement));
+				
+				V1NodeSelector nodeSelector = new V1NodeSelector();
+				nodeSelector.setNodeSelectorTerms(Arrays.asList(nodeSelectorTerm));
+				
+				V1PreferredSchedulingTerm schedulingTerm = new V1PreferredSchedulingTerm();
+				schedulingTerm.setPreference(nodeSelectorTerm);
+				schedulingTerm.setWeight(Integer.valueOf(affintiy.getWeight()));
+				schedulingTerms.add(schedulingTerm);
+			}
+			
+			nodeAffinity.setPreferredDuringSchedulingIgnoredDuringExecution(schedulingTerms);
+		}
+		
+		return nodeAffinity;
+	}
+	
+	private V1PodAffinity podAffinity(DeployContext context) {
+
+		List<AffinityTolerationPO> affinitys = context.getAffinitys().stream()
+				.filter(e -> SchedulingTypeEnum.REPLICA_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(CollectionUtils.isEmpty(affinitys)) {
+			return null;
+		}
+		
+		V1PodAffinity affinity = new V1PodAffinity();
+		
+		//1.强亲和
+		List<AffinityTolerationPO> affinityForce = affinitys.stream()
+				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(!CollectionUtils.isEmpty(affinityForce)) {
+			List<V1PodAffinityTerm> affinityTerms = new ArrayList<>();
+			for(AffinityTolerationPO affintiy : affinityForce) {
+				V1LabelSelectorRequirement requirement = new V1LabelSelectorRequirement();
+				requirement.setKey(affintiy.getKeyName());
+				requirement.setOperator(affintiy.getOperator());
+				if(!StringUtils.isBlank(affintiy.getValueList())) {
+					requirement.setValues(Arrays.asList(affintiy.getValueList().split(",")));
+				}
+				
+				V1LabelSelector labelSelector = new V1LabelSelector();
+				labelSelector.setMatchExpressions(Arrays.asList(requirement));
+				
+				V1PodAffinityTerm nodeSelectorTerm = new V1PodAffinityTerm();
+				nodeSelectorTerm.setLabelSelector(labelSelector);
+				nodeSelectorTerm.setTopologyKey(affintiy.getTopologyKey());
+			}
+			
+			affinity.setRequiredDuringSchedulingIgnoredDuringExecution(affinityTerms);
+		}
+		
+		//2.软亲和
+		List<AffinityTolerationPO> affinitySoft = affinitys.stream()
+				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(!CollectionUtils.isEmpty(affinitySoft)) {
+			List<V1WeightedPodAffinityTerm> weightedTerms = new ArrayList<>();
+			for(AffinityTolerationPO affintiy : affinitySoft) {
+				V1LabelSelectorRequirement sr = new V1LabelSelectorRequirement();
+				sr.setKey(affintiy.getKeyName());
+				sr.setOperator(affintiy.getOperator());
+				if(!StringUtils.isBlank(affintiy.getValueList())) {
+					sr.setValues(Arrays.asList(affintiy.getValueList().split(",")));
+				}
+				
+				V1LabelSelector labelSelector = new V1LabelSelector();
+				labelSelector.setMatchExpressions(Arrays.asList(sr));
+				
+				V1PodAffinityTerm podAffinityTerm = new V1PodAffinityTerm();
+				podAffinityTerm.setLabelSelector(labelSelector);
+				podAffinityTerm.setTopologyKey(affintiy.getTopologyKey());
+				
+				V1WeightedPodAffinityTerm weightedTerm = new V1WeightedPodAffinityTerm();
+				weightedTerm.setPodAffinityTerm(podAffinityTerm);
+				weightedTerm.setWeight(Integer.valueOf(affintiy.getWeight()));
+				weightedTerms.add(weightedTerm);
+			}
+			
+			affinity.setPreferredDuringSchedulingIgnoredDuringExecution(weightedTerms);
+		}
+		
+		return affinity;
+	
+	}
+	
+	private V1PodAntiAffinity podAntiAffinity(DeployContext context) {
+
+		List<AffinityTolerationPO> affinitys = context.getAffinitys().stream()
+				.filter(e -> SchedulingTypeEnum.REPLICA_ANTIAFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(CollectionUtils.isEmpty(affinitys)) {
+			return null;
+		}
+		
+		V1PodAntiAffinity affinity = new V1PodAntiAffinity();
+		
+		//1.强亲和
+		List<AffinityTolerationPO> affinityForce = affinitys.stream()
+				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(!CollectionUtils.isEmpty(affinityForce)) {
+			List<V1PodAffinityTerm> affinityTerms = new ArrayList<>();
+			for(AffinityTolerationPO affintiy : affinityForce) {
+				V1LabelSelectorRequirement requirement = new V1LabelSelectorRequirement();
+				requirement.setKey(affintiy.getKeyName());
+				requirement.setOperator(affintiy.getOperator());
+				if(!StringUtils.isBlank(affintiy.getValueList())) {
+					requirement.setValues(Arrays.asList(affintiy.getValueList().split(",")));
+				}
+				
+				V1LabelSelector labelSelector = new V1LabelSelector();
+				labelSelector.setMatchExpressions(Arrays.asList(requirement));
+				
+				V1PodAffinityTerm nodeSelectorTerm = new V1PodAffinityTerm();
+				nodeSelectorTerm.setLabelSelector(labelSelector);
+				nodeSelectorTerm.setTopologyKey(affintiy.getTopologyKey());
+			}
+			
+			affinity.setRequiredDuringSchedulingIgnoredDuringExecution(affinityTerms);
+		}
+		
+		//2.软亲和
+		List<AffinityTolerationPO> affinitySoft = affinitys.stream()
+				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(!CollectionUtils.isEmpty(affinitySoft)) {
+			List<V1WeightedPodAffinityTerm> weightedTerms = new ArrayList<>();
+			for(AffinityTolerationPO affintiy : affinitySoft) {
+				V1LabelSelectorRequirement sr = new V1LabelSelectorRequirement();
+				sr.setKey(affintiy.getKeyName());
+				sr.setOperator(affintiy.getOperator());
+				if(!StringUtils.isBlank(affintiy.getValueList())) {
+					sr.setValues(Arrays.asList(affintiy.getValueList().split(",")));
+				}
+				
+				V1LabelSelector labelSelector = new V1LabelSelector();
+				labelSelector.setMatchExpressions(Arrays.asList(sr));
+				
+				V1PodAffinityTerm podAffinityTerm = new V1PodAffinityTerm();
+				podAffinityTerm.setLabelSelector(labelSelector);
+				podAffinityTerm.setTopologyKey(affintiy.getTopologyKey());
+				
+				V1WeightedPodAffinityTerm weightedTerm = new V1WeightedPodAffinityTerm();
+				weightedTerm.setPodAffinityTerm(podAffinityTerm);
+				weightedTerm.setWeight(Integer.valueOf(affintiy.getWeight()));
+				weightedTerms.add(weightedTerm);
+			}
+			
+			affinity.setPreferredDuringSchedulingIgnoredDuringExecution(weightedTerms);
+		}
+		
+		return affinity;
+	
+	}
+	
+	private void affinityApp(V1Affinity affinity, DeployContext context) {
 		List<String> affinityNames = context.getApp().getAffinityAppNames();
 		if(CollectionUtils.isEmpty(affinityNames)) {
-			return null;
+			return;
 		}
 		
 		List<String> affinityValues = new ArrayList<>();
@@ -540,12 +765,17 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		weightedTerm.setWeight(100);
 		weightedTerm.setPodAffinityTerm(podAffinityTerm);
 		
-		V1PodAffinity podAffinity = new V1PodAffinity();
-		podAffinity.setPreferredDuringSchedulingIgnoredDuringExecution(Arrays.asList(weightedTerm));
-		
-		V1Affinity affinity = new V1Affinity();
-		affinity.setPodAffinity(podAffinity);
-		return affinity;
+		V1PodAffinity podAffinity = affinity.getPodAffinity();
+		if(podAffinity == null) {
+			podAffinity = new V1PodAffinity();
+			affinity.setPodAffinity(podAffinity);
+		}
+		List<V1WeightedPodAffinityTerm> terms = podAffinity.getPreferredDuringSchedulingIgnoredDuringExecution();
+		if(CollectionUtils.isEmpty(terms)) {
+			podAffinity.setPreferredDuringSchedulingIgnoredDuringExecution(Arrays.asList(weightedTerm));
+		}else {
+			terms.add(weightedTerm);
+		}
 	}
 	
 	private List<V1Container> containers(DeployContext context) {
@@ -578,6 +808,28 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		lifecycle(container, context);
 		
 		return Arrays.asList(container);
+	}
+	
+	private List<V1Toleration> toleration(DeployContext context) {
+		List<AffinityTolerationPO> configs = context.getAffinitys().stream()
+				.filter(e -> SchedulingTypeEnum.NODE_TOLERATION.getCode().equals(e.getSchedulingType()))
+				.collect(Collectors.toList());
+		if(CollectionUtils.isEmpty(configs)) {
+			return null;
+		}
+		
+		List<V1Toleration> tolerations = new ArrayList<>();
+		for(AffinityTolerationPO c : configs) {
+			V1Toleration t = new V1Toleration();
+			t.setKey(c.getKeyName());
+			t.setOperator(c.getOperator());
+			t.setValue(c.getValueList());
+			t.setEffect(c.getEffectType());
+			t.setTolerationSeconds(StringUtils.isEmpty(c.getDuration()) ? null : Long.valueOf(c.getDuration()));
+			tolerations.add(t);
+		}
+		
+		return tolerations;
 	}
 	
 	private void containerOfJar(DeployContext context, V1Container container) {

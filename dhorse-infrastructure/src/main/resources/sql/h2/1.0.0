@@ -54,7 +54,7 @@ CREATE TABLE app (
 	base_image_version VARCHAR (16) DEFAULT NULL COMMENT IS '基础镜像版本',
 	base_image VARCHAR (128) DEFAULT NULL COMMENT IS '基础镜像',
 	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT IS '代码仓库路径',
-	affinity_app_name VARCHAR (2048) DEFAULT NULL COMMENT IS '亲密应用名称，数组格式：[应用1,应用2]',
+	affinity_app_name VARCHAR (1024) DEFAULT NULL COMMENT IS '亲密应用名称，格式：应用1,应用2',
 	first_department VARCHAR (16) DEFAULT NULL COMMENT IS '一级部门',
 	second_department VARCHAR (16) DEFAULT NULL COMMENT IS '二级部门',
 	third_department VARCHAR (16) DEFAULT NULL COMMENT IS '三级部门',
@@ -116,6 +116,29 @@ COMMENT ON TABLE app_env IS '应用环境';
 CREATE INDEX index_env_app_id ON app_env(app_id);
 CREATE INDEX index_env_update_time ON app_env(update_time);
 CREATE INDEX index_trace_template_id ON app_env(trace_template_id);
+
+CREATE TABLE affinity_toleration (
+	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
+	customized_name VARCHAR (64) DEFAULT NULL COMMENT IS '名称',
+	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
+	env_id BIGINT DEFAULT NULL COMMENT IS '环境编号',
+	scheduling_type TINYINT DEFAULT 0 COMMENT IS '调度类型，1：节点亲和，2：节点容忍，3：副本亲和，4：副本反亲和',
+	affinity_level TINYINT DEFAULT 0 COMMENT IS '亲和程度，1：硬亲和，2：软亲和',
+	weight VARCHAR (16) DEFAULT NULL COMMENT IS '权重值',
+	key_name VARCHAR (64) DEFAULT NULL COMMENT IS '键',
+	operator VARCHAR (32) DEFAULT NULL COMMENT IS '操作符，值：Equal、In、NotIn、Exists、DoesNotExist、Gt、Lt',
+	value_list VARCHAR (1024) DEFAULT NULL COMMENT IS '值，格式：值1,值2',
+	topology_key VARCHAR (128) DEFAULT NULL COMMENT IS '拓扑域，如：kubernetes.io/hostname',
+	effect_type VARCHAR (32) DEFAULT NULL COMMENT IS '作用类型、值：NoSchedule、PreferNoSchedule、NoExecute',
+	duration VARCHAR (16) DEFAULT NULL COMMENT IS '持续时间，单位：秒',
+	remark VARCHAR (64) DEFAULT NULL COMMENT IS '备注',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+);
+COMMENT ON TABLE affinity_toleration IS '亲和容忍配置';
+CREATE INDEX index_affinity_toleration_env_id ON affinity_toleration(env_id);
+CREATE INDEX index_affinity_toleration_update_time ON affinity_toleration(update_time);
 
 CREATE TABLE deployment_version (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',

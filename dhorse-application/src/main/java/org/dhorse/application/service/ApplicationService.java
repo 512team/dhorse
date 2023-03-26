@@ -29,6 +29,7 @@ import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
+import org.dhorse.infrastructure.repository.AffinityTolerationRepository;
 import org.dhorse.infrastructure.repository.AppEnvRepository;
 import org.dhorse.infrastructure.repository.AppMemberRepository;
 import org.dhorse.infrastructure.repository.AppRepository;
@@ -85,6 +86,9 @@ public abstract class ApplicationService {
 
 	@Autowired
 	protected AppEnvRepository appEnvRepository;
+	
+	@Autowired
+	protected AffinityTolerationRepository affinityTolerationRepository;
 	
 	@Autowired
 	protected DeploymentDetailRepository deploymentDetailRepository;

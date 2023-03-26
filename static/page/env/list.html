@@ -101,7 +101,10 @@
 					,data: [{
 					  title: '修改'
 					  ,id: 'update'
-					}, {
+					},{
+					  title: '亲和容忍'
+					  ,id: 'affinityAndToleration'
+					},{
 					  title: '删除'
 					  ,id: 'delete'
 					}]
@@ -122,6 +125,18 @@
 								area: ['50%', '90%'],
 								offset: ['5%', '28%'],
 								content: miniPage.getHrefContent('page/env/update.html')
+							});
+						}else if(data.id == 'affinityAndToleration'){
+							data2 = JSON.stringify({'envId': envId});
+							var index = layer.open({
+								title: '亲和容忍',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['80%', '90%'],
+								offset: ['5%', '12%'],
+								content: miniPage.getHrefContent('page/env/affinity/list.html')
 							});
 						}
 					}
