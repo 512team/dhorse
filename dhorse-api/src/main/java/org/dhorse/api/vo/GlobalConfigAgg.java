@@ -428,6 +428,11 @@ public class GlobalConfigAgg implements Serializable {
 		private Integer servicePort;
 
 		/**
+		 * 辅助端口，如：8081,8082
+		 */
+		private String minorPorts;
+
+		/**
 		 * 健康检查路径，端口后的uri，如：/health
 		 */
 		private String healthPath;
@@ -496,6 +501,14 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setMaxReplicas(Integer maxReplicas) {
 			this.maxReplicas = maxReplicas;
+		}
+
+		public String getMinorPorts() {
+			return minorPorts;
+		}
+
+		public void setMinorPorts(String minorPorts) {
+			this.minorPorts = minorPorts;
 		}
 
 		public Integer getAutoScalingCpu() {

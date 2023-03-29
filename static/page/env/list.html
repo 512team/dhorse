@@ -210,7 +210,7 @@
 	
 	function doDelete($, appId, id, name) {
 		var msg = '同时会删除“' + name + '”下的所有资源，确定删除吗？';
-		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
+		layer.confirm(msg, {icon: 0, title:'提示', offset: ['30%', '40%']}, function (index) {
 			layer.close(index);
 			$.ajax({
 				url: '/app/env/delete',

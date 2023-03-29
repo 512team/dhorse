@@ -115,6 +115,12 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">辅助端口：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="minorPorts"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">健康检查路径：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="healthPath"></label>
@@ -188,6 +194,7 @@
 					$("#requiredMerge").text('是');
 				}
 				$("#servicePort").text(data.servicePort);
+				$("#minorPorts").text(data.minorPorts);
 				$("#healthPath").text(data.healthPath);
 				$("#description").text(data.description);
 				$("#creationTime").text(data.creationTime);

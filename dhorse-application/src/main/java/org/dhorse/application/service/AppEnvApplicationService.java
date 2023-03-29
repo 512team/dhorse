@@ -264,9 +264,6 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		if(addParam.getTag().length() > 16) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "环境标识不能大于16个字符");
 		}
-		if(addParam.getJvmArgs() != null && addParam.getJvmArgs().length() > 1024) {
-			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Jvm参数不能大于1024个字符");
-		}
 		if(addParam.getDescription() != null && addParam.getDescription().length() > 128) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "环境描述不能大于128个字符");
 		}

@@ -102,14 +102,14 @@ public class AppEnvCreationParam implements Serializable {
 	private Integer servicePort;
 
 	/**
+	 * 辅助端口，如：8081,8082
+	 */
+	private String minorPorts;
+
+	/**
 	 * 健康检查路径，端口后的uri，如：/health
 	 */
 	private String healthPath;
-
-	/**
-	 * jvm参数
-	 */
-	private String jvmArgs;
 
 	/**
 	 * 环境描述
@@ -166,6 +166,14 @@ public class AppEnvCreationParam implements Serializable {
 
 	public void setMinReplicas(Integer minReplicas) {
 		this.minReplicas = minReplicas;
+	}
+
+	public String getMinorPorts() {
+		return minorPorts;
+	}
+
+	public void setMinorPorts(String minorPorts) {
+		this.minorPorts = minorPorts;
 	}
 
 	public String getEventNofigyUrl() {
@@ -270,14 +278,6 @@ public class AppEnvCreationParam implements Serializable {
 
 	public void setHealthPath(String healthPath) {
 		this.healthPath = healthPath;
-	}
-
-	public String getJvmArgs() {
-		return jvmArgs;
-	}
-
-	public void setJvmArgs(String jvmArgs) {
-		this.jvmArgs = jvmArgs;
 	}
 
 	public String getDescription() {

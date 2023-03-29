@@ -48,6 +48,12 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">辅助端口</label>
+			<div class="layui-input-block">
+				<input type="text" name="minorPorts" id="minorPorts" placeholder="辅助服务端口，如：8081,8082" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">健康检查路径</label>
 			<div class="layui-input-block">
 				<input type="text" name="healthPath" placeholder="如：/health" autocomplete="off" class="layui-input">
@@ -154,6 +160,7 @@
 					,"replicaMemory": data.replicaMemory
 					,"autoScalingCpu": data.autoScalingCpu
 					,"servicePort": data.servicePort
+					,"minorPorts": data.minorPorts
 					,"requiredDeployApproval": data.requiredDeployApproval
 					,"requiredMerge": data.requiredMerge
 					,"autoScalingMemory": data.autoScalingMemory

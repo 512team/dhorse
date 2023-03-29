@@ -108,6 +108,12 @@
 				<label class="text-value" id="servicePort"></label>
 			</div>
 		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">辅助端口：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="minorPorts"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="traceStatusDiv" style="display:none">
 			<label class="layui-form-label">链路追踪状态：</label>
 			<div class="layui-input-block">
@@ -211,6 +217,7 @@
 					$("#requiredMerge").text('是');
 				}
 				$("#servicePort").text(res.data.servicePort);
+				$("#minorPorts").text(res.data.minorPorts);
 				if(res.data.traceStatus == 0){
 					$("#traceStatus").text('关闭');
 				}else{
@@ -218,7 +225,7 @@
 				}
 				$("#traceTemplateName").text(res.data.traceTemplateName);
 				$("#healthPath").text(res.data.healthPath);
-				$("#jvmArgs").text(res.data.jvmArgs);
+				$("#jvmArgs").text(res.data.envExtend.jvmArgs);
 				$("#description").text(res.data.description);
 				$("#deploymentTime").text(res.data.deploymentTime);
 				$("#creationTime").text(res.data.creationTime);

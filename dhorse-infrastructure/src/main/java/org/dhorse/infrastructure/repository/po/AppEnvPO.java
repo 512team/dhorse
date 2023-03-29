@@ -86,6 +86,11 @@ public class AppEnvPO extends BaseAppPO {
 	private Integer servicePort;
 
 	/**
+	 * 辅助端口，如：8081,8082
+	 */
+	private String minorPorts;
+
+	/**
 	 * 链路追踪状态，0：未开启，1：已开启
 	 */
 	private Integer traceStatus;
@@ -99,11 +104,6 @@ public class AppEnvPO extends BaseAppPO {
 	 * 健康检查路径，端口后的uri，如：/health
 	 */
 	private String healthPath;
-
-	/**
-	 * jvm参数
-	 */
-	private String jvmArgs;
 
 	/**
 	 * 环境描述
@@ -154,6 +154,14 @@ public class AppEnvPO extends BaseAppPO {
 
 	public void setEnvName(String envName) {
 		this.envName = envName;
+	}
+
+	public String getMinorPorts() {
+		return minorPorts;
+	}
+
+	public void setMinorPorts(String minorPorts) {
+		this.minorPorts = minorPorts;
 	}
 
 	public Integer getDeploymentOrder() {
@@ -262,14 +270,6 @@ public class AppEnvPO extends BaseAppPO {
 
 	public void setHealthPath(String healthPath) {
 		this.healthPath = healthPath;
-	}
-
-	public String getJvmArgs() {
-		return jvmArgs;
-	}
-
-	public void setJvmArgs(String jvmArgs) {
-		this.jvmArgs = jvmArgs;
 	}
 
 	public String getDescription() {

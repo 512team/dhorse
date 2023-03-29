@@ -48,6 +48,12 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">辅助端口</label>
+			<div class="layui-input-block">
+				<input type="text" name="minorPorts" id="minorPorts" placeholder="辅助服务端口，如：8081,8082" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">健康检查路径</label>
 			<div class="layui-input-block">
 				<input type="text" name="healthPath" placeholder="如：/health" autocomplete="off" class="layui-input">
@@ -120,7 +126,7 @@
 		<div class="layui-form-item" style="display:none" id="jvmArgsDiv">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
-				<textarea name="jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
+				<textarea name="extendSpringBootParam.jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
 			</div>
 		</div>
 		<div class="layui-form-item" style="display:none" id="ingressHostDiv">
@@ -211,15 +217,18 @@
 			var fields = data.field;
 			var allParams = {};
 			var extendParams = {};
+			var extendName = '';
 			for(var fieldName in fields){
 				var fs = fieldName.split(".");
 				if(fs.length > 1){
-					extendParams[fs[1]] = fields[fieldName];
+					if(!allParams[fs[0]]){
+						allParams[fs[0]] = {};
+					}
+					allParams[fs[0]][fs[1]] = fields[fieldName];
 				}else{
 					allParams[fieldName] = fields[fieldName];
 				}
 			}
-			allParams['extendNodeParam'] = extendParams;
 			
 			$.ajax({
 				url: '/app/env/add',
@@ -344,12 +353,12 @@
 					,"replicaMemory": data.replicaMemory
 					,"autoScalingCpu": data.autoScalingCpu
 					,"servicePort": data.servicePort
+					,"minorPorts": data.minorPorts
 					,"requiredDeployApproval": data.requiredDeployApproval
 					,"requiredMerge": data.requiredMerge
 					,"autoScalingMemory": data.autoScalingMemory
 					,"traceStatus": data.traceStatus
 					,"healthPath": data.healthPath
-					,"jvmArgs": data.jvmArgs
 					,"description": data.description
 				});
 				

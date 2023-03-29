@@ -67,7 +67,7 @@ public class AffinityTolerationCreationParam implements Serializable {
 	private String effectType;
 
 	/**
-	 * 持续时间，单位：秒
+	 * 容忍时长，单位：秒
 	 */
 	private String duration;
 
