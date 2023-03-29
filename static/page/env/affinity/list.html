@@ -27,7 +27,7 @@
 		</div>
 	</script>
 
-	<table class="layui-hide" id="currentTableId2" lay-filter="currentTableFilter"></table>
+	<table class="layui-hide" id="currentTableId2" lay-filter="currentTableFilter2"></table>
 	
 	<script type="text/html" id="currentTableBar2">
 		<a href="javascript:;" class="layui-font-blue" lay-event="update">修改</a>
@@ -112,7 +112,7 @@
 				{field: 'operator', title: '操作符', width: '8%'},
                 {field: 'valueList', title: '值', width: '8%'},
                 {field: 'effectType', title: '作用类型', width: '13%'},
-				{field: 'duration', title: '持续时间(秒)', width: '10%'},
+				{field: 'duration', title: '容忍时长(秒)', width: '10%'},
                 {title: '操作', toolbar: '#currentTableBar2', width: '9%'}
             ]],
             limits: [10, 20],
@@ -137,7 +137,7 @@
         /**
          * toolbar监听事件
          */
-        table.on('toolbar(currentTableFilter)', function (obj) {
+        table.on('toolbar(currentTableFilter2)', function (obj) {
 			data3 = JSON.stringify({'envId': envId});
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
@@ -147,7 +147,7 @@
                     maxmin: false,
                     shadeClose: false,
                     area: ['50%', '84%'],
-					offset: ['8%', '26%'],
+					offset: ['5%', '26%'],
 					content: miniPage.getHrefContent('page/env/affinity/add.html')
                 });
             } else if (obj.event === 'delete') {  // 监听删除操作
@@ -157,7 +157,7 @@
             }
         });
 
-        table.on('tool(currentTableFilter)', function (obj) {
+        table.on('tool(currentTableFilter2)', function (obj) {
 			data3 = JSON.stringify({'envId': envId, 'affinityTolerationId': obj.data.id});
 			if (obj.event === 'update') {
                 var index = layer.open({
@@ -167,7 +167,7 @@
                     maxmin: false,
                     shadeClose: false,
                     area: ['50%', '84%'],
-					offset: ['8%', '26%'],
+					offset: ['5%', '26%'],
 					content: miniPage.getHrefContent('page/env/affinity/update.html')
                 });
             }else if (obj.event === 'delete') {

@@ -33,6 +33,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppEnv;
 import org.dhorse.api.vo.AppEnv.EnvExtendNode;
+import org.dhorse.api.vo.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
@@ -108,6 +109,7 @@ import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodAffinity;
 import io.kubernetes.client.openapi.models.V1PodAffinityTerm;
 import io.kubernetes.client.openapi.models.V1PodAntiAffinity;
+import io.kubernetes.client.openapi.models.V1PodCondition;
 import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.openapi.models.V1PodSpec;
 import io.kubernetes.client.openapi.models.V1PodStatus;
@@ -241,7 +243,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
 		} else {
 			service = serviceList.getItems().get(0);
-			modifyServiceSpec(context, service);
+			service.getSpec().setPorts(servicePorts(context));
 			service = coreApi.replaceNamespacedService(serviceName, namespace, service, null, null, null, null);
 		}
 		logger.info("End to create service");
@@ -458,23 +460,38 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return metadata;
 	}
 	
-	private void modifyServiceSpec(DeployContext context, V1Service service) {
-		V1ServicePort port = service.getSpec().getPorts().get(0);
-		port.setPort(context.getAppEnv().getServicePort());
-		port.setTargetPort(new IntOrString(context.getAppEnv().getServicePort()));
-	}
-	
 	private V1ServiceSpec serviceSpec(DeployContext context) {
-		V1ServicePort port = new V1ServicePort();
-		port.setProtocol("TCP");
-		port.setPort(context.getAppEnv().getServicePort());
-		port.setTargetPort(new IntOrString(context.getAppEnv().getServicePort()));
-		
 		V1ServiceSpec spec = new V1ServiceSpec();
 		spec.setSelector(Collections.singletonMap("app", context.getDeploymentName()));
-		spec.setPorts(Arrays.asList(port));
+		spec.setPorts(servicePorts(context));
 		spec.setType("ClusterIP");
 		return spec;
+	}
+	
+	private List<V1ServicePort> servicePorts(DeployContext context){
+		//主端口
+		V1ServicePort servicePort = new V1ServicePort();
+		servicePort.setName("major");
+		servicePort.setProtocol("TCP");
+		servicePort.setPort(context.getAppEnv().getServicePort());
+		servicePort.setTargetPort(new IntOrString(context.getAppEnv().getServicePort()));
+		List<V1ServicePort> ports = new ArrayList<>();
+		ports.add(servicePort);
+		
+		//辅助端口
+		if(!StringUtils.isBlank(context.getAppEnv().getMinorPorts())) {
+			String[] portStr = context.getAppEnv().getMinorPorts().split(",");
+			for(int i = 0; i < portStr.length; i++) {
+				V1ServicePort one = new V1ServicePort();
+				Integer port = Integer.valueOf(portStr[i]);
+				one.setName("minor" + (i + 1));
+				one.setProtocol("TCP");
+				one.setPort(port);
+				one.setTargetPort(new IntOrString(port));
+				ports.add(one);
+			}
+		}
+		return ports;
 	}
 	
 	private V1ObjectMeta deploymentMetaData(String appName, String envTag) {
@@ -543,9 +560,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1NodeAffinity nodeAffinity = new V1NodeAffinity();
 		
-		//1.强亲和
+		//1.硬亲和
 		List<AffinityTolerationPO> affinityForce = nodeAffinitys.stream()
-				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getAffinityLevel()))
 				.collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(affinityForce)) {
 			List<V1NodeSelectorRequirement> requirements = new ArrayList<>();
@@ -568,7 +585,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		//2.软亲和
 		List<AffinityTolerationPO> affinitySoft = nodeAffinitys.stream()
-				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getAffinityLevel()))
 				.collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(affinitySoft)) {
 			List<V1PreferredSchedulingTerm> schedulingTerms = new ArrayList<>();
@@ -609,9 +626,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1PodAffinity affinity = new V1PodAffinity();
 		
-		//1.强亲和
+		//1.硬亲和
 		List<AffinityTolerationPO> affinityForce = affinitys.stream()
-				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getAffinityLevel()))
 				.collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(affinityForce)) {
 			List<V1PodAffinityTerm> affinityTerms = new ArrayList<>();
@@ -628,7 +645,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				
 				V1PodAffinityTerm nodeSelectorTerm = new V1PodAffinityTerm();
 				nodeSelectorTerm.setLabelSelector(labelSelector);
-				nodeSelectorTerm.setTopologyKey(affintiy.getTopologyKey());
+				nodeSelectorTerm.setTopologyKey(topologyKey(affintiy.getTopologyKey()));
+				affinityTerms.add(nodeSelectorTerm);
 			}
 			
 			affinity.setRequiredDuringSchedulingIgnoredDuringExecution(affinityTerms);
@@ -636,7 +654,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		//2.软亲和
 		List<AffinityTolerationPO> affinitySoft = affinitys.stream()
-				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getAffinityLevel()))
 				.collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(affinitySoft)) {
 			List<V1WeightedPodAffinityTerm> weightedTerms = new ArrayList<>();
@@ -653,7 +671,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				
 				V1PodAffinityTerm podAffinityTerm = new V1PodAffinityTerm();
 				podAffinityTerm.setLabelSelector(labelSelector);
-				podAffinityTerm.setTopologyKey(affintiy.getTopologyKey());
+				podAffinityTerm.setTopologyKey(topologyKey(affintiy.getTopologyKey()));
 				
 				V1WeightedPodAffinityTerm weightedTerm = new V1WeightedPodAffinityTerm();
 				weightedTerm.setPodAffinityTerm(podAffinityTerm);
@@ -668,6 +686,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	}
 	
+	private String topologyKey(String topologyKey) {
+		return StringUtils.isBlank(topologyKey) ? K8sUtils.DEFAULT_TOPOLOGY_KEY : topologyKey;
+	}
+	
 	private V1PodAntiAffinity podAntiAffinity(DeployContext context) {
 
 		List<AffinityTolerationPO> affinitys = context.getAffinitys().stream()
@@ -679,9 +701,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1PodAntiAffinity affinity = new V1PodAntiAffinity();
 		
-		//1.强亲和
+		//1.硬亲和
 		List<AffinityTolerationPO> affinityForce = affinitys.stream()
-				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.filter(e -> AffinityLevelEnum.FORCE_AFFINITY.getCode().equals(e.getAffinityLevel()))
 				.collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(affinityForce)) {
 			List<V1PodAffinityTerm> affinityTerms = new ArrayList<>();
@@ -698,7 +720,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				
 				V1PodAffinityTerm nodeSelectorTerm = new V1PodAffinityTerm();
 				nodeSelectorTerm.setLabelSelector(labelSelector);
-				nodeSelectorTerm.setTopologyKey(affintiy.getTopologyKey());
+				nodeSelectorTerm.setTopologyKey(topologyKey(affintiy.getTopologyKey()));
+				affinityTerms.add(nodeSelectorTerm);
 			}
 			
 			affinity.setRequiredDuringSchedulingIgnoredDuringExecution(affinityTerms);
@@ -706,7 +729,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		//2.软亲和
 		List<AffinityTolerationPO> affinitySoft = affinitys.stream()
-				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getSchedulingType()))
+				.filter(e -> AffinityLevelEnum.SOFT_AFFINITY.getCode().equals(e.getAffinityLevel()))
 				.collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(affinitySoft)) {
 			List<V1WeightedPodAffinityTerm> weightedTerms = new ArrayList<>();
@@ -723,7 +746,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				
 				V1PodAffinityTerm podAffinityTerm = new V1PodAffinityTerm();
 				podAffinityTerm.setLabelSelector(labelSelector);
-				podAffinityTerm.setTopologyKey(affintiy.getTopologyKey());
+				podAffinityTerm.setTopologyKey(topologyKey(affintiy.getTopologyKey()));
 				
 				V1WeightedPodAffinityTerm weightedTerm = new V1WeightedPodAffinityTerm();
 				weightedTerm.setPodAffinityTerm(podAffinityTerm);
@@ -759,7 +782,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1PodAffinityTerm podAffinityTerm = new V1PodAffinityTerm();
 		podAffinityTerm.setLabelSelector(labelSelector);
-		podAffinityTerm.setTopologyKey("kubernetes.io/hostname");
+		podAffinityTerm.setTopologyKey(K8sUtils.DEFAULT_TOPOLOGY_KEY);
 		
 		V1WeightedPodAffinityTerm weightedTerm = new V1WeightedPodAffinityTerm();
 		weightedTerm.setWeight(100);
@@ -776,38 +799,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}else {
 			terms.add(weightedTerm);
 		}
-	}
-	
-	private List<V1Container> containers(DeployContext context) {
-		AppEnvPO appEnvPO = context.getAppEnv();
-		V1Container container = new V1Container();
-		container.setName(context.getDeploymentName());
-		containerOfJar(context, container);
-		containerOfNode(context, container);
-		envVars(context, container);
-		container.setImagePullPolicy("Always");
-		V1ContainerPort containerPort = new V1ContainerPort();
-		containerPort.setContainerPort(appEnvPO.getServicePort());
-		container.setPorts(Arrays.asList(containerPort));
-		
-		// 设置资源
-		Quantity cpu = new Quantity(new BigDecimal(appEnvPO.getReplicaCpu()).movePointLeft(3).toPlainString());
-		Quantity memory = new Quantity(appEnvPO.getReplicaMemory() + "Mi");
-		Map<String, Quantity> requests = new HashMap<>();
-		requests.put("cpu", cpu);
-		requests.put("memory", memory);
-		Map<String, Quantity> limits = new HashMap<>();
-		limits.put("cpu", cpu);
-		limits.put("memory", memory);
-		V1ResourceRequirements resources = new V1ResourceRequirements();
-		resources.setRequests(requests);
-		resources.setLimits(limits);
-		container.setResources(resources);
-		container.setVolumeMounts(volumeMounts(context));
-		probe(container, context);
-		lifecycle(container, context);
-		
-		return Arrays.asList(container);
 	}
 	
 	private List<V1Toleration> toleration(DeployContext context) {
@@ -830,6 +821,55 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		
 		return tolerations;
+	}
+	
+	private List<V1Container> containers(DeployContext context) {
+		AppEnvPO appEnvPO = context.getAppEnv();
+		V1Container container = new V1Container();
+		container.setName(context.getDeploymentName());
+		containerOfJar(context, container);
+		containerOfNode(context, container);
+		envVars(context, container);
+		container.setImagePullPolicy("Always");
+		
+		//主端口
+		V1ContainerPort servicePort = new V1ContainerPort();
+		servicePort.setName("major");
+		servicePort.setContainerPort(appEnvPO.getServicePort());
+		List<V1ContainerPort> ports = new ArrayList<>();
+		ports.add(servicePort);
+		
+		//辅助端口
+		if(!StringUtils.isBlank(appEnvPO.getMinorPorts())) {
+			String[] portStr = appEnvPO.getMinorPorts().split(",");
+			for(int i = 0; i < portStr.length; i++) {
+				V1ContainerPort containerPort = new V1ContainerPort();
+				containerPort.setName("minor" + (i + 1));
+				containerPort.setContainerPort(Integer.valueOf(portStr[i]));
+				ports.add(containerPort);
+			}
+		}
+		
+		container.setPorts(ports);
+		
+		// 设置资源
+		Quantity cpu = new Quantity(new BigDecimal(appEnvPO.getReplicaCpu()).movePointLeft(3).toPlainString());
+		Quantity memory = new Quantity(appEnvPO.getReplicaMemory() + "Mi");
+		Map<String, Quantity> requests = new HashMap<>();
+		requests.put("cpu", cpu);
+		requests.put("memory", memory);
+		Map<String, Quantity> limits = new HashMap<>();
+		limits.put("cpu", cpu);
+		limits.put("memory", memory);
+		V1ResourceRequirements resources = new V1ResourceRequirements();
+		resources.setRequests(requests);
+		resources.setLimits(limits);
+		container.setResources(resources);
+		container.setVolumeMounts(volumeMounts(context));
+		probe(container, context);
+		lifecycle(container, context);
+		
+		return Arrays.asList(container);
 	}
 	
 	private void containerOfJar(DeployContext context, V1Container container) {
@@ -872,8 +912,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			argsStr.append(" ").append(arg);
 		}
 		//用户定义的Jvm参数
-		if(!StringUtils.isBlank(context.getAppEnv().getJvmArgs())) {
-			argsStr.append(" ").append(context.getAppEnv().getJvmArgs());
+		if(!StringUtils.isBlank(context.getAppEnv().getExt())) {
+			EnvExtendSpringBoot envExtend = JsonUtils.parseToObject(context.getAppEnv().getExt(), EnvExtendSpringBoot.class);
+			if(!StringUtils.isBlank(envExtend.getJvmArgs())) {
+				argsStr.append(" ").append(envExtend.getJvmArgs());
+			}
 		}
 		V1EnvVar envVar = new V1EnvVar();
 		envVar.setName("JAVA_OPTS");
@@ -952,10 +995,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			commands.append(" ").append(arg);
 		}
 		//用户自定义Jvm参数
-		if (!StringUtils.isBlank(context.getAppEnv().getJvmArgs())) {
-			String[] jvmArgs = context.getAppEnv().getJvmArgs().split("\\s+");
-			for (String arg : jvmArgs) {
-				commands.append(" ").append(arg);
+		if (!StringUtils.isBlank(context.getAppEnv().getExt())) {
+			EnvExtendSpringBoot envExtend = JsonUtils.parseToObject(context.getAppEnv().getExt(), EnvExtendSpringBoot.class);
+			if(!StringUtils.isBlank(envExtend.getJvmArgs())) {
+				String[] jvmArgs = envExtend.getJvmArgs().split("\\s+");
+				for (String arg : jvmArgs) {
+					commands.append(" ").append(arg);
+				}
 			}
 		}
 		commands.append(" ").append("-jar");
@@ -1323,6 +1369,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			}
 			if(!containerStatus.getStarted().booleanValue() || !containerStatus.getReady().booleanValue()) {
 				return ReplicaStatusEnum.PENDING.getCode();
+			}
+		}
+		for(V1PodCondition c : podStatus.getConditions()) {
+			if(!"True".equals(c.getStatus())) {
+				return ReplicaStatusEnum.FAILED.getCode();
 			}
 		}
 		return ReplicaStatusEnum.RUNNING.getCode();

@@ -11,6 +11,8 @@ public class K8sUtils {
 	
 	public static final String APP_KEY = "app";
 	
+	public static final String DEFAULT_TOPOLOGY_KEY = "kubernetes.io/hostname";
+	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	
 	static {
