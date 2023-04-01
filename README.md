@@ -1,6 +1,12 @@
 # DHorse项目
 DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具有持续集成、持续部署、微服务治理等功能，主要特点：部署简单、操作简洁、功能快速。
 
+# 项目地址
+
+* [GitHub](https://github.com/tiandizhiguai/dhorse)
+
+* [Gitee](https://gitee.com/tiandizhiguai/dhorse)
+
 ## 架构
  ![Image text](./static/images/architecture.jpg)
 
@@ -23,13 +29,13 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 环境要求：
 | Harbor | kubernetes
 | :----: | :----: |
-| >=2.0.0 | [1.18.x, 1.25.x]
+| >=2.0.0 | [1.18.x, 1.26.x]
 
 下载安装文件：
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
-| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-jdk1.8-bin-windows.zip)
-| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v0.12.01/dhorse-v0.12.01-bin-windows.zip)
+| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-jdk1.8-bin-windows.zip)
+| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-bin-windows.zip)
 
 下载文件之后，然后解压：
 
