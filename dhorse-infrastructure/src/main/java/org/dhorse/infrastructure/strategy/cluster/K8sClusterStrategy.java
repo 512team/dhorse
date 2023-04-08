@@ -185,33 +185,17 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			// 自动扩容任务
 			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), apiClient);
 
+			if(!checkHealthOfAll(coreApi, namespace, labelSelector)) {
+				logger.error("Failed to create k8s deployment, message: 副本没有完全启动");
+				return false;
+			}
+			
 			//部署service
 			createService(context);
 			
+			//Node应用的ingress
 			createIngress(context);
 			
-			// 检查pod状态，检查时长20分钟
-			for (int i = 0; i < 60 * 20; i++) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// ingore
-				}
-				//logger.info("Check Replicas, {} times", i + 1);
-				V1PodList podList = coreApi.listNamespacedPod(namespace, null, null, null, null, labelSelector, null,
-						null, null, null, null);
-				if (CollectionUtils.isEmpty(podList.getItems())) {
-					logger.warn("Replica size is 0");
-					continue;
-				}
-				if (checkHealthOfAll(context.getAppEnv(), podList.getItems())) {
-					logger.info("All replicas successfullly");
-					return true;
-				}
-			}
-
-			// 检查一定的次数之后，返回错误
-			LogUtils.throwException(logger, MessageCodeEnum.CHECK_REPLICA_TIMEOUT);
 		} catch (ApiException e) {
 			if (!StringUtils.isBlank(e.getMessage())) {
 				logger.error("Failed to create k8s deployment, message: {}", e.getMessage());
@@ -1262,7 +1246,36 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return apiClient;
 	}
 	
-	private boolean checkHealthOfAll(AppEnvPO env, List<V1Pod> pods) {
+	private boolean checkHealthOfAll(CoreV1Api coreApi, String namespace, String labelSelector) {
+		// 检查pod状态，检查时长20分钟
+		for (int i = 0; i < 60 * 20; i++) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// ingore
+			}
+			V1PodList podList = null;
+			try {
+				podList = coreApi.listNamespacedPod(namespace, null, null, null, null, labelSelector, null,
+						null, null, null, null);
+			} catch (ApiException e) {
+				logger.error("Failed to list namespaced pod");
+				continue;
+			}
+			if (CollectionUtils.isEmpty(podList.getItems())) {
+				logger.warn("Replica size is 0");
+				continue;
+			}
+			if (doCheckHealth(podList.getItems())) {
+				logger.info("All replicas successfullly");
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean doCheckHealth(List<V1Pod> pods) {
 		int runningService = 0;
 		for (V1Pod pod : pods) {
 			if (ReplicaStatusEnum.RUNNING.getCode().compareTo(podStatus(pod.getStatus())) == 0) {
