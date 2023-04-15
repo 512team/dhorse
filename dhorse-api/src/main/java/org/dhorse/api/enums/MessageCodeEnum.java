@@ -145,6 +145,7 @@ public enum MessageCodeEnum {
 	CODE_REPO_FAILED("200000", "请求代码仓库失败"),
 	TRACE_SERVER_IS_EMPTY("200000", "链路追踪服务地址不能为空"),
 	DEPLOY("200000", "部署失败"),
+	NOT_ALLOW_ABORT("200000", "该状态不允许终止"),
 	;
 
 	private String code;

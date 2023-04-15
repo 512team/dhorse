@@ -70,6 +70,11 @@ public class AffinityTolerationPO extends BaseAppPO {
 	private String duration;
 
 	/**
+	 * 启用状态，0：禁用，1：启用
+	 */
+	private Integer openStatus;
+
+	/**
 	 * 备注
 	 */
 	private String remark;
@@ -104,6 +109,14 @@ public class AffinityTolerationPO extends BaseAppPO {
 
 	public void setKeyName(String keyName) {
 		this.keyName = keyName;
+	}
+
+	public Integer getOpenStatus() {
+		return openStatus;
+	}
+
+	public void setOpenStatus(Integer openStatus) {
+		this.openStatus = openStatus;
 	}
 
 	public String getOperator() {

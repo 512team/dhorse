@@ -62,6 +62,15 @@ public class AffinityTolerationApplicationService
 		return null;
 	}
 
+	public Void openStatus(LoginUser loginUser, AffinityTolerationUpdateParam updateParam) {
+		AffinityTolerationParam bizParam = buildBizParam(updateParam);
+		bizParam.setId(updateParam.getAffinityTolerationId());
+		if (!affinityTolerationRepository.update(bizParam)) {
+			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
+		}
+		return null;
+	}
+	
 	public Void delete(LoginUser loginUser, AffinityTolerationDeletionParam deleteParam) {
 		if (StringUtils.isBlank(deleteParam.getAffinityTolerationId())) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "亲和容忍配置编号不能为空");

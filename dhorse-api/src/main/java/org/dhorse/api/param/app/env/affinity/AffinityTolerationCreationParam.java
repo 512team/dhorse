@@ -72,6 +72,11 @@ public class AffinityTolerationCreationParam implements Serializable {
 	private String duration;
 
 	/**
+	 * 启用状态，0：禁用，1：启用
+	 */
+	private Integer openStatus;
+
+	/**
 	 * 备注
 	 */
 	private String remark;
@@ -106,6 +111,14 @@ public class AffinityTolerationCreationParam implements Serializable {
 
 	public void setSchedulingType(Integer schedulingType) {
 		this.schedulingType = schedulingType;
+	}
+
+	public Integer getOpenStatus() {
+		return openStatus;
+	}
+
+	public void setOpenStatus(Integer openStatus) {
+		this.openStatus = openStatus;
 	}
 
 	public String getCustomizedName() {

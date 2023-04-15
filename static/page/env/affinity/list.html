@@ -30,6 +30,14 @@
 	<table class="layui-hide" id="currentTableId2" lay-filter="currentTableFilter2"></table>
 	
 	<script type="text/html" id="currentTableBar2">
+		{{#	if (d.openStatus == 0) {    		}}
+			<a href="javascript:;" class="layui-font-blue" lay-event="enable">启用</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
+		{{#	}                     				}}
+		{{#	if (d.openStatus == 1) {    		}}
+			<a href="javascript:;" class="layui-font-blue" lay-event="disable">禁用</a>
+			<span style="color: rgb(179, 179, 179);"> | </span>
+		{{#	}                     				}}
 		<a href="javascript:;" class="layui-font-blue" lay-event="update">修改</a>
 		<span style="color: rgb(179, 179, 179);"> | </span>
 		<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
@@ -52,6 +60,14 @@
 		{{#		return '硬亲和' 				}}
 		{{#	} else if (d.affinityLevel == 2) {	}}
 		{{#		return '软亲和'   				}}
+		{{#	}                     				}}
+	</script>
+	
+	<script type="text/html" id="openStatusBar">
+		{{#	if (d.openStatus == 0) {    		}}
+		{{#		return '已禁用' 				}}
+		{{#	} else if (d.openStatus == 1) {		}}
+		{{#		return '已启用'   				}}
 		{{#	}                     				}}
 	</script>
 </div>
@@ -111,9 +127,10 @@
 				{field: 'keyName', title: '键'},
 				{field: 'operator', title: '操作符', width: '8%'},
                 {field: 'valueList', title: '值', width: '8%'},
-                {field: 'effectType', title: '作用类型', width: '13%'},
+                {field: 'effectType', title: '作用类型', width: '11%'},
 				{field: 'duration', title: '容忍时长(秒)', width: '10%'},
-                {title: '操作', toolbar: '#currentTableBar2', width: '9%'}
+				{field: 'openStatus', title: '状态', width: '7%', templet: '#openStatusBar'},
+                {title: '操作', toolbar: '#currentTableBar2', width: '12%'}
             ]],
             limits: [10, 20],
             limit: 10,
@@ -170,12 +187,47 @@
 					offset: ['5%', '26%'],
 					content: miniPage.getHrefContent('page/env/affinity/update.html')
                 });
+            }else if (obj.event === 'enable') {
+                openStatus($, '启用', 1, appId, envId, obj.data.id);
+            }else if (obj.event === 'disable') {
+                openStatus($, '禁用', 0, appId, envId, obj.data.id);
             }else if (obj.event === 'delete') {
                 doDelete($, appId, envId, obj.data.id);
             }
 			return false;
         });
     });
+	
+	function openStatus($, name, status, appId, envId, id) {
+		var msg = '确定'+ name +'吗？';
+		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/app/env/affinity/openStatus',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"appId": appId, "envId": envId, "affinityTolerationId": id, "openStatus": status}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg(name + "成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId2');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
 	
 	function doDelete($, appId, envId, id) {
 		var msg = '确定删除吗？';

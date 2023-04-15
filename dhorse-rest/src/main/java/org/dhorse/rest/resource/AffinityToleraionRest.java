@@ -77,6 +77,18 @@ public class AffinityToleraionRest extends AbstractRest {
 	}
 
 	/**
+	 * 修改
+	 * 
+	 * @param updateParam 修改参数
+	 * @return 无
+	 */
+	@PostMapping("/openStatus")
+	public RestResponse<Void> openStatus(@CookieValue("login_token") String loginToken,
+			@RequestBody AffinityTolerationUpdateParam updateParam) {
+		return success(service.openStatus(queryLoginUserByToken(loginToken), updateParam));
+	}
+	
+	/**
 	 * 删除
 	 * 
 	 * @param deletionParam 删除参数
