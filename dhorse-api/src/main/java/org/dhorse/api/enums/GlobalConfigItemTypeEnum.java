@@ -8,6 +8,7 @@ public enum GlobalConfigItemTypeEnum {
 	MAVEN(4, "Maven"),
 	TRACE_TEMPLATE(5, "链路追踪模板"),
 	ENV_TEMPLATE(6, "环境模板"),
+	CUSTOMIZED_MENU(7, "自义定菜单"),
 	MORE(100, "更多"),
 	;
 

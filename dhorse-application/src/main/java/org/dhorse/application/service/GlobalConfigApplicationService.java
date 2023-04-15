@@ -6,7 +6,10 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -19,6 +22,7 @@ import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.global.GlolabConfigDeletionParam;
 import org.dhorse.api.param.global.GlolabConfigPageParam;
@@ -26,6 +30,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.BaseGlobalConfig;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.CustomizedMenu;
 import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
@@ -33,9 +38,11 @@ import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.api.vo.GlobalConfigAgg.More;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.exception.ApplicationException;
+import org.dhorse.infrastructure.model.Menu;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
+import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.HttpUtils;
@@ -47,9 +54,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ResourceUtils;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.cloud.tools.jib.api.Containerizer;
 import com.google.cloud.tools.jib.api.Jib;
 import com.google.cloud.tools.jib.api.LogEvent;
@@ -67,6 +77,60 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(GlobalConfigApplicationService.class);
 
+	public String menu(LoginUser loginUser) {
+		String menuPath = Constants.DHORSE_HOME + "/static/api/";
+		if(RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
+			menuPath += "init_admin.json";
+		}else {
+			menuPath += "init_normal.json";
+		}
+		String menuStr = null;
+		try {
+			menuStr = FileUtils.readFileToString(new File(menuPath), "UTF-8");
+		} catch (IOException e) {
+			logger.error("Faile to read menu file", e);
+		}
+		
+		GlobalConfigParam bizParam = new GlobalConfigParam();
+		bizParam.setItemType(GlobalConfigItemTypeEnum.CUSTOMIZED_MENU.getCode());
+		List<GlobalConfigPO> menus = globalConfigRepository.list(bizParam);
+		if(CollectionUtils.isEmpty(menus)) {
+			return menuStr;
+		}
+		
+		String style = "fa fa-external-link";
+		Map<String, Menu> parentMenus = new HashMap<>();
+		for(int i = 0; i < menus.size(); i++) {
+			GlobalConfigPO c = menus.get(i);
+			CustomizedMenu dto = JsonUtils.parseToObject(c.getItemValue(), CustomizedMenu.class);
+			Menu m = new Menu();
+			m.setTitle(dto.getName());
+			m.setHref(dto.getUrl());
+			if(i % 2 == 0) {
+				m.setIcon(style + "-square");
+			}else {
+				m.setIcon(style);
+			}
+			m.setTarget("_blank");
+			Menu p = parentMenus.get(dto.getParentName());
+			if(p == null) {
+				p = new Menu();
+				p.setTitle(dto.getParentName());
+				p.setHref("");
+				p.setIcon("fa fa-angle-double-right");
+				p.setTarget("_self");
+				parentMenus.put(dto.getParentName(), p);
+			}
+			p.addChild(m);
+		}
+		JsonNode node = JsonUtils.parseToNode(menuStr);
+		ArrayNode menuInfo = ((ArrayNode)node.get("menuInfo"));
+		for(Entry<String, Menu> e : parentMenus.entrySet()) {
+			menuInfo.addPOJO(e.getValue());
+		}
+		return node.toString();
+	}
+	
 	public Void addOrUpdateMaven(Maven mavenConf) {
 		mavenConf.setItemType(GlobalConfigItemTypeEnum.MAVEN.getCode());
 		addOrUpdateGlobalConfig(mavenConf);
@@ -352,6 +416,18 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		}
 	}
 	
+	private void checkCustomizedMenu(CustomizedMenu customizedMenu) {
+		if(StringUtils.isBlank(customizedMenu.getParentName())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "父级菜单名称不能为空");
+		}
+		if(StringUtils.isBlank(customizedMenu.getName())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "菜单名称不能为空");
+		}
+		if(StringUtils.isBlank(customizedMenu.getUrl())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "菜单地址不能为空");
+		}
+	}
+	
 	private void buildAgentImage(TraceTemplate taceTemplate, GlobalConfigAgg globalConfigAgg) {
 		if(!ImageSourceEnum.VERSION.getCode().equals(taceTemplate.getAgentImageSource())) {
 			return;
@@ -424,6 +500,46 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 			}
 		}
 		globalConfigRepository.delete(deleteParam.getId());
+		return null;
+	}
+	
+	public PageData<CustomizedMenu> customizedMenuPage(GlolabConfigPageParam pageParam) {
+		GlobalConfigParam bizParam = new GlobalConfigParam();
+		bizParam.setPageNum(pageParam.getPageNum());
+		bizParam.setPageSize(pageParam.getPageSize());
+		bizParam.setItemType(pageParam.getItemType());
+		IPage<GlobalConfigPO> pagePO = globalConfigRepository.page(bizParam);
+		if(pagePO.getTotal() == 0) {
+			return zeroPageData(pageParam.getPageSize());
+		}
+		List<CustomizedMenu> resultPage = pagePO.getRecords().stream().map(e ->{
+			CustomizedMenu dto = JsonUtils.parseToObject(e.getItemValue(), CustomizedMenu.class);
+			dto.setId(e.getId());
+			dto.setItemType(e.getItemType());
+			return dto;
+		}).collect(Collectors.toList());
+		return this.pageData(pagePO, resultPage);
+	}
+	
+	public Void customizedMenuAdd(CustomizedMenu customizedMenu) {
+		checkCustomizedMenu(customizedMenu);
+		GlobalConfigParam param = new GlobalConfigParam();
+		param.setItemType(GlobalConfigItemTypeEnum.CUSTOMIZED_MENU.getCode());
+		param.setItemValue(JsonUtils.toJsonString(customizedMenu, "id", "pageSize", "itemType"));
+		globalConfigRepository.add(param);
+		return null;
+	}
+	
+	public Void customizedMenuUpdate(CustomizedMenu customizedMenu) {
+		if(customizedMenu.getId() == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.ID_IS_EMPTY);
+		}
+		checkCustomizedMenu(customizedMenu);
+		GlobalConfigParam param = new GlobalConfigParam();
+		param.setId(customizedMenu.getId());
+		param.setItemType(GlobalConfigItemTypeEnum.CUSTOMIZED_MENU.getCode());
+		param.setItemValue(JsonUtils.toJsonString(customizedMenu, "id", "pageSize", "itemType"));
+		globalConfigRepository.update(param);
 		return null;
 	}
 }

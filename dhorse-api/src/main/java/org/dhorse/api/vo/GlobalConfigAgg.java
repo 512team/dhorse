@@ -21,6 +21,8 @@ public class GlobalConfigAgg implements Serializable {
 
 	private EnvTemplate envTemplate;
 
+	private CustomizedMenu customizedMenu;
+
 	private More more;
 
 	public Maven getMaven() {
@@ -45,6 +47,14 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setImageRepo(ImageRepo imageRepo) {
 		this.imageRepo = imageRepo;
+	}
+
+	public CustomizedMenu getCustomizedMenu() {
+		return customizedMenu;
+	}
+
+	public void setCustomizedMenu(CustomizedMenu customizedMenu) {
+		this.customizedMenu = customizedMenu;
 	}
 
 	public Ldap getLdap() {
@@ -705,6 +715,54 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setAgentVersion(String agentVersion) {
 			this.agentVersion = agentVersion;
+		}
+
+	}
+
+	/**
+	 * 自定义菜单模型
+	 */
+	public static class CustomizedMenu extends BaseGlobalConfig {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * 父级菜单名称
+		 */
+		private String parentName;
+
+		/**
+		 * 菜单名称
+		 */
+		private String name;
+
+		/**
+		 * 链接地址，如：http://127.0.0.1:80/menu
+		 */
+		private String url;
+
+		public String getParentName() {
+			return parentName;
+		}
+
+		public void setParentName(String parentName) {
+			this.parentName = parentName;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
 		}
 
 	}

@@ -8,6 +8,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.vo.GlobalConfigAgg.CustomizedMenu;
 import org.dhorse.api.vo.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.Ldap;
@@ -18,6 +19,8 @@ import org.dhorse.application.service.GlobalConfigApplicationService;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +50,16 @@ public class GlobalConfigRest extends AbstractRest {
 		return this.success(globalConfigApplicationService.globalConfig(queryParam));
 	}
 
+	/**
+	 * 查询菜单
+	 * 
+	 * @return 菜单数据
+	 */
+	@GetMapping("/menu")
+	public String menu(@CookieValue("login_token") String loginToken) {
+		return globalConfigApplicationService.menu(queryLoginUserByToken(loginToken));
+	}
+	
 	/**
 	 * 添加或修改maven
 	 * 
@@ -188,6 +201,41 @@ public class GlobalConfigRest extends AbstractRest {
 		return this.success(globalConfigApplicationService.envTemplateQuery(queryParam));
 	}
 	
+	/**
+	 * 分页查询自义定菜单
+	 * 
+	 * @param pageParam 全局配置分页参数
+	 * @return 无
+	 */
+	@PostMapping("/customizedMenu/page")
+	public RestResponse<PageData<CustomizedMenu>> customizedMenuPage(@RequestBody GlolabConfigPageParam pageParam) {
+		return this.success(globalConfigApplicationService.customizedMenuPage(pageParam));
+	}
+
+	/**
+	 * 添加自义定菜单
+	 * 
+	 * @param customizedMenu 自义定菜单参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/customizedMenu/add")
+	public RestResponse<Void> customizedMenuAdd(@RequestBody CustomizedMenu customizedMenu) {
+		return this.success(globalConfigApplicationService.customizedMenuAdd(customizedMenu));
+	}
+
+	/**
+	 * 修改自义定菜单
+	 * 
+	 * @param customizedMenu 自义定菜单参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/customizedMenu/update")
+	public RestResponse<Void> customizedMenuUpdate(@RequestBody CustomizedMenu customizedMenu) {
+		return this.success(globalConfigApplicationService.customizedMenuUpdate(customizedMenu));
+	}
+
 	/**
 	 * 更多
 	 * 

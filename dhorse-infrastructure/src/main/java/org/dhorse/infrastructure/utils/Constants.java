@@ -38,7 +38,7 @@ public class Constants {
 	/**
 	 * 部署目录
 	 */
-	public static final String JAR_HOME = new SpringBootApplicationHome(Constants.class)
+	public static final String DHORSE_HOME = new SpringBootApplicationHome(Constants.class)
 			.getSource()
 			.getParentFile()
 			.getParentFile()
@@ -47,17 +47,17 @@ public class Constants {
 	/**
 	 * 默认数据路径
 	 */
-	public static final String DEFAULT_DATA_PATH = JAR_HOME + "/data/";
+	public static final String DEFAULT_DATA_PATH = DHORSE_HOME + "/data/";
 	
 	/**
 	 * 默认日志路径
 	 */
-	public static final String DEFAULT_LOG_PATH = JAR_HOME + "/log/";
+	public static final String DEFAULT_LOG_PATH = DHORSE_HOME + "/log/";
 	
 	/**
 	 * 配置文件路径
 	 */
-	public static final String CONF_PATH = JAR_HOME + "/conf/";
+	public static final String CONF_PATH = DHORSE_HOME + "/conf/";
 	
 	/**
 	 * 临时目录相对路径
