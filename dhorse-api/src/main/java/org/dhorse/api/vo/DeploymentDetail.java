@@ -42,6 +42,11 @@ public class DeploymentDetail extends BaseDto {
 	private Integer deploymentStatus;
 
 	/**
+	 * 部署线程
+	 */
+	private String deploymentThread;
+
+	/**
 	 * 部署人
 	 */
 	private String deployer;
@@ -98,6 +103,14 @@ public class DeploymentDetail extends BaseDto {
 
 	public void setVersionName(String versionName) {
 		this.versionName = versionName;
+	}
+
+	public String getDeploymentThread() {
+		return deploymentThread;
+	}
+
+	public void setDeploymentThread(String deploymentThread) {
+		this.deploymentThread = deploymentThread;
 	}
 
 	public String getEnvId() {

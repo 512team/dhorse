@@ -41,6 +41,10 @@
 			{{# }			                     	}}
 		</script>
         <script type="text/html" id="currentTableBar">
+			{{#	if (d.deploymentStatus == 1 || d.deploymentStatus == 7){						}}
+				<a href="javascript:;" class="layui-font-blue" lay-event="abort">终止</a>
+				<span style="color: rgb(179, 179, 179);"> | </span>
+			{{# }																				}}
 			{{#	if (d.deployApprovalRights == 1 || d.rollbackApprovalRights == 1){				}}
 				<a href="javascript:;" class="layui-font-blue" lay-event="approve">审批</a>
 				<span style="color: rgb(179, 179, 179);"> | </span>
@@ -86,7 +90,9 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
 			if (obj.event === 'approve') {
-                approve($, appId, obj.data.branchName, obj.data.id);
+				approve($, appId, obj.data.branchName, obj.data.id);
+            }else if (obj.event === 'abort') {
+                doAbort($, obj.data.id, obj.data.versionName, appId);
             }else if (obj.event === 'rollback') {
                 rollback($, appId, obj.data.versionName, obj.data.id)
             }else if (obj.event === 'log') {
@@ -133,6 +139,38 @@
 						shade: 0.01,
 						shadeClose: false}, function(){
 						layer.close(index);
+						layui.table.reload('currentTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+	
+	//终止
+	function doAbort($, id, name, appId) {
+		var msg = "确定要终止“" + name + "”吗？";
+		layer.confirm(msg, {title: '提示'}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/app/deployment/detail/abortDeployment',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"appId": appId, "deploymentDetailId": id}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("终止成功", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
 						layui.table.reload('currentTableId');
 					});
 				},

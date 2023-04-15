@@ -1,0 +1,2 @@
+alter table deployment_detail add column deployment_thread VARCHAR (64) DEFAULT NULL COMMENT IS '部署线程' after end_time;
+alter table affinity_toleration alter column open_status TINYINT DEFAULT 1 COMMENT IS '启用状态，0：禁用，1：启用';

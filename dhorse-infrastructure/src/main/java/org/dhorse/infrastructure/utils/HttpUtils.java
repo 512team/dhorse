@@ -2,6 +2,8 @@ package org.dhorse.infrastructure.utils;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.net.ssl.SSLContext;
 
@@ -18,12 +20,17 @@ import org.apache.http.ssl.TrustStrategy;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 public class HttpUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
 	
 	public static CloseableHttpResponse post(String url, String jsonParam) {
+		return post(url, jsonParam, null);
+	}
+	
+	public static CloseableHttpResponse post(String url, String jsonParam, Map<String, String> cookies) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(5000)
                 .setConnectTimeout(5000)
@@ -32,6 +39,13 @@ public class HttpUtils {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(requestConfig);
         httpPost.setHeader("Content-Type", "application/json;charset=UTF-8");
+        if(!CollectionUtils.isEmpty(cookies)) {
+        	String cookieStr = "";
+        	for(Entry<String, String> c : cookies.entrySet()) {
+        		cookieStr = cookieStr + c.getKey() + "=" + c.getValue() + ";";
+        	}
+        	httpPost.setHeader("Cookie", cookieStr);
+        }
         httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
         try (CloseableHttpResponse response = createHttpClient(url).execute(httpPost)){
         	return response;

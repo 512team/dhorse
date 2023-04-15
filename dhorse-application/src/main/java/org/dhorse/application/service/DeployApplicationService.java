@@ -3,18 +3,23 @@ package org.dhorse.application.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.maven.cli.DefaultCliRequest;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -35,10 +40,13 @@ import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.event.BuildMessage;
 import org.dhorse.api.event.DeploymentMessage;
 import org.dhorse.api.param.app.branch.BuildParam;
+import org.dhorse.api.param.app.branch.deploy.AbortDeploymentParam;
+import org.dhorse.api.param.app.branch.deploy.AbortDeploymentThreadParam;
 import org.dhorse.api.response.EventResponse;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.AppExtendNode;
+import org.dhorse.api.vo.DeploymentDetail;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.Maven;
 import org.dhorse.infrastructure.param.AffinityTolerationParam;
@@ -51,11 +59,14 @@ import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
+import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
+import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -63,6 +74,7 @@ import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.ResourceUtils;
@@ -86,6 +98,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 	private static final String MAVEN_REPOSITORY_ID = "customized-nexus";
 	
 	private static final String MAVEN_REPOSITORY_URL = "https://repo.maven.apache.org/maven2";
+	
+    //private static Map<String, Thread> threadMap = new ConcurrentHashMap<>();
+	
+	@Value("${server.port}")
+	private Integer serverPort;
 
 	protected String buildVersion(BuildParam buildParam) {
 
@@ -172,7 +189,24 @@ public abstract class DeployApplicationService extends ApplicationService {
 		
 		//2.部署
 		ThreadPoolUtils.deploy(() ->{
-			doDeploy(context);
+			
+			Thread t = Thread.currentThread();
+			DeploymentThreadPoolUtils.put(t.getName(), t);
+			
+			DeploymentDetailParam detailParam = new DeploymentDetailParam();
+			detailParam.setId(deployParam.getDeploymentDetailId());
+			try {
+				detailParam.setDeploymentThread(InetAddress.getLocalHost().getHostAddress() + ":" + t.getName());
+			} catch (UnknownHostException e) {
+				logger.error("Failed to get host ip");
+			}
+			deploymentDetailRepository.update(detailParam);
+			
+			try {
+				doDeploy(context);
+			}finally {
+				DeploymentThreadPoolUtils.remove(t.getName());
+            }
 		});
 		
 		return true;
@@ -182,6 +216,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 		ThreadLocalUtils.putDeployContext(context);
 		DeploymentStatusEnum deploymentStatus = DeploymentStatusEnum.DEPLOYED_FAILURE;
+		
+		if(DeploymentThreadPoolUtils.isInterrupted()) {
+			return false;
+		}
 		
 		try {
 			logger.info("Start to deploy env");
@@ -333,6 +371,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		AffinityTolerationParam affinityTolerationParam = new AffinityTolerationParam();
 		affinityTolerationParam.setEnvId(appEnvPO.getId());
 		affinityTolerationParam.setAppId(appEnvPO.getAppId());
+		affinityTolerationParam.setOpenStatus(YesOrNoEnum.YES.getCode());
 		List<AffinityTolerationPO> affinitys = affinityTolerationRepository.list(affinityTolerationParam);
 		ClusterPO clusterPO = clusterRepository.queryById(appEnvPO.getClusterId());
 		if(clusterPO == null) {
@@ -646,5 +685,66 @@ public abstract class DeployApplicationService extends ApplicationService {
 			appEnvRepository.updateById(appEnvParam);
 		}
 		return deploymentDetailRepository.updateById(deploymentDetailParam);
+	}
+	
+	public Void abortDeployment(LoginUser loginUser, AbortDeploymentParam abortParam) {
+		DeploymentDetailParam bizParam = new DeploymentDetailParam();
+		bizParam.setAppId(abortParam.getAppId());
+		bizParam.setId(abortParam.getDeploymentDetailId());
+		DeploymentDetail deploymentDetail = deploymentDetailRepository.query(loginUser, bizParam);
+		if(deploymentDetail == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.RECORD_IS_INEXISTENCE);
+		}
+		if(!DeploymentStatusEnum.DEPLOYING.getCode().equals(deploymentDetail.getDeploymentStatus())
+				&& !DeploymentStatusEnum.ROLLBACKING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
+			return null;
+		}
+		String thread = deploymentDetail.getDeploymentThread();
+		if(StringUtils.isBlank(thread)) {
+			return null;
+		}
+		
+		AbortDeploymentThreadParam threadParam = new AbortDeploymentThreadParam();
+		threadParam.setAppId(abortParam.getAppId());
+		threadParam.setDeploymentDetailId(abortParam.getDeploymentDetailId());
+		threadParam.setThreadName(thread.split(":")[1]);
+		
+		Map<String, String> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
+		
+		String url = "http://" + thread.split(":")[0] + ":" + serverPort + "/app/deployment/detail/abortDeploymentThread";
+		try(CloseableHttpResponse httResponse = HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam)){
+			int httpCode = httResponse.getStatusLine().getStatusCode();
+			logger.info("url code: {}", httpCode);
+		}catch (Exception e) {
+			logger.error("Failed to abortDeploymentThread, url: " + url, e);
+		}
+		
+		return null;
+	}
+	
+	public Void abortDeploymentThread(LoginUser loginUser, AbortDeploymentThreadParam abortParam) {
+		DeploymentDetailParam bizParam = new DeploymentDetailParam();
+		bizParam.setAppId(abortParam.getAppId());
+		bizParam.setId(abortParam.getDeploymentDetailId());
+		DeploymentDetail deploymentDetail = deploymentDetailRepository.query(loginUser, bizParam);
+		if(deploymentDetail == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.RECORD_IS_INEXISTENCE);
+		}
+		if(!DeploymentStatusEnum.DEPLOYING.getCode().equals(deploymentDetail.getDeploymentStatus())
+				&& !DeploymentStatusEnum.ROLLBACKING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
+			return null;
+		}
+		String thread = deploymentDetail.getDeploymentThread();
+		if(StringUtils.isBlank(thread)) {
+			return null;
+		}
+		DeploymentThreadPoolUtils.interrupt(abortParam.getThreadName());
+		if(DeploymentStatusEnum.DEPLOYING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
+			bizParam.setDeploymentStatus(DeploymentStatusEnum.DEPLOYED_FAILURE.getCode());
+		}else if(DeploymentStatusEnum.ROLLBACKING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
+			bizParam.setDeploymentStatus(DeploymentStatusEnum.ROLLBACK_FAILURE.getCode());
+		}
+		deploymentDetailRepository.updateById(bizParam);
+		return null;
 	}
 }

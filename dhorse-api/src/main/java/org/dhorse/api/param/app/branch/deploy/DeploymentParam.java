@@ -1,4 +1,4 @@
-package org.dhorse.api.param.app.branch;
+package org.dhorse.api.param.app.branch.deploy;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import java.io.Serializable;
  * 
  * @author Dahai 2021-09-08
  */
-public class DeploymentApplicationParam implements Serializable {
+public class DeploymentParam implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

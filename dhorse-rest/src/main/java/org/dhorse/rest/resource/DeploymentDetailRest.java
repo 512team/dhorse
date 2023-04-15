@@ -1,5 +1,7 @@
 package org.dhorse.rest.resource;
 
+import org.dhorse.api.param.app.branch.deploy.AbortDeploymentParam;
+import org.dhorse.api.param.app.branch.deploy.AbortDeploymentThreadParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentApprovementParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentDetailDeletionParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentDetailPageParam;
@@ -67,6 +69,32 @@ public class DeploymentDetailRest extends AbstractRest {
 				.submitToRollback(queryLoginUserByToken(loginToken), requestParam));
 	}
 
+	/**
+	 * 终止部署
+	 * 
+	 * @param abortParam 终止参数
+	 * @return 无
+	 */
+	@RequestMapping("/abortDeployment")
+	public RestResponse<Void> abortDeployment(@CookieValue("login_token") String loginToken,
+			@RequestBody AbortDeploymentParam abortParam) {
+		return this.success(
+				deploymentDetailApplicationService.abortDeployment(queryLoginUserByToken(loginToken), abortParam));
+	}
+	
+	/**
+	 * 终止部署线程
+	 * 
+	 * @param abortParam 终止参数
+	 * @return 无
+	 */
+	@PostMapping("/abortDeploymentThread")
+	public RestResponse<Void> abortDeploymentThread(@CookieValue("login_token") String loginToken,
+			@RequestBody AbortDeploymentThreadParam abortParam) {
+		return this.success(
+				deploymentDetailApplicationService.abortDeploymentThread(queryLoginUserByToken(loginToken), abortParam));
+	}
+	
 	/**
 	 * 删除
 	 * 

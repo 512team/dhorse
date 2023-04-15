@@ -45,6 +45,11 @@ public class DeploymentDetailPO extends BaseAppPO {
 	private List<Integer> deploymentStatuss;
 
 	/**
+	 * 部署线程
+	 */
+	private String deploymentThread;
+
+	/**
 	 * 部署人
 	 */
 	private String deployer;
@@ -110,6 +115,14 @@ public class DeploymentDetailPO extends BaseAppPO {
 
 	public void setDeploymentStatuss(List<Integer> deploymentStatuss) {
 		this.deploymentStatuss = deploymentStatuss;
+	}
+
+	public String getDeploymentThread() {
+		return deploymentThread;
+	}
+
+	public void setDeploymentThread(String deploymentThread) {
+		this.deploymentThread = deploymentThread;
 	}
 
 	public String getDeployer() {

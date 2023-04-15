@@ -91,7 +91,7 @@ public class InitializingDBComponent implements InitializingBean {
 
 	/**
 	 * 
-	 *   读取用户的dhorse版本，初始版本号是0.0.0。
+	 * 读取用户的dhorse版本，初始版本号是0.0.0。
 	 * @return 用户版本号
 	 */
 	private String loadUserVersion(File userVersionFile) throws Exception {

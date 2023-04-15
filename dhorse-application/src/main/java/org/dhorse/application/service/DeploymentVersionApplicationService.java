@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.app.branch.DeploymentApplicationParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionPageParam;
 import org.dhorse.api.response.PageData;
@@ -61,22 +61,22 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		return bizParam;
 	}
 	
-	public Void submitToDeploy(LoginUser loginUser, DeploymentApplicationParam deploymentApplictionParam) {
-		if (StringUtils.isBlank(deploymentApplictionParam.getAppId())) {
+	public Void submitToDeploy(LoginUser loginUser, DeploymentParam deploymentParam) {
+		if (StringUtils.isBlank(deploymentParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
-		hasRights(loginUser, deploymentApplictionParam.getAppId());
+		hasRights(loginUser, deploymentParam.getAppId());
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		if (globalConfigRepository.count(globalConfigParam) < 1) {
 			LogUtils.throwException(logger, MessageCodeEnum.INIT_GLOBAL_CONFIG);
 		}
-		AppEnvPO appEnv = appEnvRepository.queryById(deploymentApplictionParam.getEnvId());
+		AppEnvPO appEnv = appEnvRepository.queryById(deploymentParam.getEnvId());
 		DeploymentVersionPO deploymentVersion = deploymentVersionRepository.queryByVersionName(
-				deploymentApplictionParam.getVersionName());
+				deploymentParam.getVersionName());
 		
 		// 当前环境是否存在部署中
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
-		deploymentDetailParam.setEnvId(deploymentApplictionParam.getEnvId());
+		deploymentDetailParam.setEnvId(deploymentParam.getEnvId());
 		deploymentDetailParam.setDeploymentStatuss(Arrays.asList(DeploymentStatusEnum.DEPLOYING.getCode(),
 				DeploymentStatusEnum.ROLLBACKING.getCode()));
 		DeploymentDetailPO deploymentDetailPO = deploymentDetailRepository.query(deploymentDetailParam);
@@ -86,10 +86,10 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		
 		deploymentDetailParam = new DeploymentDetailParam();
 		deploymentDetailParam.setDeploymentStatus(DeploymentStatusEnum.DEPLOYING_APPROVAL.getCode());
-		deploymentDetailParam.setEnvId(deploymentApplictionParam.getEnvId());
+		deploymentDetailParam.setEnvId(deploymentParam.getEnvId());
 		deploymentDetailParam.setVersionName(deploymentVersion.getVersionName());
 		deploymentDetailParam.setBranchName(deploymentVersion.getBranchName());
-		deploymentDetailParam.setAppId(deploymentApplictionParam.getAppId());
+		deploymentDetailParam.setAppId(deploymentParam.getAppId());
 		deploymentDetailParam.setDeployer(loginUser.getLoginName());
 		deploymentDetailParam.setStartTime(new Date());
 		String deploymentDetailId = deploymentDetailRepository.add(deploymentDetailParam);
@@ -97,7 +97,7 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		DeployParam deployParam = new DeployParam();
 		deployParam.setVersionName(deploymentVersion.getVersionName());
 		deployParam.setBranchName(deploymentVersion.getBranchName());
-		deployParam.setEnvId(deploymentApplictionParam.getEnvId());
+		deployParam.setEnvId(deploymentParam.getEnvId());
 		deployParam.setDeployer(loginUser.getLoginName());
 		deployParam.setDeploymentDetailId(deploymentDetailId);
 		deployParam.setDeploymentStartTime(deploymentDetailParam.getStartTime());

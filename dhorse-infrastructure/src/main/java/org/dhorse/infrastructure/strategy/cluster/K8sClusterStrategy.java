@@ -45,6 +45,7 @@ import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -186,7 +187,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), apiClient);
 
 			if(!checkHealthOfAll(coreApi, namespace, labelSelector)) {
-				logger.error("Failed to create k8s deployment, message: 副本没有完全启动");
+				logger.warn("Failed to create k8s deployment, because the replica is not fully started");
 				return false;
 			}
 			
@@ -910,7 +911,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private void lifecycle(V1Container container, DeployContext context) {
 		V1ExecAction exec = new V1ExecAction();
-		exec.command(Arrays.asList("sh", "-c", "sleep 2"));
+		//5秒后关闭Pod
+		exec.command(Arrays.asList("sh", "-c", "sleep 5"));
 		V1LifecycleHandler preStop = new V1LifecycleHandler();
 		preStop.setExec(exec);
 		V1Lifecycle lifecycle = new V1Lifecycle();
@@ -1249,17 +1251,23 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private boolean checkHealthOfAll(CoreV1Api coreApi, String namespace, String labelSelector) {
 		// 检查pod状态，检查时长20分钟
 		for (int i = 0; i < 60 * 20; i++) {
+			if(DeploymentThreadPoolUtils.isInterrupted()) {
+				return false;
+			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// ingore
+				// ignore
 			}
 			V1PodList podList = null;
 			try {
 				podList = coreApi.listNamespacedPod(namespace, null, null, null, null, labelSelector, null,
 						null, null, null, null);
-			} catch (ApiException e) {
-				logger.error("Failed to list namespaced pod");
+			}catch (ApiException e) {
+				//不打印中断异常的日志
+				if(!e.getMessage().contains("InterruptedIOException")) {
+					logger.error("Failed to list namespaced pod", e);
+				}
 				continue;
 			}
 			if (CollectionUtils.isEmpty(podList.getItems())) {

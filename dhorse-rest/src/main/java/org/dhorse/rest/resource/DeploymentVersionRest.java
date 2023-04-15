@@ -1,6 +1,6 @@
 package org.dhorse.rest.resource;
 
-import org.dhorse.api.param.app.branch.DeploymentApplicationParam;
+import org.dhorse.api.param.app.branch.deploy.DeploymentParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionPageParam;
 import org.dhorse.api.response.PageData;
@@ -56,13 +56,13 @@ public class DeploymentVersionRest extends AbstractRest {
 	/**
 	 * 部署
 	 * 
-	 * @param deploymentApplictionParam 提交部署参数
+	 * @param deploymentParam 提交部署参数
 	 * @return 无
 	 */
 	@RequestMapping("/submitToDeploy")
 	public RestResponse<Void> submitToDeploy(@CookieValue("login_token") String loginToken,
-			@RequestBody DeploymentApplicationParam deploymentApplictionParam) {
+			@RequestBody DeploymentParam deploymentParam) {
 		return this.success(deploymentVersionApplicationService
-				.submitToDeploy(this.queryLoginUserByToken(loginToken), deploymentApplictionParam));
+				.submitToDeploy(this.queryLoginUserByToken(loginToken), deploymentParam));
 	}
 }
