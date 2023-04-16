@@ -538,6 +538,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		podSpec.setAffinity(affinity(context));
 		podSpec.setTolerations(toleration(context));
 		podSpec.setVolumes(volumes(context));
+		if(YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getHostNetwork())) {
+			podSpec.setDnsPolicy("ClusterFirstWithHostNet");
+			podSpec.setHostNetwork(true);
+		}
 		return podSpec;
 	}
 	

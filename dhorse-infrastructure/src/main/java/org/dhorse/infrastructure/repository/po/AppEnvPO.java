@@ -26,6 +26,11 @@ public class AppEnvPO extends BaseAppPO {
 	private String tag;
 
 	/**
+	 * hostNetwork标识
+	 */
+	private Integer hostNetwork;
+
+	/**
 	 * 集群编号
 	 */
 	private String clusterId;
@@ -142,6 +147,14 @@ public class AppEnvPO extends BaseAppPO {
 
 	public void setDeploymentTime(Date deploymentTime) {
 		this.deploymentTime = deploymentTime;
+	}
+
+	public Integer getHostNetwork() {
+		return hostNetwork;
+	}
+
+	public void setHostNetwork(Integer hostNetwork) {
+		this.hostNetwork = hostNetwork;
 	}
 
 	public void setDeploymentOrder(Integer deploymentOrder) {

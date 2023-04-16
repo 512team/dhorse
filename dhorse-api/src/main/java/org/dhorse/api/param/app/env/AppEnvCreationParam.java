@@ -37,6 +37,11 @@ public class AppEnvCreationParam implements Serializable {
 	private String tag;
 
 	/**
+	 * hostNetwork标识
+	 */
+	private Integer hostNetwork;
+
+	/**
 	 * 部署序号（值越小越往前）
 	 */
 	private Integer deploymentOrder;
@@ -146,6 +151,14 @@ public class AppEnvCreationParam implements Serializable {
 
 	public void setDeploymentOrder(Integer deploymentOrder) {
 		this.deploymentOrder = deploymentOrder;
+	}
+
+	public Integer getHostNetwork() {
+		return hostNetwork;
+	}
+
+	public void setHostNetwork(Integer hostNetwork) {
+		this.hostNetwork = hostNetwork;
 	}
 
 	public String getEnvName() {

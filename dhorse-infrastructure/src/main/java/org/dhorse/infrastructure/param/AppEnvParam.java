@@ -22,6 +22,11 @@ public class AppEnvParam extends PageParam {
 	private String tag;
 
 	/**
+	 * hostNetwork标识
+	 */
+	private Integer hostNetwork;
+
+	/**
 	 * 集群编号
 	 */
 	private String clusterId;
@@ -142,6 +147,14 @@ public class AppEnvParam extends PageParam {
 
 	public void setEnvName(String envName) {
 		this.envName = envName;
+	}
+
+	public Integer getHostNetwork() {
+		return hostNetwork;
+	}
+
+	public void setHostNetwork(Integer hostNetwork) {
+		this.hostNetwork = hostNetwork;
 	}
 
 	public Integer getDeploymentOrder() {

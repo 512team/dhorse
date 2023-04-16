@@ -43,6 +43,11 @@ public class AppEnv extends BaseDto {
 	private String tag;
 
 	/**
+	 * hostNetwork标识
+	 */
+	private Integer hostNetwork;
+
+	/**
 	 * 部署版本
 	 */
 	private String versionName;
@@ -169,6 +174,14 @@ public class AppEnv extends BaseDto {
 
 	public void setVersionName(String versionName) {
 		this.versionName = versionName;
+	}
+
+	public Integer getHostNetwork() {
+		return hostNetwork;
+	}
+
+	public void setHostNetwork(Integer hostNetwork) {
+		this.hostNetwork = hostNetwork;
 	}
 
 	public String getEventNofigyUrl() {

@@ -14,6 +14,13 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">HostNetwork</label>
+			<div class="layui-input-block">
+				<input type="radio" name="hostNetwork" value="0" title="关闭" checked="">
+				<input type="radio" name="hostNetwork" value="1" title="开启">
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label required">部署集群</label>
 			<div class="layui-input-block">
 				<select name="clusterId" id="clusterId" lay-filter="clusterId" lay-verify="required" lay-reqtext="部署集群不能为空" disabled="disabled">
@@ -166,6 +173,7 @@
 				form.val("update-form", {
 					"envName": data.envName
 					,"tag": data.tag
+					,"hostNetwork": data.hostNetwork
 					,"deploymentOrder": data.deploymentOrder
 					,"minReplicas": data.minReplicas
 					,"maxReplicas": data.maxReplicas
