@@ -158,9 +158,8 @@ public class InitializingDBComponent implements InitializingBean {
 		try {
 			logger.info("Start to initialize version db schema");
 			for (String sql : sqls) {
-				statement.addBatch(sql);
+				statement.execute(sql);
 			}
-			statement.executeBatch();
 			logger.info("Initialized version db schema successfully");
 		} catch (Exception e) {
 			logger.error("Failed to init data schema", e);
