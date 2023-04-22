@@ -13,6 +13,8 @@ public class K8sUtils {
 	
 	public static final String DEFAULT_TOPOLOGY_KEY = "kubernetes.io/hostname";
 	
+	public static final String HEALTH_PATH = "/health";
+	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	
 	static {

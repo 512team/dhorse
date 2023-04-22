@@ -1,0 +1,256 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>启动检查</legend>
+		</fieldset>
+		<input type="hidden" name="startup.id"/>
+		<input type="hidden" name="startup.appId" id="startup_appId"/>
+		<input type="hidden" name="startup.envId" id="startup_envId"/>
+		<input type="hidden" name="startup.healthType" value="1"/>
+		<div class="layui-form-item">
+			<label class="layui-form-label">健康检查路径</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.healthPath" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">初始延迟检查时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.initialDelay" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">周期检查时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.period" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">检查超时时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.timeout" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">成功次数阈值</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.successThreshold" placeholder="如：1" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">失败次数阈值</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.failureThreshold" placeholder="如：3" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<fieldset class="layui-elem-field layui-field-title" style="margin-top: 5%">
+			<legend>就绪检查</legend>
+		</fieldset>
+		<input type="hidden" name="readiness.id"/>
+		<input type="hidden" name="readiness.appId" id="readiness_appId"/>
+		<input type="hidden" name="readiness.envId" id="readiness_envId"/>
+		<input type="hidden" name="readiness.healthType" value="2"/>
+		<div class="layui-form-item">
+			<label class="layui-form-label">健康检查路径</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.healthPath" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">初始延迟检查时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.initialDelay" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">周期检查时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.period" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">检查超时时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.timeout" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">成功次数阈值</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.successThreshold" placeholder="如：1" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">失败次数阈值</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.failureThreshold" placeholder="如：3" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<fieldset class="layui-elem-field layui-field-title" style="margin-top: 5%">
+			<legend>存活检查</legend>
+		</fieldset>
+		<input type="hidden" name="liveness.id"/>
+		<input type="hidden" name="liveness.appId" id="liveness_appId"/>
+		<input type="hidden" name="liveness.envId" id="liveness_envId"/>
+		<input type="hidden" name="liveness.healthType" value="3"/>
+		<div class="layui-form-item">
+			<label class="layui-form-label">健康检查路径</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.healthPath" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">初始延迟检查时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.initialDelay" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">周期检查时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.period" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">检查超时时间</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.timeout" placeholder="单位：秒" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">成功次数阈值</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.successThreshold" placeholder="如：1" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">失败次数阈值</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.failureThreshold" placeholder="如：3" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+		var appId = localStorage.getItem('appId_' + $("#userName").val());
+		var envId = JSON.parse(parent.data2).envId;
+		
+		$("#startup_appId").val(appId);
+		$("#startup_envId").val(envId);
+		$("#readiness_appId").val(appId);
+		$("#readiness_envId").val(envId);
+		$("#liveness_appId").val(appId);
+		$("#liveness_envId").val(envId);
+		
+		$.ajax({
+			url: '/app/env/ext/queryEnvHealth',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"1": 1}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				if(JSON.stringify(res.data) === '{}'){
+					return false;
+				}
+				
+				var startup = res.data.startup;
+				var readiness = res.data.readiness;
+				var liveness = res.data.liveness;
+				if(!startup){
+					startup = {};
+				}
+				if(!readiness){
+					readiness = {};
+				}
+				if(!liveness){
+					liveness = {};
+				}
+				
+				//给表单赋值
+				form.val("form-data", {
+				  "startup.id": startup.id
+				  ,"startup.healthPath": startup.healthPath
+				  ,"startup.initialDelay": startup.initialDelay
+				  ,"startup.period": startup.period
+				  ,"startup.timeout": startup.timeout
+				  ,"startup.successThreshold": startup.successThreshold
+				  ,"startup.failureThreshold": startup.failureThreshold
+				  ,"readiness.id": readiness.id
+				  ,"readiness.healthPath": readiness.healthPath
+				  ,"readiness.initialDelay": readiness.initialDelay
+				  ,"readiness.period": readiness.period
+				  ,"readiness.timeout": readiness.timeout
+				  ,"readiness.successThreshold": readiness.successThreshold
+				  ,"readiness.failureThreshold": readiness.failureThreshold
+				  ,"liveness.id": liveness.id
+				  ,"liveness.healthPath": liveness.healthPath
+				  ,"liveness.initialDelay": liveness.initialDelay
+				  ,"liveness.period": liveness.period
+				  ,"liveness.timeout": liveness.timeout
+				  ,"liveness.successThreshold": liveness.successThreshold
+				  ,"liveness.failureThreshold": liveness.failureThreshold
+				});
+			},
+			error: function(res){
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+		
+		form.render('select');
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+			var fields = data.field;
+			var params = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				var item = params[fs[0]];
+				if(!params[fs[0]]){
+					params[fs[0]] = {};
+				}
+				params[fs[0]][fs[1]] = fields[fieldName];
+			}
+			
+			$.ajax({
+				url: '/app/env/ext/addOrUpdateEnvHealth',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(params),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.close(layer.index);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+</script>

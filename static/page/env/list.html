@@ -102,6 +102,9 @@
 					  title: '修改'
 					  ,id: 'update'
 					},{
+					  title: '健康检查'
+					  ,id: 'health'
+					},{
 					  title: '亲和容忍'
 					  ,id: 'affinityAndToleration'
 					},{
@@ -125,6 +128,18 @@
 								area: ['50%', '90%'],
 								offset: ['5%', '28%'],
 								content: miniPage.getHrefContent('page/env/update.html')
+							});
+						}else if(data.id == 'health'){
+							data2 = JSON.stringify({'envId': envId});
+							var index = layer.open({
+								title: '健康检查',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['50%', '90%'],
+								offset: ['5%', '28%'],
+								content: miniPage.getHrefContent('page/env/health.html')
 							});
 						}else if(data.id == 'affinityAndToleration'){
 							data2 = JSON.stringify({'envId': envId});

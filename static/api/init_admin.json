@@ -64,7 +64,7 @@
 					"target": "_self"
 				},
 				{
-					"title": "更多",
+					"title": "更多配置",
 					"href": "page/common_config/more.html",
 					"icon": "fa fa-cog",
 					"target": "_self"

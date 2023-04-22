@@ -36,6 +36,7 @@ import org.dhorse.api.vo.AppEnv.EnvExtendNode;
 import org.dhorse.api.vo.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
+import org.dhorse.api.vo.EnvHealth.Item;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
@@ -924,47 +925,68 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		if(context.getAppEnv().getServicePort() == null) {
 			return;
 		}
-		
-		V1Probe startupProbe = new V1Probe();
-		V1Probe readinessProbe = new V1Probe();
-		V1Probe livenessProbe = new V1Probe();
-		//如果没有设置健康检查路径，就用tcp检查，否则就用http检查
-		if(StringUtils.isBlank(context.getAppEnv().getHealthPath())) {
+		startupProbe(container, context);
+		readinessProbe(container, context);
+		livenessProbe(container, context);
+	}
+	
+	private void startupProbe(V1Container container, DeployContext context) {
+		Item item = null;
+		if(context.getEnvHealth() != null) {
+			item = context.getEnvHealth().getStartup();
+		}
+		V1Probe probe = new V1Probe();
+		action(probe, item, context);
+		probe.setInitialDelaySeconds(item != null && item.getInitialDelay() != null ? item.getInitialDelay() : 6);
+		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 1);
+		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
+		probe.setSuccessThreshold(item != null && item.getSuccessThreshold() != null ? item.getSuccessThreshold() : 1);
+		//默认检查300次（300秒）以后仍然没有启动，则重启服务
+		probe.setFailureThreshold(item != null && item.getFailureThreshold() != null ? item.getFailureThreshold() : 300);
+		container.startupProbe(probe);
+	}
+	
+	private void readinessProbe(V1Container container, DeployContext context) {
+		Item item = null;
+		if(context.getEnvHealth() != null) {
+			item = context.getEnvHealth().getReadiness();
+		}
+		V1Probe probe = new V1Probe();
+		action(probe, item, context);
+		probe.setInitialDelaySeconds(item != null && item.getInitialDelay() != null ? item.getInitialDelay() : 6);
+		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 5);
+		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
+		probe.setSuccessThreshold(item != null && item.getSuccessThreshold() != null ? item.getSuccessThreshold() : 1);
+		probe.setFailureThreshold(item != null && item.getFailureThreshold() != null ? item.getFailureThreshold() : 3);
+		container.readinessProbe(probe);
+	}
+	
+	private void livenessProbe(V1Container container, DeployContext context) {
+		Item item = null;
+		if(context.getEnvHealth() != null) {
+			item = context.getEnvHealth().getLiveness();
+		}
+		V1Probe probe = new V1Probe();
+		action(probe, item, context);
+		probe.setInitialDelaySeconds(item != null && item.getInitialDelay() != null ? item.getInitialDelay() : 30);
+		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 5);
+		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
+		probe.setSuccessThreshold(item != null && item.getSuccessThreshold() != null ? item.getSuccessThreshold() : 1);
+		probe.setFailureThreshold(item != null && item.getFailureThreshold() != null ? item.getFailureThreshold() : 3);
+		container.setLivenessProbe(probe);
+	}
+	
+	private void action(V1Probe probe, Item item, DeployContext context) {
+		if(item == null || StringUtils.isBlank(item.getHealthPath())) {
 			V1TCPSocketAction tcpAction = new V1TCPSocketAction();
 			tcpAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
-			startupProbe.setTcpSocket(tcpAction);
-			readinessProbe.setTcpSocket(tcpAction);
-			livenessProbe.setTcpSocket(tcpAction);
+			probe.setTcpSocket(tcpAction);
 		}else {
 			V1HTTPGetAction getAction = new V1HTTPGetAction();
-			getAction.setPath(context.getAppEnv().getHealthPath());
+			getAction.setPath(item.getHealthPath());
 			getAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
-			startupProbe.setHttpGet(getAction);
-			readinessProbe.setHttpGet(getAction);
-			livenessProbe.setHttpGet(getAction);
+			probe.setHttpGet(getAction);
 		}
-		//启动检查
-		startupProbe.setInitialDelaySeconds(6);
-		startupProbe.setPeriodSeconds(1);
-		startupProbe.setTimeoutSeconds(1);
-		startupProbe.setSuccessThreshold(1);
-		//如果单个副本5分钟还没有启动，则重启服务
-		startupProbe.setFailureThreshold(300);
-		container.startupProbe(startupProbe);
-		//就绪检查
-		readinessProbe.setInitialDelaySeconds(6);
-		readinessProbe.setPeriodSeconds(5);
-		readinessProbe.setTimeoutSeconds(1);
-		readinessProbe.setSuccessThreshold(1);
-		readinessProbe.setFailureThreshold(3);
-		container.setReadinessProbe(readinessProbe);
-		//存活检查
-		livenessProbe.setInitialDelaySeconds(30);
-		livenessProbe.setPeriodSeconds(5);
-		livenessProbe.setTimeoutSeconds(1);
-		livenessProbe.setSuccessThreshold(1);
-		livenessProbe.setFailureThreshold(3);
-		container.livenessProbe(livenessProbe);
 	}
 	
 	/**

@@ -36,6 +36,7 @@ import org.dhorse.infrastructure.repository.AppRepository;
 import org.dhorse.infrastructure.repository.ClusterRepository;
 import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
 import org.dhorse.infrastructure.repository.DeploymentVersionRepository;
+import org.dhorse.infrastructure.repository.EnvExtRepository;
 import org.dhorse.infrastructure.repository.GlobalConfigRepository;
 import org.dhorse.infrastructure.repository.ReplicaMetricsRepository;
 import org.dhorse.infrastructure.repository.SysUserRepository;
@@ -86,6 +87,9 @@ public abstract class ApplicationService {
 
 	@Autowired
 	protected AppEnvRepository appEnvRepository;
+	
+	@Autowired
+	protected EnvExtRepository envExtRepository;
 	
 	@Autowired
 	protected AffinityTolerationRepository affinityTolerationRepository;

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.dhorse.api.vo.App;
+import org.dhorse.api.vo.EnvHealth;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
@@ -37,6 +38,8 @@ public class DeployContext {
 	private String branchName;
 
 	private AppEnvPO appEnv;
+
+	private EnvHealth envHealth;
 
 	private List<AffinityTolerationPO> affinitys;
 
@@ -112,6 +115,14 @@ public class DeployContext {
 
 	public void setStartTime(Date startTime) {
 		this.startTime = startTime;
+	}
+
+	public EnvHealth getEnvHealth() {
+		return envHealth;
+	}
+
+	public void setEnvHealth(EnvHealth envHealth) {
+		this.envHealth = envHealth;
 	}
 
 	public List<AffinityTolerationPO> getAffinitys() {

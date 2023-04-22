@@ -1,2 +1,14 @@
 alter table deployment_detail add column deployment_thread VARCHAR (64) DEFAULT NULL COMMENT IS '部署线程' after end_time;
 alter table affinity_toleration alter column open_status TINYINT DEFAULT 1 COMMENT IS '启用状态，0：禁用，1：启用';
+CREATE TABLE env_ext (
+	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
+	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
+	env_id BIGINT DEFAULT NULL COMMENT IS '环境编号',
+	ex_type TINYINT DEFAULT NULL COMMENT IS '扩展类型，1：技术类型，2：亲和容忍，3：健康检查',
+	ext text DEFAULT NULL COMMENT IS '扩展内容，json结构',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+);
+COMMENT ON TABLE env_ext IS '环境扩展';
+CREATE INDEX env_ext_env_id ON env_ext(env_id);
