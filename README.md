@@ -90,9 +90,7 @@ $  bin/dhorse-stop.sh
 
 * [链路追踪](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)
 
-* [镜像制作原理](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md)
-
-* [打包原理](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/maven%E6%89%93%E5%8C%85.md)
+* [打包说明](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%89%93%E5%8C%85%E8%AF%B4%E6%98%8E.md)
 
 ## 社区交流
 
