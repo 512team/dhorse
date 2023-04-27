@@ -1,5 +1,6 @@
 alter table deployment_detail add column deployment_thread VARCHAR (64) DEFAULT NULL COMMENT IS '部署线程' after end_time;
 alter table affinity_toleration alter column open_status TINYINT DEFAULT 1 COMMENT IS '启用状态，0：禁用，1：启用';
+alter table app_member alter column login_name VARCHAR (32) DEFAULT NULL COMMENT IS '登录名';
 CREATE TABLE env_ext (
 	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
 	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
