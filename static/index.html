@@ -23,14 +23,19 @@
     <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <style id="layuimini-bg-color">
-		.layuimini-tool {
-			left: 215px;
-			width: 100px;
+		#app-select-div .layui-col-md6 {
+			width: 100%;
 		}
-		.app-select {
+		#app-select-div .layui-col-md6 .layui-form-select .layui-select-title .layui-input{
 			color: #666;
-			border:none;
-			height: 30px;
+			border: none;
+		}
+		#app-select-div {
+			position: absolute !important;
+			top: 20%;
+			text-align: left;
+			left: 215px;
+			width: 200px;
 		}
     </style>
 </head>
@@ -40,13 +45,13 @@
     <div class="layui-header header">
         <div class="layui-logo layuimini-logo layuimini-back-home"></div>
 
-        <div class="layuimini-header-content">
-			<a>
-                <div class="layuimini-tool" style="text-align:left">
-					<select class="app-select" title="请选择应用">
-					</select>
-				</div>
-            </a>
+        <div class="layuimini-header-content">		
+			<div class="layui-form layui-row layui-col-space16" id="app-select-div" title="请选择或搜索应用">
+			  <div class="layui-col-md6">
+				<select lay-search="" id="app-select" lay-filter="app-select">
+				</select>
+			  </div>
+			</div>
             <!--手机端头部菜单-->
             <ul class="layui-nav layui-layout-left layuimini-header-menu layuimini-mobile-show">
                 <li class="layui-nav-item">
@@ -110,8 +115,9 @@
 <script src="js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 <script src="js/common.js" charset="utf-8"></script>
 <script>
-    layui.use(['jquery', 'layer', 'miniAdmin', 'miniTongji'], function () {
-        var $ = layui.jquery,
+    layui.use(['form', 'jquery', 'layer', 'miniAdmin', 'miniTongji'], function () {
+		var form = layui.form,
+			$ = layui.jquery,
             layer = layui.layer,
             miniAdmin = layui.miniAdmin,
             miniTongji = layui.miniTongji;
@@ -176,11 +182,11 @@
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'pageSize': 100, 'pageNum': 1}),
+			data: JSON.stringify({'pageSize': 10000, 'pageNum': 1}),
 			success: function(res){
 				var opt = '';
 				if(res.data.itemCount == 0){
-					opt = opt.concat("<option>请选择应用</option>");
+					opt = opt.concat("<option>请选择或搜索应用</option>");
 				}else{
 					var data = res.data.items;
 					var appIdKey = 'appId_' + $("#userName").val();
@@ -189,22 +195,26 @@
 							localStorage.setItem(appIdKey, data[k].id);
 						}
 						if(localStorage.getItem(appIdKey) == data[k].id){
+							$("#app-select-div").attr("title", data[k].appName);
 							opt = opt.concat("<option value='"+ data[k].id +"' selected>"+ data[k].appName +"</option>");
 						}else{
 							opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].appName +"</option>");
 						}
 					}
 				}
-				$(".app-select").append(opt);
+				$("#app-select").html(opt);
+				form.render();
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});
 			}
 		});
 		
-		$(".app-select").change(function(){
-			localStorage.setItem('appId_' + $("#userName").val(), $(this).val());
+		form.on('select(app-select)', function(data) {
+			localStorage.setItem('appId_' + $("#userName").val(), data.value);
+			form.render();
 			$(".fa-refresh").click();
+			$("#app-select-div").attr("title", this.innerHTML);
 		});
     });
 </script>
