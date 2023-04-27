@@ -6,6 +6,7 @@ public enum MessageCodeEnum {
 	
 	INVALID_PARAM("200000", "非法的参数"),
 	FAILURE("100000", "操作失败，请查看详细日志信息"),
+	AUTH_FAILURE("200000", "认证失败"),
 	COPY_FILE_FAILURE("200000", "复制文件失败"),
 	HTT_POST_FAILURE("200000", "Post请求失败"),
 	QUERY_FAILURE("200000", "查询失败"),

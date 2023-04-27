@@ -336,7 +336,11 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		if(AuthTypeEnum.TOKEN.getCode().equals(codeRepo.getAuthType())) {
 			gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthToken());
 		}else if(AuthTypeEnum.ACCOUNT.getCode().equals(codeRepo.getAuthType())) {
-			gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthName(), codeRepo.getAuthPassword());
+			try {
+				gitLabApi = GitLabApi.oauth2Login(codeRepo.getUrl(), codeRepo.getAuthName(), codeRepo.getAuthPassword());
+			} catch (GitLabApiException e) {
+				LogUtils.throwException(logger, e, MessageCodeEnum.AUTH_FAILURE);
+			}
 		}
 		gitLabApi.setRequestTimeout(1000, 5 * 1000);
 		return gitLabApi;
