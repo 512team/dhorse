@@ -22,7 +22,7 @@ public class EnvExt extends BaseDto {
 	/**
 	 * 扩展类型，1：技术类型，2：亲和容忍，3：健康检查
 	 */
-	private int exType;
+	private Integer exType;
 
 	/**
 	 * 扩展内容
@@ -45,11 +45,11 @@ public class EnvExt extends BaseDto {
 		this.envId = envId;
 	}
 
-	public int getExType() {
+	public Integer getExType() {
 		return exType;
 	}
 
-	public void setExType(int exType) {
+	public void setExType(Integer exType) {
 		this.exType = exType;
 	}
 
