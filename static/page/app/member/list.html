@@ -8,6 +8,7 @@
 							<input type="text" name="loginName" autocomplete="off" class="layui-input" placeholder="登录名">
 						</div>
 					</div>
+					<input type="hidden" name="appId" id="appId"/>
 					<div class="layui-inline">
 						<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
 					</div>
@@ -69,6 +70,8 @@
 			dropdown = layui.dropdown,
 			miniPage = layui.miniPage,
 			appId = localStorage.getItem('appId_' + $("#userName").val());
+		
+		$("#appId").val(appId);
 		
         table.render({
             elem: '#currentTableId',
