@@ -16,9 +16,6 @@ public class Constants {
 	 */
 	public static final long LOGINED_VALID_MILLISECONDS_TIME = 24 * 60 * 60 * 1000;
 	
-	
-	public static final String DEPLOYED_RELATIVE_PATH = "deployment/";
-	
 	public static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
 	
 	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";

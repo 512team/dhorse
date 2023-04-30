@@ -3,6 +3,7 @@ package org.dhorse.infrastructure.utils;
 import java.util.Date;
 import java.util.List;
 
+import org.dhorse.api.enums.EventTypeEnum;
 import org.dhorse.api.vo.App;
 import org.dhorse.api.vo.EnvHealth;
 import org.dhorse.api.vo.GlobalConfigAgg;
@@ -58,6 +59,11 @@ public class DeployContext {
 	private Date startTime;
 
 	private String deploymentName;
+
+	/**
+	 * 事件类型
+	 */
+	private EventTypeEnum eventType;
 
 	/**
 	 * 日志文件路径
@@ -131,6 +137,14 @@ public class DeployContext {
 
 	public void setAffinitys(List<AffinityTolerationPO> affinitys) {
 		this.affinitys = affinitys;
+	}
+
+	public EventTypeEnum getEventType() {
+		return eventType;
+	}
+
+	public void setEventType(EventTypeEnum eventType) {
+		this.eventType = eventType;
 	}
 
 	public GlobalConfigAgg getGlobalConfigAgg() {

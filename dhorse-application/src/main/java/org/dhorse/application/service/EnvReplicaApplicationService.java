@@ -182,9 +182,9 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 				replicaName, appEnvClusterEntity.getAppEnvPO().getNamespaceName());
 	}
 	
-	public void clearHistoryReplicaMetrics() {
+	public void clearHistoryReplicaMetrics(Date date) {
 		//删除3天前的数据
-		replicaMetricsRepository.delete(DateUtils.addDays(new Date(), -3));
+		replicaMetricsRepository.delete(date);
 	}
 	
 	public void collectReplicaMetrics() {

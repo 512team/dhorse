@@ -31,7 +31,7 @@ import org.dhorse.api.enums.BuildStatusEnum;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.EnvExtTypeEnum;
-import org.dhorse.api.enums.EventCodeEnum;
+import org.dhorse.api.enums.EventTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageBuildTypeEnum;
@@ -174,7 +174,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		message.setVerionName(context.getVersionName());
 		
 		EventResponse<BuildMessage> response = new EventResponse<>();
-		response.setEventCode(EventCodeEnum.BUILD_VERSION.getCode());
+		response.setEventCode(EventTypeEnum.BUILD_VERSION.getCode());
 		response.setData(message);
 		doNotify(url, JsonUtils.toJsonString(response));
 	}
@@ -279,7 +279,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		message.setVerionName(context.getVersionName());
 		
 		EventResponse<DeploymentMessage> response = new EventResponse<>();
-		response.setEventCode(EventCodeEnum.DEPLOY_ENV.getCode());
+		response.setEventCode(EventTypeEnum.DEPLOY_ENV.getCode());
 		response.setData(message);
 		doNotify(url, JsonUtils.toJsonString(response));
 	}
@@ -363,6 +363,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		String logFilePath = Constants.buildVersionLogFile(context.getComponentConstants().getLogPath(),
 				now, id);
 		context.setLogFilePath(logFilePath);
+		context.setEventType(EventTypeEnum.BUILD_VERSION);
 		
 		return context;
 	}
@@ -406,6 +407,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		String logFilePath = Constants.deploymentLogFile(context.getComponentConstants().getLogPath(),
 				context.getStartTime(), context.getId());
 		context.setLogFilePath(logFilePath);
+		context.setEventType(EventTypeEnum.DEPLOY_ENV);
 		return context;
 	}
 	

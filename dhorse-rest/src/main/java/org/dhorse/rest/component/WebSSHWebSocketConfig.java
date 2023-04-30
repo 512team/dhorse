@@ -26,7 +26,7 @@ public class WebSSHWebSocketConfig implements WebSocketConfigurer {
 	
 	@Autowired
 	private BuildVersionLogWebSocket buildVersionLogWebSocket;
-
+	
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry webSocketHandlerRegistry) {
 		webSocketHandlerRegistry.addHandler(terminalWebSocketHandler, "/terminal")

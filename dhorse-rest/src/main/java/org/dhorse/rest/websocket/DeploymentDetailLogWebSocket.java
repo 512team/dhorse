@@ -1,24 +1,23 @@
 package org.dhorse.rest.websocket;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 
-import org.apache.commons.io.input.Tailer;
+import org.dhorse.api.enums.LogTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.vo.DeploymentDetail;
 import org.dhorse.application.service.SysUserApplicationService;
-import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.component.SpringBeanContext;
-import org.dhorse.infrastructure.param.DeploymentDetailParam;
-import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
+import org.dhorse.infrastructure.param.LogRecordParam;
+import org.dhorse.infrastructure.repository.LogRecordRepository;
+import org.dhorse.infrastructure.repository.po.LogRecordPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
-import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
-import org.dhorse.rest.component.ApplicationReadyListner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
@@ -68,30 +67,40 @@ public class DeploymentDetailLogWebSocket implements WebSocketHandler {
 		deploymentLog(loginUser, deploymentDetailId, appId, session);
 	}
 
-	public void deploymentLog(LoginUser loginUser, String deploymentDetailId, String appId, WebSocketSession session) {
+	public void deploymentLog(LoginUser loginUser, String id, String appId, WebSocketSession session) {
 		if (loginUser == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
-		DeploymentDetailRepository deploymentDetailRepository = SpringBeanContext
-				.getBean(DeploymentDetailRepository.class);
-		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
-		deploymentDetailParam.setAppId(appId);
-		deploymentDetailParam.setId(deploymentDetailId);
-		DeploymentDetail deploymentDetail = deploymentDetailRepository.query(loginUser,
-				deploymentDetailParam);
-		ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
-		Tailer tailer = new Tailer(new File(Constants.deploymentLogFile(componentConstants.getLogPath(),
-				deploymentDetail.getStartTime(), deploymentDetail.getId())),
-				new LogTailerListener(session), 1000);
-		ApplicationReadyListner.WEB_SOCKET_CACHE.put(session, tailer);
-		tailer.run();
+		LogRecordRepository repository = SpringBeanContext.getBean(LogRecordRepository.class);
+		LogRecordParam bizParam = new LogRecordParam();
+		bizParam.setAppId(appId);
+		bizParam.setBizId(id);
+		bizParam.setLogType(LogTypeEnum.DEPLOY_ENV.getCode());
+		List<LogRecordPO> records = repository.list(bizParam, null);
+		LogRecordPO lastRecord = null;
+		if(!CollectionUtils.isEmpty(records)) {
+			try {
+				for(LogRecordPO r : records) {
+					session.sendMessage(new TextMessage(r.getContent().replace("\r\n", "<br/>")));
+				}
+			} catch (Exception e) {
+				logger.error("Failed to write log to socket", e);
+			}
+			lastRecord = records.get(records.size() - 1);
+		}else {
+			//如果没有日志，则构建空日志以帮助WebSocketCache.removeExpired回收session
+			lastRecord = new LogRecordPO();
+			lastRecord.setAppId(appId);
+			lastRecord.setBizId(id);
+			lastRecord.setLogType(LogTypeEnum.DEPLOY_ENV.getCode());
+			lastRecord.setCreationTime(new Date());
+			
+		}
+		WebSocketCache.put(session, lastRecord);
 	}
 
 	private void close(WebSocketSession session) {
-		Tailer tailer = ApplicationReadyListner.WEB_SOCKET_CACHE.remove(session);
-		if (tailer != null) {
-			tailer.stop();
-		}
+		WebSocketCache.remove(session);
 		try {
 			session.close();
 		} catch (IOException e) {

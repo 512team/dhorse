@@ -35,8 +35,8 @@
 		</encoder>
 	</appender>
 
-	<appender name="deploy" class="org.dhorse.infrastructure.log.DeployingAppender">
-		<policy class="org.dhorse.infrastructure.log.DeployingPolicy" />
+	<appender name="deploy" class="org.dhorse.rest.log.DeploymentAppender">
+		<policy class="org.dhorse.rest.log.DeploymentPolicy" />
 		<layout class="ch.qos.logback.classic.PatternLayout">
 			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n</pattern>
 		</layout>

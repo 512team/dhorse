@@ -4,7 +4,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -26,8 +25,6 @@ public class ThreadPoolUtils {
 
 	private static final ThreadPoolExecutor THREAD_POOL_TERMINAL = new ThreadPoolExecutor(10, 100, 5, TimeUnit.SECONDS,
 			new ArrayBlockingQueue<Runnable>(1), new ThreadFactoryBuilder().setNameFormat("terminal-pool-%d").build());
-
-	private static final ScheduledExecutorService THREAD_POOL_CLEAR_LOG = Executors.newSingleThreadScheduledExecutor();
 
 	private static final ExecutorService SINGLE_THREAD = Executors.newSingleThreadExecutor();
 
@@ -52,10 +49,6 @@ public class ThreadPoolUtils {
 
 	public static void deploy(Runnable runnable) {
 		THREAD_POOL_DEPLOY.submit(runnable);
-	}
-
-	public static void scheduled(Runnable runnable, long delay, TimeUnit unit) {
-		THREAD_POOL_CLEAR_LOG.scheduleWithFixedDelay(runnable, 0, delay, unit);
 	}
 
 	public static void async(Runnable runnable) {

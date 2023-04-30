@@ -13,3 +13,16 @@ CREATE TABLE env_ext (
 );
 COMMENT ON TABLE env_ext IS '环境扩展';
 CREATE INDEX env_ext_env_id ON env_ext(env_id);
+CREATE TABLE log_record (
+	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
+	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
+	biz_id BIGINT DEFAULT NULL COMMENT IS '业务编号',
+	log_type TINYINT DEFAULT NULL COMMENT IS '日志类型，1：构建日志，2：部署日志',
+	content text DEFAULT NULL COMMENT IS '日志内容',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+);
+COMMENT ON TABLE log_record IS '日志记录';
+CREATE INDEX log_record_biz_id ON log_record(biz_id);
+CREATE INDEX log_record_update_time_biz_id ON log_record(update_time);

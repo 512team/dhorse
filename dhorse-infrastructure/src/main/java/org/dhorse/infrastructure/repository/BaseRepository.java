@@ -45,6 +45,11 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		QueryWrapper<E> queryWrapper = buildQueryWrapper(bizParam, "update_time");
 		return getMapper().selectList(queryWrapper);
 	}
+	
+	public List<E> list(P bizParam, String orderField) {
+		QueryWrapper<E> queryWrapper = buildQueryWrapper(bizParam, orderField);
+		return getMapper().selectList(queryWrapper);
+	}
 
 	public IPage<E> page(P bizParam) {
 		IPage<E> page = new Page<>(bizParam.getPageNum(), bizParam.getPageSize());

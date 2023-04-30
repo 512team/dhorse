@@ -4,7 +4,7 @@ package org.dhorse.api.enums;
  * 事件类型
  * @author Dahi
  */
-public enum EventCodeEnum {
+public enum EventTypeEnum {
 
 	BUILD_VERSION("6001", "构建版本"),
 	DEPLOY_ENV("6002", "部署环境"),
@@ -14,7 +14,7 @@ public enum EventCodeEnum {
 
 	private String value;
 
-	private EventCodeEnum(String code, String value) {
+	private EventTypeEnum(String code, String value) {
 		this.code = code;
 		this.value = value;
 	}
