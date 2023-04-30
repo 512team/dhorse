@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 
 @Repository
@@ -89,6 +90,13 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 		return mapper;
 	}
 
+	public boolean updateByMoreCondition(GlobalConfigParam bizParam) {
+		UpdateWrapper<GlobalConfigPO> wrapper = new UpdateWrapper<>();
+		wrapper.eq("item_type", bizParam.getItemType());
+		wrapper.lt("item_value", bizParam.getItemValue());
+		return getMapper().update(param2Entity(bizParam), wrapper) > 0 ? true : false;
+	}
+	
 	@Override
 	protected GlobalConfigPO updateCondition(GlobalConfigParam bizParam) {
 		GlobalConfigPO po = new GlobalConfigPO();

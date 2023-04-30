@@ -26,3 +26,4 @@ CREATE TABLE log_record (
 COMMENT ON TABLE log_record IS '日志记录';
 CREATE INDEX log_record_biz_id ON log_record(biz_id);
 CREATE INDEX log_record_update_time_biz_id ON log_record(update_time);
+INSERT INTO global_config(item_type, item_value, remark, creation_time, update_time, deletion_status) VALUES (8, now(), NULL, now(), now(), 0);

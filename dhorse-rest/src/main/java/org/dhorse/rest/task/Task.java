@@ -28,7 +28,7 @@ public class Task {
 	 * 收集副本的指标数据
 	 */
 	@Scheduled(cron = "0/5 * * * * ?")
-	public void collectPodMetrics() {
+	public void collectReplicaMetrics() {
 		try {
 			replicaApplicationService.collectReplicaMetrics();
 		}catch(Exception e) {
@@ -40,17 +40,27 @@ public class Task {
 	 * 清除历史数据
 	 */
 	@Scheduled(cron = "0 0/5 * * * ?")
-	public void clearHistoryReplicaMetrics() {
+	public void clearHistoryDB() {
 		Date now = new Date();
 		try {
 			//清除副本指标
 			replicaApplicationService.clearHistoryReplicaMetrics(DateUtils.addDays(now, -3));
 			//清除日志
 			logRecordRepository.deleteBefore(DateUtils.addDays(now, -Constants.DEPLOYED_LOG_EXIST_DAYS));
-			//清除过期的WebSocket
+		}catch(Exception e) {
+			logger.error("Failed to clear db", e);
+		}
+	}
+	
+	/**
+	 * 清除过期的WebSocket
+	 */
+	@Scheduled(cron = "0 0/1 * * * ?")
+	public void clearSocket() {
+		try {
 			WebSocketCache.removeExpired();
 		}catch(Exception e) {
-			logger.error("Failed to collect pod metrics", e);
+			logger.error("Failed to clear websocket", e);
 		}
 	}
 }

@@ -9,6 +9,7 @@ public enum GlobalConfigItemTypeEnum {
 	TRACE_TEMPLATE(5, "链路追踪模板"),
 	ENV_TEMPLATE(6, "环境模板"),
 	CUSTOMIZED_MENU(7, "自义定菜单"),
+	COLLECT_REPLICA_METRICS_TASK_TIME(8, "收集副本指标任务的时间"),
 	MORE(100, "更多"),
 	;
 
