@@ -26,30 +26,30 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 
 ## 快速开始
 
-环境要求：
+1. 环境要求
 | Harbor | kubernetes
 | :----: | :----: |
 | >=2.0.0 | [1.18.x, 1.26.x]
 
-下载安装文件：
+2. 下载安装文件
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
 | 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-jdk1.8-bin-windows.zip)
 | >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-bin-windows.zip)
 
-下载文件之后，然后解压：
+3. 下载文件之后，然后解压
 
 ```bash
 $  tar -xzf dhorse-*.tar.gz
 ```
 
-进入解压目录并查看文件列表：
+4. 进入解压目录并查看文件列表
 
 ```bash
 $  cd dhorse-* && ls -l
 ```
 
-内容如下：
+5. 内容如下
 
 ```bash
 total 24
@@ -62,23 +62,23 @@ drwxr-xr-x 3 root root    46 Oct  6 19:56 lib
 drwxr-xr-x 8 root root    93 Sep 23 16:09 static
 ```
 
-启动服务：
+6. 启动服务
 
 ```bash
 $  bin/dhorse-start.sh
 ```
 
-在浏览器里输入地址：`http://127.0.0.1:8100`，并输入登录信息：admin/admin，登录之后如下图所示：
+7. 在浏览器里输入地址：`http://127.0.0.1:8100`，并输入登录信息：admin/admin，登录之后如下图所示
 
  ![Image text](./static/images/home.jpg)
 
-最后，关闭服务：
+8. 最后，关闭服务
 
 ```bash
 $  bin/dhorse-stop.sh
 ```
 
-了解更多：
+## 了解更多
 
 * [操作手册](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)
 
@@ -91,6 +91,8 @@ $  bin/dhorse-stop.sh
 * [链路追踪](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)
 
 * [打包说明](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%89%93%E5%8C%85%E8%AF%B4%E6%98%8E.md)
+
+* [运行源码](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E8%BF%90%E8%A1%8C%E6%BA%90%E7%A0%81.md)
 
 ## 社区交流
 
