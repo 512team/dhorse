@@ -27,11 +27,13 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 ## 快速开始
 
 1. 环境要求
+
 | Harbor | kubernetes
 | :----: | :----: |
 | >=2.0.0 | [1.18.x, 1.26.x]
 
 2. 下载安装文件
+
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
 | 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.0.0/dhorse-v1.0.0-jdk1.8-bin-windows.zip)
