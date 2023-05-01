@@ -46,6 +46,9 @@ public class AppBranchApplicationService extends DeployApplicationService {
 		}
 		AppPO appPO = validateApp(pageParam.getAppId());
 		GlobalConfigAgg globalConfigAgg = this.globalConfig();
+		if(globalConfigAgg.getCodeRepo() == null) {
+			return zeroPageData(pageParam.getPageSize());
+		}
 		BranchPageParam branchPageParam = new BranchPageParam();
 		branchPageParam.setPageNum(pageParam.getPageNum());
 		branchPageParam.setPageSize(pageParam.getPageSize());
