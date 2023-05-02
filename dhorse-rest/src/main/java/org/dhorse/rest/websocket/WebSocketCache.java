@@ -40,6 +40,9 @@ public class WebSocketCache {
 	
 	public static void removeExpired() {
 		for(Entry<WebSocketSession, LogRecordPO> entity : SESSION_KEY_CACHE.entrySet()) {
+			if(entity.getValue() == null) {
+				remove(entity.getKey());
+			}
 			//如果在120s内没有新日志写入，则认为以后就不会有日志输出了，同时关闭socket
 			if(System.currentTimeMillis() - entity.getValue().getCreationTime().getTime() > 120 * 1000) {
 				remove(entity.getKey());

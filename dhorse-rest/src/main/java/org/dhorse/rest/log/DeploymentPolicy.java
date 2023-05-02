@@ -1,5 +1,6 @@
 package org.dhorse.rest.log;
 
+import java.util.Date;
 import java.util.concurrent.Callable;
 
 import org.dhorse.api.enums.LogTypeEnum;
@@ -56,6 +57,7 @@ public class DeploymentPolicy implements LifeCycle {
 				logRecord.setBizId(deployContext.getId());
 				logRecord.setLogType(logType);
 				logRecord.setContent(message);
+				logRecord.setCreationTime(new Date());
 				
 				WebSocketSession session = WebSocketCache.get(deployContext.getId() + logType);
 				if(session != null) {
