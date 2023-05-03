@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.agent.Metrics;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.MetricsTypeEnum;
@@ -302,5 +303,10 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 		agg.setUsedValues(usedValues);
 		agg.setTimes(times);
 		return agg;
+	}
+	
+	public Void metricsAdd(List<Metrics> param) {
+		logger.info("==============metrics : {}", param);
+		return null;
 	}
 }

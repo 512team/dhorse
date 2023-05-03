@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.dhorse.agent.Metrics;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.app.env.replica.DownloadFileParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
@@ -19,6 +20,7 @@ import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.ReplicaMetricsAgg;
 import org.dhorse.application.service.EnvReplicaApplicationService;
+import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,5 +145,17 @@ public class EnvReplicaRest extends AbstractRest {
 			@RequestBody ReplicaMetricsQueryParam queryParam) {
 		return success(
 				envReplicaApplicationService.replicaMetricsAgg(queryLoginUserByToken(loginToken), queryParam));
+	}
+	
+	/**
+	 * 收集指标
+	 * 
+	 * @param addParam 指标参数
+	 * @return 无
+	 */
+	@AccessNotLogin
+	@PostMapping("/metrics/add")
+	public RestResponse<Void> metricsAdd(@RequestBody List<Metrics> addParam) {
+		return success(envReplicaApplicationService.metricsAdd(addParam));
 	}
 }
