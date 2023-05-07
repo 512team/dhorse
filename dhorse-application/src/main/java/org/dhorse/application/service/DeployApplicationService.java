@@ -3,6 +3,7 @@ package org.dhorse.application.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -438,8 +439,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 			AppExtendNode appExtend =  context.getApp().getAppExtend();
 			Resource resource = new PathMatchingResourcePatternResolver()
 					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/app_node_pom.xml");
-			try (FileOutputStream out = new FileOutputStream(context.getLocalPathOfBranch() + "pom.xml")) {
-				String lines = new String(resource.getInputStream().readAllBytes(), "UTF-8");
+			try (InputStream in = resource.getInputStream();
+					FileOutputStream out = new FileOutputStream(context.getLocalPathOfBranch() + "pom.xml")) {
+				byte[] buffer = new byte[in.available()];
+				in.read(buffer);
+				String lines = new String(buffer, "UTF-8");
 				String result = lines.replace("${nodeVersion}", appExtend.getNodeVersion())
 					.replace("${npmVersion}", appExtend.getNpmVersion().substring(1))
 					.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
