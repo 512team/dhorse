@@ -88,7 +88,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		} finally {
 			gitLabApi.close();
 		}
-		logger.error("End to download branch");
+		logger.info("End to download branch");
 		return true;
 	}
 

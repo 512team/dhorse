@@ -2,8 +2,8 @@ package org.dhorse.rest.resource;
 
 import java.util.List;
 
-import org.dhorse.api.param.global.GlolabConfigDeletionParam;
-import org.dhorse.api.param.global.GlolabConfigPageParam;
+import org.dhorse.api.param.global.GlobalConfigDeletionParam;
+import org.dhorse.api.param.global.GlobalConfigPageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.GlobalConfigAgg;
@@ -115,7 +115,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/traceTemplate/page")
-	public RestResponse<PageData<TraceTemplate>> traceTemplatePage(@RequestBody GlolabConfigPageParam pageParam) {
+	public RestResponse<PageData<TraceTemplate>> traceTemplatePage(@RequestBody GlobalConfigPageParam pageParam) {
 		return this.success(globalConfigApplicationService.traceTemplatePage(pageParam));
 	}
 
@@ -151,7 +151,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 */
 	@AccessOnlyAdmin
 	@PostMapping("/traceTemplate/delete")
-	public RestResponse<Void> delete(@RequestBody GlolabConfigDeletionParam deleteParam) {
+	public RestResponse<Void> delete(@RequestBody GlobalConfigDeletionParam deleteParam) {
 		return this.success(globalConfigApplicationService.delete(deleteParam));
 	}
 
@@ -162,7 +162,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/envTemplate/page")
-	public RestResponse<PageData<EnvTemplate>> envTemplatePage(@RequestBody GlolabConfigPageParam pageParam) {
+	public RestResponse<PageData<EnvTemplate>> envTemplatePage(@RequestBody GlobalConfigPageParam pageParam) {
 		return this.success(globalConfigApplicationService.envTemplatePage(pageParam));
 	}
 
@@ -208,7 +208,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/customizedMenu/page")
-	public RestResponse<PageData<CustomizedMenu>> customizedMenuPage(@RequestBody GlolabConfigPageParam pageParam) {
+	public RestResponse<PageData<CustomizedMenu>> customizedMenuPage(@RequestBody GlobalConfigPageParam pageParam) {
 		return this.success(globalConfigApplicationService.customizedMenuPage(pageParam));
 	}
 

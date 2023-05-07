@@ -7,6 +7,8 @@ public class K8sUtils {
 	
 	public static final String DHORSE_NAMESPACE = "dhorse-system";
 	
+	public static final String DOCKER_REGISTRY_KEY = "dhorse-docker-registry";
+	
 	public static final String DATA_PATH = "/tmp/data/";
 	
 	public static final String APP_KEY = "app";
@@ -21,7 +23,7 @@ public class K8sUtils {
 		SYSTEM_NAMESPACES.add("kube-node-lease");
 		SYSTEM_NAMESPACES.add("kube-public");
 		SYSTEM_NAMESPACES.add("kube-system");
-		SYSTEM_NAMESPACES.add("dhorse-system");
+		SYSTEM_NAMESPACES.add(DHORSE_NAMESPACE);
 	}
 	
 	public static String getDeploymentName(String appName, String appEnvTag) {

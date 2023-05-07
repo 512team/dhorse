@@ -11,6 +11,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,11 +40,14 @@ import org.dhorse.api.vo.AppExtendJava;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvHealth.Item;
 import org.dhorse.api.vo.EnvReplica;
+import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.vo.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson;
+import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson.Auth;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
@@ -100,6 +105,7 @@ import io.kubernetes.client.openapi.models.V1LabelSelector;
 import io.kubernetes.client.openapi.models.V1LabelSelectorRequirement;
 import io.kubernetes.client.openapi.models.V1Lifecycle;
 import io.kubernetes.client.openapi.models.V1LifecycleHandler;
+import io.kubernetes.client.openapi.models.V1LocalObjectReference;
 import io.kubernetes.client.openapi.models.V1Namespace;
 import io.kubernetes.client.openapi.models.V1NamespaceList;
 import io.kubernetes.client.openapi.models.V1NodeAffinity;
@@ -119,6 +125,8 @@ import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.openapi.models.V1PreferredSchedulingTerm;
 import io.kubernetes.client.openapi.models.V1Probe;
 import io.kubernetes.client.openapi.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1Secret;
+import io.kubernetes.client.openapi.models.V1SecretList;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServiceBackendPort;
 import io.kubernetes.client.openapi.models.V1ServiceList;
@@ -138,6 +146,63 @@ public class K8sClusterStrategy implements ClusterStrategy {
 
 	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy.class);
 
+	@Override
+	public Void createSecret(ClusterPO clusterPO, ImageRepo imageRepo) {
+		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		CoreV1Api coreApi = new CoreV1Api(apiClient);
+		V1Secret secret = new V1Secret();
+		secret.setApiVersion("v1");
+		secret.setKind("Secret");
+		secret.setType("kubernetes.io/dockerconfigjson");
+		V1ObjectMeta meta = new V1ObjectMeta();
+		meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
+		meta.setLabels(Collections.singletonMap("app", K8sUtils.DOCKER_REGISTRY_KEY));
+		secret.setMetadata(meta);
+		secret.setData(dockerConfigData(imageRepo));
+		
+		try {
+			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
+			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
+				return null;
+			}
+			for(V1Namespace n : namespaceList.getItems()) {
+				String namespace = n.getMetadata().getName();
+				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
+						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
+					continue;
+				}
+				if(!"Active".equals(n.getStatus().getPhase())){
+					continue;
+				}
+				V1SecretList secretList = coreApi.listNamespacedSecret(namespace, null, null, null, null,
+						"app=" + K8sUtils.DOCKER_REGISTRY_KEY, null, null, null, null, null);
+				if(CollectionUtils.isEmpty(secretList.getItems())) {
+					coreApi.createNamespacedSecret(namespace, secret, null, null, null, null);
+				}else {
+					coreApi.replaceNamespacedSecret(K8sUtils.DOCKER_REGISTRY_KEY, namespace, secret, null, null, null, null);
+				}
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.IMAGE_REPO_AUTH_FAILURE);
+		}
+		return null;
+	}
+	
+	private Map<String, byte[]> dockerConfigData(ImageRepo imageRepo) {
+		Map<String, byte[]> data = new HashMap<>();
+		Encoder encoder = Base64.getEncoder();
+		String auth = encoder.encodeToString((imageRepo.getAuthName() + ":" + imageRepo.getAuthPassword()).getBytes());
+		Auth auths = new Auth();
+		auths.setUsername(imageRepo.getAuthName());
+		auths.setPassword(imageRepo.getAuthPassword());
+		auths.setAuth(auth);
+		DockerConfigJson dockerConfigJson = new DockerConfigJson();
+		dockerConfigJson.setAuths(Collections.singletonMap(imageRepo.getUrl(), auths));
+		data.put(".dockerconfigjson", JsonUtils.toJsonString(dockerConfigJson).getBytes());
+		return data;
+	}
+	
 	@Override
 	public Replica readDeployment(ClusterPO clusterPO, AppEnv appEnv, AppPO appPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
@@ -521,6 +586,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1PodSpec podSpec = new V1PodSpec();
 		podSpec.setInitContainers(initContainer(context));
 		podSpec.setContainers(containers(context));
+		V1LocalObjectReference r = new V1LocalObjectReference();
+		r.setName(K8sUtils.DOCKER_REGISTRY_KEY);
+		podSpec.setImagePullSecrets(Arrays.asList(r));
 		podSpec.setAffinity(affinity(context));
 		podSpec.setTolerations(toleration(context));
 		podSpec.setVolumes(volumes(context));
@@ -1707,16 +1775,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public boolean deleteNamespace(ClusterPO clusterPO, String namespaceName) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		String labelSelector = "custom.name=" + namespaceName;
 		try {
-			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, labelSelector, null, null, null, null, null);
-			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
-				LogUtils.throwException(logger, MessageCodeEnum.NAMESPACE_INEXISTENCE);
-			}
-			V1ObjectMeta metaData = new V1ObjectMeta();
-			metaData.setName(namespaceName);
-			V1Namespace namespace = new V1Namespace();
-			namespace.setMetadata(metaData);
+			coreApi.readNamespace(namespaceName, null);
 			coreApi.deleteNamespace(namespaceName, null, null, null, null, null, null);
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();

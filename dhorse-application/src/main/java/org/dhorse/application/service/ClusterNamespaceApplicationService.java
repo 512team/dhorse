@@ -3,14 +3,18 @@ package org.dhorse.application.service;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespaceCreationParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespaceDeletionParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
+import org.dhorse.api.vo.GlobalConfigAgg;
+import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +56,21 @@ public class ClusterNamespaceApplicationService extends BaseApplicationService<C
 		if (clusterPO == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);
 		}
-		clusterStrategy(clusterPO.getClusterType()).addNamespace(clusterPO,
+		
+		ClusterStrategy cluster = clusterStrategy(clusterPO.getClusterType());
+		
+		//1.添加命名空间
+		cluster.addNamespace(clusterPO,
 				clusterNamespaceCreationParam.getNamespaceName());
+		
+		//2.为命名空间增加镜像仓库认证key
+		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
+		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
+			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
+		}
+		
 		return null;
 	}
 	

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.AuthTypeEnum;
+import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.cluster.ClusterCreationParam;
@@ -17,12 +18,15 @@ import org.dhorse.api.param.cluster.ClusterUpdateParam;
 import org.dhorse.api.param.cluster.LogSwitchParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.Cluster;
+import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.LogCollectorStatus;
-import org.dhorse.infrastructure.param.ClusterParam;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
-import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.infrastructure.param.ClusterParam;
+import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -70,9 +74,16 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		clusterPO.setClusterUrl(clusterCreationParam.getClusterUrl());
 		clusterPO.setAuthToken(clusterCreationParam.getAuthToken());
 		//1.首先添加命名空间
-		clusterStrategy(clusterCreationParam.getClusterType())
-			.addNamespace(clusterPO, K8sUtils.DHORSE_NAMESPACE);
-		//2.再保存集群信息
+		ClusterStrategy cluster = clusterStrategy(clusterCreationParam.getClusterType());
+		cluster.addNamespace(clusterPO, K8sUtils.DHORSE_NAMESPACE);
+		//2.创建镜像仓库认证key
+		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
+		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
+			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
+		}
+		//3.保存集群信息
 		ClusterParam clusterParam = new ClusterParam();
 		clusterParam.setClusterName(clusterCreationParam.getClusterName());
 		if (clusterRepository.query(clusterParam) != null) {

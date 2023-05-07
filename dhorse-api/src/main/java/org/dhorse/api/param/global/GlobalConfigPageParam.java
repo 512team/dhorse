@@ -7,7 +7,7 @@ import org.dhorse.api.param.PageParam;
  * 
  * @author Dahai 2022-10-14
  */
-public class GlolabConfigPageParam extends PageParam {
+public class GlobalConfigPageParam extends PageParam {
 
 	private static final long serialVersionUID = 1L;
 

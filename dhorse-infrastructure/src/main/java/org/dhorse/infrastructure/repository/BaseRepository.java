@@ -41,6 +41,11 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		return count.longValue();
 	}
 
+	public List<E> listAll() {
+		P bizParam = ClassUtils.newParameterizedTypeInstance(getClass().getGenericSuperclass(), 0);
+		return list(bizParam);
+	}
+	
 	public List<E> list(P bizParam) {
 		QueryWrapper<E> queryWrapper = buildQueryWrapper(bizParam, "update_time");
 		return getMapper().selectList(queryWrapper);

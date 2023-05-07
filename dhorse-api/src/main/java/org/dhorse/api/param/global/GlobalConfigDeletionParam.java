@@ -7,7 +7,7 @@ import java.io.Serializable;
  * 
  * @author Dahai 2022-10-14
  */
-public class GlolabConfigDeletionParam implements Serializable {
+public class GlobalConfigDeletionParam implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

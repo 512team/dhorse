@@ -3,6 +3,8 @@ package org.dhorse.rest.websocket;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.dhorse.api.enums.LogTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -81,7 +83,8 @@ public class DeploymentDetailLogWebSocket implements WebSocketHandler {
 		if(!CollectionUtils.isEmpty(records)) {
 			try {
 				for(LogRecordPO r : records) {
-					session.sendMessage(new TextMessage(r.getContent().replace("\r\n", "<br/>")));
+					Matcher m = Pattern.compile("\r\n|\n|\r").matcher(r.getContent());
+					session.sendMessage(new TextMessage(m.replaceAll("<br/>")));
 				}
 			} catch (Exception e) {
 				logger.error("Failed to write log to socket", e);

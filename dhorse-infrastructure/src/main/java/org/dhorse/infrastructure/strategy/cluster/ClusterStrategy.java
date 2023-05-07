@@ -3,15 +3,16 @@ package org.dhorse.infrastructure.strategy.cluster;
 import java.io.InputStream;
 import java.util.List;
 
+import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.vo.AppEnv;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
-import org.dhorse.api.vo.AppEnv;
-import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.api.vo.GlobalConfigAgg.ImageRepo;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.DeployContext;
 
@@ -19,6 +20,8 @@ import io.kubernetes.client.custom.PodMetricsList;
 
 public interface ClusterStrategy {
 
+	Void createSecret(ClusterPO clusterPO, ImageRepo imageRepo);
+	
 	Replica readDeployment(ClusterPO clusterPO, AppEnv appEnv, AppPO appPO);
 	
 	boolean createDeployment(DeployContext context);
