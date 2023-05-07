@@ -48,7 +48,7 @@ public class JvmMetricsAgent {
 			metaspace(replicaName, metricsList);
 			thread(replicaName, metricsList);
 			HttpUtils.sendPost(args, metricsList.toString());
-		}, 0, 1, TimeUnit.SECONDS);
+		}, 0, 5, TimeUnit.SECONDS);
 	}
 
 	private static void heapMemory(String replicaName, List<Metrics> metricsList) {

@@ -207,11 +207,11 @@
 					$("#baseImageDiv").show();
 				}
 				var department = res.data.firstDepartment;
-				if(department != ''){
+				if(res.data.secondDepartment != ''){
 					department += ' - ';
 					department += res.data.secondDepartment;
 				}
-				if(department != ''){
+				if(res.data.thirdDepartment != ''){
 					department += ' - ';
 					department += res.data.thirdDepartment;
 				}
