@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -440,21 +439,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 			Resource resource = new PathMatchingResourcePatternResolver()
 					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/app_node_pom.xml");
 			try (FileOutputStream out = new FileOutputStream(context.getLocalPathOfBranch() + "pom.xml")) {
-				List<String> lines = FileUtils.readLines(resource.getFile(), Charset.forName("UTF-8"));
-				StringBuilder lineStr = new StringBuilder();
-				for(int i = 0; i < lines.size(); i++) {
-					String l = lines.get(i);
-					//为了提高替换效率，判断文件的行号
-					if(i == 50) {
-						l = l.replace("${nodeVersion}", appExtend.getNodeVersion());
-					}else if(i == 51) {
-						l = l.replace("${npmVersion}", appExtend.getNpmVersion().substring(0));
-					}else if(i == 52) {
-						l = l.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
-					}
-					lineStr.append(l).append("\n");
-				}
-				out.write(lineStr.toString().getBytes("UTF-8"));
+				String lines = new String(resource.getInputStream().readAllBytes(), "UTF-8");
+				String result = lines.replace("${nodeVersion}", appExtend.getNodeVersion())
+					.replace("${npmVersion}", appExtend.getNpmVersion().substring(1))
+					.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
+				out.write(result.toString().getBytes("UTF-8"));
 			} catch (IOException e) {
 				logger.error("Failed to build tmp app", e);
 			}
