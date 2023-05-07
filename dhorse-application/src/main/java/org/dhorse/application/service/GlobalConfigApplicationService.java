@@ -24,8 +24,8 @@ import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.param.global.GlolabConfigDeletionParam;
-import org.dhorse.api.param.global.GlolabConfigPageParam;
+import org.dhorse.api.param.global.GlobalConfigDeletionParam;
+import org.dhorse.api.param.global.GlobalConfigPageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.GlobalConfigAgg;
 import org.dhorse.api.vo.GlobalConfigAgg.BaseGlobalConfig;
@@ -41,7 +41,9 @@ import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.model.Menu;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
+import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
@@ -206,10 +208,19 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		}
 		if(ImageRepoTypeEnum.HARBOR.getValue().equals(imageRepo.getType())) {
 			try {
-				createProject(imageRepo, true);
+				createProject(imageRepo, false);
 			}catch(ApplicationException e) {
 				//这里为了兼容Harbor2.0接口参数类型的不同，再次调用
-				createProject(imageRepo, 1);
+				createProject(imageRepo, 0);
+			}
+		}
+		
+		//创建镜像仓库认证key
+		List<ClusterPO> clusters = clusterRepository.listAll();
+		if(!CollectionUtils.isEmpty(clusters)) {
+			for(ClusterPO c : clusters) {
+				ClusterStrategy cluster = clusterStrategy(c.getClusterType());
+				cluster.createSecret(c, imageRepo);
 			}
 		}
 		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
@@ -248,7 +259,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		return addOrUpdateGlobalConfig(ldap);
 	}
 	
-	public PageData<EnvTemplate> envTemplatePage(GlolabConfigPageParam pageParam) {
+	public PageData<EnvTemplate> envTemplatePage(GlobalConfigPageParam pageParam) {
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setPageNum(pageParam.getPageNum());
 		bizParam.setPageSize(pageParam.getPageSize());
@@ -337,7 +348,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		}
 	}
 	
-	public PageData<TraceTemplate> traceTemplatePage(GlolabConfigPageParam pageParam) {
+	public PageData<TraceTemplate> traceTemplatePage(GlobalConfigPageParam pageParam) {
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setPageNum(pageParam.getPageNum());
 		bizParam.setPageSize(pageParam.getPageSize());
@@ -489,7 +500,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		return addOrUpdateGlobalConfig(more);
 	}
 	
-	public Void delete(GlolabConfigDeletionParam deleteParam) {
+	public Void delete(GlobalConfigDeletionParam deleteParam) {
 		GlobalConfigPO globalConfigPO = globalConfigRepository.queryById(deleteParam.getId());
 		if(GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode().equals(globalConfigPO.getItemType())) {
 			AppEnvParam appEnvParam = new AppEnvParam();
@@ -503,7 +514,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		return null;
 	}
 	
-	public PageData<CustomizedMenu> customizedMenuPage(GlolabConfigPageParam pageParam) {
+	public PageData<CustomizedMenu> customizedMenuPage(GlobalConfigPageParam pageParam) {
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setPageNum(pageParam.getPageNum());
 		bizParam.setPageSize(pageParam.getPageSize());
