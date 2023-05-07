@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.dhorse</groupId>
 		<artifactId>dhorse-parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.1.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>dhorse-application</artifactId>
@@ -16,6 +16,10 @@
 		<dependency>
 			<groupId>org.dhorse</groupId>
 			<artifactId>dhorse-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.dhorse</groupId>
+			<artifactId>dhorse-agent</artifactId>
 		</dependency>
 	</dependencies>
 </project>
