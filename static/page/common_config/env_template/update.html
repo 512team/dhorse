@@ -89,12 +89,14 @@
 				<input type="text" name="autoScalingCpu" placeholder="默认值：80" autocomplete="off" class="layui-input">
 			</div>
 		</div>
+		<!--
 		<div class="layui-form-item">
 			<label class="layui-form-label">自动扩容内存率（%）</label>
 			<div class="layui-input-block">
 				<input type="text" name="autoScalingMemory" placeholder="默认值：80" autocomplete="off" class="layui-input">
 			</div>
 		</div>
+		-->
 		<div class="layui-form-item">
 			<label class="layui-form-label">部署审批</label>
 			<div class="layui-input-block">
@@ -163,7 +165,7 @@
 					,"minorPorts": data.minorPorts
 					,"requiredDeployApproval": data.requiredDeployApproval
 					,"requiredMerge": data.requiredMerge
-					,"autoScalingMemory": data.autoScalingMemory
+					//,"autoScalingMemory": data.autoScalingMemory
 					,"healthPath": data.healthPath
 					,"description": data.description
 				});

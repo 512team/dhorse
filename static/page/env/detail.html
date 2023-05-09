@@ -84,12 +84,14 @@
 				<label class="text-value" id="autoScalingCpu"></label>
 			</div>
 		</div>
+		<!--
 		<div class="layui-form-item">
 			<label class="layui-form-label">自动扩容内存率（%）：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="autoScalingMemory"></label>
 			</div>
 		</div>
+		-->
 		<div class="layui-form-item">
 			<label class="layui-form-label">部署审批：</label>
 			<div class="layui-input-block">
@@ -205,7 +207,7 @@
 				$("#replicaCpu").text(res.data.replicaCpu);
 				$("#replicaMemory").text(res.data.replicaMemory);
 				$("#autoScalingCpu").text(res.data.autoScalingCpu);
-				$("#autoScalingMemory").text(res.data.autoScalingMemory);
+				//$("#autoScalingMemory").text(res.data.autoScalingMemory);
 				if(res.data.requiredDeployApproval == 0){
 					$("#requiredDeployApproval").text('否');
 				}else{
