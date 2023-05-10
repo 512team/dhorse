@@ -1,13 +1,11 @@
-package org.dhorse.agent;
-
-import java.io.Serializable;
+package org.dhorse.api.vo;
 
 /**
- * 指标模型
+ * 指标
  * 
- * @author 无双 2023-05-02
+ * @author Dahai 2023-02-28
  */
-public class Metrics implements Serializable {
+public class Metrics extends BaseDto {
 
 	private static final long serialVersionUID = 1L;
 
@@ -52,7 +50,7 @@ public class Metrics implements Serializable {
 
 	@Override
 	public String toString() {
-		return "{\"replicaName\":\"" + replicaName + "\", \"metricsType\":" + metricsType
+		return "{\"replicaName\":\"" + replicaName + "\", \"metricsType\":" + metricsType + ","
 				+ ", \"metricsValue\":" + metricsValue + "}";
 	}
 }

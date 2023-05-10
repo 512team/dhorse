@@ -223,6 +223,10 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 				cluster.createSecret(c, imageRepo);
 			}
 		}
+		
+		//构建DHorseAgent镜像
+		asynBuildDHorseAgentImage();
+		
 		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		return addOrUpdateGlobalConfig(imageRepo);
 	}

@@ -71,9 +71,14 @@ public class DeployContext {
 	private String logFilePath;
 
 	/**
-	 * 代理镜像名称
+	 * 链路追踪镜像名称
 	 */
-	private String fullNameOfAgentImage;
+	private String fullNameOfTraceAgentImage;
+
+	/**
+	 * DHorse代理镜像名称
+	 */
+	private String fullNameOfDHorseAgentImage;
 
 	public String getSubmitter() {
 		return submitter;
@@ -235,12 +240,20 @@ public class DeployContext {
 		this.logFilePath = logFilePath;
 	}
 
-	public String getFullNameOfAgentImage() {
-		return fullNameOfAgentImage;
+	public String getFullNameOfTraceAgentImage() {
+		return fullNameOfTraceAgentImage;
 	}
 
-	public void setFullNameOfAgentImage(String fullNameOfAgentImage) {
-		this.fullNameOfAgentImage = fullNameOfAgentImage;
+	public void setFullNameOfTraceAgentImage(String fullNameOfTraceAgentImage) {
+		this.fullNameOfTraceAgentImage = fullNameOfTraceAgentImage;
+	}
+
+	public String getFullNameOfDHorseAgentImage() {
+		return fullNameOfDHorseAgentImage;
+	}
+
+	public void setFullNameOfDHorseAgentImage(String fullNameOfDHorseAgentImage) {
+		this.fullNameOfDHorseAgentImage = fullNameOfDHorseAgentImage;
 	}
 
 }

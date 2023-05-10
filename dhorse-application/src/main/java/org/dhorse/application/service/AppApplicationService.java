@@ -253,12 +253,6 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			}
 			logger.info("End to build tomcat image");
 		}
-		
-//		//更新镜像
-//		AppParam appParam = new AppParam();
-//		appParam.setId(appId);
-//		appParam.setBaseImage(fullNameOfImage);
-//		this.appRepository.updateById(appParam);
 	}
 	
 	private String doBuildJdkImage(String version, GlobalConfigAgg globalConfigAgg) {

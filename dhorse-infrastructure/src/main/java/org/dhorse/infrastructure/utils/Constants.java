@@ -24,7 +24,7 @@ public class Constants {
 	
 	public static final int DEPLOYED_LOG_EXIST_DAYS = 14;
 	
-	public static final String CONTAINER_WORK_HOME = "/usr/local/";
+	public static final String USR_LOCAL_HOME = "/usr/local/";
 	
 	public static final String DHORSE_TAG = "dhorse";
 	

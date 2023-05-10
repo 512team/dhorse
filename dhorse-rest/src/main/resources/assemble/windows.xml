@@ -53,6 +53,12 @@
 			<destName>${project.artifactId}-${project.version}.jar</destName>
 			<fileMode>0444</fileMode>
 		</file>
+		<file>
+			<source>../dhorse-agent/target/dhorse-agent-${project.version}.jar</source>
+			<outputDirectory>/lib/ext</outputDirectory>
+			<destName>dhorse-agent-${project.version}.jar</destName>
+			<fileMode>0444</fileMode>
+		</file>
 	</files>
 	<dependencySets>
 		<dependencySet>

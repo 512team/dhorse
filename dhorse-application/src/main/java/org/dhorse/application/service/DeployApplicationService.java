@@ -102,8 +102,6 @@ public abstract class DeployApplicationService extends ApplicationService {
 	
 	private static final String MAVEN_REPOSITORY_URL = "https://repo.maven.apache.org/maven2";
 	
-    //private static Map<String, Thread> threadMap = new ConcurrentHashMap<>();
-	
 	@Value("${server.port}")
 	private Integer serverPort;
 
@@ -403,7 +401,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setVersionName(deployParam.getVersionName());
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), deployParam.getVersionName());
 		context.setFullNameOfImage(fullNameOfImage);
-		context.setFullNameOfAgentImage(fullNameOfAgentImage(context));
+		context.setFullNameOfTraceAgentImage(fullNameOfTraceAgentImage(context));
+		context.setFullNameOfDHorseAgentImage(fullNameOfDHorseAgentImage(context.getGlobalConfigAgg().getImageRepo()));
 		String logFilePath = Constants.deploymentLogFile(context.getComponentConstants().getLogPath(),
 				context.getStartTime(), context.getId());
 		context.setLogFilePath(logFilePath);
@@ -635,7 +634,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
 					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
 			Jib.from(baseImage)
-				.addLayer(targetFiles, AbsoluteUnixPath.get(Constants.CONTAINER_WORK_HOME))
+				.addLayer(targetFiles, AbsoluteUnixPath.get(Constants.USR_LOCAL_HOME))
 				.setEntrypoint(entrypoint)
 				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效。
 				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也无法使用，

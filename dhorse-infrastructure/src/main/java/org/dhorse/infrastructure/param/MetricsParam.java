@@ -1,11 +1,11 @@
 package org.dhorse.infrastructure.param;
 
 /**
- * 副本指标
+ * 指标
  * 
  * @author Dahai 2023-02-28
  */
-public class ReplicaMetricsParam extends PageParam {
+public class MetricsParam extends PageParam {
 
 	private static final long serialVersionUID = 1L;
 
@@ -15,33 +15,17 @@ public class ReplicaMetricsParam extends PageParam {
 	private String replicaName;
 
 	/**
-	 * 指标类型，1：CPU（m），2：内存（MB）
+	 * 指标类型，见：MetricsTypeEnum
 	 */
 	private Integer metricsType;
 
 	/**
-	 * 最小值
+	 * 指标值
 	 */
-	private Long minValue;
+	private Long metricsValue;
 
-	/**
-	 * 最大值
-	 */
-	private Long maxValue;
-
-	/**
-	 * 使用值
-	 */
-	private Long usedValue;
-	
-	/**
-	 * 开始时间
-	 */
 	private String startTime;
-	
-	/**
-	 * 结束时间
-	 */
+
 	private String endTime;
 
 	public String getReplicaName() {
@@ -60,28 +44,12 @@ public class ReplicaMetricsParam extends PageParam {
 		this.metricsType = metricsType;
 	}
 
-	public Long getMinValue() {
-		return minValue;
+	public Long getMetricsValue() {
+		return metricsValue;
 	}
 
-	public void setMinValue(Long minValue) {
-		this.minValue = minValue;
-	}
-
-	public Long getMaxValue() {
-		return maxValue;
-	}
-
-	public void setMaxValue(Long maxValue) {
-		this.maxValue = maxValue;
-	}
-
-	public Long getUsedValue() {
-		return usedValue;
-	}
-
-	public void setUsedValue(Long usedValue) {
-		this.usedValue = usedValue;
+	public void setMetricsValue(Long metricsValue) {
+		this.metricsValue = metricsValue;
 	}
 
 	public String getStartTime() {
@@ -99,6 +67,5 @@ public class ReplicaMetricsParam extends PageParam {
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
-	
-	
+
 }

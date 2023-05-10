@@ -1,8 +1,10 @@
 package org.dhorse.application.service;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -38,7 +40,7 @@ import org.dhorse.infrastructure.repository.DeploymentDetailRepository;
 import org.dhorse.infrastructure.repository.DeploymentVersionRepository;
 import org.dhorse.infrastructure.repository.EnvExtRepository;
 import org.dhorse.infrastructure.repository.GlobalConfigRepository;
-import org.dhorse.infrastructure.repository.ReplicaMetricsRepository;
+import org.dhorse.infrastructure.repository.MetricsRepository;
 import org.dhorse.infrastructure.repository.SysUserRepository;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -50,11 +52,17 @@ import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeployContext;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.cloud.tools.jib.api.Containerizer;
+import com.google.cloud.tools.jib.api.Jib;
+import com.google.cloud.tools.jib.api.LogEvent;
+import com.google.cloud.tools.jib.api.RegistryImage;
+import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
 
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.ClientBuilder;
@@ -104,7 +112,7 @@ public abstract class ApplicationService {
 	protected ComponentConstants componentConstants;
 	
 	@Autowired
-	protected ReplicaMetricsRepository replicaMetricsRepository;
+	protected MetricsRepository metricsRepository;
 	
 	protected ApiClient apiClient(String basePath, String accessToken) {
 		ApiClient apiClient = new ClientBuilder().setBasePath(basePath).setVerifyingSsl(false)
@@ -203,7 +211,7 @@ public abstract class ApplicationService {
 		}
 	}
 	
-	protected String fullNameOfAgentImage(DeployContext context) {
+	protected String fullNameOfTraceAgentImage(DeployContext context) {
 		if(!YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			return null;
 		}
@@ -213,6 +221,11 @@ public abstract class ApplicationService {
 		}
 		String imageName = "skywalking-agent:v" + traceTemplate.getAgentVersion();
 		return fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), imageName);
+	}
+	
+	protected String fullNameOfDHorseAgentImage(ImageRepo imageRepo) {
+		String imageName = "dhorse-agent:" + componentConstants.getVersion();
+		return fullNameOfImage(imageRepo, imageName);
 	}
 	
 	protected String fullNameOfImage(ImageRepo imageRepo, String nameOfImage) {
@@ -323,6 +336,47 @@ public abstract class ApplicationService {
 				logger.error("Failed to notify url: " + url, e);
 			}
 		}
+	}
+	
+	public void asynBuildDHorseAgentImage() {
+		ThreadPoolUtils.async(() -> {
+			buildDHorseAgentImage();
+		});
+	}
+	
+	private void buildDHorseAgentImage() {
+		logger.info("Start to build jvm metrics agent image");
+		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
+		if(globalConfigAgg == null || globalConfigAgg.getImageRepo() == null) {
+			logger.info("The image repo does not exist, and end to build dhorse agent image");
+			return;
+		}
+		System.setProperty("jib.httpTimeout", "10000");
+		System.setProperty("sendCredentialsOverHttp", "true");
+		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
+		String javaAgentPath = Constants.DHORSE_HOME + "/lib/ext/dhorse-agent-"+ componentConstants.getVersion() +".jar";
+		if(!new File(javaAgentPath).exists()) {
+			javaAgentPath = Constants.DHORSE_HOME + "/dhorse-agent/target/dhorse-agent-"+ componentConstants.getVersion() +".jar";
+		}
+		if(!new File(javaAgentPath).exists()) {
+			logger.info("The agent file does not exist, and end to build dhorse agent image");
+			return;
+		}
+		try {
+			RegistryImage registryImage = RegistryImage.named(fullNameOfDHorseAgentImage(imageRepo)).addCredential(
+					imageRepo.getAuthName(),
+					imageRepo.getAuthPassword());
+			Jib.from("busybox:latest")
+				.addLayer(Arrays.asList(Paths.get(javaAgentPath)), AbsoluteUnixPath.get(Constants.USR_LOCAL_HOME))
+				.containerize(Containerizer.to(registryImage)
+						.setAllowInsecureRegistries(true)
+						.addEventHandler(LogEvent.class, logEvent -> logger.info(logEvent.getMessage())));
+		} catch (Exception e) {
+			logger.error("Failed to build dhorse agent image", e);
+		}
+		logger.info("End to build dhorse agent image");
 	}
 	
 	protected <D> PageData<D> zeroPageData(int pageSize) {

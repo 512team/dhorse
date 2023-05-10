@@ -1082,7 +1082,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		commands.append(" ").append("-jar");
 		String packageFileType = PackageFileTypeEnum.getByCode(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType()).getValue();
-		commands.append(" ").append(Constants.CONTAINER_WORK_HOME + context.getApp().getAppName() + "." + packageFileType);
+		commands.append(" ").append(Constants.USR_LOCAL_HOME + context.getApp().getAppName() + "." + packageFileType);
 		
 		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
 	}
@@ -1114,7 +1114,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private List<V1Container> initContainer(DeployContext context) {
 		List<V1Container> containers = new ArrayList<>();
 		initContainerOfWar(context, containers);
-		initContainerOfAgent(context, containers);
+		initContainerOfTraceAgent(context, containers);
+		//initContainerOfDHorseAgent(context, containers);
 		initContainerOfNode(context, containers);
 		return containers;
 	}
@@ -1127,7 +1128,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return context.getApp().getBaseImage();
 	}
 	
-	private void initContainerOfAgent(DeployContext context, List<V1Container> containers) {
+	private void initContainerOfTraceAgent(DeployContext context, List<V1Container> containers) {
 		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
@@ -1142,7 +1143,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1Container initContainer = new V1Container();
 		initContainer.setName("skywalking-agent");
-		initContainer.setImage(context.getFullNameOfAgentImage());
+		initContainer.setImage(context.getFullNameOfTraceAgentImage());
 		initContainer.setImagePullPolicy("Always");
 		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
 		initContainer.setArgs(Arrays.asList("cp -rf /skywalking-agent /tmp"));
@@ -1150,6 +1151,25 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1VolumeMount volumeMount = new V1VolumeMount();
 		volumeMount.setMountPath("/tmp");
 		volumeMount.setName("skw-agent-volume");
+		initContainer.setVolumeMounts(Arrays.asList(volumeMount));
+		containers.add(initContainer);
+	}
+	
+	private void initContainerOfDHorseAgent(DeployContext context, List<V1Container> containers) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		
+		V1Container initContainer = new V1Container();
+		initContainer.setName("dhorse-agent");
+		initContainer.setImage(context.getFullNameOfDHorseAgentImage());
+		initContainer.setImagePullPolicy("Always");
+//		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
+//		initContainer.setArgs(Arrays.asList("cp -rf /skywalking-agent /tmp"));
+		
+		V1VolumeMount volumeMount = new V1VolumeMount();
+		volumeMount.setMountPath(Constants.USR_LOCAL_HOME);
+		volumeMount.setName("dhorse-agent-volume");
 		initContainer.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(initContainer);
 	}
@@ -1164,7 +1184,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setImage(context.getFullNameOfImage());
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
-		String warFile = Constants.CONTAINER_WORK_HOME + context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
+		String warFile = Constants.USR_LOCAL_HOME + context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
 		container.setArgs(Arrays.asList("cp -rf " + warFile + " /usr/local/tomcat/webapps"));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
@@ -1184,7 +1204,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setImage(context.getFullNameOfImage());
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
-		String file = Constants.CONTAINER_WORK_HOME + context.getApp().getAppName();
+		String file = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
 		container.setArgs(Arrays.asList("cp -rf " + file + "/* /usr/share/nginx/html"));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
@@ -1267,6 +1287,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			volumeMounts.add(volumeMountAgent);
 		}
 		
+		//dhorse-agent
+//		if(springBootApp(context.getApp())) {
+//			V1VolumeMount dhorseAgent = new V1VolumeMount();
+//			dhorseAgent.setMountPath(Constants.USR_LOCAL_HOME);
+//			dhorseAgent.setName("dhorse-agent-volume");
+//			volumeMounts.add(dhorseAgent);
+//		}
+		
 		//Node
 		if(nodeApp(context.getApp())) {
 			V1VolumeMount volumeMountWar = new V1VolumeMount();
@@ -1313,6 +1341,15 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			volumeAgent.setEmptyDir(emptyDir);
 			volumes.add(volumeAgent);
 		}
+		
+		//dhorse-agent
+//		if(springBootApp(context.getApp())) {
+//			V1Volume dhorseAgent = new V1Volume();
+//			dhorseAgent.setName("dhorse-agent-volume");
+//			V1EmptyDirVolumeSource emptyDir = new V1EmptyDirVolumeSource();
+//			dhorseAgent.setEmptyDir(emptyDir);
+//			volumes.add(dhorseAgent);
+//		}
 		
 		//Node
 		if(nodeApp(context.getApp())) {

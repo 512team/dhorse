@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.dhorse.agent.Metrics;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.app.env.replica.DownloadFileParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
@@ -18,7 +17,8 @@ import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
-import org.dhorse.api.vo.ReplicaMetricsAgg;
+import org.dhorse.api.vo.Metrics;
+import org.dhorse.api.vo.ReplicaMetrics;
 import org.dhorse.application.service.EnvReplicaApplicationService;
 import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -141,10 +141,10 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 符合条件的数据集
 	 */
 	@PostMapping("/metrics/list")
-	public RestResponse<ReplicaMetricsAgg> metricsList(@CookieValue("login_token") String loginToken,
+	public RestResponse<ReplicaMetrics> metricsList(@CookieValue("login_token") String loginToken,
 			@RequestBody ReplicaMetricsQueryParam queryParam) {
 		return success(
-				envReplicaApplicationService.replicaMetricsAgg(queryLoginUserByToken(loginToken), queryParam));
+				envReplicaApplicationService.replicaMetrics(queryLoginUserByToken(loginToken), queryParam));
 	}
 	
 	/**

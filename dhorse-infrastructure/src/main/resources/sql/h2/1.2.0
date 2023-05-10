@@ -1,0 +1,9 @@
+CREATE TABLE metrics (
+	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
+	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
+	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
+	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
+	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
+	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
+	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+);

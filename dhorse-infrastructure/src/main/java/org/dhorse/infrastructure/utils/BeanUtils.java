@@ -5,16 +5,33 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.esotericsoftware.reflectasm.MethodAccess;
 
 public class BeanUtils {
 
+	private static final Logger logger = LoggerFactory.getLogger(BeanUtils.class);
+	
 	private static Map<Class<?>, MethodAccess> methodMap = new HashMap<>();
 
 	private static Map<String, Integer> methodIndexMap = new HashMap<>();
 
 	private static Map<Class<?>, Set<String>> fieldMap = new HashMap<>();
 
+	public static <T> T copyProperties(Object source, Class<T> targetClazz) {
+		T target = null; 
+		try {
+			target = targetClazz.getDeclaredConstructor().newInstance();
+		} catch (Exception e) {
+			logger.error("Failed to copy object", e);
+			return null;
+		}
+		copyProperties(source, target);
+		return target;
+	}
+	
 	public static void copyProperties(Object source, Object target) {
 		MethodAccess sourceMethodAccess = getMethodAccess(source.getClass());
 		MethodAccess targetMethodAccess = getMethodAccess(target.getClass());

@@ -1,13 +1,16 @@
-package org.dhorse.agent;
+package org.dhorse.infrastructure.repository.po;
 
-import java.io.Serializable;
+import java.util.List;
+
+import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * 指标模型
+ * 指标
  * 
- * @author 无双 2023-05-02
+ * @author Dahai 2023-02-28
  */
-public class Metrics implements Serializable {
+@TableName("METRICS")
+public class MetricsPO extends BasePO {
 
 	private static final long serialVersionUID = 1L;
 
@@ -51,8 +54,18 @@ public class Metrics implements Serializable {
 	}
 
 	@Override
-	public String toString() {
-		return "{\"replicaName\":\"" + replicaName + "\", \"metricsType\":" + metricsType
-				+ ", \"metricsValue\":" + metricsValue + "}";
+	public List<String> getIds() {
+		return this.ids;
 	}
+
+	@Override
+	public String getId() {
+		return this.id;
+	}
+
+	@Override
+	public Integer getDeletionStatus() {
+		return this.deletionStatus;
+	}
+
 }

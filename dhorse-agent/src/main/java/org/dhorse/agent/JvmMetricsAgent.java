@@ -1,6 +1,7 @@
 package org.dhorse.agent;
 
 import java.lang.instrument.Instrumentation;
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
@@ -43,74 +44,57 @@ public class JvmMetricsAgent {
 		final String replicaName = hostName;
 		SCHEDULED.scheduleAtFixedRate(() -> {
 			List<Metrics> metricsList = new ArrayList<>(16);
-			heapMemory(replicaName, metricsList);
-			nonHeapMemory(replicaName, metricsList);
-			metaspace(replicaName, metricsList);
+			memoryHeap(replicaName, metricsList);
+			memoryPool(replicaName, metricsList);
+			gc(replicaName, metricsList);
 			thread(replicaName, metricsList);
 			HttpUtils.sendPost(args, metricsList.toString());
 		}, 0, 5, TimeUnit.SECONDS);
 	}
 
-	private static void heapMemory(String replicaName, List<Metrics> metricsList) {
+	private static void memoryHeap(String replicaName, List<Metrics> metricsList) {
 		MemoryUsage m = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-		memory(MetricsTypeEnum.FirstType.HEAP_MEMORY, replicaName, metricsList, m);
+		item(MetricsTypeEnum.HEAP_MEMORY_USED, replicaName, metricsList, m.getUsed());
+		item(MetricsTypeEnum.HEAP_MEMORY_MAX, replicaName, metricsList, m.getMax());
 	}
 
-	private static void nonHeapMemory(String replicaName, List<Metrics> metricsList) {
-		MemoryUsage m = ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage();
-		memory(MetricsTypeEnum.FirstType.NON_HEAP_MEMORY, replicaName, metricsList, m);
-	}
-
-	private static void metaspace(String replicaName, List<Metrics> metricsList) {
+	private static void memoryPool(String replicaName, List<Metrics> metricsList) {
 		List<MemoryPoolMXBean> mpxbs = ManagementFactory.getMemoryPoolMXBeans();
+		long young = 0L;
 		for (MemoryPoolMXBean mp : mpxbs) {
-			if (!"Metaspace".equalsIgnoreCase(mp.getName())) {
+			String name = mp.getName().toLowerCase();
+			if (name.contains("metaspace")) {
+				item(MetricsTypeEnum.META_MEMORY_USED, replicaName, metricsList, mp.getUsage().getUsed());
 				continue;
 			}
-			memory(MetricsTypeEnum.FirstType.META_MEMORY, replicaName, metricsList, mp.getUsage());
+			if (name.contains("eden") || name.contains("SURVIVOR")) {
+				young += mp.getUsage().getUsed();
+				continue;
+			}
 		}
+		
+		//年轻代
+		item(MetricsTypeEnum.YOUNG, replicaName, metricsList, young);
 	}
-
-	private static void memory(MetricsTypeEnum.FirstType firstType, String replicaName,
-			List<Metrics> metricsList, MemoryUsage m) {
-		Metrics used = new Metrics();
-		used.setReplicaName(replicaName);
-		used.setFirstType(firstType.getCode());
-		used.setSecondType(MetricsTypeEnum.SecondType.Memory.USED.getCode());
-		used.setMetricsValue(m.getUsed());
-		metricsList.add(used);
-
-		Metrics commited = new Metrics();
-		commited.setReplicaName(replicaName);
-		commited.setFirstType(firstType.getCode());
-		commited.setSecondType(MetricsTypeEnum.SecondType.Memory.COMMITTED.getCode());
-		commited.setMetricsValue(m.getCommitted());
-		metricsList.add(commited);
-
-		Metrics max = new Metrics();
-		max.setReplicaName(replicaName);
-		max.setFirstType(firstType.getCode());
-		max.setSecondType(MetricsTypeEnum.SecondType.Memory.MAX.getCode());
-		max.setMetricsValue(m.getMax());
-		metricsList.add(max);
+	
+	private static void gc(String replicaName, List<Metrics> metricsList) {
+		List<GarbageCollectorMXBean> gcbs = ManagementFactory.getGarbageCollectorMXBeans();
+		long size = 0L;
+		long duration = 0L;
+		for (GarbageCollectorMXBean gcb : gcbs) {
+			size += gcb.getCollectionCount();
+			duration += gcb.getCollectionTime();
+		}
+		
+		item(MetricsTypeEnum.GC_SIZE, replicaName, metricsList, size);
+		item(MetricsTypeEnum.GC_DURATION, replicaName, metricsList, duration);
 	}
 
 	private static void thread(String replicaName, List<Metrics> metricsList) {
 		ThreadMXBean txb = ManagementFactory.getThreadMXBean();
 
-		Metrics c = new Metrics();
-		c.setReplicaName(replicaName);
-		c.setFirstType(MetricsTypeEnum.FirstType.THREAD.getCode());
-		c.setSecondType(MetricsTypeEnum.SecondType.Thread.DEFAULT.getCode());
-		c.setMetricsValue((long) txb.getThreadCount());
-		metricsList.add(c);
-
-		Metrics dc = new Metrics();
-		dc.setReplicaName(replicaName);
-		dc.setFirstType(MetricsTypeEnum.FirstType.THREAD.getCode());
-		dc.setSecondType(MetricsTypeEnum.SecondType.Thread.DAEMON.getCode());
-		dc.setMetricsValue((long) txb.getDaemonThreadCount());
-		metricsList.add(dc);
+		item(MetricsTypeEnum.THREAD, replicaName, metricsList, (long) txb.getThreadCount());
+		item(MetricsTypeEnum.THREAD_DAEMON, replicaName, metricsList, (long) txb.getDaemonThreadCount());
 
 		ThreadInfo[] threads = txb.getThreadInfo(txb.getAllThreadIds());
 		long bcValue = 0;
@@ -120,20 +104,20 @@ public class JvmMetricsAgent {
 					bcValue++;
 				}
 			}
-			Metrics bc = new Metrics();
-			bc.setReplicaName(replicaName);
-			bc.setFirstType(MetricsTypeEnum.FirstType.THREAD.getCode());
-			bc.setSecondType(MetricsTypeEnum.SecondType.Thread.BLOCKED.getCode());
-			bc.setMetricsValue(bcValue);
-			metricsList.add(bc);
+			item(MetricsTypeEnum.THREAD_BLOCKED, replicaName, metricsList, bcValue);
 		}
 
 		long[] dlThreads = txb.findDeadlockedThreads();
-		Metrics dlc = new Metrics();
-		dlc.setReplicaName(replicaName);
-		dlc.setFirstType(MetricsTypeEnum.FirstType.THREAD.getCode());
-		dlc.setSecondType(MetricsTypeEnum.SecondType.Thread.DEADLOCKED.getCode());
-		dlc.setMetricsValue((long) (dlThreads == null ? 0 : dlThreads.length));
-		metricsList.add(dlc);
+		long dlSize = (long) (dlThreads == null ? 0 : dlThreads.length);
+		item(MetricsTypeEnum.THREAD_DEADLOCKED, replicaName, metricsList, dlSize);
+	}
+	
+	private static void item(MetricsTypeEnum metricsType, String replicaName,
+			List<Metrics> metricsList, long metricsValue) {
+		Metrics used = new Metrics();
+		used.setReplicaName(replicaName);
+		used.setMetricsType(metricsType.getCode());
+		used.setMetricsValue(metricsValue);
+		metricsList.add(used);
 	}
 }

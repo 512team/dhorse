@@ -1,11 +1,14 @@
 package org.dhorse.api.vo;
 
+import java.io.Serializable;
+import java.util.List;
+
 /**
  * 副本指标
  * 
  * @author Dahai 2023-02-28
  */
-public class ReplicaMetrics extends BaseDto {
+public class ReplicaMetrics implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -20,19 +23,19 @@ public class ReplicaMetrics extends BaseDto {
 	private Integer metricsType;
 
 	/**
-	 * 最小值
-	 */
-	private Long minValue;
-
-	/**
 	 * 最大值
 	 */
-	private Long maxValue;
+	private List<Long> maxValues;
 
 	/**
 	 * 使用值
 	 */
-	private Long usedValue;
+	private List<Long> usedValues;
+
+	/**
+	 * 时间
+	 */
+	private List<String> times;
 
 	public String getReplicaName() {
 		return replicaName;
@@ -50,27 +53,28 @@ public class ReplicaMetrics extends BaseDto {
 		this.metricsType = metricsType;
 	}
 
-	public Long getMinValue() {
-		return minValue;
+	public List<Long> getMaxValues() {
+		return maxValues;
 	}
 
-	public void setMinValue(Long minValue) {
-		this.minValue = minValue;
+	public void setMaxValues(List<Long> maxValues) {
+		this.maxValues = maxValues;
 	}
 
-	public Long getMaxValue() {
-		return maxValue;
+	public List<Long> getUsedValues() {
+		return usedValues;
 	}
 
-	public void setMaxValue(Long maxValue) {
-		this.maxValue = maxValue;
+	public void setUsedValues(List<Long> usedValues) {
+		this.usedValues = usedValues;
 	}
 
-	public Long getUsedValue() {
-		return usedValue;
+	public List<String> getTimes() {
+		return times;
 	}
 
-	public void setUsedValue(Long usedValue) {
-		this.usedValue = usedValue;
+	public void setTimes(List<String> times) {
+		this.times = times;
 	}
+
 }
