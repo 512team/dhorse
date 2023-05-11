@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.zaxxer.hikari.HikariDataSource;
@@ -117,8 +118,21 @@ public class DataSourceConfig{
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(paginationInnerInterceptor());
+        //interceptor.setInterceptors(Arrays.asList(dynamicTableNameInterceptor()));
         return interceptor;
     }
+    
+    @Bean
+	public DynamicTableNameInnerInterceptor dynamicTableNameInterceptor() {
+		DynamicTableNameInnerInterceptor intercepter = new DynamicTableNameInnerInterceptor();
+		
+		intercepter.setTableNameHandler((sql, tableName) -> {
+			System.out.println("===============sql: " + sql);
+			System.out.println("===============table name: " + tableName);
+			return tableName;
+		});
+		return intercepter;
+	}
 	
     @Bean
     public GlobalConfig globalConfig() {

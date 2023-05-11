@@ -18,19 +18,14 @@ public class ReplicaMetrics implements Serializable {
 	private String replicaName;
 
 	/**
-	 * 指标类型，1：CPU（m），2：内存（MB）
+	 * 指标类型，见：MetricsTypeEnum
 	 */
 	private Integer metricsType;
 
 	/**
-	 * 最大值
+	 * 指标值
 	 */
-	private List<Long> maxValues;
-
-	/**
-	 * 使用值
-	 */
-	private List<Long> usedValues;
+	private List<Long> metricsValues;
 
 	/**
 	 * 时间
@@ -53,20 +48,12 @@ public class ReplicaMetrics implements Serializable {
 		this.metricsType = metricsType;
 	}
 
-	public List<Long> getMaxValues() {
-		return maxValues;
+	public List<Long> getMetricsValues() {
+		return metricsValues;
 	}
 
-	public void setMaxValues(List<Long> maxValues) {
-		this.maxValues = maxValues;
-	}
-
-	public List<Long> getUsedValues() {
-		return usedValues;
-	}
-
-	public void setUsedValues(List<Long> usedValues) {
-		this.usedValues = usedValues;
+	public void setMetricsValues(List<Long> metricsValues) {
+		this.metricsValues = metricsValues;
 	}
 
 	public List<String> getTimes() {

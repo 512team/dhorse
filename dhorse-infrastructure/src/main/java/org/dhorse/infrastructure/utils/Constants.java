@@ -1,5 +1,7 @@
 package org.dhorse.infrastructure.utils;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -7,10 +9,14 @@ import java.util.List;
 
 import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.infrastructure.component.SpringBootApplicationHome;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class Constants {
 
+	private static final Logger logger = LoggerFactory.getLogger(Constants.class);
+	
 	/**
 	 * 登录状态有效时长（毫秒）
 	 */
@@ -26,11 +32,23 @@ public class Constants {
 	
 	public static final String USR_LOCAL_HOME = "/usr/local/";
 	
+	public static final String AGENT_VOLUME_PATH = "/usr/local/agent/";
+	
+	public static final String NODE_VOLUME_PATH = "/usr/share/nginx/html";
+	
+	public static final String AGENT_VOLUME_NAME = "agent-volume";
+	
+	public static final String WAR_VOLUME_NAME = "war-volume";
+	
+	public static final String NODE_VOLUME_NAME = "node-volume";
+	
 	public static final String DHORSE_TAG = "dhorse";
 	
 	public static final String IMAGE_NAME_JDK = "jdk";
 	
 	public static final String IMAGE_NAME_TOMCAT = "tomcat";
+	
+	public static final String COLLECT_METRICS_URI = "/app/env/replica/metrics/add";
 	
 	/**
 	 * 部署目录
@@ -60,6 +78,14 @@ public class Constants {
 	 * 临时目录相对路径
 	 */
 	public static final String RELATIVE_TMP_PATH = "tmp/";
+	
+	/**
+	 * 可以操作应用成员的角色
+	 */
+	public static final List<Integer> ROLE_OF_OPERATE_APP_USER = Arrays.asList(
+			AppMemberRoleTypeEnum.ADMIN.getCode(),
+			AppMemberRoleTypeEnum.ARCHITECT.getCode(),
+			AppMemberRoleTypeEnum.CHECKER.getCode());
 	
 	/**
 	 * 部署日志文件路径
@@ -95,11 +121,12 @@ public class Constants {
     			.append(".log").toString();
 	}
 	
-	/**
-	 * 可以操作应用成员的角色
-	 */
-	public static final List<Integer> ROLE_OF_OPERATE_APP_USER = Arrays.asList(
-			AppMemberRoleTypeEnum.ADMIN.getCode(),
-			AppMemberRoleTypeEnum.ARCHITECT.getCode(),
-			AppMemberRoleTypeEnum.CHECKER.getCode());
+	public static final String hostIp() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			logger.error("Failed to get localhost ip", e);
+		}
+		return null;
+	}
 }

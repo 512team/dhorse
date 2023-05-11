@@ -1,7 +1,6 @@
 package org.dhorse.application.service;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,7 +20,7 @@ import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
 import org.dhorse.api.param.app.env.replica.QueryFilesParam;
-import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
+import org.dhorse.api.param.app.env.replica.MetricsQueryParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
@@ -253,30 +252,27 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 						continue;
 					}
 					Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
-					MetricsParam cpu = new MetricsParam();
-					cpu.setAppId(appEnvPO.getAppId());
-					cpu.setReplicaName(replicaName);
-					cpu.setMetricsType(MetricsTypeEnum.REPLICA_CPU_USED.getCode());
-					cpu.setMetricsValue(usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue());
-					metricsList.add(cpu);
+					long cpuUsed = usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue();
+					item(MetricsTypeEnum.REPLICA_CPU_USED, replicaName, metricsList, cpuUsed);
+					item(MetricsTypeEnum.REPLICA_CPU_MAX, replicaName, metricsList, appEnvPO.getReplicaCpu());
 					
-					MetricsParam memory = new MetricsParam();
-					memory.setAppId(appEnvPO.getAppId());
-					memory.setReplicaName(replicaName);
-					memory.setMetricsType(MetricsTypeEnum.REPLICA_MEMORY_MAX.getCode());
-					memory.setMetricsValue(usage.get("memory").getNumber().divide(new BigDecimal(1024 * 1024)).setScale(0, RoundingMode.HALF_UP).longValue());
-					metricsList.add(memory);
+					long memoryUsed = usage.get("memory").getNumber().setScale(0, RoundingMode.HALF_UP).longValue();
+					item(MetricsTypeEnum.REPLICA_MEMORY_USED, replicaName, metricsList, memoryUsed);
+					item(MetricsTypeEnum.REPLICA_MEMORY_MAX, replicaName, metricsList, appEnvPO.getReplicaMemory());
 				}
 			}
 		}
 		metricsRepository.addList(metricsList);
 	}
 	
-	public ReplicaMetrics replicaMetrics(LoginUser loginUser, ReplicaMetricsQueryParam queryParam) {
-		this.hasRights(loginUser, queryParam.getAppId());
-		
+	public ReplicaMetrics replicaMetrics(LoginUser loginUser, MetricsQueryParam queryParam) {
+		if(StringUtils.isBlank(queryParam.getStartTime())
+				|| StringUtils.isBlank(queryParam.getEndTime())
+				|| null == queryParam.getMetricsType()
+				|| StringUtils.isBlank(queryParam.getReplicaName())){
+			LogUtils.throwException(logger, MessageCodeEnum.INVALID_PARAM);
+		}
 		MetricsParam bizParam = new MetricsParam();
-		bizParam.setAppId(queryParam.getAppId());
 		bizParam.setReplicaName(queryParam.getReplicaName());
 		bizParam.setMetricsType(queryParam.getMetricsType());
 		bizParam.setStartTime(queryParam.getStartTime());
@@ -287,22 +283,28 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 			return rm;
 		}
 		
-		List<Long> maxValues = new ArrayList<>();
-		List<Long> usedValues = new ArrayList<>();
+		List<Long> metricsValues = new ArrayList<>();
 		List<String> times = new ArrayList<>();
 		for(int i = pos.size() - 1; i >= 0; i--) {
 			MetricsPO po = pos.get(i);
-			maxValues.add(po.getMetricsValue());
-			usedValues.add(po.getMetricsValue());
+			metricsValues.add(po.getMetricsValue());
 			times.add(DateUtils.formatDefault(po.getCreationTime()));
 		}
 		
 		rm.setReplicaName(queryParam.getReplicaName());
 		rm.setMetricsType(queryParam.getMetricsType());
-		rm.setMaxValues(maxValues);
-		rm.setUsedValues(usedValues);
+		rm.setMetricsValues(metricsValues);
 		rm.setTimes(times);
 		return rm;
+	}
+	
+	private void item(MetricsTypeEnum metricsType, String replicaName,
+			List<MetricsParam> metricsList, long metricsValue) {
+		MetricsParam m = new MetricsParam();
+		m.setReplicaName(replicaName);
+		m.setMetricsType(metricsType.getCode());
+		m.setMetricsValue(metricsValue);
+		metricsList.add(m);
 	}
 	
 	public Void metricsAdd(List<Metrics> param) {

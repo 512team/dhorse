@@ -13,6 +13,9 @@ public class ComponentConstants {
 	@Value("${version}")
 	private String version;
 
+	@Value("${server.port}")
+	private String serverPort;
+
 	private String dataPath;
 
 	private String logPath;
@@ -44,6 +47,10 @@ public class ComponentConstants {
 
 	public String getVersion() {
 		return version;
+	}
+
+	public String getServerPort() {
+		return serverPort;
 	}
 
 	public String getDataPath() {

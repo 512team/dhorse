@@ -3,18 +3,13 @@ package org.dhorse.api.param.app.env.replica;
 import java.io.Serializable;
 
 /**
- * 副本资源查询参数模型
+ * 指标查询参数模型
  * 
  * @author Dahai
  */
-public class ReplicaMetricsQueryParam implements Serializable {
+public class MetricsQueryParam implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * 应用编号
-	 */
-	private String appId;
 
 	/**
 	 * 副本名称
@@ -22,7 +17,7 @@ public class ReplicaMetricsQueryParam implements Serializable {
 	private String replicaName;
 
 	/**
-	 * 指标类型，1：CPU（m），2：内存（MB）
+	 * 指标类型，见：MetricsTypeEnum
 	 */
 	private Integer metricsType;
 
@@ -35,14 +30,6 @@ public class ReplicaMetricsQueryParam implements Serializable {
 	 * 结束时间
 	 */
 	private String endTime;
-
-	public String getAppId() {
-		return appId;
-	}
-
-	public void setAppId(String appId) {
-		this.appId = appId;
-	}
 
 	public String getReplicaName() {
 		return replicaName;

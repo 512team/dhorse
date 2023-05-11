@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,9 @@ public class WebLogAspect {
 
 	@Before("webLog()")
 	public void doBefore(JoinPoint joinPoint) {
+		if(httpServletRequest.getRequestURL().toString().endsWith(Constants.COLLECT_METRICS_URI)) {
+			return;
+		}
 		startTime.set(System.currentTimeMillis());
 		logger.info("request url: {}, ip: {}", httpServletRequest.getRequestURL().toString(),
 				httpServletRequest.getRemoteAddr());
@@ -54,7 +58,10 @@ public class WebLogAspect {
 
 	@AfterReturning(returning = "ret", pointcut = "webLog()")
 	public void doAfterReturning(Object ret) {
-		logger.info("request response time: {} ms", (System.currentTimeMillis() - startTime.get()));
+		if(httpServletRequest.getRequestURL().toString().endsWith(Constants.COLLECT_METRICS_URI)) {
+			return;
+		}
+		logger.info("response in {} millisecond", (System.currentTimeMillis() - startTime.get()));
 		startTime.remove();
 	}
 

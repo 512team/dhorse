@@ -15,22 +15,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * 采集Jvm信息的agent
  * <p>
  * 启动方式：java
- * -javaagent:dhorse-agent.jar=http://dhost_host:port/env/replica/jvmMetrics
+ * -javaagent:dhorse-agent.jar=http://dhost_host:port/app/env/replica/metrics/add
  * 
  * @author 无双
  */
 public class JvmMetricsAgent {
 
-	private static final Logger logger = LoggerFactory.getLogger(JvmMetricsAgent.class);
-	
-	private static final ScheduledExecutorService SCHEDULED = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService SCHEDULED = Executors.newSingleThreadScheduledExecutor();
 
 	public static void premain(String args, Instrumentation inst) {
 		
@@ -38,9 +33,8 @@ public class JvmMetricsAgent {
 		try {
 			hostName = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e) {
-			logger.error("Failed to get localhost name", e);
+			System.out.println(String.format("Failed to get localhost name, message: %s", e));
 		}
-
 		final String replicaName = hostName;
 		SCHEDULED.scheduleAtFixedRate(() -> {
 			List<Metrics> metricsList = new ArrayList<>(16);

@@ -107,11 +107,6 @@ public class AppEnvCreationParam implements Serializable {
 	private String minorPorts;
 
 	/**
-	 * 健康检查路径，端口后的uri，如：/health
-	 */
-	private String healthPath;
-
-	/**
 	 * 环境描述
 	 */
 	private String description;
@@ -270,14 +265,6 @@ public class AppEnvCreationParam implements Serializable {
 
 	public void setServicePort(Integer servicePort) {
 		this.servicePort = servicePort;
-	}
-
-	public String getHealthPath() {
-		return healthPath;
-	}
-
-	public void setHealthPath(String healthPath) {
-		this.healthPath = healthPath;
 	}
 
 	public String getDescription() {

@@ -11,15 +11,6 @@
 	<artifactId>dhorse-agent</artifactId>
 	<packaging>jar</packaging>
 	
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.36</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-	
 	<build>
 		<plugins>
 			<plugin>

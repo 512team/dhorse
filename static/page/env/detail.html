@@ -128,12 +128,6 @@
 				<label class="text-value" id="traceTemplateName"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">健康检查路径：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="healthPath"></label>
-			</div>
-		</div>
 		<div class="layui-form-item" id="jvmArgsDiv" style="display:none">
 			<label class="layui-form-label">Jvm参数：</label>
 			<div class="layui-input-block">
@@ -226,7 +220,6 @@
 					$("#traceStatus").text('开启');
 				}
 				$("#traceTemplateName").text(res.data.traceTemplateName);
-				$("#healthPath").text(res.data.healthPath);
 				$("#jvmArgs").text(res.data.envExtend.jvmArgs);
 				$("#description").text(res.data.description);
 				$("#deploymentTime").text(res.data.deploymentTime);

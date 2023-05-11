@@ -13,7 +13,7 @@ import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
 import org.dhorse.api.param.app.env.replica.QueryFilesParam;
-import org.dhorse.api.param.app.env.replica.ReplicaMetricsQueryParam;
+import org.dhorse.api.param.app.env.replica.MetricsQueryParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
@@ -142,7 +142,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 */
 	@PostMapping("/metrics/list")
 	public RestResponse<ReplicaMetrics> metricsList(@CookieValue("login_token") String loginToken,
-			@RequestBody ReplicaMetricsQueryParam queryParam) {
+			@RequestBody MetricsQueryParam queryParam) {
 		return success(
 				envReplicaApplicationService.replicaMetrics(queryLoginUserByToken(loginToken), queryParam));
 	}

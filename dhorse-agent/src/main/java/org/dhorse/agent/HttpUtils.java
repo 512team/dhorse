@@ -6,12 +6,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class HttpUtils {
-
-	private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
 
 	public static boolean sendPost(String url, String param) {
 		BufferedWriter out = null;
@@ -24,22 +19,24 @@ public class HttpUtils {
 			conn.setInstanceFollowRedirects(true);
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
+			conn.setConnectTimeout(100);
+			conn.setReadTimeout(100);
 			conn.connect();
 			out = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
 			out.write(param);
 			out.flush();
 			if (HttpURLConnection.HTTP_OK != conn.getResponseCode()) {
-				logger.error("Failed to send metrics, {} response code is {}", url, conn.getResponseCode());
+				System.out.println(String.format("Failed to send metrics, %s response code is %s", url, conn.getResponseCode()));
 				return false;
 			}
 		} catch (Exception e) {
-			logger.error("Failed to send metrics", e);
+			System.out.println(String.format("Failed to send metrics, message: %s", e));
 		} finally {
 			if (out != null) {
 				try {
 					out.close();
 				} catch (IOException e) {
-					logger.error("Failed to close writer", e);
+					System.out.println(String.format("Failed to close writer, message: %s", e));
 				}
 			}
 			if(conn != null) {

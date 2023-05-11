@@ -54,12 +54,6 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">健康检查路径</label>
-			<div class="layui-input-block">
-				<input type="text" name="healthPath" placeholder="如：/health" autocomplete="off" class="layui-input">
-			</div>
-		</div>
-		<div class="layui-form-item">
 			<label class="layui-form-label">最小副本数</label>
 			<div class="layui-input-block">
 				<input type="text" name="minReplicas" placeholder="默认值：1" autocomplete="off" class="layui-input">
@@ -360,7 +354,6 @@
 					,"requiredMerge": data.requiredMerge
 					//,"autoScalingMemory": data.autoScalingMemory
 					,"traceStatus": data.traceStatus
-					,"healthPath": data.healthPath
 					,"description": data.description
 				});
 				

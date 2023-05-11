@@ -128,11 +128,6 @@ public class AppEnv extends BaseDto {
 	private String traceTemplateName;
 
 	/**
-	 * 健康检查路径，端口后的uri，如：/health
-	 */
-	private String healthPath;
-
-	/**
 	 * 环境描述
 	 */
 	private String description;
@@ -337,14 +332,6 @@ public class AppEnv extends BaseDto {
 
 	public void setTraceStatus(Integer traceStatus) {
 		this.traceStatus = traceStatus;
-	}
-
-	public String getHealthPath() {
-		return healthPath;
-	}
-
-	public void setHealthPath(String healthPath) {
-		this.healthPath = healthPath;
 	}
 
 	public String getDescription() {
