@@ -18,7 +18,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.Metrics;
-import org.dhorse.api.vo.ReplicaMetrics;
+import org.dhorse.api.vo.MetricsView;
 import org.dhorse.application.service.EnvReplicaApplicationService;
 import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -141,10 +141,10 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 符合条件的数据集
 	 */
 	@PostMapping("/metrics/list")
-	public RestResponse<ReplicaMetrics> metricsList(@CookieValue("login_token") String loginToken,
+	public RestResponse<MetricsView> metricsList(@CookieValue("login_token") String loginToken,
 			@RequestBody MetricsQueryParam queryParam) {
 		return success(
-				envReplicaApplicationService.replicaMetrics(queryLoginUserByToken(loginToken), queryParam));
+				envReplicaApplicationService.metrics(queryLoginUserByToken(loginToken), queryParam));
 	}
 	
 	/**

@@ -20,14 +20,14 @@ public class GuavaCacheUtils {
 			.maximumSize(MAX_SIZE)
 			.initialCapacity(INIT_CAPACITY)
 			.recordStats()
-			.expireAfterWrite(Constants.LOGINED_VALID_MILLISECONDS_TIME, DEAULT_TIME_UNIT)
+			.expireAfterWrite(Constants.HOUR_24, DEAULT_TIME_UNIT)
 			.build();
 	
 	private static Cache<String, String> LOGIN_NAME_TOKEN_CACHE = CacheBuilder.newBuilder()
 			.maximumSize(MAX_SIZE)
 			.initialCapacity(INIT_CAPACITY)
 			.recordStats()
-			.expireAfterWrite(Constants.LOGINED_VALID_MILLISECONDS_TIME, DEAULT_TIME_UNIT)
+			.expireAfterWrite(Constants.HOUR_24, DEAULT_TIME_UNIT)
 			.build();
 
 	public static void putLoginUser(String loginToken, LoginUser loginUser) {

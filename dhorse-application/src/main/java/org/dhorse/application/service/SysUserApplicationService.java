@@ -161,7 +161,7 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 		if (lastLoginTime == null) {
 			return false;
 		}
-		return new Date().getTime() - lastLoginTime.getTime() < Constants.LOGINED_VALID_MILLISECONDS_TIME;
+		return new Date().getTime() - lastLoginTime.getTime() < Constants.HOUR_24;
 	}
 
 	/**

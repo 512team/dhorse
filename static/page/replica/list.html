@@ -30,9 +30,9 @@
 			{{#	}                     		}}
 		</script>
         <script type="text/html" id="currentTableBar">
-			<a href="javascript:;" class="layui-font-blue" lay-event="metrics" id="metrics">资源监控</a>
+			<a href="javascript:;" class="layui-font-blue" lay-event="replicaMetrics" id="replicaMetrics">副本指标</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
-			<a href="javascript:;" class="layui-font-blue" lay-event="rebuild">重建</a>
+			<a href="javascript:;" class="layui-font-blue" lay-event="jvmMetrics">Jvm指标</a>
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue dropdown-operate" data-replica-name="{{d.name}}">更多 <i class="layui-icon layui-font-12 layui-icon-down"></i></a>
 			<!-- <a href="/app/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a> -->
@@ -72,45 +72,29 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
 			replicaName = obj.data.name;
-			if (obj.event === 'metrics') {
+			if (obj.event === 'replicaMetrics') {
                 var index = layer.open({
-                    title: '资源监控',
+                    title: '副本指标',
                     type: 2,
                     shade: 0.5,
                     maxmin: false,
                     shadeClose: false,
-                    area: ['70%', '80%'],
-					offset: ['5%', '18%'],
-					content: ['page/replica/metrics.html']
+                    area: ['70%', '90%'],
+					offset: ['3%', '18%'],
+					content: ['page/replica/replica_metrics.html']
                 });
-            }else if (obj.event === 'rebuild') {
-                rebuild($, obj.data.name);
-            }
-			/**
-			else if (obj.event === 'log') {
+            }else if (obj.event === 'jvmMetrics') {
                 var index = layer.open({
-                    title: '日志',
+                    title: 'Jvm指标',
                     type: 2,
                     shade: 0.5,
                     maxmin: false,
                     shadeClose: false,
-                    area: ['70%', '80%'],
-					offset: ['5%', '18%'],
-					content: ['page/replica/log.html', 'no']
-                });
-            }else if (obj.event === 'terminal') {
-                var index = layer.open({
-                    title: '终端',
-                    type: 2,
-                    shade: 0.5,
-                    maxmin: false,
-                    shadeClose: false,
-                    area: ['70%', '80%'],
-					offset: ['5%', '18%'],
-					content: ['page/replica/terminal.html', 'no']
+                    area: ['70%', '90%'],
+					offset: ['3%', '18%'],
+					content: ['page/replica/jvm_metrics.html']
                 });
             }
-			**/
 			return false;
         });
     });
@@ -187,7 +171,7 @@
 				{field: 'namespace', title: '命名空间',  width: '7%'},
 				{field: 'nodeName', title: '节点名称',  width: '7%'},
                 {field: 'clusterName', title: '集群名称', width: '7%'},
-                {title: '操作', toolbar: '#currentTableBar', width: '14%'}
+                {title: '操作', toolbar: '#currentTableBar', width: '16%'}
             ]],
             limits: [10, 20],
             limit: 10,
@@ -197,7 +181,7 @@
 			done: function(res, curr, count){
 				
 				//提示
-				$('#metrics').on('mouseover', function(){
+				$('#replicaMetrics').on('mouseover', function(){
 					layer.tips('<span style="color:#000;">集群需要安装Metrics Server，<a class="layui-font-blue" target="_blank" href="https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%AE%89%E8%A3%85Metrics%20Server.md">参考文档</a></span>', this, {tips:[3, '#fff'], time:1000});
 				});
 				
@@ -213,6 +197,9 @@
 					},{
 					  title: '终端'
 					  ,id: 'terminal'
+					},{
+					  title: '重建'
+					  ,id: 'rebuild'
 					}]
 					,click: function(data, othis){
 						var elem = $(this.elem);
@@ -241,6 +228,8 @@
 								offset: ['5%', '18%'],
 								content: ['page/replica/terminal.html', 'no']
 							});
+						}else if (data.id === 'rebuild') {
+							rebuild($, replicaName);
 						}
 					}
 				});

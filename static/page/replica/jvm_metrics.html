@@ -1,0 +1,215 @@
+<link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+<link rel="stylesheet" href="../../css/public.css" media="all">
+<div class="layuimini-main">
+	<form class="layui-form layui-form-pane" action="">
+		<div class="layui-form-item">
+			<div class="layui-inline">
+				<input type="text" name="startTime" id="startTime" lay-verify="datetime" placeholder="起始时间" autocomplete="off" class="layui-input">
+			</div>
+			<div class="layui-inline" style="color: #c2c2c2">
+				-
+			</div>
+			<div class="layui-inline">
+				<input type="text" name="endTime" id="endTime" lay-verify="datetime" placeholder="结束时间" autocomplete="off" class="layui-input">
+			</div>
+			<input type="hidden" name="appId" id="appId"/>
+			<div class="layui-inline">
+				<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i>查 询</button>
+			</div>
+		</div>
+	</form>
+	<div class="layui-row layui-col-space15">
+        <div id="heap-records" style="min-height:400px;"></div>
+    </div>
+	<div class="layui-row layui-col-space15">
+        <div id="meta-records" style="min-height:400px;"></div>
+    </div>
+	<div class="layui-row layui-col-space15">
+        <div id="gcSize-records" style="min-height:400px;"></div>
+    </div>
+	<div class="layui-row layui-col-space15">
+        <div id="gcDuration-records" style="min-height:400px;"></div>
+    </div>
+	<div class="layui-row layui-col-space15">
+        <div id="thread-records" style="min-height:400px;"></div>
+    </div>
+</div>
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layer', 'echarts', 'laydate'], function () {
+        var $ = layui.jquery,
+			form = layui.form,
+            layer = layui.layer,
+            echarts = layui.echarts,
+			laydate = layui.laydate;
+		
+		var heapRecords = echarts.init(document.getElementById('heap-records'), 'walden');
+		var metaRecords = echarts.init(document.getElementById('meta-records'), 'walden');
+		var gcSizeRecords = echarts.init(document.getElementById('gcSize-records'), 'walden');
+		var gcDurationRecords = echarts.init(document.getElementById('gcDuration-records'), 'walden');
+		var threadRecords = echarts.init(document.getElementById('thread-records'), 'walden');
+		
+		var onHour = 1000 * 60 * 60;
+		var now = new Date();
+		var before = new Date(now - onHour);//前一个小时
+		laydate.render({
+            elem: '#startTime',
+			type: 'datetime',
+			value: before
+        });
+		
+		laydate.render({
+            elem: '#endTime',
+			type: 'datetime',
+			value: now
+        });
+		
+		var startTime = $("#startTime").val();
+		var endTime = $("#endTime").val();
+		draw($, heapRecords, [30, 31, 32], startTime, endTime);
+		draw($, metaRecords, [40, 41], startTime, endTime);
+		draw($, gcSizeRecords, [50], startTime, endTime);
+		draw($, gcDurationRecords, [51], startTime, endTime);
+		draw($, threadRecords, [60, 61, 62, 63], startTime, endTime);
+
+		// 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+			var startTime2 = data.field.startTime;
+			var endTime2 = data.field.endTime;
+			if(endTime2 < startTime2){
+				layer.msg('开始时间须大于或等于结束时间', {icon: 5, shift: 6, offset: ['20%', '40%']});
+				return false;
+			}
+			var hours = parseInt(new Date(endTime2) - new Date(startTime2)) / onHour;
+			if(hours > 12){
+				layer.msg('时间范围不能超过12个小时', {icon: 5, shift: 6, offset: ['20%', '40%']});
+				return false;
+			}
+			
+			draw($, heapRecords, [30, 31, 32], startTime2, endTime2);
+			draw($, metaRecords, [40, 41], startTime2, endTime2);
+			draw($, gcSizeRecords, [50], startTime2, endTime2);
+			draw($, gcDurationRecords, [51], startTime2, endTime2);
+			draw($, threadRecords, [60, 61, 62, 63], startTime2, endTime2);
+			
+            return false;
+        });
+	});
+	
+	function draw($, records, metricsTypes, startTime, endTime){
+	
+		var appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val());
+		var replicaName = parent.replicaName;
+		
+		var ps = [];
+		for(var i in metricsTypes){
+			ps.push(metricsData($, replicaName, metricsTypes[i], startTime, endTime));
+		}
+		
+		Promise.all(ps).then((result) => {
+			doDraw(records, result);
+		}).catch((error) => {
+			console.log(error);
+		})
+	}
+	
+	function metricsData($, replicaName, metricsType, startTime, endTime){
+		let promise = new Promise((resolve, reject) => {
+			$.ajax({
+				url: '/app/env/replica/metrics/list',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({'replicaName': replicaName, 'metricsType': metricsType, 'startTime': startTime, 'endTime': endTime}),
+				success: function(res){
+					resolve(res);
+				},
+				error: function(data){
+					reject(data);
+				}
+			});
+		});
+		
+		return promise;
+	}
+	
+	function doDraw(records, result) {
+	
+		var firstTypeName = '';
+		var unit = '';
+		var secondeTypeNames = [];
+		var times;
+		var seriesData = [];
+		for(var i in result){
+			var data = result[i].data;
+			firstTypeName = data.firstTypeName;
+			unit = data.unit;
+			secondeTypeNames.push(data.secondeTypeName);
+			times = data.times;
+			seriesData.push({'name':data.secondeTypeName,'type':'line','symbol':'none','areaStyle':{},'data':data.metricsValues});
+		}
+		
+		if(firstTypeName){
+			firstTypeName = firstTypeName + '(单位：' + (unit) + ')';
+		}
+		
+        var optionRecords = {
+            title: {
+                text: firstTypeName
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+				x:'center',
+				y:'bottom',
+				padding:[100,0,0,0],
+                data: secondeTypeNames
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '10%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+					axisLabel:{
+						show: true,
+						formatter: function(value){
+							return value.substring(10);
+						}
+					},
+                    data: times
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+					axisLabel:{
+						show: true,
+						formatter: '{value}'
+					}
+                }
+            ],
+            series: seriesData
+        };
+		
+        records.setOption(optionRecords);	
+	}
+</script>

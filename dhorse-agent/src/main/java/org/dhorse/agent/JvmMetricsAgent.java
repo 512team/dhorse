@@ -58,6 +58,7 @@ public class JvmMetricsAgent {
 		for (MemoryPoolMXBean mp : mpxbs) {
 			String name = mp.getName().toLowerCase();
 			if (name.contains("metaspace")) {
+				item(MetricsTypeEnum.META_MEMORY_MAX, replicaName, metricsList, mp.getUsage().getMax());
 				item(MetricsTypeEnum.META_MEMORY_USED, replicaName, metricsList, mp.getUsage().getUsed());
 				continue;
 			}

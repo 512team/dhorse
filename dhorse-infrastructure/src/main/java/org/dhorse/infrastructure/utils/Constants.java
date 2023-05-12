@@ -18,9 +18,13 @@ public class Constants {
 	private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 	
 	/**
-	 * 登录状态有效时长（毫秒）
+	 * 24小时
 	 */
-	public static final long LOGINED_VALID_MILLISECONDS_TIME = 24 * 60 * 60 * 1000;
+	public static final long HOUR_24 = 24 * 60 * 60 * 1000;
+	
+	public static final long ONE_MB = 1024 * 1024;
+	
+	public static final String MB_UNIT = "MB";
 	
 	public static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
 	

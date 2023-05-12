@@ -4,13 +4,6 @@
 	<form class="layui-form layui-form-pane" action="">
 		<div class="layui-form-item">
 			<div class="layui-inline">
-				<select name="metricsType">
-					<option value="">请选择</option>
-					<option value="1" selected>容器指标</option>
-					<!--<option value="2">JVM指标</option>-->
-				</select>
-			</div>
-			<div class="layui-inline">
 				<input type="text" name="startTime" id="startTime" lay-verify="datetime" placeholder="起始时间" autocomplete="off" class="layui-input">
 			</div>
 			<div class="layui-inline" style="color: #c2c2c2">
@@ -43,7 +36,10 @@
             echarts = layui.echarts,
 			laydate = layui.laydate;
 		
-		var onHour = 1000 * 60 * 60
+		var cpuRecords = echarts.init(document.getElementById('cpu-records'), 'walden');
+		var memoryRecords = echarts.init(document.getElementById('memory-records'), 'walden');
+		
+		var onHour = 1000 * 60 * 60;
 		var now = new Date();
 		var before = new Date(now - onHour);//前一个小时
 		laydate.render({
@@ -58,7 +54,8 @@
 			value: now
         });
 		
-		replicaMetrics($, $("#startTime").val(), $("#endTime").val());
+		draw($, cpuRecords, [10, 11], $("#startTime").val(), $("#endTime").val());
+		draw($, memoryRecords, [20, 21], $("#startTime").val(), $("#endTime").val());
 
 		// 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -69,48 +66,78 @@
 				return false;
 			}
 			var hours = parseInt(new Date(endTime) - new Date(startTime)) / onHour;
-			if(hours > 24){
-				layer.msg('时间跨度不能超过一天', {icon: 5, shift: 6, offset: ['20%', '40%']});
+			if(hours > 12){
+				layer.msg('时间范围不能超过12个小时', {icon: 5, shift: 6, offset: ['20%', '40%']});
 				return false;
 			}
 			
-			//副本指标
-			if(data.field.metricsType == 1){
-				replicaMetrics($, startTime, endTime);
-			//JVM指标
-			}else if(data.field.metricsType == 2){
-				//待实现
-			}
+			draw($, cpuRecords, [10, 11], startTime, endTime);
+			draw($, memoryRecords, [20, 21], startTime, endTime);
+			
             return false;
         });
 	});
 	
-	function replicaMetrics($, startTime, endTime){
-		draw($, 'cpu-records', 'CPU', 'm', 1, startTime, endTime);
-		draw($, 'memory-records', '内存', 'MB', 2, startTime, endTime);
-	}
+	function draw($, records, metricsTypes, startTime, endTime){
 	
-	function draw($, records, metricsName, unit, metricsType, startTime, endTime){
 		var appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val());
 		var replicaName = parent.replicaName;
-		$.ajax({
-			url: '/app/env/replica/metrics/list',
-			type: 'POST',
-			dataType: "json",
-			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'appId': appId, 'replicaName': replicaName, 'metricsType': metricsType, 'startTime': startTime, 'endTime': endTime}),
-			success: function(res){
-				doDraw(records, metricsName, unit, res.data);
-			},
-			error: function(data){
-			}
-		});
+		
+		var ps = [];
+		for(var i in metricsTypes){
+			ps.push(metricsData($, replicaName, metricsTypes[i], startTime, endTime));
+		}
+		
+		Promise.all(ps).then((result) => {
+			doDraw(records, result);
+		}).catch((error) => {
+			console.log(error);
+		})
 	}
 	
-	function doDraw(records, metricsName, unit, data){
+	function metricsData($, replicaName, metricsType, startTime, endTime){
+		let promise = new Promise((resolve, reject) => {
+			$.ajax({
+				url: '/app/env/replica/metrics/list',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({'replicaName': replicaName, 'metricsType': metricsType, 'startTime': startTime, 'endTime': endTime}),
+				success: function(res){
+					resolve(res);
+				},
+				error: function(data){
+					reject(data);
+				}
+			});
+		});
+		
+		return promise;
+	}
+	
+	function doDraw(records, result) {
+	
+		var firstTypeName = '';
+		var unit = '';
+		var secondeTypeNames = [];
+		var times;
+		var seriesData = [];
+		for(var i in result){
+			var data = result[i].data;
+			firstTypeName = data.firstTypeName;
+			unit = data.unit;
+			secondeTypeNames.push(data.secondeTypeName);
+			times = data.times;
+			seriesData.push({'name':data.secondeTypeName,'type':'line','symbol':'none','areaStyle':{},'data':data.metricsValues});
+		}
+		
+		if(firstTypeName){
+			firstTypeName = firstTypeName + '(单位：' + (unit) + ')';
+		}
+		
         var optionRecords = {
             title: {
-                text: metricsName + '-使用情况'
+                text: firstTypeName
             },
             tooltip: {
                 trigger: 'axis',
@@ -125,7 +152,7 @@
 				x:'center',
 				y:'bottom',
 				padding:[100,0,0,0],
-                data: ['最大值', '使用值']
+                data: secondeTypeNames
             },
             toolbox: {
                 feature: {
@@ -148,7 +175,7 @@
 							return value.substring(10);
 						}
 					},
-                    data: data.times
+                    data: times
                 }
             ],
             yAxis: [
@@ -156,27 +183,13 @@
                     type: 'value',
 					axisLabel:{
 						show: true,
-						formatter: '{value}' + unit
+						formatter: '{value}'
 					}
                 }
             ],
-            series: [
-                {
-                    name: '最大值',
-                    type: 'line',
-                    areaStyle: {},
-                    data: data.maxValues
-                },
-                {
-                    name: '使用值',
-                    type: 'line',
-                    areaStyle: {},
-                    data: data.usedValues
-                }
-            ]
+            series: seriesData
         };
 		
-		var echartsRecords = echarts.init(document.getElementById(records), 'walden');
-        echartsRecords.setOption(optionRecords);	
+        records.setOption(optionRecords);	
 	}
 </script>

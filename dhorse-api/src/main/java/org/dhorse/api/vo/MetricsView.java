@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 副本指标
+ * 指标视图
  * 
  * @author Dahai 2023-02-28
  */
-public class ReplicaMetrics implements Serializable {
+public class MetricsView implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -21,6 +21,21 @@ public class ReplicaMetrics implements Serializable {
 	 * 指标类型，见：MetricsTypeEnum
 	 */
 	private Integer metricsType;
+
+	/**
+	 * 第一类别名称
+	 */
+	private String firstTypeName;
+
+	/**
+	 * 第二类别名称
+	 */
+	private String secondeTypeName;
+
+	/**
+	 * 单位
+	 */
+	private String unit;
 
 	/**
 	 * 指标值
@@ -46,6 +61,30 @@ public class ReplicaMetrics implements Serializable {
 
 	public void setMetricsType(Integer metricsType) {
 		this.metricsType = metricsType;
+	}
+
+	public String getFirstTypeName() {
+		return firstTypeName;
+	}
+
+	public void setFirstTypeName(String firstTypeName) {
+		this.firstTypeName = firstTypeName;
+	}
+
+	public String getSecondeTypeName() {
+		return secondeTypeName;
+	}
+
+	public void setSecondeTypeName(String secondeTypeName) {
+		this.secondeTypeName = secondeTypeName;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
 	}
 
 	public List<Long> getMetricsValues() {

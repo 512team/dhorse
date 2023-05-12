@@ -19,13 +19,13 @@ import org.dhorse.api.param.app.env.replica.DownloadFileParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
-import org.dhorse.api.param.app.env.replica.QueryFilesParam;
 import org.dhorse.api.param.app.env.replica.MetricsQueryParam;
+import org.dhorse.api.param.app.env.replica.QueryFilesParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.vo.ClusterNamespace;
 import org.dhorse.api.vo.EnvReplica;
 import org.dhorse.api.vo.Metrics;
-import org.dhorse.api.vo.ReplicaMetrics;
+import org.dhorse.api.vo.MetricsView;
 import org.dhorse.infrastructure.context.AppEnvClusterContext;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
@@ -43,6 +43,7 @@ import org.dhorse.infrastructure.repository.po.MetricsPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
+import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -258,14 +259,14 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 					
 					long memoryUsed = usage.get("memory").getNumber().setScale(0, RoundingMode.HALF_UP).longValue();
 					item(MetricsTypeEnum.REPLICA_MEMORY_USED, replicaName, metricsList, memoryUsed);
-					item(MetricsTypeEnum.REPLICA_MEMORY_MAX, replicaName, metricsList, appEnvPO.getReplicaMemory());
+					item(MetricsTypeEnum.REPLICA_MEMORY_MAX, replicaName, metricsList, appEnvPO.getReplicaMemory() * Constants.ONE_MB);
 				}
 			}
 		}
 		metricsRepository.addList(metricsList);
 	}
 	
-	public ReplicaMetrics replicaMetrics(LoginUser loginUser, MetricsQueryParam queryParam) {
+	public MetricsView metrics(LoginUser loginUser, MetricsQueryParam queryParam) {
 		if(StringUtils.isBlank(queryParam.getStartTime())
 				|| StringUtils.isBlank(queryParam.getEndTime())
 				|| null == queryParam.getMetricsType()
@@ -278,21 +279,31 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 		bizParam.setStartTime(queryParam.getStartTime());
 		bizParam.setEndTime(queryParam.getEndTime());
 		List<MetricsPO> pos = metricsRepository.list(bizParam);
-		ReplicaMetrics rm = new ReplicaMetrics();
+		MetricsView rm = new MetricsView();
 		if(CollectionUtils.isEmpty(pos)) {
 			return rm;
 		}
-		
+		MetricsTypeEnum type = MetricsTypeEnum.getByCode(queryParam.getMetricsType());
 		List<Long> metricsValues = new ArrayList<>();
 		List<String> times = new ArrayList<>();
 		for(int i = pos.size() - 1; i >= 0; i--) {
 			MetricsPO po = pos.get(i);
-			metricsValues.add(po.getMetricsValue());
 			times.add(DateUtils.formatDefault(po.getCreationTime()));
+			if(po.getMetricsValue() < 0) {
+				continue;
+			}
+			if(Constants.MB_UNIT.equals(type.getUnit())) {
+				metricsValues.add(po.getMetricsValue() / Constants.ONE_MB);
+			}else {
+				metricsValues.add(po.getMetricsValue());
+			}
 		}
 		
 		rm.setReplicaName(queryParam.getReplicaName());
 		rm.setMetricsType(queryParam.getMetricsType());
+		rm.setFirstTypeName(type.getFirstTypeName());
+		rm.setSecondeTypeName(type.getSecondeTypeName());
+		rm.setUnit(type.getUnit());
 		rm.setMetricsValues(metricsValues);
 		rm.setTimes(times);
 		return rm;
