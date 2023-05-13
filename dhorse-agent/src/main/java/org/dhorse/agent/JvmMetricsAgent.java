@@ -43,7 +43,7 @@ public class JvmMetricsAgent {
 			gc(replicaName, metricsList);
 			thread(replicaName, metricsList);
 			HttpUtils.sendPost(args, metricsList.toString());
-		}, 0, 5, TimeUnit.SECONDS);
+		}, 0, 10, TimeUnit.SECONDS);
 	}
 
 	private static void memoryHeap(String replicaName, List<Metrics> metricsList) {

@@ -50,7 +50,7 @@ public class Metrics extends BaseDto {
 
 	@Override
 	public String toString() {
-		return "{\"replicaName\":\"" + replicaName + "\", \"metricsType\":" + metricsType + ","
+		return "{\"replicaName\":\"" + replicaName + "\", \"metricsType\":" + metricsType
 				+ ", \"metricsValue\":" + metricsValue + "}";
 	}
 }

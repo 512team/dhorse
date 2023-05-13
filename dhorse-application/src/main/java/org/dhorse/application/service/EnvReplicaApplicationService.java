@@ -96,6 +96,7 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 			if(deploymentVersionPO == null) {
 				deploymentVersionPO = deploymentVersionRepository.queryByVersionName(e.getVersionName());
 			}
+			e.setAppTechType(appPO.getTechType());
 			e.setBranchName(deploymentVersionPO != null ? deploymentVersionPO.getBranchName() : null);
 		});
 		
@@ -233,7 +234,6 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 			envMap.put(K8sUtils.getReplicaAppName(app.getAppName(), env.getTag()), env);
 		}
 		
-		List<MetricsParam> metricsList = new ArrayList<>();
 		for(ClusterPO cluster : clusters){
 			ClusterStrategy clusterStrategy = clusterStrategy(cluster.getClusterType());
 			List<ClusterNamespace> namespaces = clusterStrategy.namespaceList(cluster, null);
@@ -252,6 +252,8 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 					if(CollectionUtils.isEmpty(metric.getContainers())) {
 						continue;
 					}
+					
+					List<MetricsParam> metricsList = new ArrayList<>();
 					Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
 					long cpuUsed = usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue();
 					item(MetricsTypeEnum.REPLICA_CPU_USED, replicaName, metricsList, cpuUsed);
@@ -260,10 +262,10 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 					long memoryUsed = usage.get("memory").getNumber().setScale(0, RoundingMode.HALF_UP).longValue();
 					item(MetricsTypeEnum.REPLICA_MEMORY_USED, replicaName, metricsList, memoryUsed);
 					item(MetricsTypeEnum.REPLICA_MEMORY_MAX, replicaName, metricsList, appEnvPO.getReplicaMemory() * Constants.ONE_MB);
+					metricsRepository.addList(metricsList);
 				}
 			}
 		}
-		metricsRepository.addList(metricsList);
 	}
 	
 	public MetricsView metrics(LoginUser loginUser, MetricsQueryParam queryParam) {

@@ -16,11 +16,11 @@ import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 
 /**
  * 
- * 部署分支参数数据模型
+ * 部署分支模型
  * 
  * @author Dahai 2021-9-20 11:37:16
  */
-public class DeployContext {
+public class DeploymentContext {
 
 	// 提交人
 	private String submitter;

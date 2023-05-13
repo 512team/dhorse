@@ -11,7 +11,7 @@ import org.dhorse.api.vo.AppTag;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public abstract class CodeRepoStrategy {
 
 	public static final Logger logger = LoggerFactory.getLogger(CodeRepoStrategy.class);
 	
-	void clearOldCode(DeployContext context) {
+	void clearOldCode(DeploymentContext context) {
 		File[] hisBranchs = new File(localPathOfBranch(context)).getParentFile().listFiles();
 		//异步清除历史代码
 		ThreadPoolUtils.async(new Runnable() {
@@ -37,16 +37,16 @@ public abstract class CodeRepoStrategy {
 		});
 	}
 	
-	public boolean downloadCode(DeployContext context) {
+	public boolean downloadCode(DeploymentContext context) {
 		clearOldCode(context);
 		return doDownloadCode(context);
 	}
 	
-	abstract boolean doDownloadCode(DeployContext context);
+	abstract boolean doDownloadCode(DeploymentContext context);
 	
-	public abstract void mergeBranch(DeployContext context);
+	public abstract void mergeBranch(DeploymentContext context);
 	
-	String checkLocalPathOfBranch(DeployContext context) {
+	String checkLocalPathOfBranch(DeploymentContext context) {
 		String localPathOfBranch = localPathOfBranch(context);
 		File pathFile = new File(localPathOfBranch);
 		if (!pathFile.exists()) {
@@ -62,7 +62,7 @@ public abstract class CodeRepoStrategy {
 		return localPathOfBranch;
 	}
 	
-	String localPathOfBranch(DeployContext context) {
+	String localPathOfBranch(DeploymentContext context) {
 		return new StringBuilder()
 				.append(context.getComponentConstants().getDataPath())
 				.append(File.separator)

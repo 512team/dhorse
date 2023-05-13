@@ -2,11 +2,13 @@ package org.dhorse.infrastructure.repository.source;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.apache.ibatis.session.AutoMappingBehavior;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.component.MysqlConfig;
+import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -117,18 +119,19 @@ public class DataSourceConfig{
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(dynamicTableNameInterceptor());
         interceptor.addInnerInterceptor(paginationInnerInterceptor());
-        //interceptor.setInterceptors(Arrays.asList(dynamicTableNameInterceptor()));
         return interceptor;
     }
     
     @Bean
 	public DynamicTableNameInnerInterceptor dynamicTableNameInterceptor() {
 		DynamicTableNameInnerInterceptor intercepter = new DynamicTableNameInnerInterceptor();
-		
 		intercepter.setTableNameHandler((sql, tableName) -> {
-			System.out.println("===============sql: " + sql);
-			System.out.println("===============table name: " + tableName);
+			String suffix = ThreadLocalUtils.DynamicTable.get();
+			if(!StringUtils.isBlank(suffix)) {
+				return tableName + suffix;
+			}
 			return tableName;
 		});
 		return intercepter;

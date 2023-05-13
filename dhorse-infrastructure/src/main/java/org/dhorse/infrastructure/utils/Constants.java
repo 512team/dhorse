@@ -54,6 +54,8 @@ public class Constants {
 	
 	public static final String COLLECT_METRICS_URI = "/app/env/replica/metrics/add";
 	
+	public static final int METRICS_TABLE_SIZE = 32;
+	
 	/**
 	 * 部署目录
 	 */

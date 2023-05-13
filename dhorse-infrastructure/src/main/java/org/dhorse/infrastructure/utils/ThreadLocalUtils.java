@@ -2,17 +2,43 @@ package org.dhorse.infrastructure.utils;
 
 public class ThreadLocalUtils {
 	
-	private static final InheritableThreadLocal<DeployContext> DEPLOY_CONTEXT = new InheritableThreadLocal<>();
-	
-	public static void putDeployContext(DeployContext id) {
-		DEPLOY_CONTEXT.set(id);
+	/**
+	 * 部署时的线程缓存
+	 */
+	public static class Deployment {
+		
+		private static final ThreadLocal<DeploymentContext> CACHE = new InheritableThreadLocal<>();
+		
+		public static void put(DeploymentContext val) {
+			CACHE.set(val);
+		}
+		
+		public static DeploymentContext get() {
+			return CACHE.get();
+		}
+		
+		public static void remove() {
+			CACHE.remove();
+		}
 	}
 	
-	public static DeployContext getDeployContext() {
-		return DEPLOY_CONTEXT.get();
-	}
-	
-	public static void removeDeployContext() {
-		DEPLOY_CONTEXT.remove();
+	/**
+	 * 动态表的线程缓存
+	 */
+	public static class DynamicTable {
+		
+		private static final ThreadLocal<String> CACHE = new InheritableThreadLocal<>();
+		
+		public static void put(String val) {
+			CACHE.set(val);
+		}
+		
+		public static String get() {
+			return CACHE.get();
+		}
+		
+		public static void remove() {
+			CACHE.remove();
+		}
 	}
 }

@@ -52,7 +52,7 @@ import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson;
 import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson.Auth;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
@@ -228,7 +228,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return null;
 	}
 	
-	public boolean createDeployment(DeployContext context) {
+	public boolean createDeployment(DeploymentContext context) {
 		logger.info("Start to deploy k8s server");
 		V1Deployment deployment = new V1Deployment();
 		deployment.apiVersion("apps/v1");
@@ -277,7 +277,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 	
-	private boolean createService(DeployContext context) throws ApiException {
+	private boolean createService(DeploymentContext context) throws ApiException {
 		logger.info("Start to create service");
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
@@ -303,7 +303,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 	
-	private boolean createIngress(DeployContext context) throws ApiException {
+	private boolean createIngress(DeploymentContext context) throws ApiException {
 		if(!this.nodeApp(context.getApp())) {
 			return true;
 		}
@@ -342,7 +342,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return metadata;
 	}
 	
-	private V1IngressSpec ingressSpec(DeployContext context) {
+	private V1IngressSpec ingressSpec(DeploymentContext context) {
 		V1ServiceBackendPort serviceBackendPort = new V1ServiceBackendPort();
 		serviceBackendPort.setNumber(context.getAppEnv().getServicePort());
 		V1IngressServiceBackend ingressServiceBackend = new V1IngressServiceBackend();
@@ -513,7 +513,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return metadata;
 	}
 	
-	private V1ServiceSpec serviceSpec(DeployContext context) {
+	private V1ServiceSpec serviceSpec(DeploymentContext context) {
 		V1ServiceSpec spec = new V1ServiceSpec();
 		spec.setSelector(Collections.singletonMap("app", context.getDeploymentName()));
 		spec.setPorts(servicePorts(context));
@@ -521,7 +521,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return spec;
 	}
 	
-	private List<V1ServicePort> servicePorts(DeployContext context){
+	private List<V1ServicePort> servicePorts(DeploymentContext context){
 		//主端口
 		V1ServicePort servicePort = new V1ServicePort();
 		servicePort.setName("major");
@@ -557,7 +557,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return metadata;
 	}
 
-	private V1DeploymentSpec deploymentSpec(DeployContext context) {
+	private V1DeploymentSpec deploymentSpec(DeploymentContext context) {
 		V1DeploymentSpec spec = new V1DeploymentSpec();
 		spec.setReplicas(context.getAppEnv().getMinReplicas());
 		spec.setSelector(specSelector(context.getDeploymentName()));
@@ -571,7 +571,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return selector;
 	}
 	
-	private V1PodTemplateSpec specTemplate(DeployContext context) {
+	private V1PodTemplateSpec specTemplate(DeploymentContext context) {
 		Map<String, String> labels = new HashMap<>();
 		labels.put("app", context.getDeploymentName());
 		labels.put("deployer", K8sUtils.getDhorseLabelSelector(context.getAppEnv().getTag()));
@@ -584,7 +584,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return template;
 	}
 
-	private V1PodSpec podSpec(DeployContext context) {
+	private V1PodSpec podSpec(DeploymentContext context) {
 		V1PodSpec podSpec = new V1PodSpec();
 		podSpec.setInitContainers(initContainer(context));
 		podSpec.setContainers(containers(context));
@@ -597,7 +597,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return podSpec;
 	}
 	
-	private V1Affinity affinity(DeployContext context) {
+	private V1Affinity affinity(DeploymentContext context) {
 		V1Affinity affinity = new V1Affinity();
 		affinity.setNodeAffinity(nodeAffinity(context));
 		affinity.setPodAffinity(podAffinity(context));
@@ -606,7 +606,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return affinity;
 	}
 	
-	private V1NodeAffinity nodeAffinity(DeployContext context) {
+	private V1NodeAffinity nodeAffinity(DeploymentContext context) {
 		List<AffinityTolerationPO> nodeAffinitys = context.getAffinitys().stream()
 				.filter(e -> SchedulingTypeEnum.NODE_AFFINITY.getCode().equals(e.getSchedulingType()))
 				.collect(Collectors.toList());
@@ -671,7 +671,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return nodeAffinity;
 	}
 	
-	private V1PodAffinity podAffinity(DeployContext context) {
+	private V1PodAffinity podAffinity(DeploymentContext context) {
 
 		List<AffinityTolerationPO> affinitys = context.getAffinitys().stream()
 				.filter(e -> SchedulingTypeEnum.REPLICA_AFFINITY.getCode().equals(e.getSchedulingType()))
@@ -746,7 +746,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return StringUtils.isBlank(topologyKey) ? K8sUtils.DEFAULT_TOPOLOGY_KEY : topologyKey;
 	}
 	
-	private V1PodAntiAffinity podAntiAffinity(DeployContext context) {
+	private V1PodAntiAffinity podAntiAffinity(DeploymentContext context) {
 
 		List<AffinityTolerationPO> affinitys = context.getAffinitys().stream()
 				.filter(e -> SchedulingTypeEnum.REPLICA_ANTIAFFINITY.getCode().equals(e.getSchedulingType()))
@@ -817,7 +817,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	}
 	
-	private void affinityApp(V1Affinity affinity, DeployContext context) {
+	private void affinityApp(V1Affinity affinity, DeploymentContext context) {
 		List<String> affinityNames = context.getApp().getAffinityAppNames();
 		if(CollectionUtils.isEmpty(affinityNames)) {
 			return;
@@ -857,7 +857,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 	}
 	
-	private List<V1Toleration> toleration(DeployContext context) {
+	private List<V1Toleration> toleration(DeploymentContext context) {
 		List<AffinityTolerationPO> configs = context.getAffinitys().stream()
 				.filter(e -> SchedulingTypeEnum.NODE_TOLERATION.getCode().equals(e.getSchedulingType()))
 				.collect(Collectors.toList());
@@ -879,7 +879,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return tolerations;
 	}
 	
-	private List<V1Container> containers(DeployContext context) {
+	private List<V1Container> containers(DeploymentContext context) {
 		AppEnvPO appEnvPO = context.getAppEnv();
 		V1Container container = new V1Container();
 		container.setName(context.getDeploymentName());
@@ -928,7 +928,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return Arrays.asList(container);
 	}
 	
-	private void containerOfJar(DeployContext context, V1Container container) {
+	private void containerOfJar(DeploymentContext context, V1Container container) {
 		if(!jarFileType(context.getApp())) {
 			return;
 		}
@@ -937,14 +937,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		argsOfJar(container, context);
 	}
 	
-	private void containerOfNode(DeployContext context, V1Container container) {
+	private void containerOfNode(DeploymentContext context, V1Container container) {
 		if(!TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
 		container.setImage(nginxImage(context));
 	}
 	
-	private void envVars(DeployContext context, V1Container container) {
+	private void envVars(DeploymentContext context, V1Container container) {
 		List<V1EnvVar> envVars = new ArrayList<>();
 		V1EnvVar envVar = new V1EnvVar();
 		envVar.setName("TZ");
@@ -954,7 +954,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		containerOfWar(context, container);
 	}
 	
-	private void containerOfWar(DeployContext context, V1Container container) {
+	private void containerOfWar(DeploymentContext context, V1Container container) {
 		if(!warFileType(context.getApp())) {
 			return;
 		}
@@ -980,7 +980,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.getEnv().add(envVar);
 	}
 	
-	private void lifecycle(V1Container container, DeployContext context) {
+	private void lifecycle(V1Container container, DeploymentContext context) {
 		V1ExecAction exec = new V1ExecAction();
 		//5秒后关闭Pod
 		exec.command(Arrays.asList("sh", "-c", "sleep 5"));
@@ -991,7 +991,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setLifecycle(lifecycle);
 	}
 
-	private void probe(V1Container container, DeployContext context) {
+	private void probe(V1Container container, DeploymentContext context) {
 		if(context.getAppEnv().getServicePort() == null) {
 			return;
 		}
@@ -1000,7 +1000,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		livenessProbe(container, context);
 	}
 	
-	private void startupProbe(V1Container container, DeployContext context) {
+	private void startupProbe(V1Container container, DeploymentContext context) {
 		Item item = null;
 		if(context.getEnvHealth() != null) {
 			item = context.getEnvHealth().getStartup();
@@ -1016,7 +1016,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.startupProbe(probe);
 	}
 	
-	private void readinessProbe(V1Container container, DeployContext context) {
+	private void readinessProbe(V1Container container, DeploymentContext context) {
 		Item item = null;
 		if(context.getEnvHealth() != null) {
 			item = context.getEnvHealth().getReadiness();
@@ -1031,7 +1031,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.readinessProbe(probe);
 	}
 	
-	private void livenessProbe(V1Container container, DeployContext context) {
+	private void livenessProbe(V1Container container, DeploymentContext context) {
 		Item item = null;
 		if(context.getEnvHealth() != null) {
 			item = context.getEnvHealth().getLiveness();
@@ -1046,7 +1046,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setLivenessProbe(probe);
 	}
 	
-	private void action(V1Probe probe, Item item, DeployContext context) {
+	private void action(V1Probe probe, Item item, DeploymentContext context) {
 		if(item == null || StringUtils.isBlank(item.getHealthPath())) {
 			V1TCPSocketAction tcpAction = new V1TCPSocketAction();
 			tcpAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
@@ -1063,7 +1063,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	 *   使用Jib通过Jdk的安装目录构建的Jdk镜像，缺少java命令的执行权限，故首先进行赋权。
 	 *   需要执行多条shell指令，因此只能使用sh -c模式。
 	 */
-	private void commandsOfJar(V1Container container, DeployContext context){
+	private void commandsOfJar(V1Container container, DeploymentContext context){
 		StringBuilder commands = new StringBuilder();
 		commands.append("chmod +x $JAVA_HOME/bin/java &&");
 		commands.append(" $JAVA_HOME/bin/java");
@@ -1089,7 +1089,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
 	}
 	
-	private List<String> jvmArgsOfDHorse(DeployContext context) {
+	private List<String> jvmArgsOfDHorse(DeploymentContext context) {
 		List<String> args = new ArrayList<>();
 		args.add("-Duser.timezone=Asia/Shanghai");
 		args.add("-Denv=" + context.getAppEnv().getTag());
@@ -1113,13 +1113,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return args;
 	}
 	
-	private void argsOfJar(V1Container container, DeployContext context){
+	private void argsOfJar(V1Container container, DeploymentContext context){
 		List<String> args = new ArrayList<>();
 		args.add("--server.port=" + context.getAppEnv().getServicePort());
 		container.setArgs(args);
 	}
 	
-	private List<V1Container> initContainer(DeployContext context) {
+	private List<V1Container> initContainer(DeploymentContext context) {
 		List<V1Container> containers = new ArrayList<>();
 		initContainerOfWar(context, containers);
 		initContainerOfTraceAgent(context, containers);
@@ -1128,7 +1128,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return containers;
 	}
 	
-	private String nginxImage(DeployContext context) {
+	private String nginxImage(DeploymentContext context) {
 		//如：nginx:1.23.3-alpine
 		if(ImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
 			return "nginx:" + NginxVersionEnum.getByCode(context.getApp().getBaseImageVersion()).getValue() + "-alpine";
@@ -1136,7 +1136,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return context.getApp().getBaseImage();
 	}
 	
-	private void initContainerOfTraceAgent(DeployContext context, List<V1Container> containers) {
+	private void initContainerOfTraceAgent(DeploymentContext context, List<V1Container> containers) {
 		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
@@ -1163,7 +1163,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		containers.add(initContainer);
 	}
 	
-	private void initContainerOfDHorseAgent(DeployContext context, List<V1Container> containers) {
+	private void initContainerOfDHorseAgent(DeploymentContext context, List<V1Container> containers) {
 		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
@@ -1183,7 +1183,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		containers.add(initContainer);
 	}
 	
-	private void initContainerOfWar(DeployContext context, List<V1Container> containers) {
+	private void initContainerOfWar(DeploymentContext context, List<V1Container> containers) {
 		if(!warFileType(context.getApp())) {
 			return;
 		}
@@ -1203,7 +1203,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		containers.add(container);
 	}
 	
-	private void initContainerOfNode(DeployContext context, List<V1Container> containers) {
+	private void initContainerOfNode(DeploymentContext context, List<V1Container> containers) {
 		if(!TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
@@ -1265,7 +1265,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return TechTypeEnum.NODE.getCode().equals(app.getTechType());
 	}
 	
-	private List<V1VolumeMount> volumeMounts(DeployContext context) {
+	private List<V1VolumeMount> volumeMounts(DeploymentContext context) {
 		List<V1VolumeMount> volumeMounts = new ArrayList<>();
 		
 		//指定时区
@@ -1304,7 +1304,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return volumeMounts;
 	}
 
-	private List<V1Volume> volumes(DeployContext context) {
+	private List<V1Volume> volumes(DeploymentContext context) {
 		List<V1Volume> volumes = new ArrayList<>();
 		
 		V1Volume volumeTime = new V1Volume();

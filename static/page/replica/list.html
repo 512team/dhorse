@@ -31,11 +31,12 @@
 		</script>
         <script type="text/html" id="currentTableBar">
 			<a href="javascript:;" class="layui-font-blue" lay-event="replicaMetrics" id="replicaMetrics">副本指标</a>
-			<span style="color: rgb(179, 179, 179);"> | </span>
-			<a href="javascript:;" class="layui-font-blue" lay-event="jvmMetrics">Jvm指标</a>
+			{{#	if (d.appTechType == 1) {    	}}
+				<span style="color: rgb(179, 179, 179);"> | </span>
+				<a href="javascript:;" class="layui-font-blue" lay-event="jvmMetrics">Jvm指标</a>
+			{{#	}                     		}}
 			<span style="color: rgb(179, 179, 179);"> | </span>
 			<a href="javascript:;" class="layui-font-blue dropdown-operate" data-replica-name="{{d.name}}">更多 <i class="layui-icon layui-font-12 layui-icon-down"></i></a>
-			<!-- <a href="/app/env/replica/downloadLog?replicaName={{d.name}}" class="layui-font-blue" title="只支持下载最近50万行的日志">(下载)</a> -->
 		</script>
     </div>
 </div>

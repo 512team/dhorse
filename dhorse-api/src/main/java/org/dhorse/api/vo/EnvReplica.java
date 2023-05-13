@@ -6,6 +6,8 @@ public class EnvReplica implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	private Integer appTechType;
+
 	private String name;
 
 	private String ip;
@@ -28,6 +30,14 @@ public class EnvReplica implements Serializable {
 	 * 格式：yyyy-MM-dd HH:mm:ss
 	 */
 	private String startTime;
+
+	public Integer getAppTechType() {
+		return appTechType;
+	}
+
+	public void setAppTechType(Integer appTechType) {
+		this.appTechType = appTechType;
+	}
 
 	public String getName() {
 		return name;

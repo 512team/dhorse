@@ -67,7 +67,7 @@ import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
 import org.dhorse.infrastructure.utils.Constants;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
@@ -107,13 +107,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 	protected String buildVersion(BuildParam buildParam) {
 
-		DeployContext context = buildVersionContext(buildParam);
+		DeploymentContext context = buildVersionContext(buildParam);
 		
 		//异步构建
 		ThreadPoolUtils.buildVersion(() -> {
 			
 			Integer status = BuildStatusEnum.BUILDED_SUCCESS.getCode();
-			ThreadLocalUtils.putDeployContext(context);
+			ThreadLocalUtils.Deployment.put(context);
 			
 			try {
 				logger.info("Start to build version");
@@ -147,14 +147,14 @@ public abstract class DeployApplicationService extends ApplicationService {
 			} finally {
 				buildNotify(context, status);
 				logger.info("End to build version");
-				ThreadLocalUtils.removeDeployContext();
+				ThreadLocalUtils.Deployment.remove();
 			}
 		});
 		
 		return context.getVersionName();
 	}
 	
-	private void buildNotify(DeployContext context, int status) {
+	private void buildNotify(DeploymentContext context, int status) {
 		if(context.getGlobalConfigAgg().getMore() == null) {
 			return;
 		}
@@ -186,7 +186,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 	
 	protected boolean deploy(DeployParam deployParam) {
 		//1.准备数据
-		DeployContext context = checkAndBuildDeployContext(deployParam, DeploymentStatusEnum.DEPLOYING);
+		DeploymentContext context = checkAndBuildDeployContext(deployParam, DeploymentStatusEnum.DEPLOYING);
 		
 		//2.部署
 		ThreadPoolUtils.deploy(() ->{
@@ -213,9 +213,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 	
-	private boolean doDeploy(DeployContext context) {
+	private boolean doDeploy(DeploymentContext context) {
 
-		ThreadLocalUtils.putDeployContext(context);
+		ThreadLocalUtils.Deployment.put(context);
 		DeploymentStatusEnum deploymentStatus = DeploymentStatusEnum.DEPLOYED_FAILURE;
 		
 		if(DeploymentThreadPoolUtils.isInterrupted()) {
@@ -251,13 +251,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 			updateDeployStatus(context, deploymentStatus, null, new Date());
 			deployNotify(context, deploymentStatus);
 			logger.info("End to deploy");
-			ThreadLocalUtils.removeDeployContext();
+			ThreadLocalUtils.Deployment.remove();
 		}
 
 		return true;
 	}
 
-	private void deployNotify(DeployContext context, DeploymentStatusEnum status) {
+	private void deployNotify(DeploymentContext context, DeploymentStatusEnum status) {
 		if(context.getGlobalConfigAgg().getMore() == null) {
 			return;
 		}
@@ -284,7 +284,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 	
 	protected boolean rollback(DeployParam deployParam) {
 		// 1.准备数据
-		DeployContext context = checkAndBuildDeployContext(deployParam, DeploymentStatusEnum.ROLLBACKING);
+		DeploymentContext context = checkAndBuildDeployContext(deployParam, DeploymentStatusEnum.ROLLBACKING);
 		
 		//2.回滚
 		ThreadPoolUtils.deploy(() ->{
@@ -294,9 +294,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 	
-	private boolean doRollback(DeployContext context) {
+	private boolean doRollback(DeploymentContext context) {
 		
-		ThreadLocalUtils.putDeployContext(context);
+		ThreadLocalUtils.Deployment.put(context);
 		DeploymentStatusEnum rollbackStatus = DeploymentStatusEnum.ROLLBACK_FAILURE;
 		
 		try {
@@ -313,16 +313,16 @@ public abstract class DeployApplicationService extends ApplicationService {
 		} finally {
 			updateDeployStatus(context, rollbackStatus, null, new Date());
 			logger.info("End to rollback");
-			ThreadLocalUtils.removeDeployContext();
+			ThreadLocalUtils.Deployment.remove();
 		}
 
 		return true;
 	}
 	
-	private DeployContext buildVersionContext(BuildParam buildParam) {
+	private DeploymentContext buildVersionContext(BuildParam buildParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
 		App app = appRepository.queryWithExtendById(buildParam.getAppId());
-		DeployContext context = new DeployContext();
+		DeploymentContext context = new DeploymentContext();
 		context.setSubmitter(buildParam.getSubmitter());
 		context.setGlobalConfigAgg(globalConfig);
 		context.setBranchName(buildParam.getBranchName());
@@ -366,7 +366,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return context;
 	}
 
-	private DeployContext buildDeployContext(DeployParam deployParam) {
+	private DeploymentContext buildDeployContext(DeployParam deployParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
 		AppEnvPO appEnvPO = appEnvRepository.queryById(deployParam.getEnvId());
 		EnvExtParam bizParam = new EnvExtParam();
@@ -382,7 +382,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		if(clusterPO == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);
 		}
-		DeployContext context = new DeployContext();
+		DeploymentContext context = new DeploymentContext();
 		context.setSubmitter(deployParam.getDeployer());
 		context.setApprover(deployParam.getApprover());
 		context.setGlobalConfigAgg(globalConfig);
@@ -410,8 +410,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return context;
 	}
 	
-	private DeployContext checkAndBuildDeployContext(DeployParam deployParam, DeploymentStatusEnum deploymentStatus) {
-		DeployContext context = buildDeployContext(deployParam);
+	private DeploymentContext checkAndBuildDeployContext(DeployParam deployParam, DeploymentStatusEnum deploymentStatus) {
+		DeploymentContext context = buildDeployContext(deployParam);
 		// 当前环境是否存在部署中
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
 		deploymentDetailParam.setEnvId(deployParam.getEnvId());
@@ -425,7 +425,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return context;
 	}
 
-	private boolean pack(DeployContext context) {
+	private boolean pack(DeploymentContext context) {
 		//SpringBoot应用
 		if (TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendJava appExtend = context.getApp().getAppExtend();
@@ -543,7 +543,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return status == 0;
 	}
 
-	private boolean buildImage(DeployContext context) {
+	private boolean buildImage(DeploymentContext context) {
 		if(TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())){
 			return buildSpringBootImage(context);
 		}
@@ -555,7 +555,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return false;
 	}
 	
-	private boolean buildSpringBootImage(DeployContext context) {
+	private boolean buildSpringBootImage(DeploymentContext context) {
 		AppExtendJava appExtend = context.getApp().getAppExtend();
 		String fullTargetPath = context.getLocalPathOfBranch();
 		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
@@ -597,7 +597,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 	
-	private boolean buildNodeImage(DeployContext context) {
+	private boolean buildNodeImage(DeploymentContext context) {
 		AppExtendNode appExtend = context.getApp().getAppExtend();
 		String fullDistPath = context.getLocalPathOfBranch();
 		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
@@ -625,7 +625,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 
-	private void doBuildImage(DeployContext context, String baseImage, List<String> entrypoint, List<Path> targetFiles) {
+	private void doBuildImage(DeploymentContext context, String baseImage, List<String> entrypoint, List<Path> targetFiles) {
 		//设置连接仓库的超时时间
 		System.setProperty("jib.httpTimeout", "15000");
 		System.setProperty("sendCredentialsOverHttp", "true");
@@ -648,7 +648,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 	}
 	
-	private String baseImage(DeployContext context) {
+	private String baseImage(DeploymentContext context) {
 		String baseImage = context.getApp().getBaseImage();
 		if (!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			return baseImage;
@@ -671,7 +671,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return baseImage;
 	}
 	
-	private boolean updateDeployStatus(DeployContext context, DeploymentStatusEnum status, Date startTime, Date endTime) {
+	private boolean updateDeployStatus(DeploymentContext context, DeploymentStatusEnum status, Date startTime, Date endTime) {
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
 		deploymentDetailParam.setId(context.getId());
 		deploymentDetailParam.setDeploymentStatus(status.getCode());

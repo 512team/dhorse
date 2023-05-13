@@ -49,7 +49,7 @@ import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
@@ -211,7 +211,7 @@ public abstract class ApplicationService {
 		}
 	}
 	
-	protected String fullNameOfTraceAgentImage(DeployContext context) {
+	protected String fullNameOfTraceAgentImage(DeploymentContext context) {
 		if(!YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
 			return null;
 		}

@@ -14,7 +14,7 @@ import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 
 import io.kubernetes.client.custom.PodMetricsList;
 
@@ -24,7 +24,7 @@ public interface ClusterStrategy {
 	
 	Replica readDeployment(ClusterPO clusterPO, AppEnv appEnv, AppPO appPO);
 	
-	boolean createDeployment(DeployContext context);
+	boolean createDeployment(DeploymentContext context);
 
 	PageData<EnvReplica> replicaPage(EnvReplicaPageParam pageParam, ClusterPO clusterPO,
 			AppPO appPO, AppEnvPO appEnvPO);

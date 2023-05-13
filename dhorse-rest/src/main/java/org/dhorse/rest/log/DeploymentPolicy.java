@@ -9,7 +9,7 @@ import org.dhorse.api.enums.LogTypeEnum;
 import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.dhorse.infrastructure.repository.LogRecordRepository;
 import org.dhorse.infrastructure.repository.po.LogRecordPO;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.dhorse.rest.websocket.WebSocketCache;
@@ -46,7 +46,7 @@ public class DeploymentPolicy implements LifeCycle {
 	 * 自定义处理日志逻辑
 	 */
 	public void handler(String message) {
-		DeployContext deployContext = ThreadLocalUtils.getDeployContext();
+		DeploymentContext deployContext = ThreadLocalUtils.Deployment.get();
 		if (deployContext == null) {
 			return;
 		}

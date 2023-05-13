@@ -8,17 +8,17 @@ import org.dhorse.api.vo.AppTag;
 import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
-import org.dhorse.infrastructure.utils.DeployContext;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 
 public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
-	public boolean doDownloadCode(DeployContext context) {
+	public boolean doDownloadCode(DeploymentContext context) {
 		return true;
 	}
 
 	@Override
-	public void mergeBranch(DeployContext context) {
+	public void mergeBranch(DeploymentContext context) {
 
 	}
 

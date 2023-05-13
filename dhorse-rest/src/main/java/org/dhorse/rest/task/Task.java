@@ -27,7 +27,7 @@ public class Task {
 	/**
 	 * 收集副本的指标数据
 	 */
-	@Scheduled(cron = "0/5 * * * * ?")
+	@Scheduled(cron = "0/10 * * * * ?")
 	public void collectReplicaMetrics() {
 		try {
 			replicaApplicationService.collectReplicaMetrics();
@@ -39,12 +39,12 @@ public class Task {
 	/**
 	 * 清除历史数据
 	 */
-	@Scheduled(cron = "0 0/5 * * * ?")
+	@Scheduled(cron = "0 0/10 * * * ?")
 	public void clearHistoryDB() {
 		Date now = new Date();
 		try {
-			//清除副本指标
-			replicaApplicationService.clearHistoryReplicaMetrics(DateUtils.addDays(now, -3));
+			//清除指标数据
+			replicaApplicationService.clearHistoryReplicaMetrics(DateUtils.addDays(now, -7));
 			//清除日志
 			logRecordRepository.deleteBefore(DateUtils.addDays(now, -Constants.DEPLOYED_LOG_EXIST_DAYS));
 		}catch(Exception e) {
