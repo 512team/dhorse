@@ -12,7 +12,7 @@ import org.dhorse.api.param.app.env.AppEnvUpdateParam;
 import org.dhorse.api.param.app.env.TraceUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.AppEnv;
+import org.dhorse.api.response.model.AppEnv;
 import org.dhorse.application.service.AppEnvApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

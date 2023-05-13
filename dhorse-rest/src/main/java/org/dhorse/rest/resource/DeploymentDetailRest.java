@@ -8,7 +8,7 @@ import org.dhorse.api.param.app.branch.deploy.DeploymentDetailPageParam;
 import org.dhorse.api.param.app.branch.deploy.RollbackApplicationParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.DeploymentDetail;
+import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.application.service.DeploymentDetailApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

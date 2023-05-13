@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.vo.AppBranch;
-import org.dhorse.api.vo.AppTag;
-import org.dhorse.api.vo.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.response.model.AppBranch;
+import org.dhorse.api.response.model.AppTag;
+import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;

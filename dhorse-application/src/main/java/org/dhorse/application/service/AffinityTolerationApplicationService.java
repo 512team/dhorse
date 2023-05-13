@@ -10,7 +10,7 @@ import org.dhorse.api.param.app.env.affinity.AffinityTolerationPageParam;
 import org.dhorse.api.param.app.env.affinity.AffinityTolerationQueryParam;
 import org.dhorse.api.param.app.env.affinity.AffinityTolerationUpdateParam;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.vo.AffinityToleration;
+import org.dhorse.api.response.model.AffinityToleration;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AffinityTolerationParam;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;

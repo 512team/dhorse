@@ -14,7 +14,7 @@ import org.dhorse.api.param.user.UserSearchParam;
 import org.dhorse.api.param.user.UserUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.SysUser;
+import org.dhorse.api.response.model.SysUser;
 import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;

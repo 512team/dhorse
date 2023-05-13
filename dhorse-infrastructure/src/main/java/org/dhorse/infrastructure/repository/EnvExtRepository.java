@@ -3,9 +3,9 @@ package org.dhorse.infrastructure.repository;
 import java.util.List;
 
 import org.dhorse.api.enums.EnvExtTypeEnum;
-import org.dhorse.api.vo.EnvExt;
-import org.dhorse.api.vo.EnvHealth;
-import org.dhorse.api.vo.EnvHealth.Item;
+import org.dhorse.api.response.model.EnvExt;
+import org.dhorse.api.response.model.EnvHealth;
+import org.dhorse.api.response.model.EnvHealth.Item;
 import org.dhorse.infrastructure.param.EnvExtParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.EnvExtMapper;

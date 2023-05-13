@@ -1,6 +1,6 @@
 package org.dhorse.infrastructure.repository;
 
-import org.dhorse.api.vo.DeploymentDetail;
+import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.infrastructure.param.DeploymentDetailParam;
 import org.dhorse.infrastructure.repository.mapper.DeploymentDetailMapper;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;

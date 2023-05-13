@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.SysUser;
+import org.dhorse.api.response.model.SysUser;
 import org.dhorse.application.service.SysUserApplicationService;
 import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;

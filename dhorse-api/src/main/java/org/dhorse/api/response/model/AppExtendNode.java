@@ -1,6 +1,6 @@
-package org.dhorse.api.vo;
+package org.dhorse.api.response.model;
 
-import org.dhorse.api.vo.App.AppExtend;
+import org.dhorse.api.response.model.App.AppExtend;
 
 public class AppExtendNode extends AppExtend {
 

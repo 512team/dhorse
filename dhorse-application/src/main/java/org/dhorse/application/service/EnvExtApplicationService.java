@@ -1,9 +1,9 @@
 package org.dhorse.application.service;
 
 import org.dhorse.api.enums.EnvExtTypeEnum;
-import org.dhorse.api.vo.EnvExt;
-import org.dhorse.api.vo.EnvHealth;
-import org.dhorse.api.vo.EnvHealth.Item;
+import org.dhorse.api.response.model.EnvExt;
+import org.dhorse.api.response.model.EnvHealth;
+import org.dhorse.api.response.model.EnvHealth.Item;
 import org.dhorse.infrastructure.param.EnvExtParam;
 import org.dhorse.infrastructure.repository.po.EnvExtPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;

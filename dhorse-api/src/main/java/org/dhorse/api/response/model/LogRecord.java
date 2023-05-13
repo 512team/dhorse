@@ -1,4 +1,4 @@
-package org.dhorse.api.vo;
+package org.dhorse.api.response.model;
 
 /**
  * 日志记录

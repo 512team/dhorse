@@ -1,5 +1,7 @@
 package org.dhorse.api.response;
 
-public interface Response {
+import java.io.Serializable;
+
+public interface Response extends Serializable {
 
 }

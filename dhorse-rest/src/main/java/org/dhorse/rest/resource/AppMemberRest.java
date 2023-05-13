@@ -5,7 +5,7 @@ import org.dhorse.api.param.app.member.AppMemberDeletionParam;
 import org.dhorse.api.param.app.member.AppMemberPageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.AppMember;
+import org.dhorse.api.response.model.AppMember;
 import org.dhorse.application.service.AppMemberApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

@@ -2,7 +2,7 @@ package org.dhorse.infrastructure.param;
 
 import java.util.List;
 
-import org.dhorse.api.vo.App.AppExtend;
+import org.dhorse.api.response.model.App.AppExtend;
 
 /**
  * 应用信息参数

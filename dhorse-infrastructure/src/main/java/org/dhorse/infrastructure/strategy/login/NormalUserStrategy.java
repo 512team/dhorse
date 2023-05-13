@@ -3,8 +3,8 @@ package org.dhorse.infrastructure.strategy.login;
 import java.util.List;
 
 import org.dhorse.api.param.user.UserLoginParam;
-import org.dhorse.api.vo.GlobalConfigAgg;
-import org.dhorse.api.vo.SysUser;
+import org.dhorse.api.response.model.GlobalConfigAgg;
+import org.dhorse.api.response.model.SysUser;
 import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.SysUserRepository;

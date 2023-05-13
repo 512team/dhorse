@@ -7,7 +7,7 @@ import org.dhorse.api.param.app.env.affinity.AffinityTolerationQueryParam;
 import org.dhorse.api.param.app.env.affinity.AffinityTolerationUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.AffinityToleration;
+import org.dhorse.api.response.model.AffinityToleration;
 import org.dhorse.application.service.AffinityTolerationApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

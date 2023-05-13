@@ -9,7 +9,7 @@ import org.dhorse.api.param.app.branch.AppBranchPageParam;
 import org.dhorse.api.param.app.branch.BuildParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.AppBranch;
+import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.application.service.AppBranchApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

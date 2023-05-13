@@ -2,7 +2,7 @@ package org.dhorse.infrastructure.repository;
 
 import java.util.Date;
 
-import org.dhorse.api.vo.LogRecord;
+import org.dhorse.api.response.model.LogRecord;
 import org.dhorse.infrastructure.param.LogRecordParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.LogRecordMapper;

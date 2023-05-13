@@ -1,9 +1,8 @@
 package org.dhorse.api.response;
 
-import java.io.Serializable;
 import java.util.List;
 
-public class PageData<D> implements Serializable {
+public class PageData<D> implements Response {
 
 	private static final long serialVersionUID = 1L;
 

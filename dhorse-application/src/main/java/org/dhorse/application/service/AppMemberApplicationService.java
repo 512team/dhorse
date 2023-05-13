@@ -14,7 +14,7 @@ import org.dhorse.api.param.app.member.AppMemberCreationParam;
 import org.dhorse.api.param.app.member.AppMemberDeletionParam;
 import org.dhorse.api.param.app.member.AppMemberPageParam;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.vo.AppMember;
+import org.dhorse.api.response.model.AppMember;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;

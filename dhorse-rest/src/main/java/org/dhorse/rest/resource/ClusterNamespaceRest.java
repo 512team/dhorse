@@ -5,7 +5,7 @@ import org.dhorse.api.param.cluster.namespace.ClusterNamespaceDeletionParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.ClusterNamespace;
+import org.dhorse.api.response.model.ClusterNamespace;
 import org.dhorse.application.service.ClusterNamespaceApplicationService;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
 import org.springframework.beans.factory.annotation.Autowired;

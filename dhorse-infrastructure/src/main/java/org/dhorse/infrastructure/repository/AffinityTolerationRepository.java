@@ -1,6 +1,6 @@
 package org.dhorse.infrastructure.repository;
 
-import org.dhorse.api.vo.AffinityToleration;
+import org.dhorse.api.response.model.AffinityToleration;
 import org.dhorse.infrastructure.param.AffinityTolerationParam;
 import org.dhorse.infrastructure.repository.mapper.AffinityTolerationMapper;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;

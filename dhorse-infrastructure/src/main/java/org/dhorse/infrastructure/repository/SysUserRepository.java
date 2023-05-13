@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.vo.SysUser;
+import org.dhorse.api.response.model.SysUser;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.SysUserMapper;

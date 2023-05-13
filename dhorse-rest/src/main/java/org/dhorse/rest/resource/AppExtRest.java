@@ -1,7 +1,7 @@
 package org.dhorse.rest.resource;
 
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.EnvHealth;
+import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.application.service.EnvExtApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

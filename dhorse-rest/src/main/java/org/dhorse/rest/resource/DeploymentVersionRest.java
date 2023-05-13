@@ -5,7 +5,7 @@ import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionPageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.DeploymentVersion;
+import org.dhorse.api.response.model.DeploymentVersion;
 import org.dhorse.application.service.DeploymentVersionApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

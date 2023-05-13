@@ -2,7 +2,7 @@ package org.dhorse.infrastructure.strategy.login.dto;
 
 import java.util.Date;
 
-import org.dhorse.api.vo.SysUser;
+import org.dhorse.api.response.model.SysUser;
 
 public class LoginUser extends SysUser {
 

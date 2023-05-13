@@ -4,9 +4,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.dhorse.api.enums.EventTypeEnum;
-import org.dhorse.api.vo.App;
-import org.dhorse.api.vo.EnvHealth;
-import org.dhorse.api.vo.GlobalConfigAgg;
+import org.dhorse.api.response.model.App;
+import org.dhorse.api.response.model.EnvHealth;
+import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;

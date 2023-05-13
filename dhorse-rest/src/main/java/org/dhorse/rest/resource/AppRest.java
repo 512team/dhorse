@@ -9,7 +9,7 @@ import org.dhorse.api.param.app.AppQueryParam;
 import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.vo.App;
+import org.dhorse.api.response.model.App;
 import org.dhorse.application.service.AppApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;

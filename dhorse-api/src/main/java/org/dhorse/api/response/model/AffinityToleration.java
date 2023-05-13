@@ -1,4 +1,4 @@
-package org.dhorse.api.vo;
+package org.dhorse.api.response.model;
 
 /**
  * 添加亲和容忍配置参数模型
