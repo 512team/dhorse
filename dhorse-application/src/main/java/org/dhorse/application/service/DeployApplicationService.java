@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.maven.cli.DefaultCliRequest;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -709,17 +708,12 @@ public abstract class DeployApplicationService extends ApplicationService {
 		threadParam.setAppId(abortParam.getAppId());
 		threadParam.setDeploymentDetailId(abortParam.getDeploymentDetailId());
 		threadParam.setThreadName(thread.split(":")[1]);
-		
 		Map<String, String> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
-		
 		String url = "http://" + thread.split(":")[0] + ":" + serverPort + "/app/deployment/detail/abortDeploymentThread";
-		try(CloseableHttpResponse httResponse = HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam)){
-			int httpCode = httResponse.getStatusLine().getStatusCode();
-			logger.info("url code: {}", httpCode);
-		}catch (Exception e) {
-			logger.error("Failed to abortDeploymentThread, url: " + url, e);
+		int httpCode = HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);
+		if(httpCode != 200) {
+			logger.error("Failed to abort deployment thread, url: {}", url);
 		}
-		
 		return null;
 	}
 	

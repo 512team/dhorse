@@ -9,13 +9,34 @@ public class K8sUtils {
 	
 	public static final String DOCKER_REGISTRY_KEY = "dhorse-docker-registry";
 	
-	public static final String DATA_PATH = "/tmp/data/";
+	public static final String AGENT_VOLUME_PATH = "/usr/local/agent/";
+	
+	public static final String DATA_VOLUME = "data-volume";
+	
+	public static final String DATA_PATH = "/usr/local/data/";
+	
+	public static final String NODE_VOLUME_PATH = "/usr/share/nginx/html/";
+	
+	public static final String AGENT_VOLUME = "agent-volume";
+	
+	public static final String WAR_VOLUME = "war-volume";
+	
+	public static final String NODE_VOLUME = "node-volume";
+	
+	public static final String TMP_DATA_VOLUME = "tmp-data-volume";
+	
+	//用于存放临时数据，如下载文件等
+	public static final String TMP_DATA_PATH = "/tmp/data/";
 	
 	public static final String APP_KEY = "app";
 	
 	public static final String DEFAULT_TOPOLOGY_KEY = "kubernetes.io/hostname";
 	
 	public static final String HEALTH_PATH = "/health";
+	
+	public static final String DHORSE_CONFIGMAP_NAME = "dhorse-config";
+	
+	public static final String DHORSE_SERVER_URL_KEY = "dhorse_server_url";
 	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	

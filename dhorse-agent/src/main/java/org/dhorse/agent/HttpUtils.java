@@ -8,7 +8,7 @@ import java.net.URL;
 
 public class HttpUtils {
 
-	public static boolean sendPost(String url, String param) {
+	public static boolean post(String url, String param) {
 		BufferedWriter out = null;
 		HttpURLConnection conn = null;
 		try {
@@ -31,6 +31,7 @@ public class HttpUtils {
 			}
 		} catch (Exception e) {
 			System.out.println(String.format("Failed to send metrics, message: %s", e));
+			return false;
 		} finally {
 			if (out != null) {
 				try {

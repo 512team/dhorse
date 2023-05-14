@@ -8,6 +8,7 @@ public enum MessageCodeEnum {
 	FAILURE("100000", "操作失败，请查看详细日志信息"),
 	AUTH_FAILURE("200000", "认证失败"),
 	COPY_FILE_FAILURE("200000", "复制文件失败"),
+	HTT_GET_FAILURE("200000", "Get请求失败"),
 	HTT_POST_FAILURE("200000", "Post请求失败"),
 	QUERY_FAILURE("200000", "查询失败"),
 	CREATE_FAILURE("200000", "创建失败"),
@@ -42,7 +43,8 @@ public enum MessageCodeEnum {
 	//服务器集群配置
 	AUTH_TYPE_IS_EMPTY("200000", "认证方式不能为空"),
 	CLUSER_NAME_EXISTENCE("200000", "集群名称已经存在"),
-	IMAGE_REPO_AUTH_FAILURE("200000", "镜像仓库认证失败，请重新进行该操作"),
+	IMAGE_REPO_AUTH_FAILURE("200000", "创建镜像仓库认证失败key，请重新进行该操作"),
+	DHORSE_SERVER_URL_FAILURE("200000", "创建DHorse服务器地址失败，请重新进行该操作"),
 	CLUSER_ID_IS_EMPTY("200000", "集群编号不能为空"),
 	CLUSER_NAME_IS_EMPTY("200000", "集群名称不能为空"),
 	CLUSER_URL_IS_EMPTY("200000", "集群地址不能为空"),

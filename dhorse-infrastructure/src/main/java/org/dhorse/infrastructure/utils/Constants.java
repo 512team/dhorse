@@ -36,16 +36,6 @@ public class Constants {
 	
 	public static final String USR_LOCAL_HOME = "/usr/local/";
 	
-	public static final String AGENT_VOLUME_PATH = "/usr/local/agent/";
-	
-	public static final String NODE_VOLUME_PATH = "/usr/share/nginx/html";
-	
-	public static final String AGENT_VOLUME_NAME = "agent-volume";
-	
-	public static final String WAR_VOLUME_NAME = "war-volume";
-	
-	public static final String NODE_VOLUME_NAME = "node-volume";
-	
 	public static final String DHORSE_TAG = "dhorse";
 	
 	public static final String IMAGE_NAME_JDK = "jdk";

@@ -15,8 +15,10 @@ import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,12 +36,12 @@ import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv;
-import org.dhorse.api.response.model.AppExtendJava;
-import org.dhorse.api.response.model.ClusterNamespace;
-import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
+import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.ClusterNamespace;
 import org.dhorse.api.response.model.EnvHealth.Item;
+import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
@@ -54,6 +56,7 @@ import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
+import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -79,6 +82,7 @@ import io.kubernetes.client.openapi.apis.VersionApi;
 import io.kubernetes.client.openapi.models.V1Affinity;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
+import io.kubernetes.client.openapi.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1ContainerPort;
 import io.kubernetes.client.openapi.models.V1ContainerStateTerminated;
@@ -1095,9 +1099,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		args.add("-Denv=" + context.getAppEnv().getTag());
 		
 		//dhorse-agent参数
-		ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
-		args.add("-javaagent:"+ Constants.AGENT_VOLUME_PATH +"dhorse-agent.jar=http://" + Constants.hostIp()
-			+ ":" + componentConstants.getServerPort() + Constants.COLLECT_METRICS_URI);
+		args.add("-javaagent:"+ K8sUtils.AGENT_VOLUME_PATH +"dhorse-agent.jar");
 		
 		//skywalking-agent参数
 		if(!YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
@@ -1107,7 +1109,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		if(traceTemplate == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.TRACE_TEMPLATE_IS_EMPTY);
 		}
-		args.add("-javaagent:"+ Constants.AGENT_VOLUME_PATH +"skywalking-agent/skywalking-agent.jar");
+		args.add("-javaagent:"+ K8sUtils.AGENT_VOLUME_PATH +"skywalking-agent/skywalking-agent.jar");
 		args.add("-Dskywalking.collector.backend_service=" + traceTemplate.getServiceUrl());
 		args.add("-Dskywalking.agent.service_name=" + context.getApp().getAppName());
 		return args;
@@ -1154,11 +1156,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		initContainer.setImage(context.getFullNameOfTraceAgentImage());
 		initContainer.setImagePullPolicy("Always");
 		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
-		initContainer.setArgs(Arrays.asList("cp -rf /skywalking-agent " + Constants.AGENT_VOLUME_PATH));
+		initContainer.setArgs(Arrays.asList("cp -rf /skywalking-agent " + K8sUtils.AGENT_VOLUME_PATH));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
-		volumeMount.setMountPath(Constants.AGENT_VOLUME_PATH);
-		volumeMount.setName(Constants.AGENT_VOLUME_NAME);
+		volumeMount.setMountPath(K8sUtils.AGENT_VOLUME_PATH);
+		volumeMount.setName(K8sUtils.AGENT_VOLUME);
 		initContainer.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(initContainer);
 	}
@@ -1173,12 +1175,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		initContainer.setImage(context.getFullNameOfDHorseAgentImage());
 		initContainer.setImagePullPolicy("Always");
 		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
-		initContainer.setArgs(Arrays.asList("cp -rf " + Constants.USR_LOCAL_HOME + "/dhorse-agent-*.jar "
-				+ Constants.AGENT_VOLUME_PATH + "/dhorse-agent.jar"));
+		initContainer.setArgs(Arrays.asList("cp -rf " + Constants.USR_LOCAL_HOME + "dhorse-agent-*.jar "
+				+ K8sUtils.AGENT_VOLUME_PATH + "dhorse-agent.jar"));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
-		volumeMount.setMountPath(Constants.AGENT_VOLUME_PATH);
-		volumeMount.setName(Constants.AGENT_VOLUME_NAME);
+		volumeMount.setMountPath(K8sUtils.AGENT_VOLUME_PATH);
+		volumeMount.setName(K8sUtils.AGENT_VOLUME);
 		initContainer.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(initContainer);
 	}
@@ -1198,7 +1200,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
 		volumeMount.setMountPath("/usr/local/tomcat/webapps");
-		volumeMount.setName(Constants.WAR_VOLUME_NAME);
+		volumeMount.setName(K8sUtils.WAR_VOLUME);
 		container.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(container);
 	}
@@ -1214,11 +1216,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
 		String file = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
-		container.setArgs(Arrays.asList("cp -rf " + file + "/* " + Constants.NODE_VOLUME_PATH));
+		container.setArgs(Arrays.asList("cp -rf " + file + "/* " + K8sUtils.NODE_VOLUME_PATH));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
-		volumeMount.setMountPath(Constants.NODE_VOLUME_PATH);
-		volumeMount.setName(Constants.NODE_VOLUME_NAME);
+		volumeMount.setMountPath(K8sUtils.NODE_VOLUME_PATH);
+		volumeMount.setName(K8sUtils.NODE_VOLUME);
 		container.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(container);
 	}
@@ -1275,29 +1277,35 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		volumeMounts.add(volumeMountTime);
 		
 		//data目录
-//		V1VolumeMount volumeMountData = new V1VolumeMount();
-//		volumeMountData.setMountPath(K8sUtils.DATA_PATH);
-//		volumeMountData.setName("data-volume");
-//		volumeMounts.add(volumeMountData);
+		V1VolumeMount config = new V1VolumeMount();
+		config.setName(K8sUtils.DATA_VOLUME);
+		config.setMountPath(K8sUtils.DATA_PATH);
+		volumeMounts.add(config);
+		
+		//data目录，用于下载文件等
+		V1VolumeMount volumeMountData = new V1VolumeMount();
+		volumeMountData.setMountPath(K8sUtils.TMP_DATA_PATH);
+		volumeMountData.setName(K8sUtils.TMP_DATA_VOLUME);
+		volumeMounts.add(volumeMountData);
 		
 		V1VolumeMount dhorseAgent = new V1VolumeMount();
-		dhorseAgent.setMountPath(Constants.AGENT_VOLUME_PATH);
-		dhorseAgent.setName(Constants.AGENT_VOLUME_NAME);
+		dhorseAgent.setMountPath(K8sUtils.AGENT_VOLUME_PATH);
+		dhorseAgent.setName(K8sUtils.AGENT_VOLUME);
 		volumeMounts.add(dhorseAgent);
 		
 		//war
 		if(warFileType(context.getApp())) {
 			V1VolumeMount volumeMountWar = new V1VolumeMount();
 			volumeMountWar.setMountPath("/usr/local/tomcat/webapps");
-			volumeMountWar.setName(Constants.WAR_VOLUME_NAME);
+			volumeMountWar.setName(K8sUtils.WAR_VOLUME);
 			volumeMounts.add(volumeMountWar);
 		}
 		
 		//Node
 		if(nodeApp(context.getApp())) {
 			V1VolumeMount volumeMountWar = new V1VolumeMount();
-			volumeMountWar.setMountPath(Constants.NODE_VOLUME_PATH);
-			volumeMountWar.setName(Constants.NODE_VOLUME_NAME);
+			volumeMountWar.setMountPath(K8sUtils.NODE_VOLUME_PATH);
+			volumeMountWar.setName(K8sUtils.NODE_VOLUME);
 			volumeMounts.add(volumeMountWar);
 		}
 		
@@ -1314,15 +1322,22 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		volumeTime.setHostPath(hostPathVolumeSource);
 		volumes.add(volumeTime);
 		
-		//data目录
-//		V1Volume volumeData = new V1Volume();
-//		volumeData.setName("data-volume");
-//		V1EmptyDirVolumeSource emptyDirData = new V1EmptyDirVolumeSource();
-//		volumeData.setEmptyDir(emptyDirData);
-//		volumes.add(volumeData);
+		V1Volume config = new V1Volume();
+		config.setName(K8sUtils.DATA_VOLUME);
+		V1ConfigMapVolumeSource s = new V1ConfigMapVolumeSource();
+		s.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
+		config.setConfigMap(s);
+		volumes.add(config);
+		
+		//data目录，用于下载文件等
+		V1Volume volumeData = new V1Volume();
+		volumeData.setName(K8sUtils.TMP_DATA_VOLUME);
+		V1EmptyDirVolumeSource emptyDirData = new V1EmptyDirVolumeSource();
+		volumeData.setEmptyDir(emptyDirData);
+		volumes.add(volumeData);
 		
 		V1Volume dhorseAgent = new V1Volume();
-		dhorseAgent.setName(Constants.AGENT_VOLUME_NAME);
+		dhorseAgent.setName(K8sUtils.AGENT_VOLUME);
 		V1EmptyDirVolumeSource emptyDir = new V1EmptyDirVolumeSource();
 		dhorseAgent.setEmptyDir(emptyDir);
 		volumes.add(dhorseAgent);
@@ -1330,7 +1345,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		//War
 		if(warFileType(context.getApp())) {
 			V1Volume volumeWar = new V1Volume();
-			volumeWar.setName(Constants.WAR_VOLUME_NAME);
+			volumeWar.setName(K8sUtils.WAR_VOLUME);
 			V1EmptyDirVolumeSource emptyDirWar = new V1EmptyDirVolumeSource();
 			volumeWar.setEmptyDir(emptyDirWar);
 			volumes.add(volumeWar);
@@ -1339,7 +1354,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		//Node
 		if(nodeApp(context.getApp())) {
 			V1Volume volumeWar = new V1Volume();
-			volumeWar.setName(Constants.NODE_VOLUME_NAME);
+			volumeWar.setName(K8sUtils.NODE_VOLUME);
 			V1EmptyDirVolumeSource emptyDirWar = new V1EmptyDirVolumeSource();
 			volumeWar.setEmptyDir(emptyDirWar);
 			volumes.add(volumeWar);
@@ -1653,7 +1668,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		Exec exec = new Exec(apiClient);
 		try {
-			String[] commands = new String[] {"ls", K8sUtils.DATA_PATH};
+			String[] commands = new String[] {"ls", K8sUtils.TMP_DATA_PATH};
 			Process proc = exec.exec(namespace, replicaName, commands, true, true);
 			final StringBuilder message = new StringBuilder();
 			Thread out = new Thread(new Runnable() {
@@ -1715,7 +1730,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		Copy copy = new Copy(apiClient);
 		try {
-			return copy.copyFileFromPod(namespace, replicaName, K8sUtils.DATA_PATH + fileName);
+			return copy.copyFileFromPod(namespace, replicaName, K8sUtils.TMP_DATA_PATH + fileName);
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
 			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
@@ -1807,5 +1822,69 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
 		}
 		return true;
+	}
+	
+	/**
+	 * 通过ConfigMap向k8s集群写入dhorse服务器的地址，地址格式为：ip1,ip2;端口号;uri
+	 */
+	@Override
+	public Void createDHorseConfig(ClusterPO clusterPO) {
+		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		CoreV1Api coreApi = new CoreV1Api(apiClient);
+		V1ConfigMap configMap = new V1ConfigMap();
+		configMap.setApiVersion("v1");
+		configMap.setKind("ConfigMap");
+		V1ObjectMeta meta = new V1ObjectMeta();
+		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
+		meta.setLabels(Collections.singletonMap("app", K8sUtils.DHORSE_CONFIGMAP_NAME));
+		configMap.setMetadata(meta);
+		
+		try {
+			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
+			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
+				return null;
+			}
+			ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
+			for(V1Namespace n : namespaceList.getItems()) {
+				String namespace = n.getMetadata().getName();
+				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
+						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
+					continue;
+				}
+				if(!"Active".equals(n.getStatus().getPhase())){
+					continue;
+				}
+				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
+						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+				if(CollectionUtils.isEmpty(list.getItems())) {
+					String ipPortUri = Constants.hostIp() + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
+					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));
+					coreApi.createNamespacedConfigMap(namespace, configMap, null, null, null, null);
+				}else {
+					Set<String> newIp = new HashSet<>();
+					newIp.add(Constants.hostIp());
+					
+					configMap = list.getItems().get(0);
+					String urlStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
+					if(!StringUtils.isBlank(urlStr)) {
+						String[] urls = urlStr.split(";");
+						String[] ips = urls[0].split(",");
+						for(String ip : ips) {
+							if(HttpUtils.pingDHorseServer(ip)) {
+								newIp.add(ip);
+							}
+						}
+					}
+					String ipPortUri = String.join(",", newIp) + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
+					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));
+					coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
+							namespace, configMap, null, null, null, null);
+				}
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
+		}
+		return null;
 	}
 }

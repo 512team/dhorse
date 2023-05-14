@@ -96,6 +96,6 @@ public class MetricsRepository extends BaseRepository<MetricsParam, MetricsPO> {
 	}
 	
 	private void tableCache(int hashCode) {
-		ThreadLocalUtils.DynamicTable.put("_" + hashCode % Constants.METRICS_TABLE_SIZE);
+		ThreadLocalUtils.DynamicTable.put("_" + Math.abs(hashCode) % Constants.METRICS_TABLE_SIZE);
 	}
 }

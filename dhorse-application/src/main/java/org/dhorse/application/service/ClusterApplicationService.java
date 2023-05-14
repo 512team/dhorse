@@ -82,6 +82,7 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
 			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
+			cluster.createDHorseConfig(clusterPO);
 		}
 		//3.保存集群信息
 		ClusterParam clusterParam = new ClusterParam();

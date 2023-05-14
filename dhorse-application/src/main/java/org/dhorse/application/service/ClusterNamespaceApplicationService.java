@@ -69,6 +69,7 @@ public class ClusterNamespaceApplicationService extends BaseApplicationService<C
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
 			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
+			cluster.createDHorseConfig(clusterPO);
 		}
 		
 		return null;

@@ -1,5 +1,8 @@
 package org.dhorse.agent;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -11,6 +14,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,9 +30,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class JvmMetricsAgent {
 
-	private static final ScheduledExecutorService SCHEDULED = Executors.newSingleThreadScheduledExecutor();
+	private static final String DHORSE_SERVER_URL_FILE_PATH = "/usr/local/data/dhorse_server_url";
+	
+	private static final List<String> DHORSE_URL = new CopyOnWriteArrayList<>();
+	
+    private static long lastModifiedTime;
 
 	public static void premain(String args, Instrumentation inst) {
+		
+		loadDHorseIp();
 		
 		String hostName = null;
 		try {
@@ -35,17 +46,56 @@ public class JvmMetricsAgent {
 		} catch (UnknownHostException e) {
 			System.out.println(String.format("Failed to get localhost name, message: %s", e));
 		}
+		
 		final String replicaName = hostName;
-		SCHEDULED.scheduleAtFixedRate(() -> {
+		ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
+		scheduled.scheduleAtFixedRate(() -> {
+			if(DHORSE_URL.size() == 0) {
+				//如果没有dhorse服务器的url，则重新读取DHorse的Url一次
+				loadDHorseIp();
+			}
+			
+			//如果仍然没有dhorse服务器的url，则不上报
+			if(DHORSE_URL.size() == 0) {
+				System.out.println(String.format("Failed to push metrics data, none dhorse server exists"));
+				return;
+			}
+			
 			List<Metrics> metricsList = new ArrayList<>(16);
 			memoryHeap(replicaName, metricsList);
 			memoryPool(replicaName, metricsList);
 			gc(replicaName, metricsList);
 			thread(replicaName, metricsList);
-			HttpUtils.sendPost(args, metricsList.toString());
+			
+			if(pushMetrics(metricsList)) {
+				//如果没有上报成功，重新读取DHorse的Url并重新上报一次
+				loadDHorseIp();
+				pushMetrics(metricsList);
+			}
 		}, 0, 10, TimeUnit.SECONDS);
+		
+		//监控文件变化
+		watchFile();
 	}
 
+	private static void loadDHorseIp() {
+		try(InputStream in = new FileInputStream(DHORSE_SERVER_URL_FILE_PATH)){
+			byte[] buffer = new byte[in.available()];
+			in.read(buffer);
+			String urlStr = new String(buffer, "UTF-8");
+			DHORSE_URL.clear();
+			if(urlStr != null && !"".equals(urlStr)) {
+				String[] urls = urlStr.split(";");
+				String[] ips = urls[0].split(",");
+				for(String ip : ips) {
+					DHORSE_URL.add("http://" + ip + ":" + urls[1] + urls[2]);
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(String.format("Failed to load dhorse url, message: %s", e));
+		}
+	}
+	
 	private static void memoryHeap(String replicaName, List<Metrics> metricsList) {
 		MemoryUsage m = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 		item(MetricsTypeEnum.HEAP_MEMORY_USED, replicaName, metricsList, m.getUsed());
@@ -115,4 +165,51 @@ public class JvmMetricsAgent {
 		used.setMetricsValue(metricsValue);
 		metricsList.add(used);
 	}
+	
+	public static boolean pushMetrics(List<Metrics> metricsList) {
+		String url = DHORSE_URL.get(new Random().nextInt(DHORSE_URL.size()));
+		return HttpUtils.post(url, metricsList.toString());
+	}
+	
+//	public static void watchFile(String path) {
+//		// 获取当前文件系统的监控对象
+//		try (WatchService service = FileSystems.getDefault().newWatchService()) {
+//			// 获取文件目录下的Path对象注册到 watchService中, 监听的事件类型，有创建，删除，以及修改
+//			Paths.get(path).register(service, StandardWatchEventKinds.ENTRY_CREATE,
+//					StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+//
+//			while (true) {
+//				// 获取可用key.没有可用的就wait
+//				WatchKey key = service.take();
+//				for (WatchEvent<?> event : key.pollEvents()) {
+//					System.out.println(String.format("The file in the %s directory has %s", path, event.kind().name().toLowerCase()));
+//					loadDHorseIp();
+//				}
+//				// 重置，这一步很重要，否则当前的key就不再会获取将来发生的事件
+//				boolean valid = key.reset();
+//				// 失效状态，退出监听
+//				if (!valid) {
+//					break;
+//				}
+//			}
+//		} catch (IOException | InterruptedException e) {
+//			System.out.println(String.format("Failed to watch file, message: %s", e));
+//		}
+//	}
+	
+    public static void watchFile() {
+        File file = new File(DHORSE_SERVER_URL_FILE_PATH);
+        lastModifiedTime = file.lastModified();
+        ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
+        scheduled.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (file.lastModified() > lastModifiedTime || DHORSE_URL.size() == 0) {
+                	System.out.println(String.format("The %s file has changed", DHORSE_SERVER_URL_FILE_PATH));
+					loadDHorseIp();
+                    lastModifiedTime = file.lastModified();
+                }
+            }
+        }, 0, 5, TimeUnit.SECONDS);
+    }
 }

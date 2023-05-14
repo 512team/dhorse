@@ -9,6 +9,7 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -18,6 +19,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.infrastructure.component.ComponentConstants;
+import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -26,11 +29,45 @@ public class HttpUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
 	
-	public static CloseableHttpResponse post(String url, String jsonParam) {
+	public static boolean pingDHorseServer(String ip) {
+		ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
+		String pingUrl = "http://" + ip + ":" + componentConstants.getServerPort() + "/health/ping";
+		return get(pingUrl) == 200;
+	}
+	
+	public static int get(String url) {
+		return get(url, null);
+	}
+	
+	public static int get(String url, Map<String, String> cookies) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(5000)
+                .setConnectTimeout(5000)
+                .setSocketTimeout(5000)
+                .build();
+        HttpGet method = new HttpGet(url);
+        method.setConfig(requestConfig);
+        method.setHeader("Content-Type", "application/json;charset=UTF-8");
+        if(!CollectionUtils.isEmpty(cookies)) {
+        	String cookieStr = "";
+        	for(Entry<String, String> c : cookies.entrySet()) {
+        		cookieStr = cookieStr + c.getKey() + "=" + c.getValue() + ";";
+        	}
+        	method.setHeader("Cookie", cookieStr);
+        }
+        try (CloseableHttpResponse response = createHttpClient(url).execute(method)){
+        	return response.getStatusLine().getStatusCode();
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, MessageCodeEnum.HTT_GET_FAILURE);
+        }
+        return -1;
+	}
+	
+	public static int post(String url, String jsonParam) {
 		return post(url, jsonParam, null);
 	}
 	
-	public static CloseableHttpResponse post(String url, String jsonParam, Map<String, String> cookies) {
+	public static int post(String url, String jsonParam, Map<String, String> cookies) {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(5000)
                 .setConnectTimeout(5000)
@@ -48,11 +85,11 @@ public class HttpUtils {
         }
         httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
         try (CloseableHttpResponse response = createHttpClient(url).execute(httpPost)){
-        	return response;
+        	return response.getStatusLine().getStatusCode();
         } catch (IOException e) {
         	LogUtils.throwException(logger, MessageCodeEnum.HTT_POST_FAILURE);
         }
-        return null;
+        return -1;
 	}
 	
 	public static CloseableHttpClient createHttpClient(String url) {

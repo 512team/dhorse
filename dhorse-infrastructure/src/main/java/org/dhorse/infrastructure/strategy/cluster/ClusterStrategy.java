@@ -58,5 +58,7 @@ public interface ClusterStrategy {
 	boolean deleteNamespace(ClusterPO clusterPO, String namespaceName);
 	
 	PodMetricsList replicaMetrics(ClusterPO clusterPO, String namespace);
+	
+	Void createDHorseConfig(ClusterPO clusterPO);
 
 }

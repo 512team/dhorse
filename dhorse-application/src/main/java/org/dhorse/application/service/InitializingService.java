@@ -8,6 +8,6 @@ public class InitializingService extends ApplicationService implements Initializ
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		asynBuildDHorseAgentImage();
+		//做一些事情
 	}
 }

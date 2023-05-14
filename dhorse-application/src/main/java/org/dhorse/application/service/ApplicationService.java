@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.dhorse.api.enums.ClusterTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
@@ -45,6 +44,7 @@ import org.dhorse.infrastructure.repository.SysUserRepository;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.BasePO;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -56,6 +56,7 @@ import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.cloud.tools.jib.api.Containerizer;
@@ -320,31 +321,56 @@ public abstract class ApplicationService {
 			return;
 		}
 		
-		int httpCode = -1;
+		int httpCode = 0;
 		for(int i = 0; i < 5; i++) {
-			if(httpCode == 200){
+			httpCode = HttpUtils.post(url, reponse);
+			if(httpCode == 200) {
+				logger.info("Successfully to noifty url: {}", url);
 				break;
 			}
-			try(CloseableHttpResponse httResponse = HttpUtils.post(url, reponse)){
-				httpCode = httResponse.getStatusLine().getStatusCode();
-				if(httpCode == 200) {
-					logger.info("Successfully to noifty url: {}", url);
-				}else {
-					logger.error("Failed to notify url: {}, http code: {}", url, httpCode);
-				}
-			}catch (Exception e) {
-				logger.error("Failed to notify url: " + url, e);
-			}
+			logger.error("Failed to notify url: {}, http code: {}", url, httpCode);
 		}
 	}
 	
-	public void asynBuildDHorseAgentImage() {
+	public void asynInitConfig() {
 		ThreadPoolUtils.async(() -> {
+			createDHorseConfig();
+			createSecret();
 			buildDHorseAgentImage();
 		});
 	}
 	
-	private void buildDHorseAgentImage() {
+	//向k8s集群DHorse服务器的地址
+	private void createDHorseConfig() {
+		List<ClusterPO> clusters = clusterRepository.listAll();
+		if(CollectionUtils.isEmpty(clusters)) {
+			return;
+		}
+		for(ClusterPO c : clusters) {
+			ClusterStrategy cluster = clusterStrategy(c.getClusterType());
+			cluster.createDHorseConfig(c);
+		}
+	}
+	
+	//创建镜像仓库认证key
+	private void createSecret() {
+		List<ClusterPO> clusters = clusterRepository.listAll();
+		if(CollectionUtils.isEmpty(clusters)) {
+			return;
+		}
+		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
+		if(globalConfigAgg == null || globalConfigAgg.getImageRepo() == null) {
+			return;
+		}
+		for(ClusterPO c : clusters) {
+			ClusterStrategy cluster = clusterStrategy(c.getClusterType());
+			cluster.createSecret(c, globalConfigAgg.getImageRepo());
+		}
+	}
+	
+	protected void buildDHorseAgentImage() {
 		logger.info("Start to build jvm metrics agent image");
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
