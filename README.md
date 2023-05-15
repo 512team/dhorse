@@ -3,9 +3,11 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 
 # 项目地址
 
-* [GitHub](https://github.com/tiandizhiguai/dhorse)
+* [GitHub](https://github.com/512team/dhorse)
 
-* [Gitee](https://gitee.com/tiandizhiguai/dhorse)
+* [Gitee](https://gitee.com/i512team/dhorse)
+
+* [512技术园](http://512.team)
 
 ## 架构
  ![Image text](./static/images/architecture.jpg)
@@ -37,8 +39,8 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
-| 1.8 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-jdk1.8-bin-windows.zip)
-| >=11 | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-bin-unix.tar.gz) | [下载](https://github.com/tiandizhiguai/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-bin-windows.zip)
+| 1.8 | [下载](https://github.com/512team/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/512team/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-jdk1.8-bin-windows.zip)
+| >=11 | [下载](https://github.com/512team/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-bin-unix.tar.gz) | [下载](https://github.com/512team/dhorse/releases/download/v1.1.0/dhorse-v1.1.0-bin-windows.zip)
 
 3. 下载文件之后，然后解压
 
@@ -83,19 +85,19 @@ $  bin/dhorse-stop.sh
 
 ## 了解更多
 
-* [操作手册](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)
+* [操作手册](https://github.com/512team/dhorse-doc/blob/main/guide/%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)
 
-* [配置文件](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.md)
+* [配置文件](https://github.com/512team/dhorse-doc/blob/main/guide/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.md)
 
-* [多环境标识](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)
+* [多环境标识](https://github.com/512team/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)
 
-* [日志收集](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)
+* [日志收集](https://github.com/512team/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)
 
-* [链路追踪](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)
+* [链路追踪](https://github.com/512team/dhorse-doc/blob/main/guide/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.md)
 
-* [打包说明](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E6%89%93%E5%8C%85%E8%AF%B4%E6%98%8E.md)
+* [打包说明](https://github.com/512team/dhorse-doc/blob/main/guide/%E6%89%93%E5%8C%85%E8%AF%B4%E6%98%8E.md)
 
-* [运行源码](https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E8%BF%90%E8%A1%8C%E6%BA%90%E7%A0%81.md)
+* [运行源码](https://github.com/512team/dhorse-doc/blob/main/guide/%E8%BF%90%E8%A1%8C%E6%BA%90%E7%A0%81.md)
 
 ## 社区交流
 
