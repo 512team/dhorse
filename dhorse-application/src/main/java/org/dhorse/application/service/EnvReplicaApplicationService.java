@@ -15,6 +15,7 @@ import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.MetricsTypeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.param.app.env.replica.DownloadFileParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
 import org.dhorse.api.param.app.env.replica.EnvReplicaParam;
@@ -22,6 +23,7 @@ import org.dhorse.api.param.app.env.replica.EnvReplicaRebuildParam;
 import org.dhorse.api.param.app.env.replica.MetricsQueryParam;
 import org.dhorse.api.param.app.env.replica.QueryFilesParam;
 import org.dhorse.api.response.PageData;
+import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.ClusterNamespace;
 import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.Metrics;
@@ -45,6 +47,7 @@ import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DateUtils;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
@@ -96,7 +99,11 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 			if(deploymentVersionPO == null) {
 				deploymentVersionPO = deploymentVersionRepository.queryByVersionName(e.getVersionName());
 			}
-			e.setAppTechType(appPO.getTechType());
+			if(TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())
+					&& !StringUtils.isBlank(appEnvPO.getExt())) {
+				e.setJvmMetricsStatus(JsonUtils.parseToObject(appEnvPO.getExt(),
+						EnvExtendSpringBoot.class).getJvmMetricsStatus());
+			}
 			e.setBranchName(deploymentVersionPO != null ? deploymentVersionPO.getBranchName() : null);
 		});
 		

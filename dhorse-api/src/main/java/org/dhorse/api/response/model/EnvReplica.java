@@ -6,7 +6,10 @@ public class EnvReplica implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Integer appTechType;
+	/**
+	 * Jvm指标开启状态，0：未开启，1：已开启
+	 */
+	private Integer jvmMetricsStatus;
 
 	private String name;
 
@@ -31,12 +34,12 @@ public class EnvReplica implements Serializable {
 	 */
 	private String startTime;
 
-	public Integer getAppTechType() {
-		return appTechType;
+	public Integer getJvmMetricsStatus() {
+		return jvmMetricsStatus;
 	}
 
-	public void setAppTechType(Integer appTechType) {
-		this.appTechType = appTechType;
+	public void setJvmMetricsStatus(Integer jvmMetricsStatus) {
+		this.jvmMetricsStatus = jvmMetricsStatus;
 	}
 
 	public String getName() {
