@@ -39,8 +39,7 @@ public class Task {
 	/**
 	 * 清除历史数据，每天0点执行
 	 */
-	//@Scheduled(cron = "0 0 0 * * ?")
-	@Scheduled(cron = "0 0/1 * * * ?")
+	@Scheduled(cron = "0 0 0 * * ?")
 	public void clearHistoryDB() {
 		Date now = new Date();
 		try {
