@@ -76,15 +76,16 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		//1.首先添加命名空间
 		ClusterStrategy cluster = clusterStrategy(clusterCreationParam.getClusterType());
 		cluster.addNamespace(clusterPO, K8sUtils.DHORSE_NAMESPACE);
-		//2.创建镜像仓库认证key
+		//2.往集群推送dhorse的服务地址
+		cluster.createDHorseConfig(clusterPO);
+		//3.创建镜像仓库认证key
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
 			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
-			cluster.createDHorseConfig(clusterPO);
 		}
-		//3.保存集群信息
+		//4.保存集群信息
 		ClusterParam clusterParam = new ClusterParam();
 		clusterParam.setClusterName(clusterCreationParam.getClusterName());
 		if (clusterRepository.query(clusterParam) != null) {

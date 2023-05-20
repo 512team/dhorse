@@ -110,9 +110,11 @@ public class InitializingDBComponent implements InitializingBean {
 	}
 
 	private List<String> parseSqlOfHighVersion(String userVersion) throws Exception {
-		String sqlFilePath = "sql/h2/*";
+		String sqlFilePath = "sql/sqlite/*";
 		if(componentConstants.getMysql().isEnable()) {
 			sqlFilePath = "sql/mysql/*";
+		}else if(componentConstants.isH2Enable()) {
+			sqlFilePath = "sql/h2/*";
 		}
 		Resource[] resources = new PathMatchingResourcePatternResolver()
 				.getResources(ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + sqlFilePath);
@@ -136,10 +138,11 @@ public class InitializingDBComponent implements InitializingBean {
 		String line = null;
 		StringBuilder oneSql = new StringBuilder();
 		while ((line = reader.readLine()) != null) {
-			line = line.replace("\r\n", "").replace("\t", "");
 			if (StringUtils.isBlank(line)) {
 				continue;
 			}
+			line = line.replace("\r\n", "").replace("\t", "");
+			line = sqliteSql(line);
 			oneSql.append(line);
 			if (!line.endsWith(";")) {
 				continue;
@@ -151,6 +154,14 @@ public class InitializingDBComponent implements InitializingBean {
 		return sqls;
 	}
 
+	private String sqliteSql(String line) {
+		int remrkIndex = line.lastIndexOf("--");
+		if(remrkIndex > 0) {
+			return line.substring(0, remrkIndex);
+		}
+		return line;
+	}
+	
 	private void initSchema(List<String> sqls) throws Exception {
 		SqlSession sqlSession = sqlSessionFactory.openSession();
 		Connection connection = sqlSession.getConnection();

@@ -1,5 +1,7 @@
 package org.dhorse.infrastructure.repository.source;
 
+import java.io.File;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +13,8 @@ import org.dhorse.infrastructure.component.MysqlConfig;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.mybatis.spring.annotation.MapperScan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,10 +34,13 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.zaxxer.hikari.HikariDataSource;
 
+
 @Configuration
 @EnableTransactionManagement
 @MapperScan("org.dhorse.infrastructure.repository.mapper")
 public class DataSourceConfig{
+	
+	private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
 
 	private static final int DEFAULT_POOL_SIZE = Runtime.getRuntime().availableProcessors() * 2;
 	
@@ -78,6 +85,11 @@ public class DataSourceConfig{
 			dataSource.setUsername("dhorse");
 			dataSource.setPassword("dhorse");
 		}else {
+			File dbPath = new File(componentConstants.getDataPath() + "db");
+			if(!dbPath.exists() && !dbPath.mkdirs()){
+				logger.error("Failed to create db path");
+				return null;
+			}
 			dataSource = new HikariDataSource();
 			SQLiteConfig config = new SQLiteConfig();
 			config.setDateClass(DateClass.TEXT.getValue());
