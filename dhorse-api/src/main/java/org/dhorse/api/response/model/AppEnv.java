@@ -377,11 +377,21 @@ public class AppEnv extends BaseDto {
 
 		private static final long serialVersionUID = 1L;
 
+		private Integer jvmMetricsStatus;
+
 		private Integer traceStatus;
 
 		private String traceTemplateId;
 
 		private String jvmArgs;
+
+		public Integer getJvmMetricsStatus() {
+			return jvmMetricsStatus;
+		}
+
+		public void setJvmMetricsStatus(Integer jvmMetricsStatus) {
+			this.jvmMetricsStatus = jvmMetricsStatus;
+		}
 
 		public Integer getTraceStatus() {
 			return traceStatus;

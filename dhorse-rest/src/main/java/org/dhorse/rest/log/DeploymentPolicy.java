@@ -9,6 +9,7 @@ import org.dhorse.api.enums.LogTypeEnum;
 import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.dhorse.infrastructure.repository.LogRecordRepository;
 import org.dhorse.infrastructure.repository.po.LogRecordPO;
+import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
@@ -63,7 +64,7 @@ public class DeploymentPolicy implements LifeCycle {
 				
 				WebSocketSession session = WebSocketCache.get(deployContext.getId() + logType);
 				if(session != null) {
-					Matcher m = Pattern.compile("\r\n|\n|\r").matcher(message);
+					Matcher m = Pattern.compile(Constants.CRLF).matcher(message);
 					session.sendMessage(new TextMessage(m.replaceAll("<br/>")));
 					WebSocketCache.put(session, logRecord);
 				}

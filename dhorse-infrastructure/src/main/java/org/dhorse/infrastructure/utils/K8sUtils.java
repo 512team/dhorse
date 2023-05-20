@@ -17,6 +17,8 @@ public class K8sUtils {
 	
 	public static final String NODE_VOLUME_PATH = "/usr/share/nginx/html/";
 	
+	public static final String TOMCAT_APP_PATH = "/usr/local/tomcat/webapps/";
+	
 	public static final String AGENT_VOLUME = "agent-volume";
 	
 	public static final String WAR_VOLUME = "war-volume";
@@ -36,7 +38,7 @@ public class K8sUtils {
 	
 	public static final String DHORSE_CONFIGMAP_NAME = "dhorse-config";
 	
-	public static final String DHORSE_SERVER_URL_KEY = "dhorse_server_url";
+	public static final String DHORSE_SERVER_URL_KEY = "dhorse-server-url";
 	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	

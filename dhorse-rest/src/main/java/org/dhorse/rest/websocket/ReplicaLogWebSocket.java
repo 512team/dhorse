@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.websocket.OnClose;
 import javax.websocket.OnOpen;
@@ -33,8 +31,6 @@ public class ReplicaLogWebSocket {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReplicaLogWebSocket.class);
 
-	private static Map<String, InputStream> streams = new ConcurrentHashMap<>();
-
 	@OnOpen
 	public void onOpen(@PathParam("replicaname") String replicaName, @PathParam("logintoken") String loginToken,
 			Session session) {
@@ -49,7 +45,7 @@ public class ReplicaLogWebSocket {
 		}
 
 		try {
-			streams.put(session.getId(), is);
+			WebSocketCache.putReplicaLog(session.getId(), is);
 			BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
 			String line = null;
 			while ((line = buffer.readLine()) != null) {
@@ -63,14 +59,7 @@ public class ReplicaLogWebSocket {
 	@OnClose
 	public void onClose(Session session) {
 		logger.info("close socket, id : {}", session.getId());
-		InputStream is = streams.remove(session.getId());
-		if (is != null) {
-			try {
-				is.close();
-			} catch (IOException e) {
-				logger.error("Failed to close websocket", e);
-			}
-		}
+		WebSocketCache.removeReplicaLog(session.getId());
 		try {
 			session.close();
 		} catch (IOException e) {

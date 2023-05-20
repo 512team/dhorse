@@ -22,6 +22,10 @@ public class SpringBeanContext implements ApplicationContextAware{
 		return APPLICATION_CONTEXT.getBean(clazz);
 	}
 	
+	public static ApplicationContext getContext(){
+		return APPLICATION_CONTEXT;
+	}
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

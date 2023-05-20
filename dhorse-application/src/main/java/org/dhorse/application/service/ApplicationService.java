@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -334,13 +335,24 @@ public abstract class ApplicationService {
 	
 	public void asynInitConfig() {
 		ThreadPoolUtils.async(() -> {
+			
+			//随机休眠几秒，两个目的：
+			//1.集群部署时，服务并行启动可能带来的并发操作问题
+			//2.休眠几秒，可以让部署者有足够的时间看到DHorse服务已经启动完成的日志
+			int secods = new Random().nextInt(5) + 1;
+			try {
+				Thread.sleep(secods * 1000);
+			} catch (InterruptedException e) {
+				//ignore
+			}
+			
 			createDHorseConfig();
 			createSecret();
 			buildDHorseAgentImage();
 		});
 	}
 	
-	//向k8s集群DHorse服务器的地址
+	//写入容器集群的dhorse服务地址
 	private void createDHorseConfig() {
 		List<ClusterPO> clusters = clusterRepository.listAll();
 		if(CollectionUtils.isEmpty(clusters)) {
@@ -350,6 +362,20 @@ public abstract class ApplicationService {
 			ClusterStrategy cluster = clusterStrategy(c.getClusterType());
 			cluster.createDHorseConfig(c);
 		}
+	}
+	
+	//删除容器集群的dhorse服务地址
+	public void deleteDHorseConfig() {
+		logger.info("Start to delete dhorse config");
+		List<ClusterPO> clusters = clusterRepository.listAll();
+		if(CollectionUtils.isEmpty(clusters)) {
+			return;
+		}
+		for(ClusterPO c : clusters) {
+			ClusterStrategy cluster = clusterStrategy(c.getClusterType());
+			cluster.deleteDHorseConfig(c);
+		}
+		logger.info("End to delete dhorse config");
 	}
 	
 	//创建镜像仓库认证key
@@ -379,7 +405,7 @@ public abstract class ApplicationService {
 			logger.info("The image repo does not exist, and end to build dhorse agent image");
 			return;
 		}
-		System.setProperty("jib.httpTimeout", "10000");
+		System.setProperty("jib.httpTimeout", "20000");
 		System.setProperty("sendCredentialsOverHttp", "true");
 		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		String javaAgentPath = Constants.DHORSE_HOME + "/lib/ext/dhorse-agent-"+ componentConstants.getVersion() +".jar";

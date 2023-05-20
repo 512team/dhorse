@@ -37,16 +37,17 @@ public class Task {
 	}
 	
 	/**
-	 * 清除历史数据
+	 * 清除历史数据，每天0点执行
 	 */
-	@Scheduled(cron = "0 0/10 * * * ?")
+	//@Scheduled(cron = "0 0 0 * * ?")
+	@Scheduled(cron = "0 0/1 * * * ?")
 	public void clearHistoryDB() {
 		Date now = new Date();
 		try {
 			//清除指标数据
-			replicaApplicationService.clearHistoryReplicaMetrics(DateUtils.addDays(now, -7));
+			replicaApplicationService.clearMetrics(DateUtils.addDays(now, -Constants.DAYS_7));
 			//清除日志
-			logRecordRepository.deleteBefore(DateUtils.addDays(now, -Constants.DEPLOYED_LOG_EXIST_DAYS));
+			logRecordRepository.delete(DateUtils.addDays(now, -Constants.DAYS_14));
 		}catch(Exception e) {
 			logger.error("Failed to clear db", e);
 		}

@@ -230,7 +230,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		logger.info("Start to build tomcat image");
 		
 		//3.制作Agent镜像并上传到仓库
-		System.setProperty("jib.httpTimeout", "10000");
+		System.setProperty("jib.httpTimeout", "20000");
 		System.setProperty("sendCredentialsOverHttp", "true");
 		try {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage).addCredential(

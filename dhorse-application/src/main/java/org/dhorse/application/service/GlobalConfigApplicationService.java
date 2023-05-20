@@ -470,7 +470,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		logger.info("Start to build agent image");
 		
 		//3.制作Agent镜像并上传到仓库
-		System.setProperty("jib.httpTimeout", "10000");
+		System.setProperty("jib.httpTimeout", "20000");
 		System.setProperty("sendCredentialsOverHttp", "true");
 		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		String imageName = "skywalking-agent:v" + taceTemplate.getAgentVersion();

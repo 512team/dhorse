@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class JvmMetricsAgent {
 
-	private static final String DHORSE_SERVER_URL_FILE_PATH = "/usr/local/data/dhorse_server_url";
+	private static final String DHORSE_SERVER_URL_FILE_PATH = "/usr/local/data/dhorse-server-url";
 	
 	private static final List<String> DHORSE_URL = new CopyOnWriteArrayList<>();
 	
@@ -82,13 +82,12 @@ public class JvmMetricsAgent {
 		try(InputStream in = new FileInputStream(DHORSE_SERVER_URL_FILE_PATH)){
 			byte[] buffer = new byte[in.available()];
 			in.read(buffer);
-			String urlStr = new String(buffer, "UTF-8");
+			String ipStr = new String(buffer, "UTF-8");
 			DHORSE_URL.clear();
-			if(urlStr != null && !"".equals(urlStr)) {
-				String[] urls = urlStr.split(";");
-				String[] ips = urls[0].split(",");
+			if(ipStr != null && !"".equals(ipStr)) {
+				String[] ips = ipStr.split(",");
 				for(String ip : ips) {
-					DHORSE_URL.add("http://" + ip + ":" + urls[1] + urls[2]);
+					DHORSE_URL.add("http://" + ip + "/app/env/replica/metrics/add");
 				}
 			}
 		} catch (Exception e) {
@@ -205,7 +204,7 @@ public class JvmMetricsAgent {
             @Override
             public void run() {
                 if (file.lastModified() > lastModifiedTime || DHORSE_URL.size() == 0) {
-                	System.out.println(String.format("The %s file has changed", DHORSE_SERVER_URL_FILE_PATH));
+                	System.out.println(String.format("The file %s has changed", DHORSE_SERVER_URL_FILE_PATH));
 					loadDHorseIp();
                     lastModifiedTime = file.lastModified();
                 }

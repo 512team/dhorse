@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.dhorse.api.enums.EventTypeEnum;
 import org.dhorse.api.response.model.App;
+import org.dhorse.api.response.model.AppEnv.EnvExtend;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
@@ -39,6 +40,8 @@ public class DeploymentContext {
 	private String branchName;
 
 	private AppEnvPO appEnv;
+
+	private EnvExtend envExtend;
 
 	private EnvHealth envHealth;
 
@@ -102,6 +105,15 @@ public class DeploymentContext {
 
 	public void setCluster(ClusterPO cluster) {
 		this.cluster = cluster;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends EnvExtend> T getEnvExtend() {
+		return (T)envExtend;
+	}
+
+	public void setEnvExtend(EnvExtend envExtend) {
+		this.envExtend = envExtend;
 	}
 
 	public String getDeploymentName() {

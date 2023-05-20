@@ -356,7 +356,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		ingressBackend.setService(ingressServiceBackend);
 		
 		V1IngressRule ingressRule = new V1IngressRule();
-		ingressRule.setHost(JsonUtils.parseToObject(context.getAppEnv().getExt(), EnvExtendNode.class).getIngressHost());
+		ingressRule.setHost(((EnvExtendNode)context.getEnvExtend()).getIngressHost());
 		
 		V1IngressSpec spec = new V1IngressSpec();
 		spec.setDefaultBackend(ingressBackend);
@@ -972,11 +972,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			argsStr.append(" ").append(arg);
 		}
 		//用户定义的Jvm参数
-		if(!StringUtils.isBlank(context.getAppEnv().getExt())) {
-			EnvExtendSpringBoot envExtend = JsonUtils.parseToObject(context.getAppEnv().getExt(), EnvExtendSpringBoot.class);
-			if(!StringUtils.isBlank(envExtend.getJvmArgs())) {
-				argsStr.append(" ").append(envExtend.getJvmArgs());
-			}
+		EnvExtendSpringBoot envExtend = context.getEnvExtend();
+		if(envExtend != null && !StringUtils.isBlank(envExtend.getJvmArgs())) {
+			argsStr.append(" ").append(envExtend.getJvmArgs());
 		}
 		V1EnvVar envVar = new V1EnvVar();
 		envVar.setName("JAVA_OPTS");
@@ -1077,13 +1075,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			commands.append(" ").append(arg);
 		}
 		//用户自定义Jvm参数
-		if (!StringUtils.isBlank(context.getAppEnv().getExt())) {
-			EnvExtendSpringBoot envExtend = JsonUtils.parseToObject(context.getAppEnv().getExt(), EnvExtendSpringBoot.class);
-			if(!StringUtils.isBlank(envExtend.getJvmArgs())) {
-				String[] jvmArgs = envExtend.getJvmArgs().split("\\s+");
-				for (String arg : jvmArgs) {
-					commands.append(" ").append(arg);
-				}
+		EnvExtendSpringBoot envExtend = context.getEnvExtend();
+		if(envExtend != null && !StringUtils.isBlank(envExtend.getJvmArgs())) {
+			String[] jvmArgs = envExtend.getJvmArgs().split("\\s+");
+			for (String arg : jvmArgs) {
+				commands.append(" ").append(arg);
 			}
 		}
 		commands.append(" ").append("-jar");
@@ -1170,13 +1166,21 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			return;
 		}
 		
+		if(context.getEnvExtend() == null) {
+			return;
+		}
+		
+		if(YesOrNoEnum.NO.getCode().equals(((EnvExtendSpringBoot)context.getEnvExtend()).getJvmMetricsStatus())) {
+			return;
+		}
+		
 		V1Container initContainer = new V1Container();
 		initContainer.setName("dhorse-agent");
 		initContainer.setImage(context.getFullNameOfDHorseAgentImage());
 		initContainer.setImagePullPolicy("Always");
 		initContainer.setCommand(Arrays.asList("/bin/sh", "-c"));
-		initContainer.setArgs(Arrays.asList("cp -rf " + Constants.USR_LOCAL_HOME + "dhorse-agent-*.jar "
-				+ K8sUtils.AGENT_VOLUME_PATH + "dhorse-agent.jar"));
+		initContainer.setArgs(Arrays.asList("cp -rf " + Constants.USR_LOCAL_HOME
+				+ "dhorse-agent-*.jar " + K8sUtils.AGENT_VOLUME_PATH + "dhorse-agent.jar"));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
 		volumeMount.setMountPath(K8sUtils.AGENT_VOLUME_PATH);
@@ -1196,10 +1200,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
 		String warFile = Constants.USR_LOCAL_HOME + context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
-		container.setArgs(Arrays.asList("cp -rf " + warFile + " /usr/local/tomcat/webapps"));
+		container.setArgs(Arrays.asList("cp -rf " + warFile + " " + K8sUtils.TOMCAT_APP_PATH));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
-		volumeMount.setMountPath("/usr/local/tomcat/webapps");
+		volumeMount.setMountPath(K8sUtils.TOMCAT_APP_PATH);
 		volumeMount.setName(K8sUtils.WAR_VOLUME);
 		container.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(container);
@@ -1282,7 +1286,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		config.setMountPath(K8sUtils.DATA_PATH);
 		volumeMounts.add(config);
 		
-		//data目录，用于下载文件等
+		//临时data目录，用于下载文件等
 		V1VolumeMount volumeMountData = new V1VolumeMount();
 		volumeMountData.setMountPath(K8sUtils.TMP_DATA_PATH);
 		volumeMountData.setName(K8sUtils.TMP_DATA_VOLUME);
@@ -1296,7 +1300,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		//war
 		if(warFileType(context.getApp())) {
 			V1VolumeMount volumeMountWar = new V1VolumeMount();
-			volumeMountWar.setMountPath("/usr/local/tomcat/webapps");
+			volumeMountWar.setMountPath(K8sUtils.TOMCAT_APP_PATH);
 			volumeMountWar.setName(K8sUtils.WAR_VOLUME);
 			volumeMounts.add(volumeMountWar);
 		}
@@ -1329,7 +1333,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		config.setConfigMap(s);
 		volumes.add(config);
 		
-		//data目录，用于下载文件等
+		//临时data目录，用于下载文件等
 		V1Volume volumeData = new V1Volume();
 		volumeData.setName(K8sUtils.TMP_DATA_VOLUME);
 		V1EmptyDirVolumeSource emptyDirData = new V1EmptyDirVolumeSource();
@@ -1368,8 +1372,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	private ApiClient apiClient(String basePath, String accessToken, int connectTimeout, int readTimeout) {
-		ApiClient apiClient = new ClientBuilder().setBasePath(basePath).setVerifyingSsl(false)
-				.setAuthentication(new AccessTokenAuthentication(accessToken)).build();
+		ApiClient apiClient = new ClientBuilder()
+				.setBasePath(basePath)
+				.setVerifyingSsl(false)
+				.setAuthentication(new AccessTokenAuthentication(accessToken))
+				.build();
 		apiClient.setConnectTimeout(connectTimeout);
 		apiClient.setReadTimeout(readTimeout);
 		return apiClient;
@@ -1825,7 +1832,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	/**
-	 * 通过ConfigMap向k8s集群写入dhorse服务器的地址，地址格式为：ip1,ip2;端口号;uri
+	 * 通过ConfigMap向k8s集群写入dhorse服务器的地址，地址格式为：ip1:8100,ip2:8100
 	 */
 	@Override
 	public Void createDHorseConfig(ClusterPO clusterPO) {
@@ -1862,24 +1869,85 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					coreApi.createNamespacedConfigMap(namespace, configMap, null, null, null, null);
 				}else {
 					Set<String> newIp = new HashSet<>();
-					newIp.add(Constants.hostIp());
+					newIp.add(Constants.hostIp() + ":" + componentConstants.getServerPort());
 					
 					configMap = list.getItems().get(0);
-					String urlStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
-					if(!StringUtils.isBlank(urlStr)) {
-						String[] urls = urlStr.split(";");
-						String[] ips = urls[0].split(",");
+					String ipStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
+					if(!StringUtils.isBlank(ipStr)) {
+						String[] ips = ipStr.split(",");
 						for(String ip : ips) {
-							if(HttpUtils.pingDHorseServer(ip)) {
-								newIp.add(ip);
+							if(!HttpUtils.pingDHorseServer(ip)) {
+								continue;
 							}
+							newIp.add(ip);
 						}
 					}
-					String ipPortUri = String.join(",", newIp) + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
-					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));
+					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, String.join(",", newIp)));
 					coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
 							namespace, configMap, null, null, null, null);
 				}
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
+		}
+		return null;
+	}
+	
+	/**
+	 * 通过ConfigMap向k8s集群删除dhorse服务器的地址，地址格式为：ip1:8100,ip2:8100
+	 */
+	@Override
+	public Void deleteDHorseConfig(ClusterPO clusterPO) {
+		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		CoreV1Api coreApi = new CoreV1Api(apiClient);
+		V1ConfigMap configMap = new V1ConfigMap();
+		configMap.setApiVersion("v1");
+		configMap.setKind("ConfigMap");
+		V1ObjectMeta meta = new V1ObjectMeta();
+		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
+		meta.setLabels(Collections.singletonMap("app", K8sUtils.DHORSE_CONFIGMAP_NAME));
+		configMap.setMetadata(meta);
+		
+		try {
+			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
+			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
+				return null;
+			}
+			for(V1Namespace n : namespaceList.getItems()) {
+				String namespace = n.getMetadata().getName();
+				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
+						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
+					continue;
+				}
+				if(!"Active".equals(n.getStatus().getPhase())){
+					continue;
+				}
+				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
+						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+				if(CollectionUtils.isEmpty(list.getItems())) {
+					continue;
+				}
+				
+				Set<String> newIp = new HashSet<>();
+				configMap = list.getItems().get(0);
+				String ipStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
+				if(!StringUtils.isBlank(ipStr)) {
+					String[] ips = ipStr.split(",");
+					//ip格式为：127.0.0.1:8100
+					for(String ip : ips) {
+						if(Constants.hostIp().equals(ip.split(":")[0])) {
+							continue;
+						}
+						if(!HttpUtils.pingDHorseServer(ip)) {
+							continue;
+						}
+						newIp.add(ip);
+					}
+				}
+				configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, String.join(",", newIp)));
+				coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
+						namespace, configMap, null, null, null, null);
 			}
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();

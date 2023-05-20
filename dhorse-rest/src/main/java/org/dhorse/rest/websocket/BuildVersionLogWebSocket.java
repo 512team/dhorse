@@ -14,6 +14,7 @@ import org.dhorse.infrastructure.param.LogRecordParam;
 import org.dhorse.infrastructure.repository.LogRecordRepository;
 import org.dhorse.infrastructure.repository.po.LogRecordPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
+import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ public class BuildVersionLogWebSocket implements WebSocketHandler {
 		if(!CollectionUtils.isEmpty(records)) {
 			try {
 				for(LogRecordPO r : records) {
-					Matcher m = Pattern.compile("\r\n|\n|\r").matcher(r.getContent());
+					Matcher m = Pattern.compile(Constants.CRLF).matcher(r.getContent());
 					session.sendMessage(new TextMessage(m.replaceAll("<br/>")));
 				}
 			} catch (Exception e) {

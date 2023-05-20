@@ -60,5 +60,7 @@ public interface ClusterStrategy {
 	PodMetricsList replicaMetrics(ClusterPO clusterPO, String namespace);
 	
 	Void createDHorseConfig(ClusterPO clusterPO);
+	
+	Void deleteDHorseConfig(ClusterPO clusterPO);
 
 }

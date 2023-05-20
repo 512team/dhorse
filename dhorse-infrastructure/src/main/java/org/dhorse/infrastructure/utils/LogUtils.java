@@ -12,7 +12,7 @@ public class LogUtils {
 	}
 	
 	public static void throwException(Logger logger, Throwable e, MessageCodeEnum messageCode){
-		logger.error("code: {}, message: {}", messageCode.getCode(), messageCode.getMessage(), e);
+		logger.error("code: "+ messageCode.getCode() +", message: " + messageCode.getMessage(), e);
 		throw new ApplicationException(messageCode.getCode(), messageCode.getMessage());
 	}
 	

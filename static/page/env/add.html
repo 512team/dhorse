@@ -119,6 +119,13 @@
 				</select>
 			</div>
 		</div>
+		<div class="layui-form-item" style="display:none" id="jvmMetricsStatusDiv">
+			<label class="layui-form-label">Jvm指标收集状态</label>
+			<div class="layui-input-block">
+				<input type="radio" name="extendSpringBootParam.jvmMetricsStatus" value="0" title="否" checked>
+				<input type="radio" name="extendSpringBootParam.jvmMetricsStatus" value="1" title="是">
+			</div>
+		</div>
 		<div class="layui-form-item" style="display:none" id="jvmArgsDiv">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
@@ -266,6 +273,7 @@
 				//SpringBoot
 				if(res.data.techType == 1){
 					$("#traceStatusDiv").show();
+					$("#jvmMetricsStatusDiv").show();
 					$("#jvmArgsDiv").show();
 				//Node
 				}else if(res.data.techType == 2){

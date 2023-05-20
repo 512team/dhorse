@@ -19,8 +19,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.infrastructure.component.ComponentConstants;
-import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -29,21 +27,25 @@ public class HttpUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
 	
-	public static boolean pingDHorseServer(String ip) {
-		ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
-		String pingUrl = "http://" + ip + ":" + componentConstants.getServerPort() + "/health/ping";
-		return get(pingUrl) == 200;
+	public static boolean pingDHorseServer(String ipWithPort) {
+		String pingUrl = "http://" + ipWithPort + "/system/ping";
+		try {
+			return get(pingUrl, 1000) == 200;
+		}catch(Exception e) {
+			logger.error("Failed to call " + pingUrl, e);
+			return false;
+		}
 	}
 	
-	public static int get(String url) {
-		return get(url, null);
+	public static int get(String url, int timeout) {
+		return get(url, timeout, null);
 	}
 	
-	public static int get(String url, Map<String, String> cookies) {
+	public static int get(String url, int timeout, Map<String, String> cookies) {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(5000)
-                .setConnectTimeout(5000)
-                .setSocketTimeout(5000)
+                .setConnectionRequestTimeout(timeout)
+                .setConnectTimeout(timeout)
+                .setSocketTimeout(timeout)
                 .build();
         HttpGet method = new HttpGet(url);
         method.setConfig(requestConfig);

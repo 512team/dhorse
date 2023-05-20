@@ -113,6 +113,13 @@
 				</select>
 			</div>
 		</div>
+		<div class="layui-form-item"  style="display:none" id="jvmMetricsStatusDiv">
+			<label class="layui-form-label">Jvm指标收集状态</label>
+			<div class="layui-input-block">
+				<input type="radio" name="extendSpringBootParam.jvmMetricsStatus" show-name="jvmMetricsStatus" value="0" title="否" checked>
+				<input type="radio" name="extendSpringBootParam.jvmMetricsStatus" show-name="jvmMetricsStatus" value="1" title="是">
+			</div>
+		</div>
 		<div class="layui-form-item"  style="display:none" id="jvmArgsDiv">
 			<label class="layui-form-label">Jvm参数</label>
 			<div class="layui-input-block">
@@ -181,6 +188,7 @@
 				initCluster(form, $, data.clusterId);
 				initNamespaceName(form, $, data.clusterId, data.namespaceName);
 				initTraceTemplate(form, $, data.traceTemplateId, data.traceStatus);
+				form.render();
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});
@@ -265,9 +273,11 @@
 				if(res.data.techType == 1){
 					if(data.envExtend != null){
 						$("#jvmArgs").val(data.envExtend.jvmArgs);
+						$('input[show-name=jvmMetricsStatus][value='+ data.envExtend.jvmMetricsStatus +']').prop('checked',true);
 					}
 					$("#traceStatusDiv").show();
 					$("#jvmArgsDiv").show();
+					$("#jvmMetricsStatusDiv").show();
 				//Node
 				}else if(res.data.techType == 2){
 					if(data.envExtend != null){
@@ -275,6 +285,7 @@
 					}
 					$("#ingressHostDiv").show();
 				}
+				form.render();
 			},
 			error: function(data){
 				layer.msg(data.message, {icon: 5, shift: 6});
