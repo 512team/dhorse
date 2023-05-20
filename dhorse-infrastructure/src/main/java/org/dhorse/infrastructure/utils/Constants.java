@@ -17,6 +17,8 @@ public class Constants {
 
 	private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 	
+	public static final String CRLF = "\r\n|\n|\r";
+	
 	/**
 	 * 24小时
 	 */
@@ -30,9 +32,11 @@ public class Constants {
 	
 	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	
-	public static final String DATE_FORMAT_YYYYMMDDHHMMSS = "yyyyMMdd_HHmmss";
+	public static final String DATE_FORMAT_YYYYMMDD_HHMMSS = "yyyyMMdd_HHmmss";
 	
-	public static final int DEPLOYED_LOG_EXIST_DAYS = 14;
+	public static final int DAYS_14 = 14;
+	
+	public static final int DAYS_7 = 7;
 	
 	public static final String USR_LOCAL_HOME = "/usr/local/";
 	

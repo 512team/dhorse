@@ -1,29 +1,29 @@
-alter table deployment_detail add column deployment_thread VARCHAR (64) DEFAULT NULL COMMENT IS '部署线程' after end_time;
-alter table affinity_toleration alter column open_status TINYINT DEFAULT 1 COMMENT IS '启用状态，0：禁用，1：启用';
-alter table app_member alter column login_name VARCHAR (32) DEFAULT NULL COMMENT IS '登录名';
-CREATE TABLE env_ext (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
-	env_id BIGINT DEFAULT NULL COMMENT IS '环境编号',
-	ex_type TINYINT DEFAULT NULL COMMENT IS '扩展类型，1：技术类型，2：亲和容忍，3：健康检查',
-	ext text DEFAULT NULL COMMENT IS '扩展内容，json结构',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+alter table deployment_detail add column deployment_thread varchar (64) default null comment is '部署线程' after end_time;
+alter table affinity_toleration alter column open_status tinyint default 1 comment is '启用状态，0：禁用，1：启用';
+alter table app_member alter column login_name varchar (32) default null comment is '登录名';
+create table env_ext (
+	id bigint primary key auto_increment not null comment is '主键id',
+	app_id bigint default null comment is '应用编号',
+	env_id bigint default null comment is '环境编号',
+	ex_type tinyint default null comment is '扩展类型，1：技术类型，2：亲和容忍，3：健康检查',
+	ext text default null comment is '扩展内容，json结构',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE env_ext IS '环境扩展';
-CREATE INDEX env_ext_env_id ON env_ext(env_id);
-CREATE TABLE log_record (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT IS '应用编号',
-	biz_id BIGINT DEFAULT NULL COMMENT IS '业务编号',
-	log_type TINYINT DEFAULT NULL COMMENT IS '日志类型，1：构建日志，2：部署日志',
-	content text DEFAULT NULL COMMENT IS '日志内容',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+comment on table env_ext is '环境扩展';
+create index env_ext_env_id on env_ext(env_id);
+create table log_record (
+	id bigint primary key auto_increment not null comment is '主键id',
+	app_id bigint default null comment is '应用编号',
+	biz_id bigint default null comment is '业务编号',
+	log_type tinyint default null comment is '日志类型，1：构建日志，2：部署日志',
+	content text default null comment is '日志内容',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE log_record IS '日志记录';
-CREATE INDEX log_record_biz_id ON log_record(biz_id);
-CREATE INDEX log_record_update_time ON log_record(update_time);
-INSERT INTO global_config(item_type, item_value, remark, creation_time, update_time, deletion_status) VALUES (8, now(), NULL, now(), now(), 0);
+comment on table log_record is '日志记录';
+create index log_record_biz_id on log_record(biz_id);
+create index log_record_update_time on log_record(update_time);
+insert into global_config(item_type, item_value, remark, creation_time, update_time, deletion_status) values (8, now(), null, now(), now(), 0);

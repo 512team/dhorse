@@ -12,12 +12,12 @@ public class DefaultHikariDataSource extends HikariDataSource{
 	
 	public DefaultHikariDataSource() {
 		try {
-			logger.info("Starting embedded db server...");
+			logger.info("Starting embedded h2 server...");
 			Server.createTcpServer("-tcp", "-tcpAllowOthers","-ifNotExists", "-tcpPort",
 					"59539").start();
 			logger.info("The embedded db server started successfully");
 		} catch (Exception e) {
-			logger.error("Db has error", e);
+			logger.error("Failed to start embedded h2 server", e);
 		}
 	}
 }

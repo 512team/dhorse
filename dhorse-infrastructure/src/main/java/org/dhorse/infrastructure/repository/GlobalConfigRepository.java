@@ -1,5 +1,6 @@
 package org.dhorse.infrastructure.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
@@ -94,7 +95,9 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 		UpdateWrapper<GlobalConfigPO> wrapper = new UpdateWrapper<>();
 		wrapper.eq("item_type", bizParam.getItemType());
 		wrapper.lt("item_value", bizParam.getItemValue());
-		return getMapper().update(param2Entity(bizParam), wrapper) > 0 ? true : false;
+		GlobalConfigPO e = param2Entity(bizParam);
+		e.setUpdateTime(new Date());
+		return getMapper().update(e, wrapper) > 0 ? true : false;
 	}
 	
 	@Override

@@ -8,6 +8,7 @@ import org.apache.ibatis.session.AutoMappingBehavior;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.component.MysqlConfig;
+import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteConfig.DateClass;
+import org.sqlite.SQLiteDataSource;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
@@ -44,7 +48,7 @@ public class DataSourceConfig{
 	@Autowired
 	private ComponentConstants componentConstants;
 	
-	@Bean(destroyMethod = "close")
+	@Bean
 	public DataSource dataSource() {
 		HikariDataSource dataSource = dataSourceBuilder();
 		dataSource.setConnectionTimeout(CONNECTION_TIMEOUT);
@@ -64,23 +68,38 @@ public class DataSourceConfig{
 			dataSource.setJdbcUrl(componentConstants.getMysql().getUrl());
 			dataSource.setUsername(componentConstants.getMysql().getUser());
 			dataSource.setPassword(componentConstants.getMysql().getPassword());
-		}else {
+		}else if(componentConstants.isH2Enable()) {
+			//由于h2使用的MV_STORE存储引擎，当进行很多事务操作时，占用空间超大，并且不能释放空间，
+			//这里不再使用h2作为默认的存储方式
 			dataSource = new DefaultHikariDataSource();
 			dataSource.setDriverClassName("org.h2.Driver");
 			dataSource.setJdbcUrl("jdbc:h2:tcp://localhost:59539/"
-					+ componentConstants.getDataPath() + "db/dhorse");
+				+ componentConstants.getDataPath() + "db/dhorse");
 			dataSource.setUsername("dhorse");
 			dataSource.setPassword("dhorse");
+		}else {
+			dataSource = new HikariDataSource();
+			SQLiteConfig config = new SQLiteConfig();
+			config.setDateClass(DateClass.TEXT.getValue());
+			config.setDateStringFormat(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+			SQLiteDataSource sqLiteDataSource = new SQLiteDataSource();
+			sqLiteDataSource.setConfig(config);
+			sqLiteDataSource.setUrl("jdbc:sqlite:" + componentConstants.getDataPath()
+				+ "db/dhorse.db");
+			dataSource.setDataSource(sqLiteDataSource);
 		}
+		
 		return dataSource;
 	}
 	
 	private PaginationInnerInterceptor paginationInnerInterceptor() {
+		DbType dbType = DbType.SQLITE;
 		if(componentConstants.getMysql().isEnable()) {
-			return new PaginationInnerInterceptor(DbType.MYSQL);
-		}else {
-			return new PaginationInnerInterceptor(DbType.H2);
+			dbType = DbType.MYSQL;
+		}else if(componentConstants.isH2Enable()) {
+			dbType = DbType.H2;
 		}
+		return new PaginationInnerInterceptor(dbType);
 	}
 	
 	@Bean

@@ -1,0 +1,546 @@
+create table sys_user (
+	id integer primary key autoincrement not null, -- '主键id'
+	login_name varchar(32) default null, -- '登录名'
+	user_name varchar(32) default null, -- '用户名'
+	password varchar(64) default null, -- '密码，md5和sha256双重加密'
+	email varchar(32) default null, -- '邮箱'
+	role_type integer default 0, -- '0：普通用户，1：管理员'
+	registered_source integer default 0, -- '注册来源，1：dhorse，2：ldap，3：sso'
+	last_login_time varchar(19) default null, -- '上次登录时间'
+	last_login_token varchar(32) default null, -- '上次登录token'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '用户'
+create index index_user_login_name on sys_user(login_name);
+create index index_user_update_time on sys_user(update_time);
+insert into sys_user(login_name, user_name, password, email, role_type, registered_source, last_login_time, last_login_token, creation_time, update_time, deletion_status) values ('admin', 'admin', '$2a$10$/kSSeihnxhzGdo9IJ0yYweGJyR/g9pSDk0jfDH1BvXRCZw.yv2D3i', '', 1, 1, null, null, datetime(), datetime(), 0);
+
+create table cluster (
+	id integer primary key autoincrement not null, -- '主键id'
+	cluster_name varchar(8) default null, -- '集群名称，如：开发、测试、预发、生产等'
+	cluster_type integer default null, -- '集群类型，1：私有k8s，2：阿里云，3：腾讯云'
+	cluster_url varchar(128) default null, -- '集群地址，带端口'
+	auth_type integer default 0, -- '认证方式，1：令牌认证，2：账号认证'
+	auth_token varchar(1024) default null, -- '认证令牌'
+	auth_name varchar(16) default null, -- '认证名称'
+	auth_password varchar(128) default null, -- '认证密码'
+	description varchar(128) default null, -- '描述'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '集群'
+create index index_cluster_update_time on cluster(update_time);
+
+create table global_config (
+	id integer primary key autoincrement not null, -- '主键id'
+	item_type integer default null, -- '配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境模板，100：更多'
+	item_value text default null, -- '配置项值，json结构'
+	remark varchar(64) default null, -- '备注'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '全局配置'
+create index index_config_item_type on global_config(item_type);
+insert into global_config(item_type, item_value, remark, creation_time, update_time, deletion_status) values (8, datetime(), null, datetime(), datetime(), 0);
+
+create table app (
+	id integer primary key autoincrement not null, -- '应用编号'
+	app_name varchar(32) not null, -- '应用名称'
+	tech_type integer default 0, -- '技术类型，1：springboot，2：node'
+	base_image_source integer default 0, -- '基础镜像来源，1：版本号，2：自定义'
+	base_image_version varchar(16) default null, -- '基础镜像版本'
+	base_image varchar(128) default null, -- '基础镜像'
+	code_repo_path varchar(64) default null, -- '代码仓库路径'
+	affinity_app_name varchar(1024) default null, -- '亲密应用名称，格式：应用1应用2'
+	first_department varchar(16) default null, -- '一级部门'
+	second_department varchar(16) default null, -- '二级部门'
+	third_department varchar(16) default null, -- '三级部门'
+	description varchar(64) default null, -- '应用描述'
+	ext varchar(8192) default null, -- '每种语言的扩展信息，json结构'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '应用信息'
+create index index_app_app_name on app(app_name);
+create index index_app_update_time on app(update_time);
+
+create table app_member (
+	id integer primary key autoincrement not null, -- '主键id'
+	app_id integer default null, -- '应用编号'
+	user_id integer default null, -- '用户编号'
+	login_name varchar(32) default null, -- '登录名'
+	role_type varchar(16) default null, -- '存储格式：123，角色类型，1：管理员，2：开发，3：测试，4：运维，5：架构师，6：告警接收：7：部署审批'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '应用成员'
+create index index_app_member_app_id on app_member(app_id);
+create index index_app_member_user_id on app_member(user_id);
+create index index_app_member_login_name on app_member(login_name);
+create index index_app_member_update_time on app_member(update_time);
+
+create table app_env (
+	id integer primary key autoincrement not null, -- '主键id'
+	app_id integer default null, -- '应用编号'
+	cluster_id integer default null, -- '集群编号'
+	namespace_name varchar(32) default null, -- '部署命名空间'
+	env_name varchar(8) default null, -- '环境名称，如：开发、测试、预发、生产等'
+	tag varchar(8) default null, -- '标签，如：dev、qa、pl、ol等'
+	deployment_order integer default 0, -- '部署序号（值越小越往前）'
+	min_replicas int default 1, -- '最小副本数'
+	max_replicas int default 0, -- '最大副本数'
+	replica_cpu int default 0, -- '每副本cpu，单位m'
+	replica_memory int default 0, -- '每副本内存，单位mb'
+	auto_scaling_cpu int default 0, -- '自动扩容，cpu使用率'
+	auto_scaling_memory int default 0, -- '自动扩容，内存使用率'
+	required_deploy_approval integer default 0, -- '是否需要部署审批，0：否，1：是'
+	required_merge integer default 0, -- '是否需要合并分支，0：否，1：是'
+	service_port int default null, -- '服务端口'
+	minor_ports varchar(16) default null, -- '辅助端口，如：80818082'
+	trace_status int default 0, -- '链路追踪状态，0：未开启，1：已开启'
+	trace_template_id integer default null, -- '链路追踪模板编号'
+	description varchar(128) default null, -- '环境描述'
+	ext text default null, -- '每种技术类型的扩展信息，json结构'
+	deployment_time varchar(19) default null, -- '部署时间'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '应用环境'
+create index index_env_app_id on app_env(app_id);
+create index index_env_update_time on app_env(update_time);
+create index index_trace_template_id on app_env(trace_template_id);
+
+create table affinity_toleration (
+	id integer primary key autoincrement not null, -- '主键id'
+	customized_name varchar(64) default null, -- '名称'
+	app_id integer default null, -- '应用编号'
+	env_id integer default null, -- '环境编号'
+	scheduling_type integer default 0, -- '调度类型，1：节点亲和，2：节点容忍，3：副本亲和，4：副本反亲和'
+	affinity_level integer default 0, -- '亲和程度，1：硬亲和，2：软亲和'
+	weight varchar(16) default null, -- '权重值'
+	key_name varchar(64) default null, -- '键'
+	operator varchar(32) default null, -- '操作符，值：equal、in、notin、exists、doesnotexist、gt、lt'
+	value_list varchar(1024) default null, -- '值，格式：值1值2'
+	topology_key varchar(128) default null, -- '拓扑域，如：kubernetes.io/hostname'
+	effect_type varchar(32) default null, -- '作用类型，值：noschedule、prefernoschedule、noexecute'
+	duration varchar(16) default null, -- '容忍时长，单位：秒'
+	open_status integer default 1, -- '启用状态，0：禁用，1：启用'
+	remark varchar(64) default null, -- '备注'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '亲和容忍配置'
+create index index_affinity_toleration_env_id on affinity_toleration(env_id);
+create index index_affinity_toleration_update_time on affinity_toleration(update_time);
+
+create table deployment_version (
+	id integer primary key autoincrement not null, -- '主键id'
+	app_id integer default null, -- '应用编号'
+	branch_name varchar(32) default null, -- '分支名称'
+	version_name varchar(128) default null, -- '版本名称'
+	status integer default 0, -- '状态，0：构建中，1：构建成功，2：构建失败'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '部署版本'
+create index index_version_app_id on deployment_version(app_id);
+create index index_version_version_name on deployment_version(version_name);
+create index index_version_update_time on deployment_version(update_time);
+
+create table deployment_detail (
+	id integer primary key autoincrement not null, -- '主键id'
+	app_id integer default null, -- '应用编号'
+	branch_name varchar(32) default null, -- '分支名称'
+	version_name varchar(128) default null, -- '版本名称'
+	env_id integer default 0, -- '环境编号'
+	deployment_status integer default 0, -- '部署状态，0：部署待审批，1：部署中，2：部署成功，3：部署失败，4：合并成功，5：合并失败，6：回滚待审批，7：回滚中，8：回滚成功，9：回滚失败'
+	deployer varchar(16) default null, -- '部署人'
+	approver varchar(16) default null, -- '审批人'
+	start_time varchar(19) default null, -- '开始时间'
+	end_time varchar(19) default null, -- '结束时间'
+	deployment_thread varchar(64) default null, -- '部署线程'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '部署明细'
+create index index_detail_env_id on deployment_detail(env_id);
+create index index_detail_version_name on deployment_detail(version_name);
+create index index_detail_update_time on deployment_detail(update_time);
+
+create table env_ext (
+	id integer primary key autoincrement not null, -- '主键id'
+	app_id integer default null, -- '应用编号'
+	env_id integer default null, -- '环境编号'
+	ex_type integer default null, -- '扩展类型，1：技术类型，2：亲和容忍，3：健康检查'
+	ext text default null, -- '扩展内容，json结构'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '环境扩展'
+create index env_ext_env_id on env_ext(env_id);
+
+create table log_record (
+	id integer primary key autoincrement not null, -- '主键id'
+	app_id integer default null, -- '应用编号'
+	biz_id integer default null, -- '业务编号'
+	log_type integer default null, -- '日志类型，1：构建日志，2：部署日志'
+	content text default null, -- '日志内容'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '日志记录'
+create index log_record_biz_id on log_record(biz_id);
+create index log_record_update_time on log_record(update_time);
+
+create table metrics_0 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_0 on metrics_0(update_time, replica_name);
+
+create table metrics_1 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_1 on metrics_1(update_time, replica_name);
+
+create table metrics_2 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_2 on metrics_2(update_time, replica_name);
+
+create table metrics_3 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_3 on metrics_3(update_time, replica_name);
+
+create table metrics_4 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_4 on metrics_4(update_time, replica_name);
+
+create table metrics_5 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_5 on metrics_5(update_time, replica_name);
+
+create table metrics_6 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_6 on metrics_6(update_time, replica_name);
+
+create table metrics_7 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_7 on metrics_7(update_time, replica_name);
+
+create table metrics_8 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_8 on metrics_8(update_time, replica_name);
+
+create table metrics_9 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_9 on metrics_9(update_time, replica_name);
+
+create table metrics_10 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_10 on metrics_10(update_time, replica_name);
+
+create table metrics_11 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_11 on metrics_11(update_time, replica_name);
+
+create table metrics_12 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_12 on metrics_12(update_time, replica_name);
+
+create table metrics_13 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_13 on metrics_13(update_time, replica_name);
+
+create table metrics_14 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_14 on metrics_14(update_time, replica_name);
+
+create table metrics_15 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_15 on metrics_15(update_time, replica_name);
+
+create table metrics_16 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_16 on metrics_16(update_time, replica_name);
+
+create table metrics_17 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_17 on metrics_17(update_time, replica_name);
+
+create table metrics_18 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_18 on metrics_18(update_time, replica_name);
+
+create table metrics_19 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_19 on metrics_19(update_time, replica_name);
+
+create table metrics_20 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_20 on metrics_20(update_time, replica_name);
+
+create table metrics_21 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_21 on metrics_21(update_time, replica_name);
+
+create table metrics_22 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_22 on metrics_22(update_time, replica_name);
+
+create table metrics_23 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_23 on metrics_23(update_time, replica_name);
+
+create table metrics_24 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_24 on metrics_24(update_time, replica_name);
+
+create table metrics_25 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_25 on metrics_25(update_time, replica_name);
+
+create table metrics_26 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_26 on metrics_26(update_time, replica_name);
+
+create table metrics_27 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_27 on metrics_27(update_time, replica_name);
+
+create table metrics_28 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_28 on metrics_28(update_time, replica_name);
+
+create table metrics_29 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_29 on metrics_29(update_time, replica_name);
+
+create table metrics_30 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_30 on metrics_30(update_time, replica_name);
+
+create table metrics_31 (
+	id integer primary key autoincrement not null, -- '主键id'
+	replica_name varchar(64) default null, -- '副本名称'
+	metrics_type integer default 0, -- '指标类型'
+	metrics_value integer default 0, -- '指标值'
+	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
+	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'
+	deletion_status integer default 0 -- '删除状态，0：未删除，1：已删除'
+); -- '副本指标'
+create index index_metrics_31 on metrics_31(update_time, replica_name);

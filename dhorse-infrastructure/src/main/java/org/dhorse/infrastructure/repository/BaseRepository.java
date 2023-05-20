@@ -1,5 +1,9 @@
 package org.dhorse.infrastructure.repository;
 
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,7 +100,9 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 	}
 	
 	public boolean update(P bizParam) {
-		return getMapper().update(param2Entity(bizParam), buildUpdateWrapper(bizParam)) > 0 ? true : false;
+		E e = param2Entity(bizParam);
+		e.setUpdateTime(new Date());
+		return getMapper().update(e, buildUpdateWrapper(bizParam)) > 0 ? true : false;
 	}
 
 	public boolean updateById(P bizParam) {
@@ -106,7 +112,9 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		UpdateWrapper<E> wrapper = new UpdateWrapper<>();
 		wrapper.eq("id", bizParam.getId());
 		wrapper.eq("deletion_status", 0);
-		return getMapper().update(param2Entity(bizParam), wrapper) > 0 ? true : false;
+		E e = param2Entity(bizParam);
+		e.setUpdateTime(new Date());
+		return getMapper().update(e, wrapper) > 0 ? true : false;
 	}
 
 	public boolean delete(String id) {
@@ -114,6 +122,22 @@ public abstract class BaseRepository<P extends PageParam, E extends BasePO> {
 		po.setId(id);
 		po.setDeletionStatus(1);
 		return getMapper().updateById(po) > 0 ? true : false;
+	}
+	
+	protected void executeSql(String sql) {
+		executeBatchSql(Arrays.asList(sql));
+	}
+	
+	protected void executeBatchSql(List<String> sqls) {
+		SqlSession sqlSession = sqlSessionFactory.openSession();
+		try (Connection connection = sqlSession.getConnection();
+				Statement statement = connection.createStatement()){
+			for (String sql : sqls) {
+				statement.execute(sql);
+			}
+		} catch (Exception e) {
+			logger.error("Failed to execute batch sql", e);
+		}
 	}
 	
 	protected E param2Entity(P bizParam) {

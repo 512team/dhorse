@@ -20,6 +20,8 @@ public class ComponentConstants {
 
 	private String logPath;
 
+	private boolean h2Enable = false;
+
 	@Autowired
 	private MysqlConfig mysqlConfig;
 
@@ -43,6 +45,10 @@ public class ComponentConstants {
 		} else {
 			this.logPath = logPath + "/dhorse/";
 		}
+	}
+
+	public boolean isH2Enable() {
+		return h2Enable;
 	}
 
 	public String getVersion() {

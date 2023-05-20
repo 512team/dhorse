@@ -3,6 +3,7 @@ package org.dhorse.infrastructure.repository;
 import java.util.Date;
 
 import org.dhorse.api.response.model.LogRecord;
+import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.param.LogRecordParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.LogRecordMapper;
@@ -16,6 +17,9 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 public class LogRecordRepository extends RightRepository<LogRecordParam, LogRecordPO, LogRecord> {
 
 	@Autowired
+	private ComponentConstants componentConstants;
+	
+	@Autowired
 	private LogRecordMapper mapper;
 	
 	@Override
@@ -28,10 +32,14 @@ public class LogRecordRepository extends RightRepository<LogRecordParam, LogReco
 		return po.getId();
 	}
 	
-	public Void deleteBefore(Date date) {
+	public Void delete(Date date) {
 		UpdateWrapper<LogRecordPO> wrapper = new UpdateWrapper<>();
 		wrapper.le("update_time", date);
 		getMapper().delete(wrapper);
+		//整理表空间
+		if(componentConstants.getMysql().isEnable()) {
+			this.executeSql("alter table log_record engine=InnoDB");
+		}
 		return null;
 	}
 	

@@ -1,167 +1,167 @@
-CREATE TABLE sys_user (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	login_name VARCHAR (32) DEFAULT NULL COMMENT '登录名',
-	user_name VARCHAR (32) DEFAULT NULL COMMENT '用户名',
-	password VARCHAR (64) DEFAULT NULL COMMENT '密码，MD5和SHA256双重加密',
-	email VARCHAR (32) DEFAULT NULL COMMENT '邮箱',
-	role_type TINYINT DEFAULT 0 COMMENT '0：普通用户，1：管理员',
-	registered_source TINYINT DEFAULT 0 COMMENT '注册来源，1：Dhorse，2：Ldap，3：Sso',
-	last_login_time datetime DEFAULT NULL COMMENT '上次登录时间',
-	last_login_token VARCHAR (32) DEFAULT NULL COMMENT '上次登录token',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '用户';
-CREATE INDEX index_user_login_name ON sys_user(login_name);
-CREATE INDEX index_user_update_time ON sys_user(update_time);
-INSERT INTO sys_user(login_name, user_name, password, email, role_type, registered_source, last_login_time, last_login_token, creation_time, update_time, deletion_status) VALUES ('admin', 'admin', '$2a$10$/kSSeihnxhzGdo9IJ0yYweGJyR/g9pSDk0jfDH1BvXRCZw.yv2D3i', '', 1, 1, NULL, NULL, now(), now(), 0);
+create table sys_user (
+	id bigint primary key auto_increment not null comment '主键id',
+	login_name varchar (32) default null comment '登录名',
+	user_name varchar (32) default null comment '用户名',
+	password varchar (64) default null comment '密码，md5和sha256双重加密',
+	email varchar (32) default null comment '邮箱',
+	role_type tinyint default 0 comment '0：普通用户，1：管理员',
+	registered_source tinyint default 0 comment '注册来源，1：dhorse，2：ldap，3：sso',
+	last_login_time datetime default null comment '上次登录时间',
+	last_login_token varchar (32) default null comment '上次登录token',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '用户';
+create index index_user_login_name on sys_user(login_name);
+create index index_user_update_time on sys_user(update_time);
+insert into sys_user(login_name, user_name, password, email, role_type, registered_source, last_login_time, last_login_token, creation_time, update_time, deletion_status) values ('admin', 'admin', '$2a$10$/kSSeihnxhzGdo9IJ0yYweGJyR/g9pSDk0jfDH1BvXRCZw.yv2D3i', '', 1, 1, null, null, now(), now(), 0);
 
-CREATE TABLE cluster (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	cluster_name VARCHAR (8) DEFAULT NULL COMMENT '集群名称，如：开发、测试、预发、生产等',
-	cluster_type TINYINT DEFAULT NULL COMMENT '集群类型，1：私有k8s，2：阿里云，3：腾讯云',
-	cluster_url VARCHAR (128) DEFAULT NULL COMMENT '集群地址，带端口',
-	auth_type TINYINT DEFAULT 0 COMMENT '认证方式，1：令牌认证，2：账号认证',
-	auth_token VARCHAR (1024) DEFAULT NULL COMMENT '认证令牌',
-	auth_name VARCHAR (16) DEFAULT NULL COMMENT '认证名称',
-	auth_password VARCHAR (128) DEFAULT NULL COMMENT '认证密码',
-	description VARCHAR (128) DEFAULT NULL COMMENT '描述',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '集群';
-CREATE INDEX index_cluster_update_time ON cluster(update_time);
+create table cluster (
+	id bigint primary key auto_increment not null comment '主键id',
+	cluster_name varchar (8) default null comment '集群名称，如：开发、测试、预发、生产等',
+	cluster_type tinyint default null comment '集群类型，1：私有k8s，2：阿里云，3：腾讯云',
+	cluster_url varchar (128) default null comment '集群地址，带端口',
+	auth_type tinyint default 0 comment '认证方式，1：令牌认证，2：账号认证',
+	auth_token varchar (1024) default null comment '认证令牌',
+	auth_name varchar (16) default null comment '认证名称',
+	auth_password varchar (128) default null comment '认证密码',
+	description varchar (128) default null comment '描述',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '集群';
+create index index_cluster_update_time on cluster(update_time);
 
-CREATE TABLE global_config (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	item_type tinyint DEFAULT NULL COMMENT '配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境模板，100：更多',
-	item_value text DEFAULT NULL COMMENT '配置项值，json结构',
-	remark VARCHAR (64) DEFAULT NULL COMMENT '备注',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '全局配置';
-CREATE INDEX index_config_item_type ON global_config(item_type);
+create table global_config (
+	id bigint primary key auto_increment not null comment '主键id',
+	item_type tinyint default null comment '配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境模板，100：更多',
+	item_value text default null comment '配置项值，json结构',
+	remark varchar (64) default null comment '备注',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '全局配置';
+create index index_config_item_type on global_config(item_type);
 
-CREATE TABLE app (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '应用编号',
-	app_name VARCHAR (32) NOT NULL COMMENT '应用名称',
-	tech_type TINYINT DEFAULT 0 COMMENT '技术类型，1：SpringBoot，2：Node',
-	base_image_source TINYINT DEFAULT 0 COMMENT '基础镜像来源，1：版本号，2：自定义',
-	base_image_version VARCHAR (16) DEFAULT NULL COMMENT '基础镜像版本',
-	base_image VARCHAR (128) DEFAULT NULL COMMENT '基础镜像',
-	code_repo_path VARCHAR (64) DEFAULT NULL COMMENT '代码仓库路径',
-	affinity_app_name VARCHAR (1024) DEFAULT NULL COMMENT '亲密应用名称，格式：应用1,应用2',
-	first_department VARCHAR (16) DEFAULT NULL COMMENT '一级部门',
-	second_department VARCHAR (16) DEFAULT NULL COMMENT '二级部门',
-	third_department VARCHAR (16) DEFAULT NULL COMMENT '三级部门',
-	description VARCHAR (64) DEFAULT NULL COMMENT '应用描述',
-	ext VARCHAR (8192) DEFAULT NULL COMMENT '每种语言的扩展信息，json结构',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '应用信息';
-CREATE INDEX index_app_app_name ON app(app_name);
-CREATE INDEX index_app_update_time ON app(update_time);
+create table app (
+	id bigint primary key auto_increment not null comment '应用编号',
+	app_name varchar (32) not null comment '应用名称',
+	tech_type tinyint default 0 comment '技术类型，1：springboot，2：node',
+	base_image_source tinyint default 0 comment '基础镜像来源，1：版本号，2：自定义',
+	base_image_version varchar (16) default null comment '基础镜像版本',
+	base_image varchar (128) default null comment '基础镜像',
+	code_repo_path varchar (64) default null comment '代码仓库路径',
+	affinity_app_name varchar (1024) default null comment '亲密应用名称，格式：应用1,应用2',
+	first_department varchar (16) default null comment '一级部门',
+	second_department varchar (16) default null comment '二级部门',
+	third_department varchar (16) default null comment '三级部门',
+	description varchar (64) default null comment '应用描述',
+	ext varchar (8192) default null comment '每种语言的扩展信息，json结构',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '应用信息';
+create index index_app_app_name on app(app_name);
+create index index_app_update_time on app(update_time);
 
-CREATE TABLE app_member (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
-	user_id BIGINT DEFAULT NULL COMMENT '用户编号',
-	login_name VARCHAR (16) DEFAULT NULL COMMENT '登录名',
-	role_type VARCHAR (16) DEFAULT NULL COMMENT '存储格式：1,2,3，角色类型，1：管理员，2：开发，3：测试，4：运维，5：架构师，6：告警接收：7：部署审批',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '应用成员';
-CREATE INDEX index_app_member_app_id ON app_member(app_id);
-CREATE INDEX index_app_member_user_id ON app_member(user_id);
-CREATE INDEX index_app_member_login_name ON app_member(login_name);
-CREATE INDEX index_app_member_update_time ON app_member(update_time);
+create table app_member (
+	id bigint primary key auto_increment not null comment '主键id',
+	app_id bigint default null comment '应用编号',
+	user_id bigint default null comment '用户编号',
+	login_name varchar (16) default null comment '登录名',
+	role_type varchar (16) default null comment '存储格式：1,2,3，角色类型，1：管理员，2：开发，3：测试，4：运维，5：架构师，6：告警接收：7：部署审批',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '应用成员';
+create index index_app_member_app_id on app_member(app_id);
+create index index_app_member_user_id on app_member(user_id);
+create index index_app_member_login_name on app_member(login_name);
+create index index_app_member_update_time on app_member(update_time);
 
-CREATE TABLE app_env (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
-	cluster_id BIGINT DEFAULT NULL COMMENT '集群编号',
-	namespace_name VARCHAR (32) DEFAULT NULL COMMENT '部署命名空间',
-	env_name VARCHAR (8) DEFAULT NULL COMMENT '环境名称，如：开发、测试、预发、生产等',
-	tag VARCHAR (8) DEFAULT NULL COMMENT '标签，如：dev、qa、pl、ol等',
-	deployment_order TINYINT DEFAULT 0 COMMENT '部署序号（值越小越往前）',
-	min_replicas INT DEFAULT 1 COMMENT '最小副本数',
-	max_replicas INT DEFAULT 0 COMMENT '最大副本数',
-	replica_cpu INT DEFAULT 0 COMMENT '每副本CPU，单位m',
-	replica_memory INT DEFAULT 0 COMMENT '每副本内存，单位MB',
-	auto_scaling_cpu INT DEFAULT 0 COMMENT '自动扩容，cpu使用率',
-	auto_scaling_memory INT DEFAULT 0 COMMENT '自动扩容，内存使用率',
-	required_deploy_approval TINYINT DEFAULT 0 COMMENT '是否需要部署审批，0：否，1：是',
-	required_merge TINYINT DEFAULT 0 COMMENT '是否需要合并分支，0：否，1：是',
-	service_port INT DEFAULT NULL COMMENT '服务端口',
-	minor_ports VARCHAR (16) DEFAULT NULL COMMENT '辅助端口，如：8081,8082',
-	trace_status INT DEFAULT 0 COMMENT '链路追踪状态，0：未开启，1：已开启',
-	trace_template_id BIGINT DEFAULT NULL COMMENT '链路追踪模板编号',
-	description VARCHAR (128) DEFAULT NULL COMMENT '环境描述',
-	ext text DEFAULT NULL COMMENT '每种技术类型的扩展信息，json结构',
-	deployment_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '部署时间',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '应用环境';
-CREATE INDEX index_env_app_id ON app_env(app_id);
-CREATE INDEX index_env_update_time ON app_env(update_time);
-CREATE INDEX index_trace_template_id ON app_env(trace_template_id);
+create table app_env (
+	id bigint primary key auto_increment not null comment '主键id',
+	app_id bigint default null comment '应用编号',
+	cluster_id bigint default null comment '集群编号',
+	namespace_name varchar (32) default null comment '部署命名空间',
+	env_name varchar (8) default null comment '环境名称，如：开发、测试、预发、生产等',
+	tag varchar (8) default null comment '标签，如：dev、qa、pl、ol等',
+	deployment_order tinyint default 0 comment '部署序号（值越小越往前）',
+	min_replicas int default 1 comment '最小副本数',
+	max_replicas int default 0 comment '最大副本数',
+	replica_cpu int default 0 comment '每副本cpu，单位m',
+	replica_memory int default 0 comment '每副本内存，单位mb',
+	auto_scaling_cpu int default 0 comment '自动扩容，cpu使用率',
+	auto_scaling_memory int default 0 comment '自动扩容，内存使用率',
+	required_deploy_approval tinyint default 0 comment '是否需要部署审批，0：否，1：是',
+	required_merge tinyint default 0 comment '是否需要合并分支，0：否，1：是',
+	service_port int default null comment '服务端口',
+	minor_ports varchar (16) default null comment '辅助端口，如：8081,8082',
+	trace_status int default 0 comment '链路追踪状态，0：未开启，1：已开启',
+	trace_template_id bigint default null comment '链路追踪模板编号',
+	description varchar (128) default null comment '环境描述',
+	ext text default null comment '每种技术类型的扩展信息，json结构',
+	deployment_time datetime default current_timestamp comment '部署时间',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '应用环境';
+create index index_env_app_id on app_env(app_id);
+create index index_env_update_time on app_env(update_time);
+create index index_trace_template_id on app_env(trace_template_id);
 
-CREATE TABLE affinity_toleration (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	customized_name VARCHAR (64) DEFAULT NULL COMMENT '名称',
-	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
-	env_id BIGINT DEFAULT NULL COMMENT '环境编号',
-	scheduling_type TINYINT DEFAULT 0 COMMENT '调度类型，1：节点亲和，2：节点容忍，3：副本亲和，4：副本反亲和',
-	affinity_level TINYINT DEFAULT 0 COMMENT '亲和程度，1：硬亲和，2：软亲和',
-	weight VARCHAR (16) DEFAULT NULL COMMENT '权重值',
-	key_name VARCHAR (64) DEFAULT NULL COMMENT '键',
-	operator VARCHAR (32) DEFAULT NULL COMMENT '操作符，值：Equal、In、NotIn、Exists、DoesNotExist、Gt、Lt',
-	value_list VARCHAR (1024) DEFAULT NULL COMMENT '值，格式：值1,值2',
-	topology_key VARCHAR (128) DEFAULT NULL COMMENT '拓扑域，如：kubernetes.io/hostname',
-	effect_type VARCHAR (32) DEFAULT NULL COMMENT '作用类型，值：NoSchedule、PreferNoSchedule、NoExecute',
-	duration VARCHAR (16) DEFAULT NULL COMMENT '容忍时长，单位：秒',
-	open_status TINYINT DEFAULT 0 COMMENT '启用状态，0：启用，1：禁用',
-	remark VARCHAR (64) DEFAULT NULL COMMENT '备注',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '亲和容忍配置';
-CREATE INDEX index_affinity_toleration_env_id ON affinity_toleration(env_id);
-CREATE INDEX index_affinity_toleration_update_time ON affinity_toleration(update_time);
+create table affinity_toleration (
+	id bigint primary key auto_increment not null comment '主键id',
+	customized_name varchar (64) default null comment '名称',
+	app_id bigint default null comment '应用编号',
+	env_id bigint default null comment '环境编号',
+	scheduling_type tinyint default 0 comment '调度类型，1：节点亲和，2：节点容忍，3：副本亲和，4：副本反亲和',
+	affinity_level tinyint default 0 comment '亲和程度，1：硬亲和，2：软亲和',
+	weight varchar (16) default null comment '权重值',
+	key_name varchar (64) default null comment '键',
+	operator varchar (32) default null comment '操作符，值：equal、in、notin、exists、doesnotexist、gt、lt',
+	value_list varchar (1024) default null comment '值，格式：值1,值2',
+	topology_key varchar (128) default null comment '拓扑域，如：kubernetes.io/hostname',
+	effect_type varchar (32) default null comment '作用类型，值：noschedule、prefernoschedule、noexecute',
+	duration varchar (16) default null comment '容忍时长，单位：秒',
+	open_status tinyint default 0 comment '启用状态，0：启用，1：禁用',
+	remark varchar (64) default null comment '备注',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '亲和容忍配置';
+create index index_affinity_toleration_env_id on affinity_toleration(env_id);
+create index index_affinity_toleration_update_time on affinity_toleration(update_time);
 
-CREATE TABLE deployment_version (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
-	branch_name VARCHAR (32) DEFAULT NULL COMMENT '分支名称',
-	version_name VARCHAR (128) DEFAULT NULL COMMENT '版本名称',
-	status TINYINT DEFAULT 0 COMMENT '状态，0：构建中，1：构建成功，2：构建失败',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '部署版本';
-CREATE INDEX index_version_app_id ON deployment_version(app_id);
-CREATE INDEX index_version_version_name ON deployment_version(version_name);
-CREATE INDEX index_version_update_time ON deployment_version(update_time);
+create table deployment_version (
+	id bigint primary key auto_increment not null comment '主键id',
+	app_id bigint default null comment '应用编号',
+	branch_name varchar (32) default null comment '分支名称',
+	version_name varchar (128) default null comment '版本名称',
+	status tinyint default 0 comment '状态，0：构建中，1：构建成功，2：构建失败',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '部署版本';
+create index index_version_app_id on deployment_version(app_id);
+create index index_version_version_name on deployment_version(version_name);
+create index index_version_update_time on deployment_version(update_time);
 
-CREATE TABLE deployment_detail (
-	id BIGINT PRIMARY KEY auto_increment COMMENT '主键id',
-	app_id BIGINT DEFAULT NULL COMMENT '应用编号',
-	branch_name VARCHAR (32) DEFAULT NULL COMMENT '分支名称',
-	version_name VARCHAR (128) DEFAULT NULL COMMENT '版本名称',
-	env_id BIGINT DEFAULT 0 COMMENT '环境编号',
-	deployment_status TINYINT DEFAULT 0 COMMENT '部署状态，0：部署待审批，1：部署中，2：部署成功，3：部署失败，4：合并成功，5：合并失败，6：回滚待审批，7：回滚中，8：回滚成功，9：回滚失败',
-	deployer VARCHAR (16) DEFAULT NULL COMMENT '部署人',
-	approver VARCHAR (16) DEFAULT NULL COMMENT '审批人',
-	start_time datetime DEFAULT NULL COMMENT '开始时间',
-	end_time datetime DEFAULT NULL COMMENT '结束时间',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT '删除状态，0：未删除，1：已删除'
-)COMMENT '部署明细';
-CREATE INDEX index_detail_env_id ON deployment_detail(env_id);
-CREATE INDEX index_detail_version_name ON deployment_detail(version_name);
-CREATE INDEX index_detail_update_time ON deployment_detail(update_time);
+create table deployment_detail (
+	id bigint primary key auto_increment not null comment '主键id',
+	app_id bigint default null comment '应用编号',
+	branch_name varchar (32) default null comment '分支名称',
+	version_name varchar (128) default null comment '版本名称',
+	env_id bigint default 0 comment '环境编号',
+	deployment_status tinyint default 0 comment '部署状态，0：部署待审批，1：部署中，2：部署成功，3：部署失败，4：合并成功，5：合并失败，6：回滚待审批，7：回滚中，8：回滚成功，9：回滚失败',
+	deployer varchar (16) default null comment '部署人',
+	approver varchar (16) default null comment '审批人',
+	start_time datetime default null comment '开始时间',
+	end_time datetime default null comment '结束时间',
+	creation_time datetime default current_timestamp comment '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment '修改时间',
+	deletion_status tinyint default 0 comment '删除状态，0：未删除，1：已删除'
+)comment '部署明细';
+create index index_detail_env_id on deployment_detail(env_id);
+create index index_detail_version_name on deployment_detail(version_name);
+create index index_detail_update_time on deployment_detail(update_time);

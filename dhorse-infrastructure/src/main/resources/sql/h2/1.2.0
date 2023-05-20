@@ -1,383 +1,384 @@
-CREATE TABLE metrics_0 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_0 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_0 IS '副本指标';
-CREATE INDEX index_metrics_0 ON metrics_0(update_time, replica_name);
+comment on table metrics_0 is '副本指标';
+create index index_metrics_0 on metrics_0(update_time, replica_name);
 
-CREATE TABLE metrics_1 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_1 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_1 IS '副本指标';
-CREATE INDEX index_metrics_1 ON metrics_1(update_time, replica_name);
+comment on table metrics_1 is '副本指标';
+create index index_metrics_1 on metrics_1(update_time, replica_name);
 
-CREATE TABLE metrics_2 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_2 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_2 IS '副本指标';
-CREATE INDEX index_metrics_2 ON metrics_2(update_time, replica_name);
+comment on table metrics_2 is '副本指标';
+create index index_metrics_2 on metrics_2(update_time, replica_name);
 
-CREATE TABLE metrics_3 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_3 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_3 IS '副本指标';
-CREATE INDEX index_metrics_3 ON metrics_3(update_time, replica_name);
+comment on table metrics_3 is '副本指标';
+create index index_metrics_3 on metrics_3(update_time, replica_name);
 
-CREATE TABLE metrics_4 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_4 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_4 IS '副本指标';
-CREATE INDEX index_metrics_4 ON metrics_4(update_time, replica_name);
+comment on table metrics_4 is '副本指标';
+create index index_metrics_4 on metrics_4(update_time, replica_name);
 
-CREATE TABLE metrics_5 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_5 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_5 IS '副本指标';
-CREATE INDEX index_metrics_5 ON metrics_5(update_time, replica_name);
+comment on table metrics_5 is '副本指标';
+create index index_metrics_5 on metrics_5(update_time, replica_name);
 
-CREATE TABLE metrics_6 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_6 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_6 IS '副本指标';
-CREATE INDEX index_metrics_6 ON metrics_6(update_time, replica_name);
+comment on table metrics_6 is '副本指标';
+create index index_metrics_6 on metrics_6(update_time, replica_name);
 
-CREATE TABLE metrics_7 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_7 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_7 IS '副本指标';
-CREATE INDEX index_metrics_7 ON metrics_7(update_time, replica_name);
+comment on table metrics_7 is '副本指标';
+create index index_metrics_7 on metrics_7(update_time, replica_name);
 
-CREATE TABLE metrics_8 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_8 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_8 IS '副本指标';
-CREATE INDEX index_metrics_8 ON metrics_8(update_time, replica_name);
+comment on table metrics_8 is '副本指标';
+create index index_metrics_8 on metrics_8(update_time, replica_name);
 
-CREATE TABLE metrics_9 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_9 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_9 IS '副本指标';
-CREATE INDEX index_metrics_9 ON metrics_9(update_time, replica_name);
+comment on table metrics_9 is '副本指标';
+create index index_metrics_9 on metrics_9(update_time, replica_name);
 
-CREATE TABLE metrics_10 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_10 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_10 IS '副本指标';
-CREATE INDEX index_metrics_10 ON metrics_10(update_time, replica_name);
+comment on table metrics_10 is '副本指标';
+create index index_metrics_10 on metrics_10(update_time, replica_name);
 
-CREATE TABLE metrics_11 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_11 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_11 IS '副本指标';
-CREATE INDEX index_metrics_11 ON metrics_11(update_time, replica_name);
+comment on table metrics_11 is '副本指标';
+create index index_metrics_11 on metrics_11(update_time, replica_name);
 
-CREATE TABLE metrics_12 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_12 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_12 IS '副本指标';
-CREATE INDEX index_metrics_12 ON metrics_12(update_time, replica_name);
+comment on table metrics_12 is '副本指标';
+create index index_metrics_12 on metrics_12(update_time, replica_name);
 
-CREATE TABLE metrics_13 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_13 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_13 IS '副本指标';
-CREATE INDEX index_metrics_13 ON metrics_13(update_time, replica_name);
+comment on table metrics_13 is '副本指标';
+create index index_metrics_13 on metrics_13(update_time, replica_name);
 
-CREATE TABLE metrics_14 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_14 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_14 IS '副本指标';
-CREATE INDEX index_metrics_14 ON metrics_14(update_time, replica_name);
+comment on table metrics_14 is '副本指标';
+create index index_metrics_14 on metrics_14(update_time, replica_name);
 
-CREATE TABLE metrics_15 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_15 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_15 IS '副本指标';
-CREATE INDEX index_metrics_15 ON metrics_15(update_time, replica_name);
+comment on table metrics_15 is '副本指标';
+create index index_metrics_15 on metrics_15(update_time, replica_name);
 
-CREATE TABLE metrics_16 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_16 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_16 IS '副本指标';
-CREATE INDEX index_metrics_16 ON metrics_16(update_time, replica_name);
+comment on table metrics_16 is '副本指标';
+create index index_metrics_16 on metrics_16(update_time, replica_name);
 
-CREATE TABLE metrics_17 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_17 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_17 IS '副本指标';
-CREATE INDEX index_metrics_17 ON metrics_17(update_time, replica_name);
+comment on table metrics_17 is '副本指标';
+create index index_metrics_17 on metrics_17(update_time, replica_name);
 
-CREATE TABLE metrics_18 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_18 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_18 IS '副本指标';
-CREATE INDEX index_metrics_18 ON metrics_18(update_time, replica_name);
+comment on table metrics_18 is '副本指标';
+create index index_metrics_18 on metrics_18(update_time, replica_name);
 
-CREATE TABLE metrics_19 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_19 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_19 IS '副本指标';
-CREATE INDEX index_metrics_19 ON metrics_19(update_time, replica_name);
+comment on table metrics_19 is '副本指标';
+create index index_metrics_19 on metrics_19(update_time, replica_name);
 
-CREATE TABLE metrics_20 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_20 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_20 IS '副本指标';
-CREATE INDEX index_metrics_20 ON metrics_20(update_time, replica_name);
+comment on table metrics_20 is '副本指标';
+create index index_metrics_20 on metrics_20(update_time, replica_name);
 
-CREATE TABLE metrics_21 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_21 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_21 IS '副本指标';
-CREATE INDEX index_metrics_21 ON metrics_21(update_time, replica_name);
+comment on table metrics_21 is '副本指标';
+create index index_metrics_21 on metrics_21(update_time, replica_name);
 
-CREATE TABLE metrics_22 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_22 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_22 IS '副本指标';
-CREATE INDEX index_metrics_22 ON metrics_22(update_time, replica_name);
+comment on table metrics_22 is '副本指标';
+create index index_metrics_22 on metrics_22(update_time, replica_name);
 
-CREATE TABLE metrics_23 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_23 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_23 IS '副本指标';
-CREATE INDEX index_metrics_23 ON metrics_23(update_time, replica_name);
+comment on table metrics_23 is '副本指标';
+create index index_metrics_23 on metrics_23(update_time, replica_name);
 
-CREATE TABLE metrics_24 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_24 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_24 IS '副本指标';
-CREATE INDEX index_metrics_24 ON metrics_24(update_time, replica_name);
+comment on table metrics_24 is '副本指标';
+create index index_metrics_24 on metrics_24(update_time, replica_name);
 
-CREATE TABLE metrics_25 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_25 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_25 IS '副本指标';
-CREATE INDEX index_metrics_25 ON metrics_25(update_time, replica_name);
+comment on table metrics_25 is '副本指标';
+create index index_metrics_25 on metrics_25(update_time, replica_name);
 
-CREATE TABLE metrics_26 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_26 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_26 IS '副本指标';
-CREATE INDEX index_metrics_26 ON metrics_26(update_time, replica_name);
+comment on table metrics_26 is '副本指标';
+create index index_metrics_26 on metrics_26(update_time, replica_name);
 
-CREATE TABLE metrics_27 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_27 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_27 IS '副本指标';
-CREATE INDEX index_metrics_27 ON metrics_27(update_time, replica_name);
+comment on table metrics_27 is '副本指标';
+create index index_metrics_27 on metrics_27(update_time, replica_name);
 
-CREATE TABLE metrics_28 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_28 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_28 IS '副本指标';
-CREATE INDEX index_metrics_28 ON metrics_28(update_time, replica_name);
+comment on table metrics_28 is '副本指标';
+create index index_metrics_28 on metrics_28(update_time, replica_name);
 
-CREATE TABLE metrics_29 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_29 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_29 IS '副本指标';
-CREATE INDEX index_metrics_29 ON metrics_29(update_time, replica_name);
+comment on table metrics_29 is '副本指标';
+create index index_metrics_29 on metrics_29(update_time, replica_name);
 
-CREATE TABLE metrics_30 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_30 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_30 IS '副本指标';
-CREATE INDEX index_metrics_30 ON metrics_30(update_time, replica_name);
+comment on table metrics_30 is '副本指标';
+create index index_metrics_30 on metrics_30(update_time, replica_name);
 
-CREATE TABLE metrics_31 (
-	id BIGINT PRIMARY KEY auto_increment COMMENT IS '主键id',
-	replica_name VARCHAR (64) DEFAULT NULL COMMENT IS '副本名称',
-	metrics_type TINYINT DEFAULT 0 COMMENT IS '指标类型',
-	metrics_value BIGINT DEFAULT 0 COMMENT IS '指标值',
-	creation_time datetime DEFAULT CURRENT_TIMESTAMP COMMENT IS '创建时间',
-	update_time datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT IS '修改时间',
-	deletion_status TINYINT DEFAULT 0 COMMENT IS '删除状态，0：未删除，1：已删除'
+create table metrics_31 (
+	id bigint primary key auto_increment not null comment is '主键id',
+	replica_name varchar (64) default null comment is '副本名称',
+	metrics_type tinyint default 0 comment is '指标类型',
+	metrics_value bigint default 0 comment is '指标值',
+	creation_time datetime default current_timestamp comment is '创建时间',
+	update_time datetime default current_timestamp on update current_timestamp comment is '修改时间',
+	deletion_status tinyint default 0 comment is '删除状态，0：未删除，1：已删除'
 );
-COMMENT ON TABLE metrics_31 IS '副本指标';
-CREATE INDEX index_metrics_31 ON metrics_31(update_time, replica_name);
+comment on table metrics_31 is '副本指标';
+create index index_metrics_31 on metrics_31(update_time, replica_name);
+drop table if exists replica_metrics;
