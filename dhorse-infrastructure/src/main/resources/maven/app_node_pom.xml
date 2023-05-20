@@ -7,7 +7,7 @@
 	<groupId>org.dhorse</groupId>
 	<artifactId>app-vue</artifactId>
 	<packaging>pom</packaging>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	
 	<!-- 该文件的代码行数是固定的，在解析时会用到行号，文件内容谨慎改动 -->
 	
