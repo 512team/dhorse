@@ -7,10 +7,10 @@
 	<groupId>org.dhorse</groupId>
 	<artifactId>app-vue</artifactId>
 	<packaging>pom</packaging>
-	<version>1.1.0</version>
-	
+	<version>1.1.1</version>
+
 	<!-- 该文件的代码行数是固定的，在解析时会用到行号，文件内容谨慎改动 -->
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -24,6 +24,16 @@
 							<goal>install-node-and-npm</goal>
 						</goals>
 						<phase>generate-resources</phase>
+					</execution>
+					<execution>
+						<id>npm cache clear</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>cache clear --force</arguments>
+						</configuration>
 					</execution>
 					<execution>
 						<id>npm install</id>
