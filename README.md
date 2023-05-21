@@ -39,8 +39,8 @@ Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-
 
 | Java版本 | Linux、Mac或Cygwin | Windows
 | :-----: | :----: | :----: | 
-| 1.8 | [下载](https://github.com/512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-jdk1.8-bin-unix.tar.gz) | [下载](https://github.com/512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-jdk1.8-bin-windows.zip)
-| >=11 | [下载](https://github.com/512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-bin-unix.tar.gz) | [下载](https://github.com/512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-bin-windows.zip)
+| 1.8 | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-jdk1.8-bin-unix.tar.gz) | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-jdk1.8-bin-windows.zip)
+| >=11 | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-bin-unix.tar.gz) | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.1.1/dhorse-v1.1.1-bin-windows.zip)
 
 3. 下载文件之后，然后解压
 
