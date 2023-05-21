@@ -626,11 +626,21 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 
-	private void doBuildImage(DeployContext context, String baseImage, List<String> entrypoint, List<Path> targetFiles) {
+	private void doBuildImage(DeployContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
+		String imageUrl = context.getGlobalConfigAgg().getImageRepo().getUrl();
+		String imageServer = imageUrl.substring(imageUrl.indexOf("//") + 2);
+		
 		//设置连接仓库的超时时间
 		System.setProperty("jib.httpTimeout", "15000");
 		System.setProperty("sendCredentialsOverHttp", "true");
 		try {
+			RegistryImage baseImage = RegistryImage.named(baseImageName);
+			if(baseImageName.startsWith(imageServer)) {
+				baseImage.addCredential(
+						context.getGlobalConfigAgg().getImageRepo().getAuthName(),
+						context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
+			}
+			
 			RegistryImage registryImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
 					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
 					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
