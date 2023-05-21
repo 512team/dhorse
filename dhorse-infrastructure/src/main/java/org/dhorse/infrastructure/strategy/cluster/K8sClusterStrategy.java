@@ -93,6 +93,7 @@ import io.kubernetes.client.openapi.models.V1DaemonSetList;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1DeploymentSpec;
+import io.kubernetes.client.openapi.models.V1DeploymentStrategy;
 import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource;
 import io.kubernetes.client.openapi.models.V1EnvVar;
 import io.kubernetes.client.openapi.models.V1ExecAction;
@@ -131,6 +132,7 @@ import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.openapi.models.V1PreferredSchedulingTerm;
 import io.kubernetes.client.openapi.models.V1Probe;
 import io.kubernetes.client.openapi.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1RollingUpdateDeployment;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretList;
 import io.kubernetes.client.openapi.models.V1Service;
@@ -566,6 +568,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		spec.setReplicas(context.getAppEnv().getMinReplicas());
 		spec.setSelector(specSelector(context.getDeploymentName()));
 		spec.setTemplate(specTemplate(context));
+		spec.setStrategy(deploymentStrategy());
 		return spec;
 	}
 
@@ -588,6 +591,17 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return template;
 	}
 
+	private V1DeploymentStrategy deploymentStrategy() {
+		IntOrString size = new IntOrString("25%");
+		V1RollingUpdateDeployment ru = new V1RollingUpdateDeployment();
+		ru.setMaxSurge(size);
+		ru.maxUnavailable(size);
+		
+		V1DeploymentStrategy s = new V1DeploymentStrategy();
+		s.setRollingUpdate(ru);
+		return s;
+	}
+	
 	private V1PodSpec podSpec(DeploymentContext context) {
 		V1PodSpec podSpec = new V1PodSpec();
 		podSpec.setInitContainers(initContainer(context));
