@@ -19,6 +19,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * 采集Jvm信息的agent
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class JvmMetricsAgent {
 
+	private static final Logger logger = Logger.getLogger("JvmMetricsAgent");
+	
 	private static final String DHORSE_SERVER_URL_FILE_PATH = "/usr/local/data/dhorse-server-url";
 	
 	private static final List<String> DHORSE_URL = new CopyOnWriteArrayList<>();
@@ -44,7 +47,7 @@ public class JvmMetricsAgent {
 		try {
 			hostName = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e) {
-			System.out.println(String.format("Failed to get localhost name, message: %s", e));
+			logger.warning(String.format("Failed to get localhost name, message: %s", e));
 		}
 		
 		final String replicaName = hostName;
@@ -57,7 +60,7 @@ public class JvmMetricsAgent {
 			
 			//如果仍然没有dhorse服务器的url，则不上报
 			if(DHORSE_URL.size() == 0) {
-				System.out.println(String.format("Failed to push metrics data, none dhorse server exists"));
+				logger.warning(String.format("Failed to push metrics data, none dhorse server exists"));
 				return;
 			}
 			
@@ -91,7 +94,7 @@ public class JvmMetricsAgent {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(String.format("Failed to load dhorse url, message: %s", e));
+			logger.warning(String.format("Failed to load dhorse url, message: %s", e));
 		}
 	}
 	
@@ -204,7 +207,7 @@ public class JvmMetricsAgent {
             @Override
             public void run() {
                 if (file.lastModified() > lastModifiedTime || DHORSE_URL.size() == 0) {
-                	System.out.println(String.format("The file %s has changed", DHORSE_SERVER_URL_FILE_PATH));
+                	logger.info(String.format("The file %s has changed", DHORSE_SERVER_URL_FILE_PATH));
 					loadDHorseIp();
                     lastModifiedTime = file.lastModified();
                 }

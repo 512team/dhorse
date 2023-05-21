@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.logging.Logger;
 
 public class HttpUtils {
 
+	private static final Logger logger = Logger.getLogger("HttpUtils");
+	
 	public static boolean post(String url, String param) {
 		BufferedWriter out = null;
 		HttpURLConnection conn = null;
@@ -26,18 +29,18 @@ public class HttpUtils {
 			out.write(param);
 			out.flush();
 			if (HttpURLConnection.HTTP_OK != conn.getResponseCode()) {
-				System.out.println(String.format("Failed to send metrics, %s response code is %s", url, conn.getResponseCode()));
+				logger.warning(String.format("Failed to send metrics, %s response code is %s", url, conn.getResponseCode()));
 				return false;
 			}
 		} catch (Exception e) {
-			System.out.println(String.format("Failed to send metrics, message: %s", e));
+			logger.warning(String.format("Failed to send metrics, message: %s", e));
 			return false;
 		} finally {
 			if (out != null) {
 				try {
 					out.close();
 				} catch (IOException e) {
-					System.out.println(String.format("Failed to close writer, message: %s", e));
+					logger.warning(String.format("Failed to close writer, message: %s", e));
 				}
 			}
 			if(conn != null) {
