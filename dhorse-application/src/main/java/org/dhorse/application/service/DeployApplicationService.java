@@ -44,13 +44,14 @@ import org.dhorse.api.param.app.branch.deploy.AbortDeploymentParam;
 import org.dhorse.api.param.app.branch.deploy.AbortDeploymentThreadParam;
 import org.dhorse.api.response.EventResponse;
 import org.dhorse.api.response.model.App;
+import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
+import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.GlobalConfigAgg;
-import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
-import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
+import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.infrastructure.param.AffinityTolerationParam;
 import org.dhorse.infrastructure.param.AppEnvParam;
@@ -635,22 +636,24 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
+		ImageRepo imageRepo = context.getGlobalConfigAgg().getImageRepo();
+		String imageUrl = imageRepo.getUrl();
+		String imageServer = imageUrl.substring(imageUrl.indexOf("//") + 2);
+		
 		//设置连接仓库的超时时间
 		System.setProperty("jib.httpTimeout", "20000");
 		System.setProperty("sendCredentialsOverHttp", "true");
-		
 		try {
-			RegistryImage baseIamge = RegistryImage.named(baseImageName).addCredential(
-					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
-					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
-			
+			RegistryImage baseImage = RegistryImage.named(baseImageName);
+			if(baseImageName.startsWith(imageServer)) {
+				baseImage.addCredential(imageRepo.getAuthName(), imageRepo.getAuthPassword());
+			}
 			RegistryImage toImage = RegistryImage.named(context.getFullNameOfImage()).addCredential(
-					context.getGlobalConfigAgg().getImageRepo().getAuthName(),
-					context.getGlobalConfigAgg().getImageRepo().getAuthPassword());
-			Jib.from(baseIamge)
+					imageRepo.getAuthName(), imageRepo.getAuthPassword());
+			Jib.from(baseImage)
 				.addLayer(targetFiles, AbsoluteUnixPath.get(Constants.USR_LOCAL_HOME))
 				.setEntrypoint(entrypoint)
-				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效。
+				//对于由alpine构建的镜像，使用addVolume(AbsoluteUnixPath.fromPath(Paths.get("/etc/localtime")))代码时时区才会生效
 				//但是，由于Jib不支持RUN命令，因此像RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime也无法使用，
 				//不过，可以通过手动构建基础镜像来使用RUN，然后目标镜像再依赖基础镜像。
 				.addEnvironmentVariable("TZ", "Asia/Shanghai")
