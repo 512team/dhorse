@@ -53,7 +53,7 @@
 						</goals>
 						<phase>compile</phase>
 						<configuration>
-							<arguments>run build</arguments>
+							<arguments>run build${env}</arguments>
 						</configuration>
 					</execution>
 				</executions>

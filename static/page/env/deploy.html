@@ -41,7 +41,7 @@
 		$("#appId2").val(appId);
 		$("#envId").val(parentData.envId);
 		
-		initVersion(form, $, appId);
+		initVersion(form, $, appId, parentData.envId);
 		
         form.on('submit(deployBtn)', function(data) {
 			$.ajax({
@@ -83,13 +83,13 @@
         });
     });
 	
-	function initVersion(form, $, appId){
+	function initVersion(form, $, appId, envId){
 		$.ajax({
-			url: '/app/deployment/version/page',
+			url: '/app/deployment/version/search',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({'appId': appId, 'status': 1, 'pageSize': 100, 'pageNum': 1}),
+			data: JSON.stringify({'appId': appId, 'envId': envId, 'status': 1, 'pageSize': 50, 'pageNum': 1}),
 			success: function(res){
 				data = res.data.items
 				var opt = '';

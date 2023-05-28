@@ -325,6 +325,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 		GlobalConfigAgg globalConfig = globalConfig();
 		App app = appRepository.queryWithExtendById(buildParam.getAppId());
 		DeploymentContext context = new DeploymentContext();
+		if(!StringUtils.isBlank(buildParam.getEnvId())) {
+			AppEnvPO appEnvPO = appEnvRepository.queryById(buildParam.getEnvId());
+			context.setAppEnv(appEnvPO);
+		}
+		
 		context.setSubmitter(buildParam.getSubmitter());
 		context.setGlobalConfigAgg(globalConfig);
 		context.setBranchName(buildParam.getBranchName());
@@ -356,6 +361,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		bizParam.setBranchName(buildParam.getBranchName());
 		bizParam.setVersionName(context.getVersionName());
 		bizParam.setAppId(buildParam.getAppId());
+		bizParam.setEnvId(buildParam.getEnvId());
 		Date now = new Date();
 		bizParam.setCreationTime(now);
 		String id = deploymentVersionRepository.add(bizParam);
@@ -368,7 +374,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return context;
 	}
 
-	private DeploymentContext buildDeployContext(DeployParam deployParam) {
+	private DeploymentContext deploymentContext(DeployParam deployParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
 		AppEnvPO appEnvPO = appEnvRepository.queryById(deployParam.getEnvId());
 		EnvExtParam bizParam = new EnvExtParam();
@@ -421,7 +427,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 	
 	private DeploymentContext checkAndBuildDeployContext(DeployParam deployParam, DeploymentStatusEnum deploymentStatus) {
-		DeploymentContext context = buildDeployContext(deployParam);
+		DeploymentContext context = deploymentContext(deployParam);
 		// 当前环境是否存在部署中
 		DeploymentDetailParam deploymentDetailParam = new DeploymentDetailParam();
 		deploymentDetailParam.setEnvId(deployParam.getEnvId());
@@ -453,12 +459,17 @@ public abstract class DeployApplicationService extends ApplicationService {
 				byte[] buffer = new byte[in.available()];
 				in.read(buffer);
 				String lines = new String(buffer, "UTF-8");
-				String result = lines.replace("${nodeVersion}", appExtend.getNodeVersion())
-					.replace("${npmVersion}", appExtend.getNpmVersion().substring(1))
-					.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
+				String envTag = "";
+				if(context.getAppEnv() != null) {
+					envTag = ":" + context.getAppEnv().getTag();
+				}
+				String result = lines.replace("${env}", envTag)
+						.replace("${nodeVersion}", appExtend.getNodeVersion())
+						.replace("${npmVersion}", appExtend.getNpmVersion().substring(1))
+						.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
 				out.write(result.toString().getBytes("UTF-8"));
 			} catch (IOException e) {
-				logger.error("Failed to build tmp app", e);
+				logger.error("Failed to build node app", e);
 			}
 			return doMavenPack(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
 		}

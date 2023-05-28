@@ -17,6 +17,11 @@ public class BuildParam implements Serializable {
 	private String appId;
 
 	/**
+	 * 环境编号
+	 */
+	private String envId;
+
+	/**
 	 * 分支编号
 	 */
 	private String branchName;
@@ -32,6 +37,14 @@ public class BuildParam implements Serializable {
 
 	public void setAppId(String appId) {
 		this.appId = appId;
+	}
+
+	public String getEnvId() {
+		return envId;
+	}
+
+	public void setEnvId(String envId) {
+		this.envId = envId;
 	}
 
 	public String getBranchName() {

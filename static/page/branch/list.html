@@ -42,6 +42,8 @@
 </div>
 <script>
 
+	var branchName;
+
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
             form = layui.form,
@@ -137,6 +139,7 @@
 
         table.on('tool(currentTableFilter)', function (obj) {
             if (obj.event === 'buildVersion') {
+				branchName = obj.data.branchName;
                 buildVersion($, appId, obj.data.branchName);
             }else if (obj.event === 'delete') {
                 doDelete($, appId, obj.data.branchName);
@@ -147,28 +150,31 @@
 	
 	function buildVersion($, appId, branchName){
 		$.ajax({
-			url: '/app/branch/buildVersion',
+			url: '/app/query',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"appId": appId, "branchName": branchName}),
+			data: JSON.stringify({'appId': appId}),
 			success: function(res){
-				if(res.code != "000000"){
-					layer.msg(res.message, {icon: 5, shift: 6});
-					return false;
-				}
-				//var msg = "开始构建<br/>版本号：" + res.data + "<br/>请至“版本列表”查看";
-				//layer.alert(msg, {icon: 1, title:'提示', offset: ['30%', '30%']});
-				layer.msg("开始构建", {
-						icon: 1,
-						time: 500,
-						shade: 0.01,
+				//SpringBoot
+				if(res.data.techType == 1){
+					doBuild($, appId, '0', branchName);
+				//Node
+				}else if(res.data.techType == 2){
+					var index = layer.open({
+						title: '构建版本',
+						type: 2,
+						shade: 0.5,
+						maxmin: false,
 						shadeClose: false,
-						offset: ['38%', '45%']
-				});
+						area: ['40%', '40%'],
+						offset: ['28%', '30%'],
+						content: ['page/branch/build_version.html', 'no']
+					});
+				}
 			},
-			error: function(res){
-				layer.msg(res.message, {icon: 5, shift: 6});
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
 			}
 		});
 	}

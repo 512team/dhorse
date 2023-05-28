@@ -74,7 +74,7 @@
 		form.render('select');
 		
         //初始化环境
-		initHis(form, table, $, appId);
+		initEnv(form, table, $, appId);
 
 		// 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -271,7 +271,7 @@
         });
 	}
 	
-	function initHis(form, table, $, appId) {
+	function initEnv(form, table, $, appId) {
 		$.ajax({
 			url: '/app/env/search',
 			type: 'POST',

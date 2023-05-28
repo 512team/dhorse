@@ -42,6 +42,10 @@ public class DeploymentVersionApplicationService extends DeployApplicationServic
 		return deploymentVersionRepository.page(loginUser, buildBizParam(pageParam));
 	}
 	
+	public PageData<DeploymentVersion> search(LoginUser loginUser, DeploymentVersionPageParam pageParam) {
+		return deploymentVersionRepository.search(loginUser, buildBizParam(pageParam));
+	}
+	
 	public Void delete(LoginUser loginUser, DeploymentVersionDeletionParam deletionParam) {
 		if (StringUtils.isBlank(deletionParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);

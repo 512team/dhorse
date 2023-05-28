@@ -30,14 +30,27 @@ public class DeploymentVersionRest extends AbstractRest {
 	/**
 	 * 分页查询
 	 * 
-	 * @param deploymentVersionPageParam 分页参数
+	 * @param pageParam 分页参数
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
 	public RestResponse<PageData<DeploymentVersion>> page(@CookieValue("login_token") String loginToken,
-			@RequestBody DeploymentVersionPageParam deploymentVersionPageParam) {
+			@RequestBody DeploymentVersionPageParam pageParam) {
 		return success(deploymentVersionApplicationService.page(queryLoginUserByToken(loginToken),
-				deploymentVersionPageParam));
+				pageParam));
+	}
+	
+	/**
+	 * 搜索
+	 * 
+	 * @param pageParam 参数
+	 * @return 符合条件的数据
+	 */
+	@PostMapping("/search")
+	public RestResponse<PageData<DeploymentVersion>> search(@CookieValue("login_token") String loginToken,
+			@RequestBody DeploymentVersionPageParam pageParam) {
+		return success(deploymentVersionApplicationService.search(queryLoginUserByToken(loginToken),
+				pageParam));
 	}
 	
 	/**

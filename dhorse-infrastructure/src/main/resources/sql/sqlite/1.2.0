@@ -139,6 +139,7 @@ create table deployment_version (
 	app_id integer default null, -- '应用编号'
 	branch_name varchar(32) default null, -- '分支名称'
 	version_name varchar(128) default null, -- '版本名称'
+	env_id integer default 0, -- '环境编号'
 	status integer default 0, -- '状态，0：构建中，1：构建成功，2：构建失败'
 	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'
 	update_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '修改时间'

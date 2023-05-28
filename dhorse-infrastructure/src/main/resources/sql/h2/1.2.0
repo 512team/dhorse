@@ -1,3 +1,6 @@
+drop table if exists replica_metrics;
+alter table deployment_version add column env_id bigint default 0 comment is '环境编号' after version_name;
+
 create table metrics_0 (
 	id bigint primary key auto_increment not null comment is '主键id',
 	replica_name varchar (64) default null comment is '副本名称',
@@ -381,4 +384,3 @@ create table metrics_31 (
 );
 comment on table metrics_31 is '副本指标';
 create index index_metrics_31 on metrics_31(update_time, replica_name);
-drop table if exists replica_metrics;

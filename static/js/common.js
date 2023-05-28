@@ -49,6 +49,36 @@ function getUrlParam(name) {
 	return null;
 }
 
+function doBuild($, appId, envId, branchName, callback){
+	$.ajax({
+		url: '/app/branch/buildVersion',
+		type: 'POST',
+		dataType: "json",
+		contentType: 'application/json;charset=UTF-8',
+		data: JSON.stringify({"appId": appId, "envId": envId, "branchName": branchName}),
+		success: function(res){
+			if(res.code != "000000"){
+				layer.msg(res.message, {icon: 5, shift: 6});
+				return false;
+			}
+			layer.msg("开始构建", {
+					icon: 1,
+					time: 500,
+					shade: 0.01,
+					shadeClose: false,
+					offset: ['38%', '45%']
+			},function(){
+				if(callback){
+					callback();
+				}
+			});
+		},
+		error: function(res){
+			layer.msg(res.message, {icon: 5, shift: 6});
+		}
+	});
+}
+
 String.prototype.md5 = function (bit) {
 	var sMessage = this;
 	function RotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
