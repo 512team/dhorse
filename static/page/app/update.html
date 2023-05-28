@@ -16,7 +16,8 @@
 							<select name="techType" disabled="">
 								<option value="">请选择</option>
 								<option value="1">SpringBoot</option>
-								<option value="2">Node</option>
+								<option value="2">Vue</option>
+								<option value="3">React</option>
 							</select>
 						</div>
 					</div>
@@ -150,7 +151,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<input name="extendNodeParam.packageTargetPath" placeholder="默认路径：dist/" autocomplete="off"  class="layui-input">
+							<input name="extendNodeParam.packageTargetPath" id="extendNodeParam-packageTargetPath" placeholder="以应用作为根目录，默认路径：dist/" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -229,8 +230,8 @@
 				loadIndex = layer.load(2);
 			},
 			success: function(res){
+				layer.close(loadIndex);
 				if(res.code != "000000"){
-					layer.close(loadIndex);
 					layer.msg(res.message, {icon: 5, shift: 6});
 					return false;
 				}
@@ -266,8 +267,8 @@
 						res.data.baseImageVersion, res.data.baseImage, $, form);
 					$("#springBootFormItem").show();
 					$("#nodeFormItem").hide();
-				//Node
-				}else if(res.data.techType == 2){
+				//Vue和React
+				}else if(res.data.techType == 2 || res.data.techType == 3){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					form.val("nodeFormItem", {
 						"extendNodeParam.nodeVersion": res.data.appExtend.nodeVersion
@@ -289,10 +290,12 @@
 						$("#baseImageVersionNodeDiv").hide();
 						$("#baseImageNodeDiv").show();
 					}
+					if(res.data.techType == 3){
+						$("#extendNodeParam-packageTargetPath").attr("placeholder", "以应用作为根目录，默认路径：build/");
+					}
 				}else{
 					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 				}
-				layer.close(loadIndex);
 			},
 			error: function(res){
 				layer.close(loadIndex);
@@ -333,8 +336,8 @@
 			//springBoot
 			if(data.field.techType == 1){
 				$("#springBootFormItem").append(firstFormData);
-			//Node
-			}else if(data.field.techType == 2){
+			//Vue和React
+			}else if(data.field.techType == 2 || data.field.techType == 3){
 				$("#nodeFormItem").append(firstFormData);
 			}
             step.next('#stepForm');

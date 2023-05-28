@@ -450,7 +450,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 			}
 		}
 		//Node应用
-		if (TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
+		if (TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendNode appExtend =  context.getApp().getAppExtend();
 			Resource resource = new PathMatchingResourcePatternResolver()
 					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/app_node_pom.xml");
@@ -569,7 +570,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 			return buildSpringBootImage(context);
 		}
 		
-		if(TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())){
+		if(TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())){
 			return buildNodeImage(context);
 		}
 		
@@ -622,7 +624,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 		AppExtendNode appExtend = context.getApp().getAppExtend();
 		String fullDistPath = context.getLocalPathOfBranch();
 		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
-			fullDistPath += "dist/";
+			if(TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())) {
+				fullDistPath += "dist/";
+			}else if(TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
+				fullDistPath += "build/";
+			}
 		}else {
 			fullDistPath += appExtend.getPackageTargetPath();
 		}

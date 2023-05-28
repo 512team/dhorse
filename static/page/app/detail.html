@@ -158,14 +158,13 @@
 				loadIndex = layer.load(2);
 			},
 			success: function(res){
+				layer.close(loadIndex);
 				if(res.code != "000000"){
-					layer.close(loadIndex);
 					layer.msg(res.message, {icon: 5, shift: 6});
 					return false;
 				}
 				
 				if(!res.data){
-					layer.close(loadIndex);
 					return false;
 				}
 				
@@ -178,9 +177,16 @@
 					techType = "SpringBoot";
 					$("#packageBuildTypeDiv").show();
 					$("#packageFileTypeDiv").show();
-				//Node
+				//Vue
 				}else if(res.data.techType == 2){
-					techType = "Node";
+					techType = "Vue";
+					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#npmVersion").text(res.data.appExtend.npmVersion);
+					$("#nodeVersionDiv").show();
+					$("#npmVersionDiv").show();
+				//React
+				}else if(res.data.techType == 3){
+					techType = "React";
 					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
 					$("#npmVersion").text(res.data.appExtend.npmVersion);
 					$("#nodeVersionDiv").show();
@@ -247,7 +253,6 @@
 					packageTargetPath = res.data.appExtend.packageTargetPath;
 				}
 				$("#packageTargetPath").text(packageTargetPath);
-				layer.close(loadIndex);
 			},
 			error: function(res){
 				layer.close(loadIndex);

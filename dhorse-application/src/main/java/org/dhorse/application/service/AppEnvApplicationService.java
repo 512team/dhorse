@@ -319,7 +319,8 @@ public class AppEnvApplicationService extends BaseApplicationService<AppEnv, App
 		AppEnvParam appEnvParam = buildBizParam(addParam);
 		if(TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())){
 			appEnvParam.setExt(JsonUtils.toJsonString(addParam.getExtendSpringBootParam()));
-		}else if(TechTypeEnum.NODE.getCode().equals(appPO.getTechType())){
+		}else if(TechTypeEnum.VUE.getCode().equals(appPO.getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType())){
 			appEnvParam.setExt(JsonUtils.toJsonString(addParam.getExtendNodeParam()));
 		}
 		return appEnvParam;

@@ -956,7 +956,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private void containerOfNode(DeploymentContext context, V1Container container) {
-		if(!TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
+		if(!TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
+				&& !TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
 		container.setImage(nginxImage(context));
@@ -1224,7 +1225,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private void initContainerOfNode(DeploymentContext context, List<V1Container> containers) {
-		if(!TechTypeEnum.NODE.getCode().equals(context.getApp().getTechType())) {
+		if(!TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
+				&& !TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
 		
@@ -1278,11 +1280,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean nodeApp(AppPO appPO) {
-		return TechTypeEnum.NODE.getCode().equals(appPO.getTechType());
+		return TechTypeEnum.VUE.getCode().equals(appPO.getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType());
 	}
 
 	private boolean nodeApp(App app) {
-		return TechTypeEnum.NODE.getCode().equals(app.getTechType());
+		return TechTypeEnum.VUE.getCode().equals(app.getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(app.getTechType());
 	}
 	
 	private List<V1VolumeMount> volumeMounts(DeploymentContext context) {

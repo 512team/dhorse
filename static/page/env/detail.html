@@ -263,7 +263,7 @@
 					$("#traceTemplateNameDiv").show();
 					$("#jvmArgsDiv").show();
 				//Node
-				}else if(res.data.techType == 2){
+				}else if(res.data.techType == 2 || res.data.techType == 3){
 					if(data.envExtend != null){
 						$("#ingressHost").text(data.envExtend.ingressHost);
 					}

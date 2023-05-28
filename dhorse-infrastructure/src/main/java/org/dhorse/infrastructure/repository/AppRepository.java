@@ -136,7 +136,8 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		if (TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
 		}
-		if (TechTypeEnum.NODE.getCode().equals(appPO.getTechType())) {
+		if (TechTypeEnum.VUE.getCode().equals(appPO.getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNode.class);
 		}
 		return null;

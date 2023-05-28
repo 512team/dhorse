@@ -377,7 +377,8 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(addParam.getDescription() != null && addParam.getDescription().length() > 128) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用描述不能大于128个字符");
 		}
-		if(TechTypeEnum.NODE.getCode().equals(addParam.getTechType())){
+		if(TechTypeEnum.VUE.getCode().equals(addParam.getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(addParam.getTechType())){
 			if(StringUtils.isBlank(addParam.getExtendNodeParam().getNodeVersion())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Node版本不能为空");
 			}
@@ -394,7 +395,8 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(TechTypeEnum.SPRING_BOOT.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendJava();
 			BeanUtils.copyProperties(requestParam.getExtendSpringBootParam(), appExtend);
-		}else if(TechTypeEnum.NODE.getCode().equals(requestParam.getTechType())) {
+		}else if(TechTypeEnum.VUE.getCode().equals(requestParam.getTechType())
+				|| TechTypeEnum.REACT.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendNode();
 			BeanUtils.copyProperties(requestParam.getExtendNodeParam(), appExtend);
 		}

@@ -280,7 +280,7 @@
 					$("#jvmArgsDiv").show();
 					$("#jvmMetricsStatusDiv").show();
 				//Node
-				}else if(res.data.techType == 2){
+				}else if(res.data.techType == 2 || res.data.techType == 3){
 					if(data.envExtend != null){
 						$("#ingressHost").val(data.envExtend.ingressHost);
 					}

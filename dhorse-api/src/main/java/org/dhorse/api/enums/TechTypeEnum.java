@@ -3,7 +3,8 @@ package org.dhorse.api.enums;
 public enum TechTypeEnum {
 
 	SPRING_BOOT(1, "SpringBoot"),
-	NODE(2, "Node"),
+	VUE(2, "Vue"),
+	REACT(3, "React"),
 	;
 	
 	private Integer code;

@@ -15,7 +15,8 @@
 							<select name="techType" lay-filter="techType">
 								<option value="">请选择</option>
 								<option value="1">SpringBoot</option>
-								<option value="2">Node</option>
+								<option value="2">Vue</option>
+								<option value="3">React</option>
 							</select>
 						</div>
 					</div>
@@ -148,7 +149,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<input name="extendNodeParam.packageTargetPath" placeholder="默认路径：dist/" autocomplete="off"  class="layui-input">
+							<input name="extendNodeParam.packageTargetPath" id="extendNodeParam-packageTargetPath" placeholder="以应用作为根目录，默认路径：dist/" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -216,16 +217,19 @@
         });
 		
 		form.on('select(techType)', function(data) {
-			//springBoot
+			//SpringBoot
 			if(data.value == 1){
 				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 				$("#springBootFormItem").show();
 				$("#nodeFormItem").hide();
-			//Node
-			}else if(data.value == 2){
+			//Vue和React
+			}else if(data.value == 2 || data.value == 3){
 				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 				$("#springBootFormItem").hide();
 				$("#nodeFormItem").show();
+				if(data.value == 3){
+					$("#extendNodeParam-packageTargetPath").attr("placeholder", "以应用作为根目录，默认路径：build/");
+				}
 			}else{
 				$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 			}
@@ -265,8 +269,8 @@
 			//springBoot
 			if(data.field.techType == 1){
 				$("#springBootFormItem").append(firstFormData);
-			//Node
-			}else if(data.field.techType == 2){
+			//Vue和React
+			}else if(data.field.techType == 2 || data.field.techType == 3){
 				$("#nodeFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
@@ -341,7 +345,7 @@
             return false;
         });
 		
-		//Node应用
+		//Vue和React
 		form.on('submit(saveBtnNode)', function(data) {
 			data.field.baseImageSource = data.field.baseImageSourceNode;
 			data.field.baseImageVersion = data.field.baseImageVersionNode;

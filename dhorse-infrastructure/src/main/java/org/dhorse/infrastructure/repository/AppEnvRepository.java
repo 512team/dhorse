@@ -58,7 +58,8 @@ public class AppEnvRepository extends RightRepository<AppEnvParam, AppEnvPO, App
 			AppPO appPO = appRepository.queryById(bizParam.getAppId());
 			if(TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType())) {
 				dto.setEnvExtend(JsonUtils.parseToObject(appEnvPO.getExt(), EnvExtendSpringBoot.class));
-			}else if(TechTypeEnum.NODE.getCode().equals(appPO.getTechType())) {
+			}else if(TechTypeEnum.VUE.getCode().equals(appPO.getTechType())
+					|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType())) {
 				dto.setEnvExtend(JsonUtils.parseToObject(appEnvPO.getExt(), EnvExtendNode.class));
 			}
 		}

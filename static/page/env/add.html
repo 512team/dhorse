@@ -276,7 +276,7 @@
 					$("#jvmMetricsStatusDiv").show();
 					$("#jvmArgsDiv").show();
 				//Node
-				}else if(res.data.techType == 2){
+				}else if(res.data.techType == 2 || res.data.techType == 3){
 					$("#ingressHostDiv").show();
 					$("#servicePort").val("80").attr("disabled", "disabled");
 				}
@@ -366,7 +366,7 @@
 				});
 				
 				//如果是Node应用，默认80端口
-				if($("#servicePort").attr("techType") == 2){
+				if($("#servicePort").attr("techType") == 2 || $("#servicePort").attr("techType") == 3){
 					$("#servicePort").val("80").attr("disabled", "disabled");
 				}
 				

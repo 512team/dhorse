@@ -159,8 +159,8 @@
 				//SpringBoot
 				if(res.data.techType == 1){
 					doBuild($, appId, '0', branchName);
-				//Node
-				}else if(res.data.techType == 2){
+				//Vue和React
+				}else if(res.data.techType == 2 || res.data.techType == 3){
 					var index = layer.open({
 						title: '构建版本',
 						type: 2,
