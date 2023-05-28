@@ -25,6 +25,11 @@ public class DeploymentVersion extends BaseDto {
 	private String envId;
 
 	/**
+	 * 环境名称
+	 */
+	private String envName;
+
+	/**
 	 * 状态，0：构建中，1：构建成功，2：构建失败
 	 */
 	private Integer status;
@@ -51,6 +56,14 @@ public class DeploymentVersion extends BaseDto {
 
 	public void setEnvId(String envId) {
 		this.envId = envId;
+	}
+
+	public String getEnvName() {
+		return envName;
+	}
+
+	public void setEnvName(String envName) {
+		this.envName = envName;
 	}
 
 	public Integer getStatus() {
