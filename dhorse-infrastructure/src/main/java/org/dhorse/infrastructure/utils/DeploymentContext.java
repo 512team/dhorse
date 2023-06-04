@@ -7,6 +7,7 @@ import org.dhorse.api.enums.EventTypeEnum;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv.EnvExtend;
 import org.dhorse.api.response.model.EnvHealth;
+import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
@@ -44,6 +45,8 @@ public class DeploymentContext {
 	private EnvExtend envExtend;
 
 	private EnvHealth envHealth;
+
+	private EnvLifecycle envLifecycle;
 
 	private List<AffinityTolerationPO> affinitys;
 
@@ -109,7 +112,7 @@ public class DeploymentContext {
 
 	@SuppressWarnings("unchecked")
 	public <T extends EnvExtend> T getEnvExtend() {
-		return (T)envExtend;
+		return (T) envExtend;
 	}
 
 	public void setEnvExtend(EnvExtend envExtend) {
@@ -146,6 +149,14 @@ public class DeploymentContext {
 
 	public void setEnvHealth(EnvHealth envHealth) {
 		this.envHealth = envHealth;
+	}
+
+	public EnvLifecycle getEnvLifecycle() {
+		return envLifecycle;
+	}
+
+	public void setEnvLifecycle(EnvLifecycle envLifecycle) {
+		this.envLifecycle = envLifecycle;
 	}
 
 	public List<AffinityTolerationPO> getAffinitys() {

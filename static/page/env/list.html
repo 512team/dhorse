@@ -105,6 +105,9 @@
 					  title: '健康检查'
 					  ,id: 'health'
 					},{
+					  title: '生命周期'
+					  ,id: 'lifecycle'
+					},{
 					  title: '亲和容忍'
 					  ,id: 'affinityAndToleration'
 					},{
@@ -140,6 +143,18 @@
 								area: ['50%', '90%'],
 								offset: ['5%', '28%'],
 								content: miniPage.getHrefContent('page/env/health.html')
+							});
+						}else if(data.id == 'lifecycle'){
+							data2 = JSON.stringify({'envId': envId});
+							var index = layer.open({
+								title: '生命周期',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['50%', '70%'],
+								offset: ['10%', '28%'],
+								content: miniPage.getHrefContent('page/env/lifecycle.html')
 							});
 						}else if(data.id == 'affinityAndToleration'){
 							data2 = JSON.stringify({'envId': envId});
@@ -224,8 +239,8 @@
     });
 	
 	function doDelete($, appId, id, name) {
-		var msg = '同时会删除“' + name + '”下的所有资源，确定删除吗？';
-		layer.confirm(msg, {icon: 0, title:'提示', offset: ['30%', '40%']}, function (index) {
+		var msg = '同时会删除“' + name + '”部署在集群中的所有资源，且不可恢复，确定删除吗？';
+		layer.confirm(msg, {icon: 0, title:'提示', offset: ['30%', '33%']}, function (index) {
 			layer.close(index);
 			$.ajax({
 				url: '/app/env/delete',

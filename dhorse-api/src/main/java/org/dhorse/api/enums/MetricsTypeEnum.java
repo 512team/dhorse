@@ -20,10 +20,10 @@ public enum MetricsTypeEnum {
 	GC_SIZE(50, "GC次数", "次数", "次"),
 	GC_DURATION(51, "GC耗时", "耗时", "毫秒"),
 	
-	THREAD(60, "线程", "总数", "个数"),
-	THREAD_DAEMON(61, "线程", "守护", "个数"),
-	THREAD_BLOCKED(62, "线程", "阻塞", "个数"),
-	THREAD_DEADLOCKED(63, "线程", "死锁", "个数"),
+	THREAD(60, "线程", "总数", "个"),
+	THREAD_DAEMON(61, "线程", "守护", "个"),
+	THREAD_BLOCKED(62, "线程", "阻塞", "个"),
+	THREAD_DEADLOCKED(63, "线程", "死锁", "个"),
 	;
 
 	private Integer code;

@@ -50,6 +50,7 @@ import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
+import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
@@ -377,9 +378,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 	private DeploymentContext deploymentContext(DeployParam deployParam) {
 		GlobalConfigAgg globalConfig = globalConfig();
 		AppEnvPO appEnvPO = appEnvRepository.queryById(deployParam.getEnvId());
-		EnvExtParam bizParam = new EnvExtParam();
-		bizParam.setExType(EnvExtTypeEnum.HEALTH.getCode());
-		EnvHealth envHealth = envExtRepository.listEnvHealth();
+		EnvHealth envHealth = envHealth(deployParam);
+		EnvLifecycle lifecycle = lifecycle(deployParam);
 		App app = appRepository.queryWithExtendById(appEnvPO.getAppId());
 		AffinityTolerationParam affinityTolerationParam = new AffinityTolerationParam();
 		affinityTolerationParam.setEnvId(appEnvPO.getId());
@@ -408,6 +408,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setApp(app);
 		context.setAppEnv(appEnvPO);
 		context.setEnvHealth(envHealth);
+		context.setEnvLifecycle(lifecycle);
 		context.setAffinitys(affinitys);
 		context.setComponentConstants(componentConstants);
 		context.setClusterStrategy(clusterStrategy(context.getCluster().getClusterType()));
@@ -424,6 +425,24 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setLogFilePath(logFilePath);
 		context.setEventType(EventTypeEnum.DEPLOY_ENV);
 		return context;
+	}
+	
+	private EnvHealth envHealth(DeployParam deployParam) {
+		EnvExtParam extParam = new EnvExtParam();
+		extParam.setExType(EnvExtTypeEnum.HEALTH.getCode());
+		extParam.setAppId(deployParam.getAppId());
+		extParam.setEnvId(deployParam.getEnvId());
+		EnvHealth envHealth = envExtRepository.listEnvHealth(extParam);
+		return envHealth;
+	}
+	
+	private EnvLifecycle lifecycle(DeployParam deployParam) {
+		EnvExtParam extParam = new EnvExtParam();
+		extParam.setExType(EnvExtTypeEnum.LIFECYCLE.getCode());
+		extParam.setAppId(deployParam.getAppId());
+		extParam.setEnvId(deployParam.getEnvId());
+		EnvLifecycle lifecycle = envExtRepository.listLifecycle(extParam);
+		return lifecycle;
 	}
 	
 	private DeploymentContext checkAndBuildDeployContext(DeployParam deployParam, DeploymentStatusEnum deploymentStatus) {
@@ -745,10 +764,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		threadParam.setThreadName(thread.split(":")[1]);
 		Map<String, String> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
 		String url = "http://" + thread.split(":")[0] + ":" + serverPort + "/app/deployment/detail/abortDeploymentThread";
-		int httpCode = HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);
-		if(httpCode != 200) {
-			logger.error("Failed to abort deployment thread, url: {}", url);
-		}
+		HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);
 		return null;
 	}
 	

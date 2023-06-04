@@ -1,17 +1,22 @@
 package org.dhorse.api.enums;
 
-public enum EnvExtTypeEnum {
+/**
+ * 动作类型
+ * @author 无双
+ *
+ */
+public enum ActionTypeEnum {
 
-	TEC_TYPE(1, "技术类型"),
-	AFFINITY(2, "亲和容忍"),
-	HEALTH(3, "健康检查"),
-	LIFECYCLE(4, "生命周期");
+	HTTP_GET(1, "HTTP_GET"),
+	TCP(2, "TCP"),
+	EXEC(3, "EXEC"),
+	;
 
 	private Integer code;
 
 	private String value;
 
-	private EnvExtTypeEnum(Integer code, String value) {
+	private ActionTypeEnum(Integer code, String value) {
 		this.code = code;
 		this.value = value;
 	}

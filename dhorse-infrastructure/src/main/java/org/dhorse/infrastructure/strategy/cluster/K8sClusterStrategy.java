@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.ActionTypeEnum;
 import org.dhorse.api.enums.AffinityLevelEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -40,7 +41,9 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.ClusterNamespace;
+import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvHealth.Item;
+import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
@@ -998,13 +1001,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private void lifecycle(V1Container container, DeploymentContext context) {
-		V1ExecAction exec = new V1ExecAction();
-		//5秒后关闭Pod
-		exec.command(Arrays.asList("sh", "-c", "sleep 5"));
-		V1LifecycleHandler preStop = new V1LifecycleHandler();
-		preStop.setExec(exec);
+		if(context.getEnvLifecycle() == null) {
+			return;
+		}
 		V1Lifecycle lifecycle = new V1Lifecycle();
-		lifecycle.setPreStop(preStop);
+		lifecycle.setPostStart(lifecycleHandler(context.getEnvLifecycle().getPostStart(), context));
+		lifecycle.setPreStop(lifecycleHandler(context.getEnvLifecycle().getPreStop(), context));
 		container.setLifecycle(lifecycle);
 	}
 
@@ -1023,7 +1025,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			item = context.getEnvHealth().getStartup();
 		}
 		V1Probe probe = new V1Probe();
-		action(probe, item, context);
+		probeAction(probe, item, context);
 		probe.setInitialDelaySeconds(item != null && item.getInitialDelay() != null ? item.getInitialDelay() : 6);
 		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 1);
 		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
@@ -1039,7 +1041,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			item = context.getEnvHealth().getReadiness();
 		}
 		V1Probe probe = new V1Probe();
-		action(probe, item, context);
+		probeAction(probe, item, context);
 		probe.setInitialDelaySeconds(item != null && item.getInitialDelay() != null ? item.getInitialDelay() : 6);
 		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 5);
 		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
@@ -1054,7 +1056,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			item = context.getEnvHealth().getLiveness();
 		}
 		V1Probe probe = new V1Probe();
-		action(probe, item, context);
+		probeAction(probe, item, context);
 		probe.setInitialDelaySeconds(item != null && item.getInitialDelay() != null ? item.getInitialDelay() : 30);
 		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 5);
 		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
@@ -1063,17 +1065,53 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setLivenessProbe(probe);
 	}
 	
-	private void action(V1Probe probe, Item item, DeploymentContext context) {
-		if(item == null || StringUtils.isBlank(item.getHealthPath())) {
-			V1TCPSocketAction tcpAction = new V1TCPSocketAction();
-			tcpAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
-			probe.setTcpSocket(tcpAction);
-		}else {
-			V1HTTPGetAction getAction = new V1HTTPGetAction();
-			getAction.setPath(item.getHealthPath());
-			getAction.setPort(new IntOrString(context.getAppEnv().getServicePort()));
-			probe.setHttpGet(getAction);
+	private void probeAction(V1Probe probe, EnvHealth.Item item, DeploymentContext context) {
+		if(item == null || item.getActionType() == null) {
+			V1TCPSocketAction action = new V1TCPSocketAction();
+			action.setPort(new IntOrString(context.getAppEnv().getServicePort()));
+			probe.setTcpSocket(action);
+			return;
 		}
+		if(ActionTypeEnum.HTTP_GET.getCode().equals(item.getActionType())){
+			V1HTTPGetAction action = new V1HTTPGetAction();
+			action.setPath(item.getAction());
+			action.setPort(new IntOrString(context.getAppEnv().getServicePort()));
+			probe.setHttpGet(action);
+			return;
+		}
+		if(ActionTypeEnum.TCP.getCode().equals(item.getActionType())) {
+			V1TCPSocketAction action = new V1TCPSocketAction();
+			action.setPort(new IntOrString(Integer.parseInt(item.getAction())));
+			probe.setTcpSocket(action);
+			return;
+		}
+		if(ActionTypeEnum.EXEC.getCode().equals(item.getActionType())){
+			V1ExecAction action = new V1ExecAction();
+			action.setCommand(Arrays.asList("/bin/sh", "-c", item.getAction()));
+			probe.setExec(action);
+		}
+	}
+	
+	private V1LifecycleHandler lifecycleHandler(EnvLifecycle.Item item, DeploymentContext context) {
+		if(item == null || item.getActionType() == null) {
+			return null;
+		}
+		V1LifecycleHandler handler = new V1LifecycleHandler();
+		if(ActionTypeEnum.HTTP_GET.getCode().equals(item.getActionType())){
+			V1HTTPGetAction action = new V1HTTPGetAction();
+			action.setPath(item.getAction());
+			action.setPort(new IntOrString(context.getAppEnv().getServicePort()));
+			handler.setHttpGet(action);
+		}else if(ActionTypeEnum.TCP.getCode().equals(item.getActionType())) {
+			V1TCPSocketAction action = new V1TCPSocketAction();
+			action.setPort(new IntOrString(Integer.parseInt(item.getAction())));
+			handler.setTcpSocket(action);
+		}else if(ActionTypeEnum.EXEC.getCode().equals(item.getActionType())){
+			V1ExecAction action = new V1ExecAction();
+			action.setCommand(Arrays.asList("/bin/sh", "-c", item.getAction()));
+			handler.setExec(action);
+		}
+		return handler;
 	}
 	
 	/**

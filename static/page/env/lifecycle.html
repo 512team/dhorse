@@ -1,0 +1,180 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>启动时执行</legend>
+		</fieldset>
+		<input type="hidden" name="postStart.id"/>
+		<input type="hidden" name="postStart.appId" id="postStart_appId"/>
+		<input type="hidden" name="postStart.envId" id="postStart_envId"/>
+		<input type="hidden" name="postStart.hookType" value="1"/>
+		<div class="layui-form-item">
+			<label class="layui-form-label">执行类型</label>
+			<div class="layui-input-block">
+				<select name="postStart.actionType" lay-filter="postStart.actionType">
+					<option value="">请选择</option>
+					<option value="1">HTTP_GET</option>
+					<option value="2">TCP</option>
+					<option value="3">EXEC</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="postStart-action-div">
+			<label class="layui-form-label">执行内容</label>
+			<div class="layui-input-block">
+				<input type="text" name="postStart.action" id="postStart-action" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>销毁前执行</legend>
+		</fieldset>
+		<input type="hidden" name="preStop.id"/>
+		<input type="hidden" name="preStop.appId" id="preStop_appId"/>
+		<input type="hidden" name="preStop.envId" id="preStop_envId"/>
+		<input type="hidden" name="preStop.hookType" value="2"/>
+		<div class="layui-form-item">
+			<label class="layui-form-label">执行类型</label>
+			<div class="layui-input-block">
+				<select name="preStop.actionType" lay-filter="preStop.actionType">
+					<option value="">请选择</option>
+					<option value="1">HTTP_GET</option>
+					<option value="2">TCP</option>
+					<option value="3">EXEC</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="preStop-action-div">
+			<label class="layui-form-label">执行内容</label>
+			<div class="layui-input-block">
+				<input type="text" name="preStop.action" id="preStop-action" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+			</div>
+		</div>		
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+			parentIndex = layer.index,
+            $ = layui.$;
+		var appId = localStorage.getItem('appId_' + $("#userName").val());
+		var envId = JSON.parse(parent.data2).envId;
+		
+		$("#postStart_appId").val(appId);
+		$("#postStart_envId").val(envId);
+		$("#preStop_appId").val(appId);
+		$("#preStop_envId").val(envId);
+		
+		$.ajax({
+			url: '/env/ext/queryLifecycle',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"appId": appId, "envId": envId}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				if(JSON.stringify(res.data) === '{}'){
+					return false;
+				}
+				
+				var postStart = res.data.postStart;
+				var preStop = res.data.preStop;
+				if(!postStart){
+					postStart = {};
+				}
+				if(!preStop){
+					preStop = {};
+				}
+				
+				//给表单赋值
+				form.val("form-data", {
+				  "postStart.id": postStart.id
+				  ,"postStart.hooksType": postStart.hooksType
+				  ,"postStart.actionType": postStart.actionType
+				  ,"postStart.action": postStart.action
+				  ,"preStop.id": preStop.id
+				  ,"preStop.hooksType": preStop.hooksType
+				  ,"preStop.actionType": preStop.actionType
+				  ,"preStop.action": preStop.action
+				});
+				
+				initAction($, postStart.actionType, 'postStart');
+				initAction($, preStop.actionType, 'preStop');
+			}
+		});
+		
+		form.render('select');
+		
+		form.on('select(postStart.actionType)', function (data) {
+			initAction($, data.value, 'postStart');
+		});
+		
+		form.on('select(preStop.actionType)', function (data) {
+			initAction($, data.value, 'preStop');
+		});
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+			var fields = data.field;
+			var params = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				var item = params[fs[0]];
+				if(!params[fs[0]]){
+					params[fs[0]] = {};
+				}
+				params[fs[0]][fs[1]] = fields[fieldName];
+			}
+			
+			$.ajax({
+				url: '/env/ext/addOrUpdateLifecycle',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(params),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+	
+	function initAction($, selectedValue, preId){
+		var action = $("#"+preId+"-action");
+		//HTTP
+		if(selectedValue == 1){
+			action.attr("placeholder", "端口后的uri，如：/health");
+		//TCP
+		}else if(selectedValue == 2){
+			action.attr("placeholder", "");
+		//EXEC
+		}else if(selectedValue == 3){
+			action.attr("placeholder", "sleep 5; echo stop");
+		}
+	}
+</script>
