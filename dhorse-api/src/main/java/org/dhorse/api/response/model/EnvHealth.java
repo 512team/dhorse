@@ -43,10 +43,7 @@ public class EnvHealth extends BaseDto {
 
 	public static enum HealthTypeEnum {
 
-		STARTUP(1, "启动检查"),
-		READINESS(2, "就绪检查"),
-		LIVENESS(3, "存活检查"),
-		;
+		STARTUP(1, "启动检查"), READINESS(2, "就绪检查"), LIVENESS(3, "存活检查"),;
 
 		private Integer code;
 
@@ -65,7 +62,7 @@ public class EnvHealth extends BaseDto {
 			return value;
 		}
 	}
-	
+
 	public static class Item implements Serializable {
 
 		private static final long serialVersionUID = 1L;
@@ -86,14 +83,19 @@ public class EnvHealth extends BaseDto {
 		private String envId;
 
 		/**
-		 * 检查类型，1：启动检查，2：就绪检查，3：存活检查
+		 * 健康类型，1：启动，2：就绪，3：存活
 		 */
 		private int healthType;
 
 		/**
-		 * 健康检查路径，端口后的uri，如：/health
+		 * 动作类型
 		 */
-		private String healthPath;
+		private Integer actionType;
+
+		/**
+		 * 动作内容
+		 */
+		private String action;
 
 		/**
 		 * 初始延迟检查时间，单位：秒
@@ -152,12 +154,20 @@ public class EnvHealth extends BaseDto {
 			this.healthType = healthType;
 		}
 
-		public String getHealthPath() {
-			return healthPath;
+		public Integer getActionType() {
+			return actionType;
 		}
 
-		public void setHealthPath(String healthPath) {
-			this.healthPath = healthPath;
+		public void setActionType(Integer actionType) {
+			this.actionType = actionType;
+		}
+
+		public String getAction() {
+			return action;
+		}
+
+		public void setAction(String action) {
+			this.action = action;
 		}
 
 		public Integer getInitialDelay() {

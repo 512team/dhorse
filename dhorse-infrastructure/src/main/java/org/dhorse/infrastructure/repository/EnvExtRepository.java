@@ -2,10 +2,9 @@ package org.dhorse.infrastructure.repository;
 
 import java.util.List;
 
-import org.dhorse.api.enums.EnvExtTypeEnum;
 import org.dhorse.api.response.model.EnvExt;
 import org.dhorse.api.response.model.EnvHealth;
-import org.dhorse.api.response.model.EnvHealth.Item;
+import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.infrastructure.param.EnvExtParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.EnvExtMapper;
@@ -26,16 +25,14 @@ public class EnvExtRepository extends RightRepository<EnvExtParam, EnvExtPO, Env
 		return mapper;
 	}
 
-	public EnvHealth listEnvHealth() {
-		EnvExtParam bizParam = new EnvExtParam();
-		bizParam.setExType(EnvExtTypeEnum.HEALTH.getCode());
+	public EnvHealth listEnvHealth(EnvExtParam bizParam) {
 		List<EnvExtPO> pos = this.list(bizParam);
 		EnvHealth envHealth = new EnvHealth();
 		if(CollectionUtils.isEmpty(pos)) {
 			return envHealth;
 		}
 		for(EnvExtPO po : pos) {
-			Item one = JsonUtils.parseToObject(po.getExt(), Item.class);
+			EnvHealth.Item one = JsonUtils.parseToObject(po.getExt(), EnvHealth.Item.class);
 			one.setId(po.getId());
 			one.setAppId(po.getAppId());
 			one.setEnvId(po.getEnvId());
@@ -48,6 +45,26 @@ public class EnvExtRepository extends RightRepository<EnvExtParam, EnvExtPO, Env
 			}
 		}
 		return envHealth;
+	}
+	
+	public EnvLifecycle listLifecycle(EnvExtParam bizParam) {
+		List<EnvExtPO> pos = this.list(bizParam);
+		EnvLifecycle model = new EnvLifecycle();
+		if(CollectionUtils.isEmpty(pos)) {
+			return model;
+		}
+		for(EnvExtPO po : pos) {
+			EnvLifecycle.Item one = JsonUtils.parseToObject(po.getExt(), EnvLifecycle.Item.class);
+			one.setId(po.getId());
+			one.setAppId(po.getAppId());
+			one.setEnvId(po.getEnvId());
+			if(EnvLifecycle.HookTypeEnum.POST_START.getCode().equals(one.getHookType())) {
+				model.setPostStart(one);
+			}else if(EnvLifecycle.HookTypeEnum.PRE_STOP.getCode().equals(one.getHookType())) {
+				model.setPreStop(one);
+			}
+		}
+		return model;
 	}
 	
 	@Override

@@ -8,13 +8,24 @@
 		<input type="hidden" name="startup.envId" id="startup_envId"/>
 		<input type="hidden" name="startup.healthType" value="1"/>
 		<div class="layui-form-item">
-			<label class="layui-form-label">健康检查路径</label>
+			<label class="layui-form-label">检查类型</label>
 			<div class="layui-input-block">
-				<input type="text" name="startup.healthPath" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+				<select name="startup.actionType" lay-filter="startup.actionType">
+					<option value="">请选择</option>
+					<option value="1">HTTP_GET</option>
+					<option value="2">TCP</option>
+					<option value="3">EXEC</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="startup-action-div">
+			<label class="layui-form-label">检查内容</label>
+			<div class="layui-input-block">
+				<input type="text" name="startup.action" id="startup-action" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">初始延迟检查时间</label>
+			<label class="layui-form-label">初始检查延迟时间</label>
 			<div class="layui-input-block">
 				<input type="text" name="startup.initialDelay" placeholder="单位：秒" autocomplete="off" class="layui-input">
 			</div>
@@ -40,7 +51,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label">失败次数阈值</label>
 			<div class="layui-input-block">
-				<input type="text" name="startup.failureThreshold" placeholder="如：3" autocomplete="off" class="layui-input">
+				<input type="text" name="startup.failureThreshold" placeholder="如：300" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<fieldset class="layui-elem-field layui-field-title" style="margin-top: 5%">
@@ -51,13 +62,24 @@
 		<input type="hidden" name="readiness.envId" id="readiness_envId"/>
 		<input type="hidden" name="readiness.healthType" value="2"/>
 		<div class="layui-form-item">
-			<label class="layui-form-label">健康检查路径</label>
+			<label class="layui-form-label">检查类型</label>
 			<div class="layui-input-block">
-				<input type="text" name="readiness.healthPath" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+				<select name="readiness.actionType" lay-filter="readiness.actionType">
+					<option value="">请选择</option>
+					<option value="1">HTTP_GET</option>
+					<option value="2">TCP</option>
+					<option value="3">EXEC</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="readiness-action-div">
+			<label class="layui-form-label">检查内容</label>
+			<div class="layui-input-block">
+				<input type="text" name="readiness.action" id="readiness-action" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">初始延迟检查时间</label>
+			<label class="layui-form-label">初始检查延迟时间</label>
 			<div class="layui-input-block">
 				<input type="text" name="readiness.initialDelay" placeholder="单位：秒" autocomplete="off" class="layui-input">
 			</div>
@@ -94,13 +116,24 @@
 		<input type="hidden" name="liveness.envId" id="liveness_envId"/>
 		<input type="hidden" name="liveness.healthType" value="3"/>
 		<div class="layui-form-item">
-			<label class="layui-form-label">健康检查路径</label>
+			<label class="layui-form-label">检查类型</label>
 			<div class="layui-input-block">
-				<input type="text" name="liveness.healthPath" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
+				<select name="liveness.actionType" lay-filter="liveness.actionType">
+					<option value="">请选择</option>
+					<option value="1">HTTP_GET</option>
+					<option value="2">TCP</option>
+					<option value="3">EXEC</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="liveness-action-div">
+			<label class="layui-form-label">检查内容</label>
+			<div class="layui-input-block">
+				<input type="text" name="liveness.action" id="liveness-action" placeholder="端口后的uri，如：/health" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">初始延迟检查时间</label>
+			<label class="layui-form-label">初始检查延迟时间</label>
 			<div class="layui-input-block">
 				<input type="text" name="liveness.initialDelay" placeholder="单位：秒" autocomplete="off" class="layui-input">
 			</div>
@@ -140,6 +173,7 @@
     layui.use(['form'], function () {
         var form = layui.form,
             layer = layui.layer,
+			parentIndex = layer.index,
             $ = layui.$;
 		var appId = localStorage.getItem('appId_' + $("#userName").val());
 		var envId = JSON.parse(parent.data2).envId;
@@ -152,11 +186,11 @@
 		$("#liveness_envId").val(envId);
 		
 		$.ajax({
-			url: '/app/env/ext/queryEnvHealth',
+			url: '/env/ext/queryEnvHealth',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"1": 1}),
+			data: JSON.stringify({"appId": appId, "envId": envId}),
 			success: function(res){
 				if(res.code != "000000"){
 					layer.msg(res.message, {icon: 5, shift: 6});
@@ -182,27 +216,34 @@
 				//给表单赋值
 				form.val("form-data", {
 				  "startup.id": startup.id
-				  ,"startup.healthPath": startup.healthPath
+				  ,"startup.actionType": startup.actionType
+				  ,"startup.action": startup.action
 				  ,"startup.initialDelay": startup.initialDelay
 				  ,"startup.period": startup.period
 				  ,"startup.timeout": startup.timeout
 				  ,"startup.successThreshold": startup.successThreshold
 				  ,"startup.failureThreshold": startup.failureThreshold
 				  ,"readiness.id": readiness.id
-				  ,"readiness.healthPath": readiness.healthPath
+				  ,"readiness.actionType": readiness.actionType
+				  ,"readiness.action": readiness.action
 				  ,"readiness.initialDelay": readiness.initialDelay
 				  ,"readiness.period": readiness.period
 				  ,"readiness.timeout": readiness.timeout
 				  ,"readiness.successThreshold": readiness.successThreshold
 				  ,"readiness.failureThreshold": readiness.failureThreshold
 				  ,"liveness.id": liveness.id
-				  ,"liveness.healthPath": liveness.healthPath
+				  ,"liveness.actionType": liveness.actionType
+				  ,"liveness.action": liveness.action
 				  ,"liveness.initialDelay": liveness.initialDelay
 				  ,"liveness.period": liveness.period
 				  ,"liveness.timeout": liveness.timeout
 				  ,"liveness.successThreshold": liveness.successThreshold
 				  ,"liveness.failureThreshold": liveness.failureThreshold
 				});
+				
+				initAction($, startup.actionType, 'startup');
+				initAction($, readiness.actionType, 'readiness');
+				initAction($, liveness.actionType, 'liveness');
 			},
 			error: function(res){
 				layer.msg(res.message, {icon: 5, shift: 6});
@@ -210,6 +251,18 @@
 		});
 		
 		form.render('select');
+		
+		form.on('select(startup.actionType)', function (data) {
+			initAction($, data.value, 'startup');
+		});
+		
+		form.on('select(readiness.actionType)', function (data) {
+			initAction($, data.value, 'readiness');
+		});
+		
+		form.on('select(liveness.actionType)', function (data) {
+			initAction($, data.value, 'liveness');
+		});
 		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
@@ -225,7 +278,7 @@
 			}
 			
 			$.ajax({
-				url: '/app/env/ext/addOrUpdateEnvHealth',
+				url: '/env/ext/addOrUpdateEnvHealth',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
@@ -235,12 +288,12 @@
 						layer.msg(res.message, {icon: 5, shift: 6});
 						return false;
 					}
-					layer.close(layer.index);
 					layer.msg("保存成功", {
 						icon: 1,
 						time: 500,
 						shade: 0.01,
 						shadeClose: false}, function(){
+						layer.close(parentIndex);
 						parent.layui.table.reload('currentTableId');
 					});
 				},
@@ -251,6 +304,19 @@
 
             return false;
         });
-
     });
+	
+	function initAction($, selectedValue, preId){
+		var action = $("#"+preId+"-action");
+		//HTTP
+		if(selectedValue == 1){
+			action.attr("placeholder", "端口后的uri，如：/health");
+		//TCP
+		}else if(selectedValue == 2){
+			action.attr("placeholder", "端口，如：8080");
+		//EXEC
+		}else if(selectedValue == 3){
+			action.attr("placeholder", "如：sleep 5; echo stop");
+		}
+	}
 </script>
