@@ -36,6 +36,7 @@ public enum MessageCodeEnum {
 	LOGIN_SOURCE_IS_EMPTY("200000", "登录来源不能为空"),
 	USER_ID_IS_EMPTY("200000", "用户编号不能为空"),
 	INIT_LDAP_FAILURE("200000", "初始化Ldap失败"),
+	LDAP_CONFIG_FAILURE("200000", "请首先进行Ldap配置"),
 	MK_DIR_FAILURE("200000", "创建目录失败"),
 	
 	FILE_BEAT_K8S_FILE_INEXISTENCE("200000", "filebeat-k8s文件不存在"),

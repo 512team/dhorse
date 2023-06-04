@@ -1,13 +1,15 @@
 package org.dhorse.api.enums;
 
 /**
- *  用户注册来源
+ *  用户来源
  * @author Dahai
  *  2021-12-4 20:20:25
  */
 public enum RegisteredSourceEnum {
 
-	DHORSE(1, "Dhorse"), LDAP(2, "Ldap"), SSO(3, "Sso");
+	DHORSE(1, "Dhorse"),
+	LDAP(2, "Ldap"),
+	SSO(3, "Sso");
 
 	private Integer code;
 

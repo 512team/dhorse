@@ -50,10 +50,13 @@
 
 	<script type="text/html" id="currentTableBar">
 		{{#	if (d.loginName != 'admin') {	}}
-			{{#	if (d.registeredSource == 1) {  }}
-				<a href="javascript:;" class="layui-font-blue" lay-event="edit">修改</a>
-			{{#	}                      			}}
-			<a href="javascript:;" class="layui-font-blue dropdown-operate" data-login-name="{{d.loginName}}" data-user-name="{{d.userName}}">更多 <i class="layui-icon layui-font-12 layui-icon-down"></i></a>
+			<a href="javascript:;" class="layui-font-blue" lay-event="edit">修改</a>
+			{{#	if (d.registeredSource == 1) {	}}
+				<span style="color: rgb(179, 179, 179);"> | </span>
+				<a href="javascript:;" class="layui-font-blue" lay-event="reset-password">重置密码</a>
+			{{#	}								}}
+			<span style="color: rgb(179, 179, 179);"> | </span>
+			<a href="javascript:;" class="layui-font-blue" lay-event="delete">删除</a>
 		{{#	}								}}
 	</script>
 
@@ -78,8 +81,6 @@
 
 	//全局变量，在子页面里使用
 	var data;
-	var loginName;
-	var userName;
 	
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
@@ -132,39 +133,7 @@
             limit: 10,
             page: true,
             skin: 'row',
-			even: true,
-			done: function(res, curr, count){
-				dropdown.render({
-					elem: '.dropdown-operate'
-					,trigger: 'hover'
-					,data: [{
-					  title: '重置密码'
-					  ,id: 'reset-password'
-					}, {
-					  title: '删除'
-					  ,id: 'delete'
-					}]
-					,click: function(data, othis){
-						var elem = $(this.elem);
-						loginName = elem.data('login-name');
-						userName = elem.data('user-name');
-						if(data.id == 'delete'){
-							deleteUser($, loginName, userName);
-						}else if(data.id == 'reset-password'){
-							var index = layer.open({
-								title: '重置密码',
-								type: 1,
-								shade: 0.5,
-								maxmin: false,
-								shadeClose: false,
-								area: ['40%', '40%'],
-								offset: ['25%', '32%'],
-								content: miniPage.getHrefContent('page/sys_user/set_password.html')
-							});
-						}
-					}
-				});
-			}
+			even: true
         });
 
         // 监听搜索操作
@@ -207,8 +176,8 @@
         });
 
         table.on('tool(currentTableFilter)', function (obj) {
+			data = JSON.stringify(obj.data);
             if (obj.event === 'edit') {
-				data = JSON.stringify(obj.data);
                 var index = layer.open({
                     title: '修改用户',
                     type: 1,
@@ -219,6 +188,21 @@
                     offset: ['25%', '32%'],
                     content: miniPage.getHrefContent('page/sys_user/edit.html')
                 });
+                return false;
+            }else if (obj.event === 'reset-password') {
+                var index = layer.open({
+					title: '重置密码',
+					type: 1,
+					shade: 0.5,
+					maxmin: false,
+					shadeClose: false,
+					area: ['40%', '40%'],
+					offset: ['25%', '32%'],
+					content: miniPage.getHrefContent('page/sys_user/set_password.html')
+				});
+                return false;
+            }else if (obj.event === 'delete') {
+                deleteUser($, obj.data.loginName, obj.data.userName);
                 return false;
             }
         });

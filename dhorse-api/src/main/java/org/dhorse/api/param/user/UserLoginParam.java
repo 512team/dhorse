@@ -12,7 +12,7 @@ public class UserLoginParam implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 登录来源，见：org.dhorse.api.enums.LoginSourceEnum
+	 * 登录来源，见：org.dhorse.api.enums.RegisteredSourceEnum
 	 */
 	private Integer loginSource;
 

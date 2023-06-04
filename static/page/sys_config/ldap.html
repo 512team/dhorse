@@ -3,13 +3,13 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label required">服务地址</label>
 			<div class="layui-input-block">
-				<input type="text" name="url" lay-verify="required" lay-reqtext="服务地址不能为空" placeholder="格式：ldap://127.0.0.1:10389" autocomplete="off" class="layui-input">
+				<input type="text" name="url" lay-verify="required" lay-reqtext="服务地址不能为空" placeholder="如：ldap://127.0.0.1:10389" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label required">管理员账号</label>
 			<div class="layui-input-block">
-				<input type="text" name="adminDn" lay-verify="required" lay-reqtext="管理员账号不能为空" placeholder="格式：uid=admin,ou=developer,dc=example,dc=com" autocomplete="off" class="layui-input">
+				<input type="text" name="adminDn" lay-verify="required" lay-reqtext="管理员账号不能为空" placeholder="如：uid=admin,ou=developer,dc=example,dc=com" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -21,7 +21,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label required">搜索账号</label>
 			<div class="layui-input-block">
-				<input type="text" name="searchBaseDn" lay-verify="required" lay-reqtext="搜索账号不能为空" placeholder="格式：ou=developer,dc=example,dc=com" autocomplete="off" class="layui-input">
+				<input type="text" name="searchBaseDn" lay-verify="required" lay-reqtext="搜索账号不能为空" placeholder="如：ou=developer,dc=example,dc=com" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -50,8 +50,12 @@
 			contentType: 'application/json;charset=UTF-8',
 			data: JSON.stringify({"itemType": 1}),
 			success: function(res){
+				form.render();
 				if(res.code != "000000"){
 					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				if($.isEmptyObject(res.data)){
 					return false;
 				}
 				//给表单赋值
@@ -62,6 +66,7 @@
 				  ,"searchBaseDn": res.data.ldap.searchBaseDn
 				  ,"enable": res.data.ldap.enable
 				});
+				form.render();
 			},
 			error: function(res){
 				layer.msg(res.message, {icon: 5, shift: 6});

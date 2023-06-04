@@ -25,6 +25,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
+import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
@@ -138,6 +139,12 @@ public abstract class ApplicationService {
 		configParam.setId(queryParam.getGlobalConfigId());
 		configParam.setItemType(queryParam.getItemType());
 		return globalConfigRepository.queryAgg(configParam);
+	}
+	
+	public Ldap queryLdap() {
+		GlobalConfigParam configParam = new GlobalConfigParam();
+		configParam.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
+		return globalConfigRepository.queryAgg(configParam).getLdap();
 	}
 	
 	public GlobalConfigAgg envTemplateQuery(GlobalConfigQueryParam queryParam) {

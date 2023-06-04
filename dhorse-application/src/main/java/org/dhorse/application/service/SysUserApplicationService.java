@@ -7,11 +7,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RegisteredSourceEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
-import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.user.PasswordSetParam;
 import org.dhorse.api.param.user.PasswordUpdateParam;
 import org.dhorse.api.param.user.RoleUpdateParam;
@@ -25,7 +23,6 @@ import org.dhorse.api.param.user.UserUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.SysUser;
-import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.po.SysUserPO;
 import org.dhorse.infrastructure.strategy.login.LdapUserStrategy;
@@ -57,10 +54,6 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	public GlobalConfigAgg applyLogin() {
-		return this.globalConfig();
-	}
-
 	public LoginUser login(UserLoginParam userLoginParam) {
 		if (StringUtils.isEmpty(userLoginParam.getLoginName())) {
 			LogUtils.throwException(logger, MessageCodeEnum.LOGIN_NAME_IS_EMPTY);
@@ -71,8 +64,15 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 		if (null == userLoginParam.getLoginSource()) {
 			LogUtils.throwException(logger, MessageCodeEnum.LOGIN_SOURCE_IS_EMPTY);
 		}
+		
+		GlobalConfigAgg globalConfig = globalConfig();
+		if(RegisteredSourceEnum.LDAP.getCode().equals(userLoginParam.getLoginSource())
+				&& globalConfig.getLdap() == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.LDAP_CONFIG_FAILURE);
+		}
+		
 		UserStrategy userStrategy = userStrategy(userLoginParam.getLoginSource());
-		LoginUser loginUser = userStrategy.login(userLoginParam, globalConfig(), passwordEncoder);
+		LoginUser loginUser = userStrategy.login(userLoginParam, globalConfig, passwordEncoder);
 		if (loginUser == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.USER_LOGIN_FAILED);
 		}
@@ -171,13 +171,14 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 	 * @return 符合条件的用户列表
 	 */
 	public List<SysUser> search(UserSearchParam usersearchParam) {
-		GlobalConfigParam param = new GlobalConfigParam();
-		param.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
-		GlobalConfigAgg ldap = globalConfigRepository.queryAgg(param);
+//		GlobalConfigParam param = new GlobalConfigParam();
+//		param.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
+//		GlobalConfigAgg ldap = globalConfigRepository.queryAgg(param);
+//		Integer loginSource = RegisteredSourceEnum.DHORSE.getCode();
+//		if (ldap.getLdap() != null && YesOrNoEnum.YES.getCode().equals(ldap.getLdap().getEnable())) {
+//			loginSource = RegisteredSourceEnum.LDAP.getCode();
+//		}
 		Integer loginSource = RegisteredSourceEnum.DHORSE.getCode();
-		if (ldap.getLdap() != null && YesOrNoEnum.YES.getCode().equals(ldap.getLdap().getEnable())) {
-			loginSource = RegisteredSourceEnum.LDAP.getCode();
-		}
 		UserStrategy userStrategy = userStrategy(loginSource);
 		return userStrategy.search(usersearchParam.getLoginName(), this.globalConfig());
 	}

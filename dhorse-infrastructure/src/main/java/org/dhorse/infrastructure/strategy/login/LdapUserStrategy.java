@@ -1,5 +1,6 @@
 package org.dhorse.infrastructure.strategy.login;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.CollectionUtils;
 
 public class LdapUserStrategy extends UserStrategy {
 
@@ -79,6 +81,9 @@ public class LdapUserStrategy extends UserStrategy {
 			LogUtils.throwException(logger, MessageCodeEnum.INIT_LDAP_FAILURE);
 		}
 		List<Attributes> attributesList = LdapUtils.searchEntity(ldapContext, ldap.getSearchBaseDn(), userName);
+		if(CollectionUtils.isEmpty(attributesList)) {
+			return Collections.emptyList();
+		}
 		return attributesList.stream().map(e -> buildUser(e)).collect(Collectors.toList());
 	}
 

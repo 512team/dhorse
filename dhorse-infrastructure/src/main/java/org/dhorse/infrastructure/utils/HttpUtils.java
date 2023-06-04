@@ -71,9 +71,9 @@ public class HttpUtils {
 	
 	public static int post(String url, String jsonParam, Map<String, String> cookies) {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(5000)
-                .setConnectTimeout(5000)
-                .setSocketTimeout(5000)
+                .setConnectionRequestTimeout(2000)
+                .setConnectTimeout(2000)
+                .setSocketTimeout(2000)
                 .build();
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(requestConfig);
@@ -89,7 +89,7 @@ public class HttpUtils {
         try (CloseableHttpResponse response = createHttpClient(url).execute(httpPost)){
         	return response.getStatusLine().getStatusCode();
         } catch (IOException e) {
-        	LogUtils.throwException(logger, MessageCodeEnum.HTT_POST_FAILURE);
+        	LogUtils.throwException(logger, e, MessageCodeEnum.HTT_POST_FAILURE);
         }
         return -1;
 	}

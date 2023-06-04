@@ -16,6 +16,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.application.service.GlobalConfigApplicationService;
+import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,17 @@ public class GlobalConfigRest extends AbstractRest {
 		return this.success(globalConfigApplicationService.globalConfig(queryParam));
 	}
 
+	/**
+	 * 查询Ldap
+	 * 
+	 * @return Ldap数据
+	 */
+	@AccessNotLogin
+	@PostMapping("/query/ldap")
+	public RestResponse<Ldap> queryLdap() {
+		return this.success(globalConfigApplicationService.queryLdap());
+	}
+	
 	/**
 	 * 查询菜单
 	 * 

@@ -14,6 +14,7 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,10 @@ public class LdapUtils {
 	public static List<Attributes> searchEntity(LdapContext ldapContext, String baseDn, String searchName) {
 		SearchControls contro = new SearchControls();
 		contro.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		String filter = "(&(|(uid=" + searchName + "*)(cn=" + searchName + "*)(name=" + searchName + "*)(email=" + searchName + "*))(objectClass=person))";
+		String filter = "(objectClass=person)";
+		if(!StringUtils.isBlank(searchName)) {
+			filter = "(&(|(uid=" + searchName + "*)(cn=" + searchName + "*)(name=" + searchName + "*)(email=" + searchName + "*))" + filter + ")";
+		}
 		NamingEnumeration<SearchResult> result = null;
 		try {
 			result = ldapContext.search(baseDn, filter, contro);

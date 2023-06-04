@@ -19,7 +19,7 @@
         body {background-color:#DEDEDE;height:100%;width:100%;}
         #container{height:100%;width:100%;}
         input:-webkit-autofill {-webkit-box-shadow:inset 0 0 0 1000px #fff;background-color:transparent;}
-        .admin-login-background {width:300px;height:300px;position:absolute;left:50%;top:40%;margin-left:-150px;margin-top:-100px;}
+        .admin-login-background {width:300px;height:300px;position:absolute;left:50%;top:30%;margin-left:-150px;margin-top:-100px;}
         .admin-header {text-align:center;margin-bottom:20px;color:#525252;font-weight:bold;font-size:40px}
         .admin-input {border-top-style:none;border-right-style:solid;border-bottom-style:solid;border-left-style:solid;height:50px;width:300px;padding-bottom:0px;}
         #.admin-input::-webkit-input-placeholder {color:#1E9FFF}
@@ -33,28 +33,53 @@
         .admin-icon {margin-left:260px;margin-top:10px;font-size:30px;}
         i {position:absolute;}
         .admin-captcha {position:absolute;margin-left:205px;margin-top:-40px;}
+		.layui-this {color: #1E9FFF !important;}
+		.layui-this:after{border-bottom: 2px solid #1E9FFF !important;}
     </style>
 </head>
 <body>
 <div id="container">
-    <div></div>
-    <div class="admin-login-background">
-        <div class="admin-header">
-            <span>登录</span>
-        </div>
-        <form class="layui-form" action="">
-            <div>
-				<i class="layui-icon layui-icon-username admin-icon"></i>
-                <input type="text" name="loginName" placeholder="请输入登录名" lay-verify="required" lay-reqtext="登录名不能为空" autocomplete="off" class="layui-input admin-input admin-input-username">
-            </div>
-            <div>
-                <i class="layui-icon layui-icon-password admin-icon"></i>
-                <input type="password" name="password" placeholder="请输入密码" lay-verify="required" lay-reqtext="密码不能为空" autocomplete="off" class="layui-input admin-input admin-input-verify">
-            </div>
-			<input type="hidden" name="loginSource" value="1">
-            <button class="layui-btn admin-button" lay-submit="" lay-filter="login">登 陆</button>
-        </form>
-    </div>
+	<div class="admin-login-background">
+		<div class="admin-header">
+			<span>登录</span>
+		</div>
+		<div class="layui-tab layui-tab-brief" lay-filter="login-handle">
+			<ul class="layui-tab-title">
+				<li class="layui-this" lay-id="11">普通</li>
+				<li lay-id="ldap-title" id="ldap-title" style="display: none">LDAP</li>
+			</ul>
+			<div class="layui-tab-content">
+				<div class="layui-tab-item layui-show">
+					<form class="layui-form" action="">
+						<div>
+							<i class="layui-icon layui-icon-username admin-icon"></i>
+							<input type="text" name="loginName" placeholder="请输入登录名" lay-verify="required" lay-reqtext="登录名不能为空" autocomplete="off" class="layui-input admin-input admin-input-username">
+						</div>
+						<div>
+							<i class="layui-icon layui-icon-password admin-icon"></i>
+							<input type="password" name="password" placeholder="请输入密码" lay-verify="required" lay-reqtext="密码不能为空" autocomplete="off" class="layui-input admin-input admin-input-verify">
+						</div>
+						<input type="hidden" name="loginSource" value="1">
+						<button class="layui-btn admin-button" lay-submit="" lay-filter="normal-login">登 陆</button>
+					</form>
+				</div>
+				<div class="layui-tab-item" id="ldap-context" style="display: none">
+					<form class="layui-form" action="">
+						<div>
+							<i class="layui-icon layui-icon-username admin-icon"></i>
+							<input type="text" name="loginName" placeholder="请输入登录名" lay-verify="required" lay-reqtext="登录名不能为空" autocomplete="off" class="layui-input admin-input admin-input-username">
+						</div>
+						<div>
+							<i class="layui-icon layui-icon-password admin-icon"></i>
+							<input type="password" name="password" placeholder="请输入密码" lay-verify="required" lay-reqtext="密码不能为空" autocomplete="off" class="layui-input admin-input admin-input-verify">
+						</div>
+						<input type="hidden" name="loginSource" value="2">
+						<button class="layui-btn admin-button" lay-submit="" lay-filter="ldap-login">登 陆</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="../js/common.js" charset="utf-8"></script>
@@ -63,30 +88,81 @@
         var form = layui.form,
             layer = layui.layer,
 			$ = layui.$;
+		var element = layui.element;
 
         // 登录过期的时候，跳出ifram框架
         if (top.location != self.location) top.location = self.location;
+		
+		//初始化ldap登录
+		$.ajax({
+			url: '/globalConfig/query/ldap',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 1}),
+			success: function(res){
+				if(res.code != "000000"){
+					return false;
+				}
+				if(!res.data || !res.data.url){
+					return false;
+				}
+				if(res.data.enable != 1){
+					return false;
+				}
+				element.tabAdd('login-handle', {
+					title: $("#ldap-title").html(),
+					content: $("#ldap-context").html(),
+					id: 'ldap-tab'
+				})
+			},
+			error: function(res){
+				return false;
+			}
+		});
 
-        // 进行登录操作
-        form.on('submit(login)', function(data) {
+        // 普通登录
+        form.on('submit(normal-login)', function(data) {
 			data.field.password = data.field.password.md5(32).toUpperCase();
-            data = data.field;
 			$.ajax({
 				url: '/sysUser/login',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(data),
-				success: function(data){
-					if(data.code != "000000"){
-						layer.msg("登录失败：" + data.message, {icon: 2, shift: 6, offset: ['15%', '41%']});
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg("登录失败：" + res.message, {icon: 2, shift: 6, offset: ['9%', '41%']});
 						return false;
 					}
-					setCookie("login_token", data.data.lastLoginToken);
+					setCookie("login_token", res.data.lastLoginToken);
 					window.location = '/index.html';
 				},
-				error: function(data){
-					layer.msg("登录失败：" + data.message, {icon: 2, shift: 6, offset: ['15%', '41%']});
+				error: function(res){
+					layer.msg("登录失败：" + res.message, {icon: 2, shift: 6, offset: ['9%', '41%']});
+				}
+			});
+            return false;
+        });
+		
+		// LDAP
+        form.on('submit(ldap-login)', function(data) {
+			$.ajax({
+				url: '/sysUser/login',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg("登录失败：" + res.message, {icon: 2, shift: 6, offset: ['9%', '41%']});
+						return false;
+					}
+					setCookie("login_token", res.data.lastLoginToken);
+					window.location = '/index.html';
+				},
+				error: function(res){
+					layer.msg("登录失败：" + res.message, {icon: 2, shift: 6, offset: ['9%', '41%']});
 				}
 			});
             return false;
