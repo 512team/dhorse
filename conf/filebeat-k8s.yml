@@ -1,14 +1,114 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: filebeat
+  labels:
+    k8s-app: filebeat
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources:
+  - namespaces
+  - pods
+  - nodes
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups: ["apps"]
+  resources:
+    - replicasets
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources:
+    - jobs
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: filebeat
+  # should be the namespace where filebeat is running
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs: ["get", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: filebeat-kubeadm-config
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    resourceNames:
+      - kubeadm-config
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: filebeat
+  namespace: kube-system
+subjects:
+  - kind: ServiceAccount
+    name: filebeat
+    namespace: kube-system
+roleRef:
+  kind: Role
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: filebeat-kubeadm-config
+  namespace: kube-system
+subjects:
+  - kind: ServiceAccount
+    name: filebeat
+    namespace: kube-system
+roleRef:
+  kind: Role
+  name: filebeat-kubeadm-config
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  # 默认名称，不允许修改
   name: filebeat-config
-  # 默认命名空间，不允许修改
-  namespace: dhorse-system
+  namespace: kube-system
   labels:
-    # 默认标签名，不允许修改
-    app: filebeat
+    k8s-app: filebeat
 data:
   filebeat.yml: |-
     filebeat.inputs:
@@ -48,39 +148,33 @@ data:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  # 默认名称，不允许修改
   name: filebeat
-  # 默认命名空间，不允许修改
-  namespace: dhorse-system
+  namespace: kube-system
   labels:
-    # 默认标签名，不允许修改
-    app: filebeat
+    k8s-app: filebeat
 spec:
   selector:
     matchLabels:
-      # 默认标签名，不允许修改
-      app: filebeat
+      k8s-app: filebeat
   template:
     metadata:
       labels:
-        # 默认标签名，不允许修改
-        app: filebeat
+        k8s-app: filebeat
     spec:
+      serviceAccountName: filebeat
       terminationGracePeriodSeconds: 30
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: filebeat
-        # 替换成自己的filebeat镜像
-        image: docker.elastic.co/beats/filebeat:8.1.0
+        image: docker.elastic.co/beats/filebeat:8.8.0
         args: [
           "-c", "/etc/filebeat.yml",
           "-e",
         ]
-        #替换成你自己的es地址和账号
         env:
         - name: ELASTICSEARCH_HOST
-          value: 127.0.0.1
+          value: elasticsearch
         - name: ELASTICSEARCH_PORT
           value: "9200"
         - name: ELASTICSEARCH_USERNAME
@@ -118,9 +212,6 @@ spec:
         - name: varlog
           mountPath: /var/log
           readOnly: true
-        - name: hosttime
-          mountPath: /etc/localtime
-          readOnly: true
       volumes:
       - name: config
         configMap:
@@ -132,12 +223,10 @@ spec:
       - name: varlog
         hostPath:
           path: /var/log
-      - name: hosttime
-        hostPath:
-          path: /etc/localtime
       # data folder stores a registry of read status for all files, so we don't send everything again on a Filebeat pod restart
       - name: data
         hostPath:
           # When filebeat runs as non-root user, this directory needs to be writable by group (g+w).
           path: /var/lib/filebeat-data
           type: DirectoryOrCreate
+---

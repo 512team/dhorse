@@ -1,7 +1,6 @@
 package org.dhorse.infrastructure.strategy.cluster;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -91,8 +90,6 @@ import io.kubernetes.client.openapi.models.V1ContainerPort;
 import io.kubernetes.client.openapi.models.V1ContainerStateTerminated;
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1CrossVersionObjectReference;
-import io.kubernetes.client.openapi.models.V1DaemonSet;
-import io.kubernetes.client.openapi.models.V1DaemonSetList;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1DeploymentSpec;
@@ -101,6 +98,8 @@ import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource;
 import io.kubernetes.client.openapi.models.V1EnvVar;
 import io.kubernetes.client.openapi.models.V1ExecAction;
 import io.kubernetes.client.openapi.models.V1HTTPGetAction;
+import io.kubernetes.client.openapi.models.V1HTTPIngressPath;
+import io.kubernetes.client.openapi.models.V1HTTPIngressRuleValue;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscaler;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerList;
 import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscalerSpec;
@@ -150,7 +149,6 @@ import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
 import io.kubernetes.client.openapi.models.V1WeightedPodAffinityTerm;
 import io.kubernetes.client.util.ClientBuilder;
-import io.kubernetes.client.util.Yaml;
 import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
 public class K8sClusterStrategy implements ClusterStrategy {
@@ -268,10 +266,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				return false;
 			}
 			
-			//部署service
+			//部署Service
 			createService(context);
 			
-			//Node应用的ingress
+			//Vue和React应用的Ingress
 			createIngress(context);
 			
 		} catch (ApiException e) {
@@ -300,13 +298,19 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			service = new V1Service();
 			service.apiVersion("v1");
 			service.setKind("Service");
-			service.setMetadata(serviceMeta(serviceName));
+			service.setMetadata(serviceMeta(serviceName, context));
 			service.setSpec(serviceSpec(context));
 			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
+		//为了支持应用的平滑发布，Service是不能修改的
+		//由于在v1.2.0版本增加了prometheus的注释功能，所以需要修改Service
+		//但是，此处的else语句内容应当在v1.2.0以后的版本删除
 		} else {
 			service = serviceList.getItems().get(0);
-			service.getSpec().setPorts(servicePorts(context));
-			service = coreApi.replaceNamespacedService(serviceName, namespace, service, null, null, null, null);
+			if(service.getMetadata().getAnnotations() == null || service.getMetadata().getAnnotations().size() == 0) {
+				deleteService(namespace, serviceName, apiClient);
+				service.setMetadata(serviceMeta(serviceName, context));
+				service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
+			}
 		}
 		logger.info("End to create service");
 		return true;
@@ -319,26 +323,33 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		if(StringUtils.isBlank(context.getAppEnv().getExt())){
 			return true;
 		}
+		String ingressHost = ((EnvExtendNode)context.getEnvExtend()).getIngressHost();
+		String namespace = context.getAppEnv().getNamespaceName();
+		String ingressName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
+		
 		logger.info("Start to create ingress");
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
-		String namespace = context.getAppEnv().getNamespaceName();
-		String serviceName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
-				"app=" + serviceName, 1, null, null, null, null);
+				"app=" + ingressName, 1, null, null, null, null);
 		V1Ingress ingress = null;
-		if (CollectionUtils.isEmpty(list.getItems())) {
+		if (!StringUtils.isBlank(ingressHost) && CollectionUtils.isEmpty(list.getItems())) {
 			ingress = new V1Ingress();
 			ingress.apiVersion("networking.k8s.io/v1");
 			ingress.setKind("Ingress");
-			ingress.setMetadata(ingressMeta(serviceName));
-			ingress.setSpec(ingressSpec(context));
+			ingress.setMetadata(ingressMeta(ingressName));
+			ingress.setSpec(ingressSpec(context, ingressName, ingressHost));
 			ingress = networkingApi.createNamespacedIngress(namespace, ingress, null, null, null, null);
-		} else {
+		}else if(!StringUtils.isBlank(ingressHost) && !CollectionUtils.isEmpty(list.getItems())) {
 			ingress = list.getItems().get(0);
-			ingress.setSpec(ingressSpec(context));
-			ingress = networkingApi.replaceNamespacedIngress(serviceName, namespace, ingress, null, null, null, null);
+			//为了支持应用的平滑发布，只有host发生变化时，才能修改Ingress
+			if(!ingressHost.equals(ingress.getSpec().getRules().get(0).getHost())){
+				ingress.setSpec(ingressSpec(context, ingressName, ingressHost));
+				networkingApi.replaceNamespacedIngress(ingressName, namespace, ingress, null, null, null, null);
+			}
+		}else if(StringUtils.isBlank(ingressHost) && !CollectionUtils.isEmpty(list.getItems())){
+			networkingApi.deleteNamespacedIngress(ingressName, namespace, null, null, null, null, null, null);
 		}
 		logger.info("End to create ingress");
 		return true;
@@ -351,21 +362,28 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return metadata;
 	}
 	
-	private V1IngressSpec ingressSpec(DeploymentContext context) {
+	private V1IngressSpec ingressSpec(DeploymentContext context, String ingressName, String ingressHost) {
 		V1ServiceBackendPort serviceBackendPort = new V1ServiceBackendPort();
 		serviceBackendPort.setNumber(context.getAppEnv().getServicePort());
 		V1IngressServiceBackend ingressServiceBackend = new V1IngressServiceBackend();
-		ingressServiceBackend.setName(K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag()));
+		ingressServiceBackend.setName(ingressName);
 		ingressServiceBackend.setPort(serviceBackendPort);
 		V1IngressBackend ingressBackend = new V1IngressBackend();
 		ingressBackend.setService(ingressServiceBackend);
 		
+		V1HTTPIngressPath path = new V1HTTPIngressPath();
+		path.setPath("/");
+		path.setPathType("Prefix");
+		path.setBackend(ingressBackend);
+		V1HTTPIngressRuleValue http = new V1HTTPIngressRuleValue();
+		http.setPaths(Arrays.asList(path));
 		V1IngressRule ingressRule = new V1IngressRule();
-		ingressRule.setHost(((EnvExtendNode)context.getEnvExtend()).getIngressHost());
+		ingressRule.setHost(ingressHost);
+		ingressRule.setHttp(http);
 		
 		V1IngressSpec spec = new V1IngressSpec();
-		spec.setDefaultBackend(ingressBackend);
 		spec.setIngressClassName("nginx");
+		spec.setDefaultBackend(ingressBackend);
 		spec.setRules(Arrays.asList(ingressRule));
 		return spec;
 	}
@@ -515,10 +533,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return true;
 	}
 
-	private V1ObjectMeta serviceMeta(String appName) {
+	private V1ObjectMeta serviceMeta(String appName, DeploymentContext context) {
+		Map<String, String> annotations = new HashMap<>();
+		annotations.put("prometheus.io/scrape", "true");
+		annotations.put("prometheus.io/port", context.getAppEnv().getServicePort().toString());
+		annotations.put("prometheus.io/path", "/metrics");
+		
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
 		metadata.setLabels(Collections.singletonMap("app", appName));
+		metadata.setAnnotations(annotations);
 		return metadata;
 	}
 	
@@ -1637,67 +1661,18 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	public void openLogCollector(ClusterPO clusterPO) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		AppsV1Api appsApi = new AppsV1Api(apiClient);
-		File fileBeatFile = new File(Constants.CONF_PATH + "filebeat-k8s.yml");
-		if (!fileBeatFile.exists()) {
-			LogUtils.throwException(logger, MessageCodeEnum.FILE_BEAT_K8S_FILE_INEXISTENCE);
-		}
-		try {
-			List<Object> yamlObjects = Yaml.loadAll(fileBeatFile);
-			for (Object o : yamlObjects) {
-				if (o instanceof V1ConfigMap) {
-					V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, null,
-							null, null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
-					if (CollectionUtils.isEmpty(configMapList.getItems())) {
-						coreApi.createNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, (V1ConfigMap) o, null, null, null,
-								null);
-					} else {
-						coreApi.replaceNamespacedConfigMap("filebeat-config", K8sUtils.DHORSE_NAMESPACE,
-								(V1ConfigMap) o, null, null, null, null);
-					}
-				} else if (o instanceof V1DaemonSet) {
-					V1DaemonSetList daemonSetList = appsApi.listNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, null,
-							null, null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
-					if (CollectionUtils.isEmpty(daemonSetList.getItems())) {
-						appsApi.createNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, (V1DaemonSet) o, null, null, null,
-								null);
-					} else {
-						appsApi.replaceNamespacedDaemonSet("filebeat", K8sUtils.DHORSE_NAMESPACE, (V1DaemonSet) o,
-								null, null, null, null);
-					}
-				}
-			}
-		} catch (ApiException e) {
-			LogUtils.throwException(logger, e.getResponseBody(), MessageCodeEnum.FAILURE);
-		} catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.FAILURE);
-		}
+		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		K8sClusterUtils.openLogCollector(apiCLient);
 	}
 
 	public void closeLogCollector(ClusterPO clusterPO) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		AppsV1Api appsApi = new AppsV1Api(apiClient);
-		try {
-			V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, null, null,
-					null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
-			if (!CollectionUtils.isEmpty(configMapList.getItems())) {
-				coreApi.deleteNamespacedConfigMap("filebeat-config", K8sUtils.DHORSE_NAMESPACE, null, null, null,
-						null, null, null);
-			}
-			V1DaemonSetList daemonSetList = appsApi.listNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, null, null,
-					null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
-			if (!CollectionUtils.isEmpty(daemonSetList.getItems())) {
-				appsApi.deleteNamespacedDaemonSet("filebeat", K8sUtils.DHORSE_NAMESPACE, null, null, null, null,
-						null, null);
-			}
-		} catch (ApiException e) {
-			clusterError(e);
-		} catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
-		}
+		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		K8sClusterUtils.closeLogCollector(apiCLient);
+	}
+	
+	public boolean logSwitchStatus(ClusterPO clusterPO) {
+		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		return K8sClusterUtils.logSwitchStatus(apiCLient);
 	}
 	
 	private void clusterError(ApiException e) {
@@ -1706,25 +1681,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			LogUtils.throwException(logger, message, MessageCodeEnum.CONNECT_CLUSTER_FAILURE);
 		}
 		LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
-	}
-
-	public boolean logSwitchStatus(ClusterPO clusterPO) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		AppsV1Api appsApi = new AppsV1Api(apiClient);
-		try {
-			V1ConfigMapList configMapList = coreApi.listNamespacedConfigMap(K8sUtils.DHORSE_NAMESPACE, null, null,
-					null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
-			V1DaemonSetList daemonSetList = appsApi.listNamespacedDaemonSet(K8sUtils.DHORSE_NAMESPACE, null, null,
-					null, null, K8sUtils.getDeploymentLabelSelector("filebeat"), 1, null, null, null, null);
-			return !CollectionUtils.isEmpty(configMapList.getItems())
-					&& !CollectionUtils.isEmpty(daemonSetList.getItems());
-		} catch (ApiException e) {
-			clusterError(e);
-		} catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
-		}
-		return false;
 	}
 	
 	public List<String> queryFiles(ClusterPO clusterPO, String replicaName, String namespace) {

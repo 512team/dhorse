@@ -7,6 +7,8 @@ public class K8sUtils {
 	
 	public static final String DHORSE_NAMESPACE = "dhorse-system";
 	
+	public static final String KUBE_SYSTEM_NAMESPACE = "kube-system";
+	
 	public static final String DOCKER_REGISTRY_KEY = "dhorse-docker-registry";
 	
 	public static final String AGENT_VOLUME_PATH = "/usr/local/agent/";
