@@ -119,7 +119,7 @@
 				<input type="radio" name="extendSpringBootParam.jvmMetricsStatus" show-name="jvmMetricsStatus" value="0" title="否" checked>
 				<input type="radio" name="extendSpringBootParam.jvmMetricsStatus" show-name="jvmMetricsStatus" value="1" title="是">
 			</div>
-			<div class="layui-form-mid layui-word-aux">如有更改，重新部署才能生效</div>
+			<div class="layui-form-mid layui-word-aux">如有更改，需要重新部署才能生效</div>
 		</div>
 		<div class="layui-form-item"  style="display:none" id="jvmArgsDiv">
 			<label class="layui-form-label">Jvm参数</label>
@@ -129,9 +129,10 @@
 		</div>
 		<div class="layui-form-item" style="display:none" id="ingressHostDiv">
 			<label class="layui-form-label">访问域名</label>
-			<div class="layui-input-block">
-				<input type="text" name="extendNodeParam.ingressHost" id="ingressHost" placeholder="请输入Ingress域名" autocomplete="off" class="layui-input">
+			<div class="layui-input-inline" style="width: 50%">
+				<input type="text" name="extendNodeParam.ingressHost" id="ingressHost" placeholder="如：www.512.team" autocomplete="off" class="layui-input">
 			</div>
+			<div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E5%AE%89%E8%A3%85Ingress-Nginx.md" target="_blank">《Ingress-nginx安装指引》</a></div>
 		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">描述</label>
