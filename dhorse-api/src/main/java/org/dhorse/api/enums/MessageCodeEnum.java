@@ -44,7 +44,7 @@ public enum MessageCodeEnum {
 	//服务器集群配置
 	AUTH_TYPE_IS_EMPTY("200000", "认证方式不能为空"),
 	CLUSER_NAME_EXISTENCE("200000", "集群名称已经存在"),
-	IMAGE_REPO_AUTH_FAILURE("200000", "创建镜像仓库认证失败key，请重新进行该操作"),
+	IMAGE_REPO_AUTH_FAILURE("200000", "创建镜像仓库认证key失败，请检查集群管理的配置"),
 	DHORSE_SERVER_URL_FAILURE("200000", "创建DHorse服务器地址失败，请重新进行该操作"),
 	CLUSER_ID_IS_EMPTY("200000", "集群编号不能为空"),
 	CLUSER_NAME_IS_EMPTY("200000", "集群名称不能为空"),

@@ -33,7 +33,7 @@ public class HttpUtils {
 				return false;
 			}
 		} catch (Exception e) {
-			logger.warning(String.format("Failed to send metrics, message: %s", e));
+			logger.warning(String.format("Failed to send metrics to %s, message: %s", url, e));
 			return false;
 		} finally {
 			if (out != null) {

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +13,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
@@ -47,7 +42,6 @@ import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
-import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
@@ -231,33 +225,6 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		
 		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		return addOrUpdateGlobalConfig(imageRepo);
-	}
-	
-	private void createProject(ImageRepo imageRepo, Object publicType) {
-        String uri = "api/v2.0/projects";
-        if(!imageRepo.getUrl().endsWith("/")) {
-        	uri = "/" + uri;
-        }
-        HttpPost httpPost = new HttpPost(imageRepo.getUrl() + uri);
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(5000)
-                .setConnectTimeout(5000)
-                .setSocketTimeout(5000)
-                .build();
-        httpPost.setConfig(requestConfig);
-        httpPost.setHeader("Content-Type", "application/json;charset=UTF-8");
-        httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthName() + ":" + imageRepo.getAuthPassword()).getBytes()));
-        String param = "{\"project_name\": \"dhorse\", \"public\": " + publicType + "}";
-        httpPost.setEntity(new StringEntity(param, "UTF-8"));
-        try (CloseableHttpResponse response = HttpUtils.createHttpClient(imageRepo.getUrl()).execute(httpPost)){
-            if (response.getStatusLine().getStatusCode() != 201
-            		&& response.getStatusLine().getStatusCode() != 409) {
-            	LogUtils.throwException(logger, response.getStatusLine().getReasonPhrase(),
-            			MessageCodeEnum.IMAGE_REPO_PROJECT_FAILURE);
-            }
-        } catch (IOException e) {
-        	LogUtils.throwException(logger, e, MessageCodeEnum.IMAGE_REPO_PROJECT_FAILURE);
-        }
 	}
 	
 	public Void addOrUpdateLdap(Ldap ldap) {

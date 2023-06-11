@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -15,6 +16,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.dhorse.api.enums.ClusterTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
@@ -29,6 +34,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
+import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.GlobalConfigQueryParam;
@@ -355,8 +361,27 @@ public abstract class ApplicationService {
 			
 			createDHorseConfig();
 			createSecret();
+			creatImageRepoProject();
 			buildDHorseAgentImage();
 		});
+	}
+	
+	private void creatImageRepoProject() {
+		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
+		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
+		if(imageRepo == null) {
+			return;
+		}
+		if(ImageRepoTypeEnum.HARBOR.getValue().equals(imageRepo.getType())) {
+			try {
+				createProject(imageRepo, false);
+			}catch(ApplicationException e) {
+				//这里为了兼容Harbor2.0接口参数类型的不同，再次调用
+				createProject(imageRepo, 0);
+			}
+		}
 	}
 	
 	//写入容器集群的dhorse服务地址
@@ -401,6 +426,33 @@ public abstract class ApplicationService {
 			ClusterStrategy cluster = clusterStrategy(c.getClusterType());
 			cluster.createSecret(c, globalConfigAgg.getImageRepo());
 		}
+	}
+	
+	protected void createProject(ImageRepo imageRepo, Object publicType) {
+        String uri = "api/v2.0/projects";
+        if(!imageRepo.getUrl().endsWith("/")) {
+        	uri = "/" + uri;
+        }
+        HttpPost httpPost = new HttpPost(imageRepo.getUrl() + uri);
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(5000)
+                .setConnectTimeout(5000)
+                .setSocketTimeout(5000)
+                .build();
+        httpPost.setConfig(requestConfig);
+        httpPost.setHeader("Content-Type", "application/json;charset=UTF-8");
+        httpPost.setHeader("Authorization", "Basic "+ Base64.getUrlEncoder().encodeToString((imageRepo.getAuthName() + ":" + imageRepo.getAuthPassword()).getBytes()));
+        String param = "{\"project_name\": \"dhorse\", \"public\": " + publicType + "}";
+        httpPost.setEntity(new StringEntity(param, "UTF-8"));
+        try (CloseableHttpResponse response = HttpUtils.createHttpClient(imageRepo.getUrl()).execute(httpPost)){
+            if (response.getStatusLine().getStatusCode() != 201
+            		&& response.getStatusLine().getStatusCode() != 409) {
+            	LogUtils.throwException(logger, response.getStatusLine().getReasonPhrase(),
+            			MessageCodeEnum.IMAGE_REPO_PROJECT_FAILURE);
+            }
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, e, MessageCodeEnum.IMAGE_REPO_PROJECT_FAILURE);
+        }
 	}
 	
 	protected void buildDHorseAgentImage() {
