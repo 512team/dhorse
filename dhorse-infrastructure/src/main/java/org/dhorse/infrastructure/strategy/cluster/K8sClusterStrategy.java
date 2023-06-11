@@ -1620,7 +1620,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		try {
 			return metrics.getPodMetrics(namespace);
 		} catch (ApiException e) {
-			logger.error("Failed to list pod metrics", e);
+			if(e.getCode() == 404) {
+				logger.error("Failed to collect pod metrics, metrics server uninstalled possibly");
+			}else {
+				logger.error("Failed to collect pod metrics", e);
+			}
 		}
 		return null;
 	}
@@ -1850,13 +1854,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public Void createDHorseConfig(ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		V1ConfigMap configMap = new V1ConfigMap();
-		configMap.setApiVersion("v1");
-		configMap.setKind("ConfigMap");
-		V1ObjectMeta meta = new V1ObjectMeta();
-		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
-		meta.setLabels(Collections.singletonMap("app", K8sUtils.DHORSE_CONFIGMAP_NAME));
-		configMap.setMetadata(meta);
 		
 		try {
 			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
@@ -1875,6 +1872,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				}
 				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
 						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+				
+				V1ConfigMap configMap = K8sClusterUtils.dhorseConfigMap();
 				if(CollectionUtils.isEmpty(list.getItems())) {
 					String ipPortUri = Constants.hostIp() + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
 					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));

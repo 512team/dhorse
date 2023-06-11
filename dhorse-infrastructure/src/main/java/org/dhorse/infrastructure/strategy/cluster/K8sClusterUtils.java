@@ -1,6 +1,7 @@
 package org.dhorse.infrastructure.strategy.cluster;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -23,6 +24,7 @@ import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
 import io.kubernetes.client.openapi.models.V1DaemonSet;
 import io.kubernetes.client.openapi.models.V1DaemonSetList;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1Role;
 import io.kubernetes.client.openapi.models.V1RoleBinding;
 import io.kubernetes.client.openapi.models.V1ServiceAccount;
@@ -323,6 +325,17 @@ public class K8sClusterUtils {
 			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
 		}
 		return false;
+	}
+	
+	public static V1ConfigMap dhorseConfigMap() {
+		V1ConfigMap configMap = new V1ConfigMap();
+		configMap.setApiVersion("v1");
+		configMap.setKind("ConfigMap");
+		V1ObjectMeta meta = new V1ObjectMeta();
+		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
+		meta.setLabels(Collections.singletonMap("app", K8sUtils.DHORSE_CONFIGMAP_NAME));
+		configMap.setMetadata(meta);
+		return configMap;
 	}
 	
 	private static void clusterError(ApiException e) {
