@@ -96,7 +96,7 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
 		
-		//首先开启日志收集
+		//5.开启（关闭）日志收集，不能在步骤4前执行
 		if(clusterCreationParam.getLogSwitch() == null) {
 			closeLogSwitch(clusterId);
 		}else if(YesOrNoEnum.YES.getCode().equals(clusterCreationParam.getLogSwitch())) {
@@ -106,28 +106,45 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		return null;
 	}
 
-	public Void update(ClusterUpdateParam clusterUpdateParam) {
-		if (StringUtils.isBlank(clusterUpdateParam.getClusterId())) {
+	public Void update(ClusterUpdateParam updateParam) {
+		if (StringUtils.isBlank(updateParam.getClusterId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_ID_IS_EMPTY);
 		}
-		if (clusterRepository.queryById(clusterUpdateParam.getClusterId()) == null) {
+		if (clusterRepository.queryById(updateParam.getClusterId()) == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.RECORD_IS_INEXISTENCE);
 		}
-		validateAddParam(clusterUpdateParam);
+		validateAddParam(updateParam);
 		
-		ClusterParam clusterParam = buildBizParam(clusterUpdateParam);
-		clusterParam.setId(clusterUpdateParam.getClusterId());
+		//1.首先添加命名空间
+		ClusterPO clusterPO = new ClusterPO();
+		clusterPO.setClusterUrl(updateParam.getClusterUrl());
+		clusterPO.setAuthToken(updateParam.getAuthToken());
+		ClusterStrategy cluster = clusterStrategy(updateParam.getClusterType());
+		cluster.addNamespace(clusterPO, K8sUtils.DHORSE_NAMESPACE);
+		//2.往集群推送dhorse的服务地址
+		cluster.createDHorseConfig(clusterPO);
+		//3.创建镜像仓库认证key
+		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
+		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
+			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
+		}
+		
+		//4.修改集群
+		ClusterParam clusterParam = buildBizParam(updateParam);
+		clusterParam.setId(updateParam.getClusterId());
 		if (!clusterRepository.update(clusterParam)) {
 			LogUtils.throwException(logger, MessageCodeEnum.FAILURE);
 		}
 		
-		//开启（关闭）日志收集
-		if(clusterUpdateParam.getLogSwitch() == null) {
-			closeLogSwitch(clusterUpdateParam.getClusterId());
-		}else if(YesOrNoEnum.YES.getCode().equals(clusterUpdateParam.getLogSwitch())) {
-			openLogSwitch(clusterUpdateParam.getClusterId());
+		//5.开启（关闭）日志收集，不能在步骤4前执行
+		if(updateParam.getLogSwitch() == null) {
+			closeLogSwitch(updateParam.getClusterId());
+		}else if(YesOrNoEnum.YES.getCode().equals(updateParam.getLogSwitch())) {
+			openLogSwitch(updateParam.getClusterId());
 		}
-				
+		
 		return null;
 	}
 

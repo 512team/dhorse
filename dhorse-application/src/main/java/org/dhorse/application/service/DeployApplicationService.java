@@ -764,7 +764,18 @@ public abstract class DeployApplicationService extends ApplicationService {
 		threadParam.setThreadName(thread.split(":")[1]);
 		Map<String, String> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
 		String url = "http://" + thread.split(":")[0] + ":" + serverPort + "/app/deployment/detail/abortDeploymentThread";
-		HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);
+		try {
+			HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);
+		}catch(Exception e) {
+			//如果终止部署线程失败，只打印异常日志，不展示页面提示，因为不影响主流程
+			logger.error("Failed to abort deployment thread", e);
+		}
+		if(DeploymentStatusEnum.DEPLOYING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
+			bizParam.setDeploymentStatus(DeploymentStatusEnum.DEPLOYED_FAILURE.getCode());
+		}else if(DeploymentStatusEnum.ROLLBACKING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
+			bizParam.setDeploymentStatus(DeploymentStatusEnum.ROLLBACK_FAILURE.getCode());
+		}
+		deploymentDetailRepository.updateById(bizParam);
 		return null;
 	}
 	
@@ -785,12 +796,6 @@ public abstract class DeployApplicationService extends ApplicationService {
 			return null;
 		}
 		DeploymentThreadPoolUtils.interrupt(abortParam.getThreadName());
-		if(DeploymentStatusEnum.DEPLOYING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
-			bizParam.setDeploymentStatus(DeploymentStatusEnum.DEPLOYED_FAILURE.getCode());
-		}else if(DeploymentStatusEnum.ROLLBACKING.getCode().equals(deploymentDetail.getDeploymentStatus())) {
-			bizParam.setDeploymentStatus(DeploymentStatusEnum.ROLLBACK_FAILURE.getCode());
-		}
-		deploymentDetailRepository.updateById(bizParam);
 		return null;
 	}
 }
