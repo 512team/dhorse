@@ -42,12 +42,17 @@ public class K8sUtils {
 	
 	public static final String DHORSE_SERVER_URL_KEY = "dhorse-server-url";
 	
+	public static final String DHORSE_LABEL_KEY = Constants.DHORSE_TAG + "-app";
+	
+	public static final String DHORSE_SELECTOR_KEY = DHORSE_LABEL_KEY + "=";
+	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	
 	static {
 		SYSTEM_NAMESPACES.add("kube-node-lease");
 		SYSTEM_NAMESPACES.add("kube-public");
 		SYSTEM_NAMESPACES.add("kube-system");
+		SYSTEM_NAMESPACES.add("kube-flannel");
 		SYSTEM_NAMESPACES.add(DHORSE_NAMESPACE);
 	}
 	
@@ -85,10 +90,6 @@ public class K8sUtils {
 	
 	public static String getDeploymentLabelSelector(String appName, String appEnvTag) {
 		return "app=" + getReplicaAppName(appName, appEnvTag);
-	}
-	
-	public static String getDhorseLabelSelector(String envTag) {
-		return Constants.DHORSE_TAG + "-" + envTag;
 	}
 	
 	public static Set<String> getSystemNamspaces() {

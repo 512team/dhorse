@@ -154,7 +154,7 @@ import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 public class K8sClusterStrategy implements ClusterStrategy {
 
 	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy.class);
-
+	
 	@Override
 	public Void createSecret(ClusterPO clusterPO, ImageRepo imageRepo) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
@@ -165,7 +165,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		secret.setType("kubernetes.io/dockerconfigjson");
 		V1ObjectMeta meta = new V1ObjectMeta();
 		meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
-		meta.setLabels(Collections.singletonMap("app", K8sUtils.DOCKER_REGISTRY_KEY));
+		meta.setLabels(dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
 		secret.setMetadata(meta);
 		secret.setData(dockerConfigData(imageRepo));
 		
@@ -306,9 +306,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		//但是，此处的else语句内容应当在v1.2.0以后的版本删除
 		} else {
 			service = serviceList.getItems().get(0);
-			if(service.getMetadata().getAnnotations() == null || service.getMetadata().getAnnotations().size() == 0) {
+			if(service.getMetadata().getAnnotations() == null || service.getMetadata().getAnnotations().size() == 0
+					//该条件配合升级使用，v1.2.0以后版本应当删除
+					|| service.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY) == null) {
+				//先删除，再创建
 				deleteService(namespace, serviceName, apiClient);
 				service.setMetadata(serviceMeta(serviceName, context));
+				service.setSpec(serviceSpec(context));
 				service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
 			}
 		}
@@ -344,7 +348,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}else if(!StringUtils.isBlank(ingressHost) && !CollectionUtils.isEmpty(list.getItems())) {
 			ingress = list.getItems().get(0);
 			//为了支持应用的平滑发布，只有host发生变化时，才能修改Ingress
-			if(!ingressHost.equals(ingress.getSpec().getRules().get(0).getHost())){
+			if(!ingressHost.equals(ingress.getSpec().getRules().get(0).getHost())
+					//该条件配合升级使用，v1.2.0以后版本应当删除
+					|| ingress.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY) == null){
+				ingress.setMetadata(ingressMeta(ingressName));
 				ingress.setSpec(ingressSpec(context, ingressName, ingressHost));
 				networkingApi.replaceNamespacedIngress(ingressName, namespace, ingress, null, null, null, null);
 			}
@@ -358,7 +365,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1ObjectMeta ingressMeta(String appName) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(Collections.singletonMap("app", appName));
+		metadata.setLabels(dhorseLabel(appName));
 		return metadata;
 	}
 	
@@ -541,7 +548,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(Collections.singletonMap("app", appName));
+		metadata.setLabels(dhorseLabel(appName));
 		metadata.setAnnotations(annotations);
 		return metadata;
 	}
@@ -583,10 +590,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1ObjectMeta deploymentMetaData(String appName, String envTag) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		Map<String, String> labelMap = new HashMap<>();
-		labelMap.put("app", appName);
-		labelMap.put("deployer", K8sUtils.getDhorseLabelSelector(envTag));
-		metadata.setLabels(labelMap);
+		metadata.setLabels(dhorseLabel(appName));
 		return metadata;
 	}
 
@@ -606,11 +610,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private V1PodTemplateSpec specTemplate(DeploymentContext context) {
-		Map<String, String> labels = new HashMap<>();
-		labels.put("app", context.getDeploymentName());
-		labels.put("deployer", K8sUtils.getDhorseLabelSelector(context.getAppEnv().getTag()));
-		labels.put("version", String.valueOf(System.currentTimeMillis()));
 		V1ObjectMeta specMetadata = new V1ObjectMeta();
+		Map<String, String> labels = dhorseLabel(context.getDeploymentName());
+		labels.put("version", String.valueOf(System.currentTimeMillis()));
 		specMetadata.setLabels(labels);
 		V1PodTemplateSpec template = new V1PodTemplateSpec();
 		template.setMetadata(specMetadata);
@@ -1172,7 +1174,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		args.add("-Denv=" + context.getAppEnv().getTag());
 		
 		//dhorse-agent参数
-		args.add("-javaagent:"+ K8sUtils.AGENT_VOLUME_PATH +"dhorse-agent.jar");
+		if(TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())
+				&& !StringUtils.isBlank(context.getAppEnv().getExt())
+				&& YesOrNoEnum.YES.getCode().equals(JsonUtils.parseToObject(context.getAppEnv().getExt(),
+						EnvExtendSpringBoot.class).getJvmMetricsStatus())) {
+			args.add("-javaagent:"+ K8sUtils.AGENT_VOLUME_PATH +"dhorse-agent.jar");
+		}
 		
 		//skywalking-agent参数
 		if(!YesOrNoEnum.YES.getCode().equals(context.getAppEnv().getTraceStatus())) {
@@ -1871,7 +1878,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					continue;
 				}
 				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
-						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+						K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
 				
 				V1ConfigMap configMap = K8sClusterUtils.dhorseConfigMap();
 				if(CollectionUtils.isEmpty(list.getItems())) {
@@ -1917,7 +1924,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		configMap.setKind("ConfigMap");
 		V1ObjectMeta meta = new V1ObjectMeta();
 		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
-		meta.setLabels(Collections.singletonMap("app", K8sUtils.DHORSE_CONFIGMAP_NAME));
+		meta.setLabels(dhorseLabel(K8sUtils.DHORSE_CONFIGMAP_NAME));
 		configMap.setMetadata(meta);
 		
 		try {
@@ -1965,5 +1972,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
 		}
 		return null;
+	}
+	
+	private Map<String, String> dhorseLabel(String value) {
+		Map<String, String> labels = new HashMap<>();
+		labels.put("app", value);
+		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
+		return labels;
 	}
 }

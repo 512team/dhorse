@@ -333,7 +333,7 @@ public class K8sClusterUtils {
 		configMap.setKind("ConfigMap");
 		V1ObjectMeta meta = new V1ObjectMeta();
 		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
-		meta.setLabels(Collections.singletonMap("app", K8sUtils.DHORSE_CONFIGMAP_NAME));
+		meta.setLabels(Collections.singletonMap(K8sUtils.DHORSE_LABEL_KEY, K8sUtils.DHORSE_CONFIGMAP_NAME));
 		configMap.setMetadata(meta);
 		return configMap;
 	}

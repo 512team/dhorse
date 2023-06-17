@@ -472,7 +472,7 @@ public abstract class ApplicationService {
 			javaAgentPath = Constants.DHORSE_HOME + "/dhorse-agent/target/dhorse-agent-"+ componentConstants.getVersion() +".jar";
 		}
 		if(!new File(javaAgentPath).exists()) {
-			logger.info("The agent file does not exist, and end to build dhorse agent image");
+			logger.error("The agent file does not exist, end to build dhorse agent image");
 			return;
 		}
 		try {
