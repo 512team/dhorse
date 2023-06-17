@@ -62,7 +62,7 @@ start() {
 	else
 		mkdir_data_path
 		nohup $JAVA_HOME/bin/java $JAVA_OPTS -jar $JAR_PATH --spring.config.location=$CONF_PATH >/dev/null 2>&1 &
-		for i in {0..9}; do
+		for i in {0..60}; do
 			if [[ $os == "Darwin" ]]; then
 				process=`lsof -a -p $! | grep $JAR_NAME | grep java`
 			else
