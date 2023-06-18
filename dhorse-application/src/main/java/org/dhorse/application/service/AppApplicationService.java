@@ -230,8 +230,8 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		logger.info("Start to build tomcat image");
 		
 		//3.制作Agent镜像并上传到仓库
-		System.setProperty("jib.httpTimeout", "20000");
-		System.setProperty("sendCredentialsOverHttp", "true");
+		//Jib环境变量
+		jibProperty();
 		try {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage).addCredential(
 					imageRepo.getAuthName(),
@@ -273,8 +273,9 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		
 		logger.info("Start to build jdk image");
 		
-		System.setProperty("jib.httpTimeout", "20000");
-		System.setProperty("sendCredentialsOverHttp", "true");
+		//Jib环境变量
+		jibProperty();
+		
 		Path javaHomePath = Paths.get(javaHome);
 		Map<String, String> environmentMap = new HashMap<>();
 		String home = "/usr/local/" + javaHomePath.toFile().getName();
@@ -284,7 +285,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage).addCredential(
 					imageRepo.getAuthName(),
 					imageRepo.getAuthPassword());
-			Jib.from("centos:latest")
+			Jib.from(Constants.CENTOS_IMAGE_URL)
 				.addLayer(Arrays.asList(javaHomePath), AbsoluteUnixPath.get("/usr/local"))
 				//在exec模式下，不可以使用环境变量
 				.setProgramArguments(Arrays.asList("chmod", "+x", home + "/bin/java"))

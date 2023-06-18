@@ -50,6 +50,10 @@ public class Constants {
 	
 	public static final int METRICS_TABLE_SIZE = 32;
 	
+	public static final String BUSYBOX_IMAGE_URL = "dockerproxy.com/library/busybox:latest";
+	
+	public static final String CENTOS_IMAGE_URL = "dockerproxy.com/library/centos:latest";
+	
 	/**
 	 * 部署目录
 	 */

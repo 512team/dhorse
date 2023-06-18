@@ -359,10 +359,29 @@ public abstract class ApplicationService {
 				//ignore
 			}
 			
-			createDHorseConfig();
-			createSecret();
-			creatImageRepoProject();
-			buildDHorseAgentImage();
+			try {
+				createDHorseConfig();
+			} catch (Exception e) {
+				logger.error("Failed to create dhorse config", e);
+			}
+			
+			try {
+				createSecret();
+			} catch (Exception e) {
+				logger.error("Failed to create secret", e);
+			}
+			
+			try {
+				creatImageRepoProject();
+			} catch (Exception e) {
+				logger.error("Failed to creat image repo project", e);
+			}
+			
+			try {
+				buildDHorseAgentImage();
+			} catch (Exception e) {
+				logger.error("Failed to build dhorse agent image", e);
+			}
 		});
 	}
 	
@@ -464,8 +483,10 @@ public abstract class ApplicationService {
 			logger.info("The image repo does not exist, and end to build dhorse agent image");
 			return;
 		}
-		System.setProperty("jib.httpTimeout", "20000");
-		System.setProperty("sendCredentialsOverHttp", "true");
+		
+		//Jib环境变量
+		jibProperty();
+		
 		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		String javaAgentPath = Constants.DHORSE_HOME + "/lib/ext/dhorse-agent-"+ componentConstants.getVersion() +".jar";
 		if(!new File(javaAgentPath).exists()) {
@@ -479,7 +500,7 @@ public abstract class ApplicationService {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfDHorseAgentImage(imageRepo)).addCredential(
 					imageRepo.getAuthName(),
 					imageRepo.getAuthPassword());
-			Jib.from("busybox:latest")
+			Jib.from(Constants.BUSYBOX_IMAGE_URL)
 				.addLayer(Arrays.asList(Paths.get(javaAgentPath)), AbsoluteUnixPath.get(Constants.USR_LOCAL_HOME))
 				.containerize(Containerizer.to(registryImage)
 						.setAllowInsecureRegistries(true)
@@ -488,6 +509,11 @@ public abstract class ApplicationService {
 			logger.error("Failed to build dhorse agent image", e);
 		}
 		logger.info("End to build dhorse agent image");
+	}
+	
+	protected void jibProperty() {
+		System.setProperty("jib.httpTimeout", "600000");
+		System.setProperty("sendCredentialsOverHttp", "true");
 	}
 	
 	protected <D> PageData<D> zeroPageData(int pageSize) {

@@ -666,7 +666,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 			LogUtils.throwException(logger, e, MessageCodeEnum.COPY_FILE_FAILURE);
 		}
 		
-		doBuildImage(context, "busybox:latest", null, Arrays.asList(appPathFile.toPath()));
+		doBuildImage(context, Constants.BUSYBOX_IMAGE_URL, null, Arrays.asList(appPathFile.toPath()));
 
 		return true;
 	}
@@ -676,9 +676,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 		String imageUrl = imageRepo.getUrl();
 		String imageServer = imageUrl.substring(imageUrl.indexOf("//") + 2);
 		
-		//设置连接仓库的超时时间
-		System.setProperty("jib.httpTimeout", "20000");
-		System.setProperty("sendCredentialsOverHttp", "true");
+		//Jib环境变量
+		jibProperty();
+				
 		try {
 			RegistryImage baseImage = RegistryImage.named(baseImageName);
 			if(baseImageName.startsWith(imageServer)) {
@@ -719,7 +719,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 		//War类型文件的基础镜像都是busybox镜像
 		if(PackageFileTypeEnum.WAR.getCode().equals(extend.getPackageFileType())) {
-			baseImage = "busybox:latest";
+			baseImage = Constants.BUSYBOX_IMAGE_URL;
 		}
 		return baseImage;
 	}

@@ -436,16 +436,17 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		
 		logger.info("Start to build agent image");
 		
+		//Jib环境变量
+		jibProperty();
+		
 		//3.制作Agent镜像并上传到仓库
-		System.setProperty("jib.httpTimeout", "20000");
-		System.setProperty("sendCredentialsOverHttp", "true");
 		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		String imageName = "skywalking-agent:v" + taceTemplate.getAgentVersion();
 		try {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage(imageRepo, imageName)).addCredential(
 					imageRepo.getAuthName(),
 					imageRepo.getAuthPassword());
-			Jib.from("busybox:latest")
+			Jib.from(Constants.BUSYBOX_IMAGE_URL)
 				.addLayer(Arrays.asList(Paths.get(parentFile + "/skywalking-agent")), AbsoluteUnixPath.get("/"))
 				.containerize(Containerizer.to(registryImage)
 						.setAllowInsecureRegistries(true)

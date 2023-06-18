@@ -342,7 +342,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 				LogUtils.throwException(logger, e, MessageCodeEnum.AUTH_FAILURE);
 			}
 		}
-		gitLabApi.setRequestTimeout(1000, 5 * 1000);
+		gitLabApi.setRequestTimeout(2000, 30 * 1000);
 		return gitLabApi;
 	}
 }
