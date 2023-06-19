@@ -7,7 +7,7 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 
 * [Gitee](https://gitee.com/i512team/dhorse)
 
-* [演示地址](http://dhorse-demo.512.team)
+* [512技术园](https://www.512.team)
 
 ## 架构
  ![Image text](./static/images/architecture.jpg)
