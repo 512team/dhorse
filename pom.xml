@@ -5,7 +5,7 @@
 	<groupId>org.dhorse</groupId>
 	<artifactId>dhorse-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,7 +16,7 @@
 		-->
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<project.version>1.2.0</project.version>
+		<project.version>1.2.1</project.version>
 		<spring.version>5.3.24</spring.version>
 		<springboot.version>2.7.6</springboot.version>
 	</properties>
