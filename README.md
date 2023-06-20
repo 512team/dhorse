@@ -7,7 +7,9 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 
 * [Gitee](https://gitee.com/i512team/dhorse)
 
-* [512技术园](https://www.512.team)
+* [演示1](http://dhorse-demo1.512.team)
+
+* [演示2](http://dhorse-demo2.512.team)
 
 ## 架构
  ![Image text](./static/images/architecture.jpg)
@@ -19,13 +21,13 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 * 无需安装Maven即可打包
 * 无需安装Node即可打包
 * 支持SpringBoot应用部署
-* 支持Node应用部署
+* 支持Vue和React应用部署
 * 支持多环境部署
 * 支持日志收集
 * 支持链路追踪
 
 ## 主要技术
-Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、H2、Mysql等。
+Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、SQLite、Mysql等。
 
 ## 快速开始
 
