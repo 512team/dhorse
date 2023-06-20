@@ -124,7 +124,7 @@
 					<div class="layui-form-item" style="display:none" id="baseImageDiv2">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-inline" style="width: 350px;">
-							<input type="text" name="baseImage" id="baseImage2" placeholder="如：openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
+							<input type="text" name="baseImage" id="baseImage2" placeholder="如：dockerproxy.com/library/openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
 						</div>
 						<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="#" target="_blank">《镜像制作指引》</a></div>
 					</div>
@@ -182,7 +182,7 @@
 					<div class="layui-form-item" style="display:none" id="baseImageNodeDiv">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-inline" style="width: 350px;">
-							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：nginx:1.23.3" autocomplete="off" class="layui-input">
+							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：dockerproxy.com/library/nginx:1.23.3" autocomplete="off" class="layui-input">
 						</div>
 						<div class="layui-form-mid layui-word-aux"><a href="#" target="_blank">《镜像制作指引》</a></div>
 					</div>
@@ -542,12 +542,12 @@
 	function baseImagePlaceholder(packageFileType, baseImageValue, $, form){
 		//Jar
 		if(packageFileType == 1){
-			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：openjdk:11.0.16-jdk");
-			$("#baseImageDesc a").attr("href", "https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/JDK%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
+			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：dockerproxy.com/library/openjdk:11.0.16-jdk");
+			$("#baseImageDesc a").attr("href", "https://gitee.com/i512team/dhorse-doc/blob/main/guide/JDK%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
 		//War
 		}else if(packageFileType == 2){
-			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：tomcat:9.0.70-jdk11");
-			$("#baseImageDesc a").attr("href", "https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/Tomcat%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
+			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：dockerproxy.com/library/tomcat:9.0.70-jdk11");
+			$("#baseImageDesc a").attr("href", "https://gitee.com/i512team/dhorse-doc/blob/main/guide/Tomcat%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
 		}
 	}
 	
