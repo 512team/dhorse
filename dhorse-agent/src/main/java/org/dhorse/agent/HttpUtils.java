@@ -23,7 +23,7 @@ public class HttpUtils {
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			conn.setConnectTimeout(100);
-			conn.setReadTimeout(100);
+			conn.setReadTimeout(500);
 			conn.connect();
 			out = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
 			out.write(param);

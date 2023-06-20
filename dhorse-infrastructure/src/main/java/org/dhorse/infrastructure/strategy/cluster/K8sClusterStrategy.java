@@ -302,12 +302,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			service.setSpec(serviceSpec(context));
 			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
 		//为了支持应用的平滑发布，Service是不能修改的
-		//由于在v1.2.0版本增加了prometheus的注释功能，所以需要修改Service
-		//但是，此处的else语句内容应当在v1.2.0以后的版本删除
+		//由于在v1.3.0版本增加了prometheus的注释功能，所以需要修改Service
+		//但是，此处的else语句内容应当在v1.3.0以后的版本删除
 		} else {
 			service = serviceList.getItems().get(0);
 			if(service.getMetadata().getAnnotations() == null || service.getMetadata().getAnnotations().size() == 0
-					//该条件配合升级使用，v1.2.0以后版本应当删除
+					//该条件配合升级使用，v1.3.0以后版本应当删除
 					|| service.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY) == null) {
 				//先删除，再创建
 				deleteService(namespace, serviceName, apiClient);
@@ -349,7 +349,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			ingress = list.getItems().get(0);
 			//为了支持应用的平滑发布，只有host发生变化时，才能修改Ingress
 			if(!ingressHost.equals(ingress.getSpec().getRules().get(0).getHost())
-					//该条件配合升级使用，v1.2.0以后版本应当删除
+					//该条件配合升级使用，v1.3.0以后版本应当删除
 					|| ingress.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY) == null){
 				ingress.setMetadata(ingressMeta(ingressName));
 				ingress.setSpec(ingressSpec(context, ingressName, ingressHost));
@@ -1883,6 +1883,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				V1ConfigMap configMap = K8sClusterUtils.dhorseConfigMap();
 				if(CollectionUtils.isEmpty(list.getItems())) {
 					String ipPortUri = Constants.hostIp() + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
+					if(ipPortUri.startsWith(Constants.LOCALHOST_IP)) {
+						LogUtils.throwException(logger, "Your dhorse server mast have a valid ip, not 127.0.0.1", MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
+					}
 					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));
 					coreApi.createNamespacedConfigMap(namespace, configMap, null, null, null, null);
 				}else {
@@ -1894,6 +1897,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					if(!StringUtils.isBlank(ipStr)) {
 						String[] ips = ipStr.split(",");
 						for(String ip : ips) {
+							if(ip.startsWith(Constants.LOCALHOST_IP)) {
+								continue;
+							}
 							if(!HttpUtils.pingDHorseServer(ip)) {
 								continue;
 							}

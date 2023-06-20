@@ -54,6 +54,8 @@ public class Constants {
 	
 	public static final String CENTOS_IMAGE_URL = "dockerproxy.com/library/centos:latest";
 	
+	public static final String LOCALHOST_IP = "127.0.0.1";
+	
 	/**
 	 * 部署目录
 	 */
