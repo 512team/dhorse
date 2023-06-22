@@ -475,7 +475,6 @@ public abstract class ApplicationService {
 	}
 	
 	protected void buildDHorseAgentImage() {
-		logger.info("Start to build jvm metrics agent image");
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
@@ -483,11 +482,15 @@ public abstract class ApplicationService {
 			logger.info("The image repo does not exist, and end to build dhorse agent image");
 			return;
 		}
+		buildDHorseAgentImage(globalConfigAgg.getImageRepo());
+	}
+	
+	protected void buildDHorseAgentImage(ImageRepo imageRepo) {
+		logger.info("Start to build jvm metrics agent image");
 		
 		//Jib环境变量
 		jibProperty();
 		
-		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		String javaAgentPath = Constants.DHORSE_HOME + "/lib/ext/dhorse-agent-"+ componentConstants.getVersion() +".jar";
 		if(!new File(javaAgentPath).exists()) {
 			javaAgentPath = Constants.DHORSE_HOME + "/dhorse-agent/target/dhorse-agent-"+ componentConstants.getVersion() +".jar";

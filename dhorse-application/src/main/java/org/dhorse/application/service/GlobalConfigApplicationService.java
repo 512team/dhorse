@@ -220,7 +220,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		
 		//构建DHorseAgent镜像
 		ThreadPoolUtils.async(() -> {
-			buildDHorseAgentImage();
+			buildDHorseAgentImage(imageRepo);
 		});
 		
 		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
