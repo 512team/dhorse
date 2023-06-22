@@ -13,8 +13,8 @@
 						</select>
 					</div>
 				</div>
-				<input type="hidden" name="appId" id="appId"/>
-				<input type="hidden" name="envId" id="envId"/>
+				<input type="hidden" name="appId" id="appId2"/>
+				<input type="hidden" name="envId" id="envId2"/>
 				<div class="layui-inline">
 					<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
 				</div>
@@ -86,7 +86,8 @@
 		var appId = localStorage.getItem('appId_' + $("#userName").val());
 		var envId = JSON.parse(parent.data2).envId;
 
-		$("#appId").val(appId);
+		$("#appId2").val(appId);
+		$("#envId2").val(envId);
 		
 		form.render();
 		
@@ -99,7 +100,7 @@
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"appId": appId},
+			where: {"appId": appId, "envId": envId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
