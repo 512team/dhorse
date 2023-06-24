@@ -48,6 +48,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.component.SpringBeanContext;
+import org.dhorse.infrastructure.model.JsonPatch;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -74,6 +75,7 @@ import io.kubernetes.client.PodLogs;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.PodMetricsList;
 import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
@@ -165,7 +167,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		secret.setType("kubernetes.io/dockerconfigjson");
 		V1ObjectMeta meta = new V1ObjectMeta();
 		meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
-		meta.setLabels(dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
+		meta.setLabels(K8sClusterUtils.dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
 		secret.setMetadata(meta);
 		secret.setData(dockerConfigData(imageRepo));
 		
@@ -266,10 +268,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				return false;
 			}
 			
-			//部署Service
+			//默认创建一个ClusterIP的Service
 			createService(context);
 			
-			//Vue和React应用的Ingress
+			//如果Vue和React应用设置了域名，则创建Ingress
 			createIngress(context);
 			
 		} catch (ApiException e) {
@@ -285,7 +287,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean createService(DeploymentContext context) throws ApiException {
-		logger.info("Start to create service");
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
@@ -293,30 +294,24 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String serviceName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
 				"app=" + serviceName, 1, null, null, null, null);
-		V1Service service = null;
 		if (CollectionUtils.isEmpty(serviceList.getItems())) {
-			service = new V1Service();
+			logger.info("Start to create service");
+			V1Service service = new V1Service();
 			service.apiVersion("v1");
 			service.setKind("Service");
 			service.setMetadata(serviceMeta(serviceName, context));
 			service.setSpec(serviceSpec(context));
-			service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
-		//为了支持应用的平滑发布，Service是不能修改的
-		//由于在v1.2.0版本增加了prometheus的注释功能，所以需要修改Service
-		//但是，此处的else语句内容应当在v1.2.0以后的版本删除
-		} else {
-			service = serviceList.getItems().get(0);
-			if(service.getMetadata().getAnnotations() == null || service.getMetadata().getAnnotations().size() == 0
-					//该条件配合升级使用，v1.2.0以后版本应当删除
-					|| service.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY) == null) {
-				//先删除，再创建
-				deleteService(namespace, serviceName, apiClient);
-				service.setMetadata(serviceMeta(serviceName, context));
-				service.setSpec(serviceSpec(context));
-				service = coreApi.createNamespacedService(namespace, service, null, null, null, null);
+			coreApi.createNamespacedService(namespace, service, null, null, null, null);
+		}else{
+			List<JsonPatch> patchs = K8sClusterUtils.updatePrometheus("Service", serviceList.getItems().get(0)
+					.getMetadata().getAnnotations(), context);
+			if(!CollectionUtils.isEmpty(patchs)) {
+				logger.info("Start to update service");
+				V1Patch patch = new V1Patch(JsonUtils.toJsonString(patchs));
+				coreApi.patchNamespacedService(serviceName, namespace, patch, null, null, null, null, null);
+				logger.info("Start to update service");
 			}
 		}
-		logger.info("End to create service");
 		return true;
 	}
 	
@@ -331,7 +326,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String namespace = context.getAppEnv().getNamespaceName();
 		String ingressName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		
-		logger.info("Start to create ingress");
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
@@ -339,33 +333,41 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				"app=" + ingressName, 1, null, null, null, null);
 		V1Ingress ingress = null;
 		if (!StringUtils.isBlank(ingressHost) && CollectionUtils.isEmpty(list.getItems())) {
+			logger.info("Start to create ingress");
 			ingress = new V1Ingress();
 			ingress.apiVersion("networking.k8s.io/v1");
 			ingress.setKind("Ingress");
-			ingress.setMetadata(ingressMeta(ingressName));
+			ingress.setMetadata(ingressMeta(ingressName, context));
 			ingress.setSpec(ingressSpec(context, ingressName, ingressHost));
-			ingress = networkingApi.createNamespacedIngress(namespace, ingress, null, null, null, null);
+			networkingApi.createNamespacedIngress(namespace, ingress, null, null, null, null);
+			logger.info("End to create ingress");
 		}else if(!StringUtils.isBlank(ingressHost) && !CollectionUtils.isEmpty(list.getItems())) {
+			logger.info("Start to update ingress");
 			ingress = list.getItems().get(0);
-			//为了支持应用的平滑发布，只有host发生变化时，才能修改Ingress
+			List<JsonPatch> patchs = K8sClusterUtils.updatePrometheus("Ingress", ingress.getMetadata().getAnnotations(), context);
+			//为了支持应用的平滑发布，只有host发生变化或注释变化时，才修改Ingress
 			if(!ingressHost.equals(ingress.getSpec().getRules().get(0).getHost())
-					//该条件配合升级使用，v1.2.0以后版本应当删除
-					|| ingress.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY) == null){
-				ingress.setMetadata(ingressMeta(ingressName));
-				ingress.setSpec(ingressSpec(context, ingressName, ingressHost));
-				networkingApi.replaceNamespacedIngress(ingressName, namespace, ingress, null, null, null, null);
+					|| !CollectionUtils.isEmpty(patchs)){
+				JsonPatch host = new JsonPatch();
+				host.setOp("replace");
+				host.setPath("/spec/rules/0/host");
+				host.setValue(ingressHost);
+				patchs.add(host);
+				V1Patch patch = new V1Patch(JsonUtils.toJsonString(patchs));
+				networkingApi.patchNamespacedIngress(ingressName, namespace, patch, null, null, null, null, null);
 			}
+			logger.info("End to update ingress");
 		}else if(StringUtils.isBlank(ingressHost) && !CollectionUtils.isEmpty(list.getItems())){
 			networkingApi.deleteNamespacedIngress(ingressName, namespace, null, null, null, null, null, null);
 		}
-		logger.info("End to create ingress");
 		return true;
 	}
 	
-	private V1ObjectMeta ingressMeta(String appName) {
+	private V1ObjectMeta ingressMeta(String appName, DeploymentContext context) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(dhorseLabel(appName));
+		metadata.setLabels(K8sClusterUtils.dhorseLabel(appName));
+		metadata.setAnnotations(K8sClusterUtils.addPrometheus("Ingress", context));
 		return metadata;
 	}
 	
@@ -541,15 +543,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	private V1ObjectMeta serviceMeta(String appName, DeploymentContext context) {
-		Map<String, String> annotations = new HashMap<>();
-		annotations.put("prometheus.io/scrape", "true");
-		annotations.put("prometheus.io/port", context.getAppEnv().getServicePort().toString());
-		annotations.put("prometheus.io/path", "/metrics");
-		
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(dhorseLabel(appName));
-		metadata.setAnnotations(annotations);
+		metadata.setLabels(K8sClusterUtils.dhorseLabel(appName));
+		metadata.setAnnotations(K8sClusterUtils.addPrometheus("Service", context));
 		return metadata;
 	}
 	
@@ -590,7 +587,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1ObjectMeta deploymentMetaData(String appName, String envTag) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(dhorseLabel(appName));
+		metadata.setLabels(K8sClusterUtils.dhorseLabel(appName));
 		return metadata;
 	}
 
@@ -611,9 +608,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private V1PodTemplateSpec specTemplate(DeploymentContext context) {
 		V1ObjectMeta specMetadata = new V1ObjectMeta();
-		Map<String, String> labels = dhorseLabel(context.getDeploymentName());
+		Map<String, String> labels = K8sClusterUtils.dhorseLabel(context.getDeploymentName());
 		labels.put("version", String.valueOf(System.currentTimeMillis()));
 		specMetadata.setLabels(labels);
+		specMetadata.setAnnotations(K8sClusterUtils.addPrometheus("Pod", context));
 		V1PodTemplateSpec template = new V1PodTemplateSpec();
 		template.setMetadata(specMetadata);
 		template.setSpec(podSpec(context));
@@ -1628,7 +1626,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			return metrics.getPodMetrics(namespace);
 		} catch (ApiException e) {
 			if(e.getCode() == 404) {
-				logger.error("Failed to collect pod metrics, metrics server uninstalled possibly");
+				logger.error("Failed to collect pod metrics, metrics server may not bee installed");
 			}else {
 				logger.error("Failed to collect pod metrics", e);
 			}
@@ -1924,7 +1922,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		configMap.setKind("ConfigMap");
 		V1ObjectMeta meta = new V1ObjectMeta();
 		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
-		meta.setLabels(dhorseLabel(K8sUtils.DHORSE_CONFIGMAP_NAME));
+		meta.setLabels(K8sClusterUtils.dhorseLabel(K8sUtils.DHORSE_CONFIGMAP_NAME));
 		configMap.setMetadata(meta);
 		
 		try {
@@ -1972,12 +1970,5 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
 		}
 		return null;
-	}
-	
-	private Map<String, String> dhorseLabel(String value) {
-		Map<String, String> labels = new HashMap<>();
-		labels.put("app", value);
-		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
-		return labels;
 	}
 }

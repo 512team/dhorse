@@ -2,9 +2,11 @@ package org.dhorse.rest.resource;
 
 import org.dhorse.api.param.app.env.EnvHealthQueryParam;
 import org.dhorse.api.param.app.env.EnvLifeCycleQueryParam;
+import org.dhorse.api.param.app.env.EnvPrometheusQueryParam;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
+import org.dhorse.api.response.model.EnvPrometheus;
 import org.dhorse.application.service.EnvExtApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -70,5 +72,28 @@ public class EnvExtRest extends AbstractRest {
 	public RestResponse<Void> addOrUpdateLifecycle(@CookieValue("login_token") String loginToken,
 			@RequestBody EnvLifecycle addParam) {
 		return success(envExtApplicationService.addOrUpdateLifecycle(queryLoginUserByToken(loginToken), addParam));
+	}
+	
+	/**
+	 * 查询Prometheus配置
+	 * 
+	 * @return 符合条件的数据
+	 */
+	@PostMapping("/queryPrometheus")
+	public RestResponse<EnvPrometheus> queryPrometheus(@CookieValue("login_token") String loginToken,
+			@RequestBody EnvPrometheusQueryParam queryParam) {
+		return success(envExtApplicationService.queryPrometheus(queryLoginUserByToken(loginToken), queryParam));
+	}
+
+	/**
+	 * 添加（修改）Prometheus配置
+	 * 
+	 * @param addParam 添加（修改）参数
+	 * @return 无
+	 */
+	@PostMapping("/addOrUpdatePrometheus")
+	public RestResponse<Void> addOrUpdatePrometheus(@CookieValue("login_token") String loginToken,
+			@RequestBody EnvPrometheus addParam) {
+		return success(envExtApplicationService.addOrUpdatePrometheus(queryLoginUserByToken(loginToken), addParam));
 	}
 }

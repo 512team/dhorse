@@ -51,6 +51,7 @@ import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
+import org.dhorse.api.response.model.EnvPrometheus;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
@@ -380,6 +381,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		AppEnvPO appEnvPO = appEnvRepository.queryById(deployParam.getEnvId());
 		EnvHealth envHealth = envHealth(deployParam);
 		EnvLifecycle lifecycle = lifecycle(deployParam);
+		EnvPrometheus prometheus = prometheus(deployParam);
 		App app = appRepository.queryWithExtendById(appEnvPO.getAppId());
 		AffinityTolerationParam affinityTolerationParam = new AffinityTolerationParam();
 		affinityTolerationParam.setEnvId(appEnvPO.getId());
@@ -409,6 +411,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		context.setAppEnv(appEnvPO);
 		context.setEnvHealth(envHealth);
 		context.setEnvLifecycle(lifecycle);
+		context.setEnvPrometheus(prometheus);
 		context.setAffinitys(affinitys);
 		context.setComponentConstants(componentConstants);
 		context.setClusterStrategy(clusterStrategy(context.getCluster().getClusterType()));
@@ -443,6 +446,15 @@ public abstract class DeployApplicationService extends ApplicationService {
 		extParam.setEnvId(deployParam.getEnvId());
 		EnvLifecycle lifecycle = envExtRepository.listLifecycle(extParam);
 		return lifecycle;
+	}
+	
+	private EnvPrometheus prometheus(DeployParam deployParam) {
+		EnvExtParam extParam = new EnvExtParam();
+		extParam.setExType(EnvExtTypeEnum.PROMETHEUS.getCode());
+		extParam.setAppId(deployParam.getAppId());
+		extParam.setEnvId(deployParam.getEnvId());
+		EnvPrometheus model = envExtRepository.queryPrometheus(extParam);
+		return model;
 	}
 	
 	private DeploymentContext checkAndBuildDeployContext(DeployParam deployParam, DeploymentStatusEnum deploymentStatus) {
