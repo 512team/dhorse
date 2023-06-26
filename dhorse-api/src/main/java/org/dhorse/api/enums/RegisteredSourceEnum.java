@@ -7,9 +7,9 @@ package org.dhorse.api.enums;
  */
 public enum RegisteredSourceEnum {
 
-	DHORSE(1, "Dhorse"),
-	LDAP(2, "Ldap"),
-	SSO(3, "Sso");
+	DHORSE(1, "DHorse"),
+	LDAP(2, "LDAP"),
+	SSO(3, "SSO");
 
 	private Integer code;
 

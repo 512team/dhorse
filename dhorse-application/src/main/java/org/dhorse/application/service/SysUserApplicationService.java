@@ -7,9 +7,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RegisteredSourceEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
+import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.user.PasswordSetParam;
 import org.dhorse.api.param.user.PasswordUpdateParam;
 import org.dhorse.api.param.user.RoleUpdateParam;
@@ -23,6 +25,7 @@ import org.dhorse.api.param.user.UserUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.SysUser;
+import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.po.SysUserPO;
 import org.dhorse.infrastructure.strategy.login.LdapUserStrategy;
@@ -165,20 +168,21 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 	}
 
 	/**
-	 * 搜索用户
+	 * 搜索用户<p>
+	 * 该方法会一次性把所有的用户查询出来，然后通过前端过滤组件来实现搜索
+	 * 如果用户量较大的话，会存在性能问题，后期可以实现真正的后端搜索
 	 * 
 	 * @param usersearchParam 搜索用户参数
 	 * @return 符合条件的用户列表
 	 */
 	public List<SysUser> search(UserSearchParam usersearchParam) {
-//		GlobalConfigParam param = new GlobalConfigParam();
-//		param.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
-//		GlobalConfigAgg ldap = globalConfigRepository.queryAgg(param);
-//		Integer loginSource = RegisteredSourceEnum.DHORSE.getCode();
-//		if (ldap.getLdap() != null && YesOrNoEnum.YES.getCode().equals(ldap.getLdap().getEnable())) {
-//			loginSource = RegisteredSourceEnum.LDAP.getCode();
-//		}
+		GlobalConfigParam param = new GlobalConfigParam();
+		param.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
+		GlobalConfigAgg ldap = globalConfigRepository.queryAgg(param);
 		Integer loginSource = RegisteredSourceEnum.DHORSE.getCode();
+		if (ldap.getLdap() != null && YesOrNoEnum.YES.getCode().equals(ldap.getLdap().getEnable())) {
+			loginSource = RegisteredSourceEnum.LDAP.getCode();
+		}
 		UserStrategy userStrategy = userStrategy(loginSource);
 		return userStrategy.search(usersearchParam.getLoginName(), this.globalConfig());
 	}

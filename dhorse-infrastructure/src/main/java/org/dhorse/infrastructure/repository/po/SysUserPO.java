@@ -3,6 +3,7 @@ package org.dhorse.infrastructure.repository.po;
 import java.util.Date;
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
@@ -41,7 +42,7 @@ public class SysUserPO extends BasePO {
 	private Integer roleType;
 
 	/**
-	 * 注册来源，1：Dhorse，2：Ldap，3：Sso
+	 * 注册来源，1：DHorse，2：LDAP，3：SSO
 	 */
 	private Integer registeredSource;
 
@@ -54,6 +55,9 @@ public class SysUserPO extends BasePO {
 	 * 上次登录token
 	 */
 	private String lastLoginToken;
+
+	@TableField(exist = false)
+	private List<String> loginNames;
 
 	public String getLoginName() {
 		return loginName;
@@ -117,6 +121,14 @@ public class SysUserPO extends BasePO {
 
 	public void setLastLoginToken(String lastLoginToken) {
 		this.lastLoginToken = lastLoginToken;
+	}
+
+	public List<String> getLoginNames() {
+		return loginNames;
+	}
+
+	public void setLoginNames(List<String> loginNames) {
+		this.loginNames = loginNames;
 	}
 
 	@Override

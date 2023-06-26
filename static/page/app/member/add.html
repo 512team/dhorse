@@ -8,7 +8,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label required">应用成员</label>
 			<div class="layui-input-block">
-				<select name="userId" id="userId" lay-filter="userId" lay-verify="required" lay-reqtext="应用成员不能为空" lay-search>
+				<select name="loginName" id="loginName" lay-verify="required" lay-reqtext="应用成员不能为空" lay-search>
 					<option value="">请选择或输入</option>
 				</select>
 			</div>
@@ -51,9 +51,9 @@
 				data = res.data
 				var opt = '';
 				for(var k in data){
-					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].loginName +"</option>");
+					opt = opt.concat("<option value='"+ data[k].loginName +"'>"+ data[k].loginName +"</option>");
 				}
-				$("#userId").append(opt);
+				$("#loginName").append(opt);
 				form.render('select');
 			},
 			error: function(data){

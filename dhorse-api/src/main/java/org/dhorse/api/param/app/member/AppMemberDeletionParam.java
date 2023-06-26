@@ -17,9 +17,9 @@ public class AppMemberDeletionParam implements Serializable {
 	private String appId;
 
 	/**
-	 * 用户编号
+	 * 登录名
 	 */
-	private String userId;
+	private String loginName;
 
 	public String getAppId() {
 		return appId;
@@ -29,12 +29,12 @@ public class AppMemberDeletionParam implements Serializable {
 		this.appId = appId;
 	}
 
-	public String getUserId() {
-		return userId;
+	public String getLoginName() {
+		return loginName;
 	}
 
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setLoginName(String loginName) {
+		this.loginName = loginName;
 	}
 
 }

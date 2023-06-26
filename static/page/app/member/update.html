@@ -17,7 +17,7 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label required">应用成员</label>
 			<div class="layui-input-block">
-				<label class="layui-form-label text-value" id="loginName"></label>
+				<label class="layui-form-label text-value" id="showName"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -27,7 +27,7 @@
 			</div>
 		</div>
 		<input type="hidden" name="appId" id="appId">
-		<input type="hidden" name="userId" id="userId">
+		<input type="hidden" name="loginName" id="loginName">
 		<div class="layui-form-item">
 			<div class="layui-input-block">
 				<button class="layui-btn layui-btn-normal" lay-submit id="saveBtn" lay-filter="saveBtn">确认保存</button>
@@ -47,8 +47,8 @@
 			parentIndex = layer.index;
 		var parentData = JSON.parse(parent.data);
 		$("#appId").val(localStorage.getItem('appId_' + parent.layui.$("#userName").val()));
-		$("#userId").val(parentData.userId);
-		$("#loginName").text(parentData.userName + "|" + parentData.loginName);
+		$("#loginName").val(parentData.loginName);
+		$("#showName").text(parentData.userName + "|" + parentData.loginName);
 		var roleType = xmSelect.render({
 			el: '#roleType', 
 			data: [

@@ -1,5 +1,7 @@
 package org.dhorse.infrastructure.param;
 
+import java.util.List;
+
 /**
  * 用户表
  * 
@@ -45,9 +47,11 @@ public class SysUserParam extends PageParam {
 	private String lastLoginToken;
 
 	/**
-	 * 注册来源，1：Dhorse，2：Ldap，3：Sso
+	 * 注册来源，1：DHorse，2：LDAP，3：SSO
 	 */
 	private Integer registeredSource;
+
+	private List<String> loginNames;
 
 	public String getLoginName() {
 		return loginName;
@@ -112,4 +116,13 @@ public class SysUserParam extends PageParam {
 	public void setRegisteredSource(Integer registeredSource) {
 		this.registeredSource = registeredSource;
 	}
+
+	public List<String> getLoginNames() {
+		return loginNames;
+	}
+
+	public void setLoginNames(List<String> loginNames) {
+		this.loginNames = loginNames;
+	}
+
 }

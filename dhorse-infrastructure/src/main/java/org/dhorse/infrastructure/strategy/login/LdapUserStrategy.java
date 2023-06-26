@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.naming.AuthenticationException;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -14,8 +15,8 @@ import org.dhorse.api.enums.RegisteredSourceEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.param.user.UserLoginParam;
 import org.dhorse.api.response.model.GlobalConfigAgg;
-import org.dhorse.api.response.model.SysUser;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
+import org.dhorse.api.response.model.SysUser;
 import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.SysUserRepository;
@@ -34,25 +35,30 @@ public class LdapUserStrategy extends UserStrategy {
 	
 	@Override
 	public LoginUser login(UserLoginParam userLoginParam, GlobalConfigAgg globalConfig, PasswordEncoder passwordEncoder) {
-		//1.首先使用登录的方式验证账户
-		Attributes attrs = LdapUtils.authByDn(globalConfig.getLdap().getUrl(),
-				"uid="+ userLoginParam.getLoginName() + "," + globalConfig.getLdap().getSearchBaseDn(), userLoginParam.getPassword());
-		//2.如果登录失败，再采用比较密码的方式验证
-		if(attrs == null) {
-			Ldap ldap = globalConfig.getLdap();
-			LdapContext ldapContext = LdapUtils.initContext(ldap.getUrl(),
-					ldap.getAdminDn(), ldap.getAdminPassword());
-			attrs = LdapUtils.authByComparePassword(ldapContext, ldap.getSearchBaseDn(), 
-					userLoginParam.getLoginName(), userLoginParam.getPassword());
+		Attributes attrs = null;
+		//1.首先用cn登录
+		try {
+			attrs = doLogin("cn", userLoginParam, globalConfig);
+		}catch(Exception e) {
+			if(e instanceof AuthenticationException && e.getMessage().contains("non-existant")) {
+				logger.error("Failed to login by cn, message: {}", e.getMessage());
+			}else {
+				logger.error("Failed to login by cn", e);
+			}
 		}
 		
+		//2.如果cn登录不成功，则用uid登录
 		if(attrs == null) {
-			return null;
+			try {
+				attrs = doLogin("uid", userLoginParam, globalConfig);
+			}catch(Exception e) {
+				logger.error("Failed to login by uid", e);
+			}
 		}
 		
 		LoginUser loginUser = buildUser(attrs);
 		
-		//本地库查询角色
+		//3.本地库查询角色
 		SysUserRepository sysUserRepository = SpringBeanContext.getBean(SysUserRepository.class);
 		SysUserPO sysUserPO = sysUserRepository.queryByLoginName(userLoginParam.getLoginName());
 		if(sysUserPO == null) {
@@ -72,13 +78,31 @@ public class LdapUserStrategy extends UserStrategy {
 		return loginUser;
 	}
 
+	private Attributes doLogin(String type, UserLoginParam userLoginParam, GlobalConfigAgg globalConfig) throws NamingException {
+		String dn = type + "=" + userLoginParam.getLoginName() + "," + globalConfig.getLdap().getSearchBaseDn();
+		//1.首先使用登录的方式验证账户
+		Attributes attrs = LdapUtils.authByDn(globalConfig.getLdap().getUrl(), dn, userLoginParam.getPassword());
+		//2.如果登录失败，再采用比较密码的方式验证
+		if(attrs == null) {
+			Ldap ldap = globalConfig.getLdap();
+			LdapContext ldapContext = LdapUtils.initContext(ldap.getUrl(),
+					ldap.getAdminDn(), ldap.getAdminPassword());
+			attrs = LdapUtils.authByComparePassword(ldapContext, ldap.getSearchBaseDn(), 
+					userLoginParam.getLoginName(), userLoginParam.getPassword());
+		}
+		
+		return attrs;
+	}
+	
 	@Override
 	public List<SysUser> search(String userName, GlobalConfigAgg globalConfig) {
 		Ldap ldap = globalConfig.getLdap();
-		LdapContext ldapContext = LdapUtils.initContext(ldap.getUrl(),
-				ldap.getAdminDn(), ldap.getAdminPassword());
-		if(ldapContext == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.INIT_LDAP_FAILURE);
+		LdapContext ldapContext = null;
+		try {
+			ldapContext = LdapUtils.initContext(ldap.getUrl(),
+					ldap.getAdminDn(), ldap.getAdminPassword());
+		} catch (NamingException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.INIT_LDAP_FAILURE);
 		}
 		List<Attributes> attributesList = LdapUtils.searchEntity(ldapContext, ldap.getSearchBaseDn(), userName);
 		if(CollectionUtils.isEmpty(attributesList)) {
@@ -95,8 +119,9 @@ public class LdapUserStrategy extends UserStrategy {
 			Attribute attrEmail = attrs.get("email");
 			if(attrUid != null) {
 				loginUser.setLoginName((String)attrUid.get());
-			}
-			if(attrCn != null) {
+				loginUser.setUserName((String)attrCn.get());
+			}else if(attrCn != null) {
+				loginUser.setLoginName((String)attrCn.get());
 				loginUser.setUserName((String)attrCn.get());
 			}
 			if(attrEmail != null) {

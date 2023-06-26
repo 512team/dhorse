@@ -26,9 +26,9 @@
 					<div class="layui-input-inline">
 						<select name="registeredSource" id="registeredSource">
 							<option value="">注册来源</option>
-							<option value="1">Dhorse</option>
-							<option value="2">Ldap</option>
-							<option value="3">Sso</option>
+							<option value="1">DHorse</option>
+							<option value="2">LDAP</option>
+							<option value="3">SSO</option>
 						</select>
 					</div>
 				</div>
@@ -69,11 +69,11 @@
 	</script>
 	<script type="text/html" id="registeredSourceBar">
 		{{#	if (d.registeredSource == 1){		}}
-		{{#		return 'Dhorse'					}}
+		{{#		return 'DHorse'					}}
 		{{#	}else if (d.registeredSource == 2){	}}
-		{{#		return 'Ldap'					}}
+		{{#		return 'LDAP'					}}
 		{{#	}else if (d.registeredSource == 3){	}}
-		{{#		return 'Sso' 					}}
+		{{#		return 'SSO' 					}}
 		{{#	}                     				}}
 	</script>
 </div>

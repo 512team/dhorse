@@ -56,7 +56,7 @@ public class InitializingDBComponent implements InitializingBean {
 	private void checkDataPath() throws Exception {
 		File dataPath = Paths.get(componentConstants.getDataPath()).toFile();
 		if (!dataPath.exists()) {
-			logger.info("Dhorse data path does not exist and create it, path={}",
+			logger.info("DHorse data path does not exist and create it, path={}",
 					componentConstants.getDataPath());
 			if (dataPath.mkdirs()) {
 				logger.info("Create dhorse data path successfully");
@@ -64,7 +64,7 @@ public class InitializingDBComponent implements InitializingBean {
 				throw new SysException("Failed to create dhorse data path");
 			}
 		} else if (!dataPath.isDirectory()) {
-			throw new SysException("Dhorse data path does not exist");
+			throw new SysException("DHorse data path does not exist");
 		} else {
 			logger.info("The path of dhorse exists and does not need to be created, path={}",
 					componentConstants.getDataPath());
@@ -72,14 +72,14 @@ public class InitializingDBComponent implements InitializingBean {
 
 		File versionFilePath = Paths.get(dataPath.getAbsolutePath() + File.separator + "version").toFile();
 		if (!versionFilePath.exists()) {
-			logger.info("Dhorse version file does not exist and create it");
+			logger.info("DHorse version file does not exist and create it");
 			if (versionFilePath.createNewFile()) {
 				logger.info("Create dhorse version file successfully");
 			} else {
 				throw new SysException("Failed to create dhorse version");
 			}
 		} else if (!versionFilePath.isFile()) {
-			throw new SysException("Dhorse version file does not exist");
+			throw new SysException("DHorse version file does not exist");
 		} else {
 			logger.info("The version file of dhorse exists and does not need to be created");
 		}

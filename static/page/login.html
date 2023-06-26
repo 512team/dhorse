@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Dhorse-简单易用的DevOps开发平台</title>
+    <title>DHorse-简单易用的DevOps开发平台</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta http-equiv="Access-Control-Allow-Origin" content="*">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -45,8 +45,7 @@
 		</div>
 		<div class="layui-tab layui-tab-brief" lay-filter="login-handle">
 			<ul class="layui-tab-title">
-				<li class="layui-this" lay-id="11">普通</li>
-				<li lay-id="ldap-title" id="ldap-title" style="display: none">LDAP</li>
+				<li class="layui-this" lay-id="normal-title" id="normal-title">普通</li>
 			</ul>
 			<div class="layui-tab-content">
 				<div class="layui-tab-item layui-show">
@@ -107,14 +106,16 @@
 				if(!res.data || !res.data.url){
 					return false;
 				}
+				//如果没有开启
 				if(res.data.enable != 1){
 					return false;
 				}
 				element.tabAdd('login-handle', {
-					title: $("#ldap-title").html(),
+					title: 'LDAP',
 					content: $("#ldap-context").html(),
-					id: 'ldap-tab'
-				})
+					id: 'ldap-title'
+				});
+				element.tabChange('login-handle', 'ldap-title');
 			},
 			error: function(res){
 				return false;

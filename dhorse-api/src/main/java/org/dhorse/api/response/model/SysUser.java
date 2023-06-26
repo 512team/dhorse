@@ -30,7 +30,7 @@ public class SysUser extends BaseDto {
 	private Integer roleType;
 
 	/**
-	 * 注册来源，1：Dhorse，2：Ldap，3：Sso
+	 * 注册来源，1：DHorse，2：LDAP，3：SSO
 	 */
 	private Integer registeredSource;
 

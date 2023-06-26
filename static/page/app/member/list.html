@@ -167,16 +167,16 @@
 					shadeClose: false,
 					area: ['40%', '50%'],
 					offset: ['23%', '30%'],
-					content: ['page/app/member/update.html?random=' + Math.random(), 'no']
+					content: ['page/app/member/update.html', 'no']
                 });
             }else if (obj.event === 'delete') {
-                doDelete($, obj.data.appId, obj.data.userId, obj.data.userName);
+                doDelete($, obj.data.appId, obj.data.loginName, obj.data.userName);
             }
 			return false;
         });
     });
 	
-	function doDelete($, appId, userId, userName) {
+	function doDelete($, appId, loginName, userName) {
 		var msg = '确定删除：' + userName + "？";
 		layer.confirm(msg, function (index) {
 			layer.close(index);
@@ -185,7 +185,7 @@
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"appId": appId, "userId": userId}),
+				data: JSON.stringify({"appId": appId, "loginName": loginName}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});

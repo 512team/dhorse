@@ -22,7 +22,7 @@ public class LdapUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(LdapUtils.class);
 
-	public static LdapContext initContext(String url, String dn, String password) {
+	public static LdapContext initContext(String url, String dn, String password) throws NamingException {
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		// LDAP工厂
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -34,12 +34,7 @@ public class LdapUtils {
 		// AD Password
 		env.put(Context.SECURITY_CREDENTIALS, password);
 		env.put("java.naming.ldap.attributes.binary", "objectSid objectGUID");
-		try {
-			return new InitialLdapContext(env, null);
-		} catch (NamingException e) {
-			logger.error("Failed to init ldap context", e);
-		}
-		return null;
+		return new InitialLdapContext(env, null);
 	}
 
 	public static List<Attributes> searchEntity(LdapContext ldapContext, String baseDn, String searchName) {
@@ -103,7 +98,7 @@ public class LdapUtils {
 		return null;
 	}
 	
-	public static Attributes authByDn(String url, String dn, String password) {
+	public static Attributes authByDn(String url, String dn, String password) throws NamingException {
 		LdapContext ldapContext = initContext(url, dn, password);
 		if(ldapContext == null) {
 			return null;

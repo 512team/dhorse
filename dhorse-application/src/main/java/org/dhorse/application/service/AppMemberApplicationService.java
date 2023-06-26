@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.RegisteredSourceEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.member.AppMemberCreationParam;
@@ -95,22 +97,30 @@ public class AppMemberApplicationService extends BaseApplicationService<AppMembe
 		if(CollectionUtils.isEmpty(addParam.getRoleTypes())){
 			LogUtils.throwException(logger, MessageCodeEnum.ROLE_TYPE_IS_EMPTY);
 		}
-		//被添加用户必须存在
-		SysUserPO sysUserPO = sysUserRepository.queryById(addParam.getUserId());
+		//如果用户不存在，则进行保存
+		SysUserPO sysUserPO = sysUserRepository.queryByLoginName(addParam.getLoginName());
+		String userId = null;
 		if(sysUserPO == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.SYS_USER_IS_INEXISTENCE);
+			SysUserParam bizParam = new SysUserParam();
+			bizParam.setLoginName(addParam.getLoginName());
+			bizParam.setUserName(addParam.getLoginName());
+			bizParam.setRegisteredSource(RegisteredSourceEnum.LDAP.getCode());
+			bizParam.setRoleType(RoleTypeEnum.NORMAL.getCode());
+			userId = sysUserRepository.add(bizParam);
+		}else{
+			userId = sysUserPO.getId();
 		}
 		//添加成员
 		AppMemberParam bizParam = new AppMemberParam();
 		bizParam.setAppId(addParam.getAppId());
-		bizParam.setUserId(addParam.getUserId());
+		bizParam.setUserId(userId);
 		AppMemberPO appMemberPO = appMemberRepository.query(bizParam);
 		bizParam.setRoleTypes(addParam.getRoleTypes());
 		if(appMemberPO != null) {
 			bizParam.setId(appMemberPO.getId());
 			appMemberRepository.update(bizParam);
 		}else {
-			bizParam.setLoginName(sysUserPO.getLoginName());
+			bizParam.setLoginName(addParam.getLoginName());
 			appMemberRepository.add(bizParam);
 		}
 		return null;
@@ -122,7 +132,7 @@ public class AppMemberApplicationService extends BaseApplicationService<AppMembe
 		//只有管理员才有操作权限
 		hasAdminRights(loginUser, deleteParam.getAppId());
 		//此外，当前登录用户不具有删除自己的权限
-		if(loginUser.getId().equals(deleteParam.getUserId().toString())) {
+		if(loginUser.getLoginName().equals(deleteParam.getLoginName())) {
 			LogUtils.throwException(logger, MessageCodeEnum.NO_ACCESS_RIGHT);
 		}
 		AppMemberParam bizParam = buildBizParam(deleteParam);
@@ -135,8 +145,8 @@ public class AppMemberApplicationService extends BaseApplicationService<AppMembe
 	}
 	
 	private void validateParam(AppMemberDeletionParam param) {
-		if(Objects.isNull(param.getUserId())){
-			LogUtils.throwException(logger, MessageCodeEnum.USER_ID_IS_EMPTY);
+		if(StringUtils.isBlank(param.getLoginName())){
+			LogUtils.throwException(logger, MessageCodeEnum.LOGIN_NAME_IS_EMPTY);
 		}
 		if(Objects.isNull(param.getAppId())){
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
