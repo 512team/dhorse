@@ -21,6 +21,10 @@ import org.slf4j.LoggerFactory;
 public class LdapUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(LdapUtils.class);
+	
+	private static String OBJECT_CLASS =  "(|(objectClass=person)(objectClass=inetOrgPerson)(objectClass=organizationalPerson))";
+	
+	private static String[] RETURN_ATTRS = new String[]{"uid", "cn", "email"};
 
 	public static LdapContext initContext(String url, String dn, String password) throws NamingException {
 		Hashtable<String, String> env = new Hashtable<String, String>();
@@ -40,7 +44,8 @@ public class LdapUtils {
 	public static List<Attributes> searchEntity(LdapContext ldapContext, String baseDn, String searchName) {
 		SearchControls contro = new SearchControls();
 		contro.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		String filter = "(objectClass=person)";
+		contro.setReturningAttributes(RETURN_ATTRS);
+		String filter = OBJECT_CLASS;
 		if(!StringUtils.isBlank(searchName)) {
 			filter = "(&(|(uid=" + searchName + "*)(cn=" + searchName + "*)(name=" + searchName + "*)(email=" + searchName + "*))" + filter + ")";
 		}
@@ -72,10 +77,10 @@ public class LdapUtils {
 	public static Attributes queryEntity(LdapContext ldapCtx, String baseDn, String name) {
 		SearchControls contro = new SearchControls();
 		contro.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		String filter = "(&(|(uid=" + name + ")(cn=" + name + ")(name=" + name + ")(email=" + name + "*))(objectClass=person))";
+		contro.setReturningAttributes(RETURN_ATTRS);
 		NamingEnumeration<SearchResult> result = null;
 		try {
-			result = ldapCtx.search(baseDn, filter, contro);
+			result = ldapCtx.search(baseDn, queryFilter(name), contro);
 		} catch (NamingException e) {
 			logger.error("Failed to search ldap", e);
 		}finally {
@@ -83,7 +88,7 @@ public class LdapUtils {
 		}
 		
 		if (result == null || !result.hasMoreElements()) {
-			logger.warn("No po is found, query name: {}", name);
+			logger.warn("User no found, name: {}", name);
 			return null;
 		}
 		
@@ -112,10 +117,10 @@ public class LdapUtils {
 	public static Attributes authByComparePassword(LdapContext ldapCtx, String baseDn, String name, String password) {
 		SearchControls contro = new SearchControls();
 		contro.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		String filter = "(&(|(uid=" + name + ")(cn=" + name + ")(name=" + name + ")(email=" + name + "*))(objectClass=person))";
+		contro.setReturningAttributes(new String[]{"uid", "cn", "email", "password", "userPassword"});
 		NamingEnumeration<SearchResult> result = null;
 		try {
-			result = ldapCtx.search(baseDn, filter, contro);
+			result = ldapCtx.search(baseDn, queryFilter(name), contro);
 		} catch (NamingException e) {
 			logger.error("Failed to search ldap", e);
 		}finally {
@@ -123,7 +128,7 @@ public class LdapUtils {
 		}
 		
 		if (result == null || !result.hasMoreElements()) {
-			logger.warn("No po is found, name: {}", name);
+			logger.warn("User no found, name: {}", name);
 			return null;
 		}
 		
@@ -135,18 +140,44 @@ public class LdapUtils {
 			
 			Attributes attrs = ((SearchResult)obj).getAttributes();
 			Attribute attr = attrs.get("password");
+			if(attr == null) {
+				attr = attrs.get("userPassword");
+			}
+			if(attr == null) {
+				logger.error("User password is empty");
+				return null;
+			}
+			
+			Object passwordObj = null;
 			try {
-				if(attr != null && password.equals((String)attr.get())) {
-					return attrs;
-				}
+				passwordObj = attr.get();
 			} catch (NamingException e) {
-				logger.error("Failed to auth by compare password");
+				logger.error("Failed to auth by password", e);
+			}
+			
+			String passwordLdap = "";
+			if(passwordObj instanceof byte[]) {
+				passwordLdap = new String((byte[])passwordObj);
+			}else {
+				passwordLdap = (String)passwordObj;
+			}
+			
+			if(passwordLdap.startsWith("{SSHA}") && EncryptUtils.verifyPassword(passwordLdap, password)) {
+				return attrs;
+			}
+			
+			if(password.equals(passwordLdap)) {
+				return attrs;
 			}
 		}
 		
 		return null;
 	}
 
+	private static String queryFilter(String name) {
+		return "(&(|(uid=" + name + ")(cn=" + name + ")(name=" + name + ")(email=" + name + "*)) "+ OBJECT_CLASS + ")";
+	}
+	
 	public static void closeContext(LdapContext ldapCtx) {
 		if(ldapCtx == null) {
 			return;

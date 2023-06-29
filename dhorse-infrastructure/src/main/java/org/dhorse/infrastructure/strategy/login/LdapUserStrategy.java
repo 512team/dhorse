@@ -33,12 +33,16 @@ public class LdapUserStrategy extends UserStrategy {
 
 	private static final Logger logger = LoggerFactory.getLogger(LdapUserStrategy.class);
 	
+	/**
+	 * 由于LDAP的配置自由性和各种服务器实现的差异性，针对不同的情况需要使用不同的登录方式，
+	 * 目前这里实现3种方式，后续根据实际情况需要不断的完善该功能。
+	 */
 	@Override
 	public LoginUser login(UserLoginParam userLoginParam, GlobalConfigAgg globalConfig, PasswordEncoder passwordEncoder) {
 		Attributes attrs = null;
 		//1.首先用cn登录
 		try {
-			attrs = doLogin("cn", userLoginParam, globalConfig);
+			attrs = loginByAccount("cn", userLoginParam, globalConfig);
 		}catch(Exception e) {
 			if(e instanceof AuthenticationException && e.getMessage().contains("non-existant")) {
 				logger.error("Failed to login by cn, message: {}", e.getMessage());
@@ -47,18 +51,39 @@ public class LdapUserStrategy extends UserStrategy {
 			}
 		}
 		
-		//2.如果cn登录不成功，则用uid登录
+		//2.如果用cn登录失败，则用uid登录
 		if(attrs == null) {
 			try {
-				attrs = doLogin("uid", userLoginParam, globalConfig);
+				attrs = loginByAccount("uid", userLoginParam, globalConfig);
 			}catch(Exception e) {
-				logger.error("Failed to login by uid", e);
+				if(e instanceof AuthenticationException && e.getMessage().contains("non-existant")) {
+					logger.error("Failed to login by uid, message: {}", e.getMessage());
+				}else {
+					logger.error("Failed to login by uid", e);
+				}
 			}
+		}
+		
+		//3.如果步骤1和2登录失败，则最后用比较密码方式登录
+		if(attrs == null) {
+			try {
+				Ldap ldap = globalConfig.getLdap();
+				LdapContext ldapContext = LdapUtils.initContext(ldap.getUrl(),
+						ldap.getAdminDn(), ldap.getAdminPassword());
+				attrs = LdapUtils.authByComparePassword(ldapContext, ldap.getSearchBaseDn(), 
+						userLoginParam.getLoginName(), userLoginParam.getPassword());
+			}catch(Exception e) {
+				logger.error("Failed to login by password", e);
+			}
+		}
+		
+		if(attrs == null) {
+			return null;
 		}
 		
 		LoginUser loginUser = buildUser(attrs);
 		
-		//3.本地库查询角色
+		//4.保存用户到DHorse
 		SysUserRepository sysUserRepository = SpringBeanContext.getBean(SysUserRepository.class);
 		SysUserPO sysUserPO = sysUserRepository.queryByLoginName(userLoginParam.getLoginName());
 		if(sysUserPO == null) {
@@ -78,19 +103,18 @@ public class LdapUserStrategy extends UserStrategy {
 		return loginUser;
 	}
 
-	private Attributes doLogin(String type, UserLoginParam userLoginParam, GlobalConfigAgg globalConfig) throws NamingException {
+	/**
+	 * 账户登录
+	 * 
+	 * @param type
+	 * @param userLoginParam
+	 * @param globalConfig
+	 * @return
+	 * @throws NamingException
+	 */
+	private Attributes loginByAccount(String type, UserLoginParam userLoginParam, GlobalConfigAgg globalConfig) throws NamingException {
 		String dn = type + "=" + userLoginParam.getLoginName() + "," + globalConfig.getLdap().getSearchBaseDn();
-		//1.首先使用登录的方式验证账户
 		Attributes attrs = LdapUtils.authByDn(globalConfig.getLdap().getUrl(), dn, userLoginParam.getPassword());
-		//2.如果登录失败，再采用比较密码的方式验证
-		if(attrs == null) {
-			Ldap ldap = globalConfig.getLdap();
-			LdapContext ldapContext = LdapUtils.initContext(ldap.getUrl(),
-					ldap.getAdminDn(), ldap.getAdminPassword());
-			attrs = LdapUtils.authByComparePassword(ldapContext, ldap.getSearchBaseDn(), 
-					userLoginParam.getLoginName(), userLoginParam.getPassword());
-		}
-		
 		return attrs;
 	}
 	
