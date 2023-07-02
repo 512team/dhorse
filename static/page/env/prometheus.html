@@ -1,0 +1,124 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<input type="hidden" name="id" id="id"/>
+		<input type="hidden" name="envId" id="envId2"/>
+		<input type="hidden" name="appId" id="appId2"/>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">采集维度</label>
+			<div class="layui-input-inline" style="width: 65%">
+				<select name="kind" lay-verify="required" lay-reqtext="采集维度不能为空">
+					<option value="Pod">Pod</option>
+					<option value="Service">Service</option>
+					<option value="Ingress">Ingress</option>
+				</select>
+			</div>
+			<div class="layui-form-mid layui-word-aux"><a href="#" target="_blank">《安装指引》</a></div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">采集端口</label>
+			<div class="layui-input-block">
+				<input type="text" name="port" placeholder="如：8080" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">采集路径</label>
+			<div class="layui-input-block">
+				<input type="text" name="path" placeholder="如：/metrics" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">采集状态</label>
+			<div class="layui-input-block">
+				<input type="checkbox" name="scrape" lay-skin="switch" value="true" lay-text="开启|关闭">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+			parentIndex = layer.index,
+            $ = layui.$;
+		var appId = localStorage.getItem('appId_' + $("#userName").val());
+		var envId = JSON.parse(parent.data2).envId;
+		
+		$("#appId2").val(appId);
+		$("#envId2").val(envId);
+		
+		form.render();
+		
+		$.ajax({
+			url: '/env/ext/queryPrometheus',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"appId": appId, "envId": envId}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				
+				var data = res.data;
+				if(JSON.stringify(data) === '{}'){
+					return false;
+				}
+				//给表单赋值
+				var kind = !data.kind ? 'Pod' : data.kind;
+				var scrape = data.scrape === 'true' ? 'true' : '';
+				form.val("form-data", {
+				  "id": data.id
+				  ,"kind": kind
+				  ,"port": data.port
+				  ,"path": data.path
+				  ,"scrape": scrape
+				});
+				
+				form.render();
+			}
+		});
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+		
+			if(!data.field.scrape){
+				data.field.scrape = 'false';
+			}
+		
+			$.ajax({
+				url: '/env/ext/addOrUpdatePrometheus',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+</script>

@@ -99,7 +99,7 @@
 					elem: '.dropdown-operate'
 					,trigger: 'hover'
 					,data: [{
-					  title: '修改'
+					  title: '修改环境'
 					  ,id: 'update'
 					},{
 					  title: '健康检查'
@@ -111,17 +111,20 @@
 					  title: '亲和容忍'
 					  ,id: 'affinityAndToleration'
 					},{
-					  title: '删除'
+					  title: 'Prometheus'
+					  ,id: 'prometheus'
+					},{
+					  title: '删除环境'
 					  ,id: 'delete'
 					}]
 					,click: function(data, othis){
 						var elem = $(this.elem)
 						,envId = elem.data('env-id')
 						,envName = elem.data('env-name');
+						data2 = JSON.stringify({'envId': envId});
 						if(data.id == 'delete'){
 							doDelete($, appId, envId, envName);
 						}else if(data.id == 'update'){
-							data2 = JSON.stringify({'envId': envId});
 							var index = layer.open({
 								title: '修改环境',
 								type: 1,
@@ -133,7 +136,6 @@
 								content: miniPage.getHrefContent('page/env/update.html')
 							});
 						}else if(data.id == 'health'){
-							data2 = JSON.stringify({'envId': envId});
 							var index = layer.open({
 								title: '健康检查',
 								type: 1,
@@ -145,7 +147,6 @@
 								content: miniPage.getHrefContent('page/env/health.html')
 							});
 						}else if(data.id == 'lifecycle'){
-							data2 = JSON.stringify({'envId': envId});
 							var index = layer.open({
 								title: '生命周期',
 								type: 1,
@@ -157,7 +158,6 @@
 								content: miniPage.getHrefContent('page/env/lifecycle.html')
 							});
 						}else if(data.id == 'affinityAndToleration'){
-							data2 = JSON.stringify({'envId': envId});
 							var index = layer.open({
 								title: '亲和容忍',
 								type: 1,
@@ -167,6 +167,17 @@
 								area: ['80%', '90%'],
 								offset: ['5%', '12%'],
 								content: miniPage.getHrefContent('page/env/affinity/list.html')
+							});
+						}else if(data.id == 'prometheus'){
+							var index = layer.open({
+								title: 'Prometheus采集配置',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['50%', '70%'],
+								offset: ['10%', '28%'],
+								content: miniPage.getHrefContent('page/env/prometheus.html')
 							});
 						}
 					}
@@ -240,7 +251,7 @@
 	
 	function doDelete($, appId, id, name) {
 		var msg = '同时会删除“' + name + '”部署在集群中的所有资源，且不可恢复，确定删除吗？';
-		layer.confirm(msg, {icon: 0, title:'提示', offset: ['30%', '33%']}, function (index) {
+		layer.confirm(msg, {icon: 0, title:'提示', offset: ['35%', '33%']}, function (index) {
 			layer.close(index);
 			$.ajax({
 				url: '/app/env/delete',

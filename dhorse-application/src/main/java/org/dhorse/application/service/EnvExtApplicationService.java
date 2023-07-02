@@ -4,9 +4,11 @@ import org.dhorse.api.enums.EnvExtTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.app.env.EnvHealthQueryParam;
 import org.dhorse.api.param.app.env.EnvLifeCycleQueryParam;
+import org.dhorse.api.param.app.env.EnvPrometheusQueryParam;
 import org.dhorse.api.response.model.EnvExt;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
+import org.dhorse.api.response.model.EnvPrometheus;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.EnvExtParam;
 import org.dhorse.infrastructure.repository.po.EnvExtPO;
@@ -90,5 +92,32 @@ public class EnvExtApplicationService extends BaseApplicationService<EnvExt, Env
 			ext.setId(item.getId());
 			envExtRepository.updateById(ext);
 		}
+	}
+	
+	public EnvPrometheus queryPrometheus(LoginUser loginUser, EnvPrometheusQueryParam queryParam) {
+		this.hasRights(loginUser, queryParam.getAppId());
+		EnvExtParam bizParam = new EnvExtParam();
+		bizParam.setAppId(queryParam.getAppId());
+		bizParam.setEnvId(queryParam.getEnvId());
+		bizParam.setExType(EnvExtTypeEnum.PROMETHEUS.getCode());
+		return envExtRepository.queryPrometheus(bizParam);
+	}
+	
+	public Void addOrUpdatePrometheus(LoginUser loginUser, EnvPrometheus addParam) {
+		if(StringUtils.isEmpty(addParam.getKind())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "采集维度不能为空");
+		}
+		EnvExtParam ext = new EnvExtParam();
+		ext.setAppId(addParam.getAppId());
+		ext.setEnvId(addParam.getEnvId());
+		ext.setExType(EnvExtTypeEnum.PROMETHEUS.getCode());
+		ext.setExt(JsonUtils.toJsonString(addParam, "id", "appId", "envId", "modifyRights", "deleteRights"));
+		if(StringUtils.isBlank(addParam.getId())){
+			envExtRepository.add(ext);
+		}else {
+			ext.setId(addParam.getId());
+			envExtRepository.updateById(ext);
+		}
+		return null;
 	}
 }

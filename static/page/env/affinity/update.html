@@ -1,12 +1,6 @@
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form" lay-filter="update-form">
 		<div class="layui-form-item">
-			<label class="layui-form-label required">名称</label>
-			<div class="layui-input-block">
-				<input type="text" name="customizedName" placeholder="最多64个字符" lay-verify="required" lay-reqtext="名称不能为空" autocomplete="off" class="layui-input">
-			</div>
-		</div>
-		<div class="layui-form-item">
 			<label class="layui-form-label required">调度类型</label>
 			<div class="layui-input-block">
 				<select name="schedulingType" lay-filter="schedulingType" id="schedulingType2" lay-verify="required" lay-reqtext="调度类型不能为空" disabled>
@@ -16,6 +10,12 @@
 					<option value="3">副本亲和</option>
 					<option value="4">副本反亲和</option>
 				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="customizedName" placeholder="最多64个字符" lay-verify="required" lay-reqtext="名称不能为空" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item" style="display: none" id="affinityLevelDiv">

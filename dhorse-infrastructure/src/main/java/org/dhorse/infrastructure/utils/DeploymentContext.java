@@ -8,6 +8,7 @@ import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv.EnvExtend;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
+import org.dhorse.api.response.model.EnvPrometheus;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
@@ -47,6 +48,8 @@ public class DeploymentContext {
 	private EnvHealth envHealth;
 
 	private EnvLifecycle envLifecycle;
+
+	private EnvPrometheus envPrometheus;
 
 	private List<AffinityTolerationPO> affinitys;
 
@@ -100,6 +103,14 @@ public class DeploymentContext {
 
 	public void setApprover(String approver) {
 		this.approver = approver;
+	}
+
+	public EnvPrometheus getEnvPrometheus() {
+		return envPrometheus;
+	}
+
+	public void setEnvPrometheus(EnvPrometheus envPrometheus) {
+		this.envPrometheus = envPrometheus;
 	}
 
 	public ClusterPO getCluster() {

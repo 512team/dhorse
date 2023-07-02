@@ -5,6 +5,7 @@ import java.util.List;
 import org.dhorse.api.response.model.EnvExt;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
+import org.dhorse.api.response.model.EnvPrometheus;
 import org.dhorse.infrastructure.param.EnvExtParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.EnvExtMapper;
@@ -64,6 +65,18 @@ public class EnvExtRepository extends RightRepository<EnvExtParam, EnvExtPO, Env
 				model.setPreStop(one);
 			}
 		}
+		return model;
+	}
+	
+	public EnvPrometheus queryPrometheus(EnvExtParam bizParam) {
+		EnvExtPO po = this.query(bizParam);
+		if(po == null) {
+			return null;
+		}
+		EnvPrometheus model = JsonUtils.parseToObject(po.getExt(), EnvPrometheus.class);
+		model.setId(po.getId());
+		model.setAppId(po.getAppId());
+		model.setEnvId(po.getEnvId());
 		return model;
 	}
 	
