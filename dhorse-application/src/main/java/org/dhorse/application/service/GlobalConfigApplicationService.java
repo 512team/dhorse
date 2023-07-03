@@ -165,7 +165,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 				localPathOfPom.mkdirs();
 			}
 			buildTmpApp(localPathName);
-			doMavenPack(mavenConf, localPathName);
+			packByMaven(mavenConf, localPathName);
 			deleteTmpApp(localPathName);
 		}
 
@@ -432,7 +432,7 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 		FileUtils.downloadFile(fileUrl, localFilePath);
 		
 		//2.解压Agent文件
-		FileUtils.decompressTarGz(localFilePath, parentFile);
+		FileUtils.unTarGz(localFilePath, parentFile);
 		
 		logger.info("Start to build agent image");
 		

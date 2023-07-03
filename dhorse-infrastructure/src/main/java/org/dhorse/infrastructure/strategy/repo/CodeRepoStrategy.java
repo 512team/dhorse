@@ -65,7 +65,6 @@ public abstract class CodeRepoStrategy {
 	String localPathOfBranch(DeploymentContext context) {
 		return new StringBuilder()
 				.append(context.getComponentConstants().getDataPath())
-				.append(File.separator)
 				.append("app")
 				.append(File.separator)
 				.append(context.getApp().getAppName())

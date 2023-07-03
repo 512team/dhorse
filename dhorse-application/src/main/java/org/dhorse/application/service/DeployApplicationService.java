@@ -1,11 +1,14 @@
 package org.dhorse.application.service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -17,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.cli.DefaultCliRequest;
 import org.apache.maven.cli.MavenCli;
@@ -73,6 +75,7 @@ import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
+import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
@@ -477,7 +480,9 @@ public abstract class DeployApplicationService extends ApplicationService {
 		if (TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendJava appExtend = context.getApp().getAppExtend();
 			if(PackageBuildTypeEnum.MAVEN.getCode().equals(appExtend.getPackageBuildType())) {
-				return doMavenPack(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
+				return packByMaven(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
+			}else if(PackageBuildTypeEnum.GRADLE.getCode().equals(appExtend.getPackageBuildType())){
+				return packByGradle(context);
 			}
 		}
 		//Node应用
@@ -503,7 +508,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 			} catch (IOException e) {
 				logger.error("Failed to build node app", e);
 			}
-			return doMavenPack(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
+			return packByMaven(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
 		}
 		
 		return true;
@@ -517,32 +522,20 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 	}
 
-	public boolean doMavenPack(Maven mavenConf, String localPathOfBranch) {
-		logger.info("Start to maven pack");
+	public boolean packByMaven(Maven maven, String localPathOfBranch) {
+		logger.info("Start to pack by maven");
 		
 		String localRepoPath = mavenRepo();
 		System.setProperty(MavenCli.LOCAL_REPO_PROPERTY, localRepoPath);
 		System.setProperty(MavenCli.MULTIMODULE_PROJECT_DIRECTORY, localRepoPath);
 		
-		//首先使用指定的javaHome
-		String javaHome = null;
-		if(mavenConf != null && !StringUtils.isBlank(mavenConf.getJavaHome())) {
-			javaHome = mavenConf.getJavaHome();
-		}else {
-			javaHome = System.getenv("JAVA_HOME");
-		}
-		
-		if(javaHome == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.JAVA_HOME_IS_EMPTY);
-		}
-		
-		String javaVersion = queryJavaMajorVersion(mavenConf);
+		String javaHome = javaHome(maven);
+		String javaVersion = queryJavaMajorVersion(maven);
 		if(javaVersion == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.JAVA_VERSION_IS_EMPTY);
 		}
 		
 		logger.info("Java home is {}", javaHome);
-		
 		logger.info("Java version is {}", javaVersion);
 		
 		String[] commands = new String[] {"clean", "package", "-Dmaven.test.skip"};
@@ -552,8 +545,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 		Repository repository = new Repository();
 		repository.setId("nexus");
 		repository.setName("nexus");
-		repository.setUrl(mavenConf != null && StringUtils.isNotBlank(mavenConf.getMavenRepoUrl())
-				? mavenConf.getMavenRepoUrl() : MAVEN_REPOSITORY_URL);
+		repository.setUrl(maven != null && StringUtils.isNotBlank(maven.getMavenRepoUrl())
+				? maven.getMavenRepoUrl() : MAVEN_REPOSITORY_URL);
 		
 		RepositoryPolicy policy = new RepositoryPolicy();
 		policy.setEnabled(true);
@@ -590,12 +583,94 @@ public abstract class DeployApplicationService extends ApplicationService {
 		try {
 			status = cli.doMain(request);
 		} catch (Exception e) {
-			logger.error("Failed to maven pack", e);
+			logger.error("Failed to pack by maven", e);
 			return false;
 		}
+		
+		logger.info("End to pack by maven");
 		return status == 0;
 	}
 
+	private boolean packByGradle(DeploymentContext context) {
+		logger.info("Start to pack by gradle");
+		
+		downloadGradle();
+		
+		doPackByGradle(context, componentConstants.getDataPath() + "gradle/");
+		
+		logger.info("End to pack by gradle");
+		return true;
+	}
+	
+	private void doPackByGradle(DeploymentContext context, String gradlePathName) {
+		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/ && /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle -g /opt/dhorse/data/gradle/cache clean release
+		String cmd = new StringBuilder()
+			.append("cd " + context.getLocalPathOfBranch())
+			.append(" && ")
+			.append(gradlePathName + Constants.GRADLE_VERSION + "/bin/gradle")
+			.append(" -g "+ gradlePathName + "cache")
+			.append(" clean build")
+			.toString();
+		List<String> cmds = systemCmd();
+		cmds.add(cmd);
+        ProcessBuilder pb = new ProcessBuilder();
+        String javaHome = javaHome(context.getGlobalConfigAgg().getMaven());
+		logger.info("Java home is {}", javaHome);
+        pb.environment().put("JAVA_HOME", javaHome);
+        //将标准输入流和错误输入流合并，通过标准输入流读取信息
+        pb.redirectErrorStream(true);
+        pb.command(cmds);
+        
+        Process p = null;
+        try {
+            p = pb.start();
+        }catch (IOException e) {
+            logger.error("Failed to start proccss", e);
+        }
+        
+        try(BufferedReader in = new BufferedReader(new InputStreamReader(
+        		p.getInputStream(), Charset.defaultCharset()))){
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                logger.info(line);
+            }
+        }catch (IOException e) {
+        	logger.error("Failed read proccss message", e);
+        }finally {
+        	if(p != null) {
+        		p.destroy();
+        	}
+        }
+    }
+	
+	private List<String> systemCmd(){
+		List<String> cmd = new ArrayList<>();
+		if(isWindows()) {
+			cmd.add("cmd");
+			cmd.add("/c");
+		}else {
+			cmd.add("/bin/sh");
+			cmd.add("-c");
+		}
+		return cmd;
+	}
+	
+	private String javaHome(Maven maven) {
+		//首先使用指定的javaHome
+		String javaHome = null;
+		if(maven != null && !StringUtils.isBlank(maven.getJavaHome())) {
+			javaHome = maven.getJavaHome();
+		}else {
+			javaHome = System.getenv("JAVA_HOME");
+		}
+		
+		if(javaHome == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.JAVA_HOME_IS_EMPTY);
+		}
+		
+		return javaHome;
+	}
+	
 	private boolean buildImage(DeploymentContext context) {
 		if(TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())){
 			return buildSpringBootImage(context);

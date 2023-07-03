@@ -19,6 +19,10 @@ public class Constants {
 	
 	public static final String CRLF = "\r\n|\n|\r";
 	
+	public static final String GRADLE_VERSION = "gradle-8.1.1";
+	
+	public static final String GRADLE_FILE_URL = "https://downloads.gradle.org/distributions/" + GRADLE_VERSION + "-bin.zip";
+	
 	/**
 	 * 24小时
 	 */

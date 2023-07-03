@@ -218,7 +218,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		FileUtils.downloadFile(fileUrl, localFilePath);
 		
 		//2.解压文件
-		FileUtils.decompressTarGz(localFilePath, parentFile);
+		FileUtils.unTarGz(localFilePath, parentFile);
 		
 		//3.重命名目录为tomcat
 		try {

@@ -264,7 +264,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), apiClient);
 
 			if(!checkHealthOfAll(coreApi, namespace, labelSelector)) {
-				logger.warn("Failed to create k8s deployment, because the replica is not fully started");
+				logger.error("Failed to create k8s deployment, because the replica is not fully started");
+				LogUtils.throwException(logger, MessageCodeEnum.CREATE_PART_POD);
 				return false;
 			}
 			

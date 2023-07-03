@@ -152,7 +152,7 @@
 	//终止
 	function doAbort($, id, name, appId) {
 		var msg = "确定要终止“" + name + "”吗？";
-		layer.confirm(msg, {title: '提示', offset: ['30%', '40%']}, function (index) {
+		layer.confirm(msg, {title: '提示'}, function (index) {
 			layer.close(index);
 			$.ajax({
 				url: '/app/deployment/detail/abortDeployment',

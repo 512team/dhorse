@@ -58,6 +58,7 @@ import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
+import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
@@ -330,6 +331,10 @@ public abstract class ApplicationService {
 		//return System.getProperty("os.name");
 	}
 	
+	protected boolean isWindows() {
+		return System.getProperty("os.name").indexOf("Windows") > -1;
+	}
+	
 	protected void doNotify(String url, String reponse) {
 		if(StringUtils.isBlank(url)){
 			return;
@@ -381,6 +386,12 @@ public abstract class ApplicationService {
 				buildDHorseAgentImage();
 			} catch (Exception e) {
 				logger.error("Failed to build dhorse agent image", e);
+			}
+			
+			try {
+				downloadGradle();
+			} catch (Exception e) {
+				logger.error("Failed to download gradle", e);
 			}
 		});
 	}
@@ -512,6 +523,37 @@ public abstract class ApplicationService {
 			logger.error("Failed to build dhorse agent image", e);
 		}
 		logger.info("End to build dhorse agent image");
+	}
+	
+	protected void downloadGradle() {
+		String gradlePathName = componentConstants.getDataPath() + "gradle/";
+		File gradlePath = new File(gradlePathName);
+		if(!gradlePath.exists()) {
+			if(gradlePath.mkdirs()) {
+				logger.info("Create gradle path successfully");
+			}else {
+				logger.warn("Failed to create gradle path");
+			}
+		}
+		
+		String gradleHome = null;
+		File[] files = gradlePath.listFiles();
+		for(File f : files) {
+			if(f.getName().equals(Constants.GRADLE_VERSION)) {
+				gradleHome = f.getAbsolutePath();
+				break;
+			}
+		}
+		
+		if(gradleHome != null) {
+			logger.info("Gradle home exists, and is {}", gradleHome);
+			return;
+		}
+		
+		File targetFile = new File(gradlePathName + "gradle.zip");
+		FileUtils.downloadFile(Constants.GRADLE_FILE_URL, targetFile);
+		FileUtils.unZip(targetFile.getAbsolutePath(), gradlePathName);
+		targetFile.delete();
 	}
 	
 	protected void jibProperty() {
