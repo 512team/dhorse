@@ -12,7 +12,7 @@
 					<option value="Ingress">Ingress</option>
 				</select>
 			</div>
-			<div class="layui-form-mid layui-word-aux"><a href="#" target="_blank">《安装指引》</a></div>
+			<div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E5%AE%89%E8%A3%85prometheus.md" target="_blank">《安装指引》</a></div>
 		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">采集端口</label>
@@ -66,12 +66,12 @@
 				}
 				
 				var data = res.data;
-				if(JSON.stringify(data) === '{}'){
+				if(!data || JSON.stringify(data) === '{}'){
 					return false;
 				}
 				//给表单赋值
 				var kind = !data.kind ? 'Pod' : data.kind;
-				var scrape = data.scrape === 'true' ? 'true' : '';
+				var scrape = (!data.scrape || data.scrape !== 'true') ? '' : 'true';
 				form.val("form-data", {
 				  "id": data.id
 				  ,"kind": kind

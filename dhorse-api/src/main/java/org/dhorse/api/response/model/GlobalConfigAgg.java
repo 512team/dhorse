@@ -3,6 +3,7 @@ package org.dhorse.api.response.model;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GlobalConfigAgg implements Serializable {
@@ -321,7 +322,7 @@ public class GlobalConfigAgg implements Serializable {
 		/**
 		 * maven仓库地址
 		 */
-		private String mavenRepoUrl;
+		private List<String> mavenRepoUrl;
 
 		public String getJavaHome() {
 			return javaHome;
@@ -331,13 +332,15 @@ public class GlobalConfigAgg implements Serializable {
 			this.javaHome = javaHome;
 		}
 
-		public String getMavenRepoUrl() {
+		public List<String> getMavenRepoUrl() {
 			return mavenRepoUrl;
 		}
 
-		public void setMavenRepoUrl(String mavenRepoUrl) {
+		public void setMavenRepoUrl(List<String> mavenRepoUrl) {
 			this.mavenRepoUrl = mavenRepoUrl;
 		}
+
+		
 	}
 
 	/**
