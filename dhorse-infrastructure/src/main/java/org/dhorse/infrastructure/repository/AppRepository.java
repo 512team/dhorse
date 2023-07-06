@@ -16,9 +16,11 @@ import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
+import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
-import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendNodeJS;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.AppParam;
 import org.dhorse.infrastructure.repository.mapper.AppMapper;
@@ -139,6 +141,12 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		if (TechTypeEnum.VUE.getCode().equals(appPO.getTechType())
 				|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNode.class);
+		}
+		if (TechTypeEnum.NODEJS.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNodeJS.class);
+		}
+		if (TechTypeEnum.HTML.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendHtml.class);
 		}
 		return null;
 	}

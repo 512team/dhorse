@@ -14,10 +14,8 @@ import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,8 +44,6 @@ import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
-import org.dhorse.infrastructure.component.ComponentConstants;
-import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.dhorse.infrastructure.model.JsonPatch;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
@@ -59,7 +55,6 @@ import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
-import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -84,8 +79,6 @@ import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.apis.NetworkingV1Api;
 import io.kubernetes.client.openapi.apis.VersionApi;
 import io.kubernetes.client.openapi.models.V1Affinity;
-import io.kubernetes.client.openapi.models.V1ConfigMap;
-import io.kubernetes.client.openapi.models.V1ConfigMapList;
 import io.kubernetes.client.openapi.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1ContainerPort;
@@ -167,7 +160,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		secret.setType("kubernetes.io/dockerconfigjson");
 		V1ObjectMeta meta = new V1ObjectMeta();
 		meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
-		meta.setLabels(K8sClusterUtils.dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
+		meta.setLabels(K8sClusterHelper.dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
 		secret.setMetadata(meta);
 		secret.setData(dockerConfigData(imageRepo));
 		
@@ -304,7 +297,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			service.setSpec(serviceSpec(context));
 			coreApi.createNamespacedService(namespace, service, null, null, null, null);
 		}else{
-			List<JsonPatch> patchs = K8sClusterUtils.updatePrometheus("Service", serviceList.getItems().get(0)
+			List<JsonPatch> patchs = K8sClusterHelper.updatePrometheus("Service", serviceList.getItems().get(0)
 					.getMetadata().getAnnotations(), context);
 			if(!CollectionUtils.isEmpty(patchs)) {
 				logger.info("Start to update service");
@@ -345,7 +338,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}else if(!StringUtils.isBlank(ingressHost) && !CollectionUtils.isEmpty(list.getItems())) {
 			logger.info("Start to update ingress");
 			ingress = list.getItems().get(0);
-			List<JsonPatch> patchs = K8sClusterUtils.updatePrometheus("Ingress", ingress.getMetadata().getAnnotations(), context);
+			List<JsonPatch> patchs = K8sClusterHelper.updatePrometheus("Ingress", ingress.getMetadata().getAnnotations(), context);
 			//为了支持应用的平滑发布，只有host发生变化或注释变化时，才修改Ingress
 			if(!ingressHost.equals(ingress.getSpec().getRules().get(0).getHost())
 					|| !CollectionUtils.isEmpty(patchs)){
@@ -367,8 +360,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1ObjectMeta ingressMeta(String appName, DeploymentContext context) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(K8sClusterUtils.dhorseLabel(appName));
-		metadata.setAnnotations(K8sClusterUtils.addPrometheus("Ingress", context));
+		metadata.setLabels(K8sClusterHelper.dhorseLabel(appName));
+		metadata.setAnnotations(K8sClusterHelper.addPrometheus("Ingress", context));
 		return metadata;
 	}
 	
@@ -546,8 +539,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1ObjectMeta serviceMeta(String appName, DeploymentContext context) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(K8sClusterUtils.dhorseLabel(appName));
-		metadata.setAnnotations(K8sClusterUtils.addPrometheus("Service", context));
+		metadata.setLabels(K8sClusterHelper.dhorseLabel(appName));
+		metadata.setAnnotations(K8sClusterHelper.addPrometheus("Service", context));
 		return metadata;
 	}
 	
@@ -588,7 +581,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private V1ObjectMeta deploymentMetaData(String appName, String envTag) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(K8sClusterUtils.dhorseLabel(appName));
+		metadata.setLabels(K8sClusterHelper.dhorseLabel(appName));
 		return metadata;
 	}
 
@@ -609,10 +602,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private V1PodTemplateSpec specTemplate(DeploymentContext context) {
 		V1ObjectMeta specMetadata = new V1ObjectMeta();
-		Map<String, String> labels = K8sClusterUtils.dhorseLabel(context.getDeploymentName());
+		Map<String, String> labels = K8sClusterHelper.dhorseLabel(context.getDeploymentName());
 		labels.put("version", String.valueOf(System.currentTimeMillis()));
 		specMetadata.setLabels(labels);
-		specMetadata.setAnnotations(K8sClusterUtils.addPrometheus("Pod", context));
+		specMetadata.setAnnotations(K8sClusterHelper.addPrometheus("Pod", context));
 		V1PodTemplateSpec template = new V1PodTemplateSpec();
 		template.setMetadata(specMetadata);
 		template.setSpec(podSpec(context));
@@ -931,6 +924,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setName(context.getDeploymentName());
 		containerOfJar(context, container);
 		containerOfNode(context, container);
+		containerOfNodejs(context, container);
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
 		
@@ -988,7 +982,23 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				&& !TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
+		
 		container.setImage(nginxImage(context));
+	}
+	
+	private void containerOfNodejs(DeploymentContext context, V1Container container) {
+		if(!nodejsApp(context.getApp())) {
+			return;
+		}
+		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String commands = new StringBuilder()
+			.append("export NODE_ENV=").append(context.getAppEnv().getTag())
+			.append(" && cd ").append(appHome)
+			.append(" && npm install")
+			.append(" && npm start")
+			.toString();
+		container.setCommand(Arrays.asList("/bin/sh", "-c", commands));
+		container.setImage(context.getFullNameOfImage());
 	}
 	
 	private void envVars(DeploymentContext context, V1Container container) {
@@ -1331,14 +1341,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					.equals(((AppExtendJava)app.getAppExtend()).getPackageFileType());
 	}
 	
-	private boolean jarFileType(AppPO appPO) {
-		if(!springBootApp(appPO)) {
-			return false;
-		}
-		AppExtendJava appExtend = JsonUtils.parseToObject(appPO.getExt(), AppExtendJava.class);
-		return PackageFileTypeEnum.JAR.getCode().equals(appExtend.getPackageFileType());
-	}
-	
 	private boolean springBootApp(AppPO appPO) {
 		return TechTypeEnum.SPRING_BOOT.getCode().equals(appPO.getTechType());
 	}
@@ -1356,6 +1358,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return TechTypeEnum.VUE.getCode().equals(app.getTechType())
 				|| TechTypeEnum.REACT.getCode().equals(app.getTechType());
 	}
+	
+	private boolean nodejsApp(App app) {
+		return TechTypeEnum.NODEJS.getCode().equals(app.getTechType());
+	}
+	
+//	private boolean htmlApp(App app) {
+//		return TechTypeEnum.HTML.getCode().equals(app.getTechType());
+//	}
 	
 	private List<V1VolumeMount> volumeMounts(DeploymentContext context) {
 		List<V1VolumeMount> volumeMounts = new ArrayList<>();
@@ -1551,7 +1561,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		List<EnvReplica> pods = pagePod.stream().map(e -> {
 			String imageName = imageName(appPO, e.getSpec());
 			EnvReplica r = new EnvReplica();
-			r.setVersionName(imageName.substring(imageName.lastIndexOf("/") + 1));
+			if(!StringUtils.isBlank(imageName)) {
+				r.setVersionName(imageName.substring(imageName.lastIndexOf("/") + 1));
+			}
 			r.setIp(e.getStatus().getPodIP());
 			r.setName(e.getMetadata().getName());
 			r.setEnvName(appEnvPO.getEnvName());
@@ -1574,9 +1586,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private String imageName(AppPO appPO, V1PodSpec podSpec) {
-		if(jarFileType(appPO)) {
-			return podSpec.getContainers().get(0).getImage();
-		}else if(warFileType(appPO)) {
+		if(warFileType(appPO)) {
 			for(V1Container initC : podSpec.getInitContainers()){
 				if("war".equals(initC.getName())) {
 					return initC.getImage();
@@ -1588,7 +1598,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					return initC.getImage();
 				}
 			}
-		}
+		}else {
+			return podSpec.getContainers().get(0).getImage();
+		} 
 		return null;
 	}
 	
@@ -1672,17 +1684,17 @@ public class K8sClusterStrategy implements ClusterStrategy {
 
 	public void openLogCollector(ClusterPO clusterPO) {
 		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		K8sClusterUtils.openLogCollector(apiCLient);
+		K8sClusterHelper.openLogCollector(apiCLient);
 	}
 
 	public void closeLogCollector(ClusterPO clusterPO) {
 		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		K8sClusterUtils.closeLogCollector(apiCLient);
+		K8sClusterHelper.closeLogCollector(apiCLient);
 	}
 	
 	public boolean logSwitchStatus(ClusterPO clusterPO) {
 		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		return K8sClusterUtils.logSwitchStatus(apiCLient);
+		return K8sClusterHelper.logSwitchStatus(apiCLient);
 	}
 	
 	private void clusterError(ApiException e) {
@@ -1860,60 +1872,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public Void createDHorseConfig(ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		
-		try {
-			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
-			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
-				return null;
-			}
-			ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
-			for(V1Namespace n : namespaceList.getItems()) {
-				String namespace = n.getMetadata().getName();
-				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
-						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
-					continue;
-				}
-				if(!"Active".equals(n.getStatus().getPhase())){
-					continue;
-				}
-				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
-						K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
-				
-				V1ConfigMap configMap = K8sClusterUtils.dhorseConfigMap();
-				if(CollectionUtils.isEmpty(list.getItems())) {
-					String ipPortUri = Constants.hostIp() + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
-					if(ipPortUri.startsWith(Constants.LOCALHOST_IP)) {
-						LogUtils.throwException(logger, "Your dhorse server mast have a valid ip, not 127.0.0.1", MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
-					}
-					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));
-					coreApi.createNamespacedConfigMap(namespace, configMap, null, null, null, null);
-				}else {
-					Set<String> newIp = new HashSet<>();
-					newIp.add(Constants.hostIp() + ":" + componentConstants.getServerPort());
-					
-					configMap = list.getItems().get(0);
-					String ipStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
-					if(!StringUtils.isBlank(ipStr)) {
-						String[] ips = ipStr.split(",");
-						for(String ip : ips) {
-							if(ip.startsWith(Constants.LOCALHOST_IP)) {
-								continue;
-							}
-							if(!HttpUtils.pingDHorseServer(ip)) {
-								continue;
-							}
-							newIp.add(ip);
-						}
-					}
-					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, String.join(",", newIp)));
-					coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
-							namespace, configMap, null, null, null, null);
-				}
-			}
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
-		}
+		K8sClusterHelper.createDHorseConfig(clusterPO, coreApi);
 		return null;
 	}
 	
@@ -1924,58 +1883,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public Void deleteDHorseConfig(ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		V1ConfigMap configMap = new V1ConfigMap();
-		configMap.setApiVersion("v1");
-		configMap.setKind("ConfigMap");
-		V1ObjectMeta meta = new V1ObjectMeta();
-		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
-		meta.setLabels(K8sClusterUtils.dhorseLabel(K8sUtils.DHORSE_CONFIGMAP_NAME));
-		configMap.setMetadata(meta);
-		
-		try {
-			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
-			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
-				return null;
-			}
-			for(V1Namespace n : namespaceList.getItems()) {
-				String namespace = n.getMetadata().getName();
-				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
-						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
-					continue;
-				}
-				if(!"Active".equals(n.getStatus().getPhase())){
-					continue;
-				}
-				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
-						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
-				if(CollectionUtils.isEmpty(list.getItems())) {
-					continue;
-				}
-				
-				Set<String> newIp = new HashSet<>();
-				configMap = list.getItems().get(0);
-				String ipStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
-				if(!StringUtils.isBlank(ipStr)) {
-					String[] ips = ipStr.split(",");
-					//ip格式为：127.0.0.1:8100
-					for(String ip : ips) {
-						if(Constants.hostIp().equals(ip.split(":")[0])) {
-							continue;
-						}
-						if(!HttpUtils.pingDHorseServer(ip)) {
-							continue;
-						}
-						newIp.add(ip);
-					}
-				}
-				configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, String.join(",", newIp)));
-				coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
-						namespace, configMap, null, null, null, null);
-			}
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
-		}
+		K8sClusterHelper.deleteDHorseConfig(clusterPO, coreApi);
 		return null;
 	}
 }

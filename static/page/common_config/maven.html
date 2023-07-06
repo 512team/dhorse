@@ -9,7 +9,13 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label">仓库地址</label>
 			<div class="layui-input-block">
-				<input type="text" name="mavenRepoUrl" placeholder="默认值：https://repo.maven.apache.org/maven2" autocomplete="off" class="layui-input">
+				<input type="text" name="mavenRepoUrl[0]" placeholder="默认值：https://repo.maven.apache.org/maven2" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">仓库地址</label>
+			<div class="layui-input-block">
+				<input type="text" name="mavenRepoUrl[1]" placeholder="默认值：https://repo.maven.apache.org/maven2" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -41,11 +47,13 @@
 				if(JSON.stringify(res.data) === '{}'){
 					return false;
 				}
+				
 				//给表单赋值
 				form.val("form-data", {
 				  "javaHome": res.data.maven.javaHome
 				  ,"javaVersion": res.data.maven.javaVersion
-				  ,"mavenRepoUrl": res.data.maven.mavenRepoUrl
+				  ,"mavenRepoUrl[0]": res.data.maven.mavenRepoUrl[0]
+				  ,"mavenRepoUrl[1]": res.data.maven.mavenRepoUrl[1]
 				  ,"mavenMirrorUrl": res.data.maven.mavenMirrorUrl
 				});
 			},
@@ -56,6 +64,14 @@
 		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
+			var mavenRepoUrl = [];
+			var fields = data.field;
+			for(var fieldName in fields){
+				if(fieldName.substring(0, 12) == 'mavenRepoUrl'){
+					mavenRepoUrl.push(fields[fieldName]);
+				}
+			}
+			data.field.mavenRepoUrl = mavenRepoUrl;
 			//增加类型
 			data.field.itemType = 4;
 			$.ajax({

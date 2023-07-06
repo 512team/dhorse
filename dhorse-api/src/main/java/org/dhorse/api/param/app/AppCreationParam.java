@@ -77,6 +77,16 @@ public class AppCreationParam implements Serializable {
 	 */
 	private AppExtendNodeCreationParam extendNodeParam;
 
+	/**
+	 * Nodejs应用扩展扩展参数
+	 */
+	private AppExtendNodejsCreationParam extendNodejsParam;
+
+	/**
+	 * Html应用扩展扩展参数
+	 */
+	private AppExtendHtmlCreationParam extendHtmlCreationParam;
+
 	public String getAppName() {
 		return appName;
 	}
@@ -179,6 +189,22 @@ public class AppCreationParam implements Serializable {
 
 	public void setExtendNodeParam(AppExtendNodeCreationParam extendNodeParam) {
 		this.extendNodeParam = extendNodeParam;
+	}
+
+	public AppExtendNodejsCreationParam getExtendNodejsParam() {
+		return extendNodejsParam;
+	}
+
+	public void setExtendNodejsParam(AppExtendNodejsCreationParam extendNodejsParam) {
+		this.extendNodejsParam = extendNodejsParam;
+	}
+
+	public AppExtendHtmlCreationParam getExtendHtmlCreationParam() {
+		return extendHtmlCreationParam;
+	}
+
+	public void setExtendHtmlCreationParam(AppExtendHtmlCreationParam extendHtmlCreationParam) {
+		this.extendHtmlCreationParam = extendHtmlCreationParam;
 	}
 
 	/**
@@ -289,6 +315,54 @@ public class AppCreationParam implements Serializable {
 
 		public void setPackageTargetPath(String packageTargetPath) {
 			this.packageTargetPath = packageTargetPath;
+		}
+
+	}
+
+	/**
+	 * Nodejs应用扩展参数模型
+	 * 
+	 * @author 无双 2023-07-04
+	 */
+	public static class AppExtendNodejsCreationParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * Node版本
+		 */
+		private String nodeVersion;
+
+		public String getNodeVersion() {
+			return nodeVersion;
+		}
+
+		public void setNodeVersion(String nodeVersion) {
+			this.nodeVersion = nodeVersion;
+		}
+
+	}
+
+	/**
+	 * Html应用扩展参数模型
+	 * 
+	 * @author 无双 2023-07-04
+	 */
+	public static class AppExtendHtmlCreationParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * Node版本
+		 */
+		private String nodeVersion;
+
+		public String getNodeVersion() {
+			return nodeVersion;
+		}
+
+		public void setNodeVersion(String nodeVersion) {
+			this.nodeVersion = nodeVersion;
 		}
 
 	}

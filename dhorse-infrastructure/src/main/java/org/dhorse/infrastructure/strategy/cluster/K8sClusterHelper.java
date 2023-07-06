@@ -4,14 +4,21 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.response.model.EnvPrometheus;
+import org.dhorse.infrastructure.component.ComponentConstants;
+import org.dhorse.infrastructure.component.SpringBeanContext;
 import org.dhorse.infrastructure.model.JsonPatch;
+import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
+import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
@@ -30,6 +37,8 @@ import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
 import io.kubernetes.client.openapi.models.V1DaemonSet;
 import io.kubernetes.client.openapi.models.V1DaemonSetList;
+import io.kubernetes.client.openapi.models.V1Namespace;
+import io.kubernetes.client.openapi.models.V1NamespaceList;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1Role;
 import io.kubernetes.client.openapi.models.V1RoleBinding;
@@ -37,9 +46,9 @@ import io.kubernetes.client.openapi.models.V1ServiceAccount;
 import io.kubernetes.client.openapi.models.V1ServiceAccountList;
 import io.kubernetes.client.util.Yaml;
 
-public class K8sClusterUtils {
+public class K8sClusterHelper {
 	
-	private static final Logger logger = LoggerFactory.getLogger(K8sClusterUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(K8sClusterHelper.class);
 	
 	private static final String FILEBEAT_NAME = "filebeat";
 	
@@ -416,6 +425,123 @@ public class K8sClusterUtils {
 		}
 		
 		return paths;
+	}
+	
+	/**
+	 * 通过ConfigMap向k8s集群写入dhorse服务器的地址，地址格式为：ip1:8100,ip2:8100
+	 */
+	public static void createDHorseConfig(ClusterPO clusterPO, CoreV1Api coreApi) {
+		try {
+			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
+			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
+				return;
+			}
+			ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
+			for(V1Namespace n : namespaceList.getItems()) {
+				String namespace = n.getMetadata().getName();
+				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
+						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
+					continue;
+				}
+				if(!"Active".equals(n.getStatus().getPhase())){
+					continue;
+				}
+				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
+						K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+				
+				V1ConfigMap configMap = K8sClusterHelper.dhorseConfigMap();
+				if(CollectionUtils.isEmpty(list.getItems())) {
+					String ipPortUri = Constants.hostIp() + ";" + componentConstants.getServerPort() + ";" + Constants.COLLECT_METRICS_URI;
+					if(ipPortUri.startsWith(Constants.LOCALHOST_IP)) {
+						LogUtils.throwException(logger, "Your dhorse server mast have a valid ip, not 127.0.0.1", MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
+					}
+					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, ipPortUri));
+					coreApi.createNamespacedConfigMap(namespace, configMap, null, null, null, null);
+				}else {
+					Set<String> newIp = new HashSet<>();
+					newIp.add(Constants.hostIp() + ":" + componentConstants.getServerPort());
+					
+					configMap = list.getItems().get(0);
+					String ipStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
+					if(!StringUtils.isBlank(ipStr)) {
+						String[] ips = ipStr.split(",");
+						for(String ip : ips) {
+							if(ip.startsWith(Constants.LOCALHOST_IP)) {
+								continue;
+							}
+							if(!HttpUtils.pingDHorseServer(ip)) {
+								continue;
+							}
+							newIp.add(ip);
+						}
+					}
+					configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, String.join(",", newIp)));
+					coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
+							namespace, configMap, null, null, null, null);
+				}
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
+		}
+	}
+	
+	/**
+	 * 通过ConfigMap向k8s集群删除dhorse服务器的地址，地址格式为：ip1:8100,ip2:8100
+	 */
+	public static void deleteDHorseConfig(ClusterPO clusterPO, CoreV1Api coreApi) {
+		V1ConfigMap configMap = new V1ConfigMap();
+		configMap.setApiVersion("v1");
+		configMap.setKind("ConfigMap");
+		V1ObjectMeta meta = new V1ObjectMeta();
+		meta.setName(K8sUtils.DHORSE_CONFIGMAP_NAME);
+		meta.setLabels(K8sClusterHelper.dhorseLabel(K8sUtils.DHORSE_CONFIGMAP_NAME));
+		configMap.setMetadata(meta);
+		
+		try {
+			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, null, null, null, null, null, null);
+			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
+				return;
+			}
+			for(V1Namespace n : namespaceList.getItems()) {
+				String namespace = n.getMetadata().getName();
+				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
+						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
+					continue;
+				}
+				if(!"Active".equals(n.getStatus().getPhase())){
+					continue;
+				}
+				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
+						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+				if(CollectionUtils.isEmpty(list.getItems())) {
+					continue;
+				}
+				
+				Set<String> newIp = new HashSet<>();
+				configMap = list.getItems().get(0);
+				String ipStr = configMap.getData().get(K8sUtils.DHORSE_SERVER_URL_KEY);
+				if(!StringUtils.isBlank(ipStr)) {
+					String[] ips = ipStr.split(",");
+					//ip格式为：127.0.0.1:8100
+					for(String ip : ips) {
+						if(Constants.hostIp().equals(ip.split(":")[0])) {
+							continue;
+						}
+						if(!HttpUtils.pingDHorseServer(ip)) {
+							continue;
+						}
+						newIp.add(ip);
+					}
+				}
+				configMap.setData(Collections.singletonMap(K8sUtils.DHORSE_SERVER_URL_KEY, String.join(",", newIp)));
+				coreApi.replaceNamespacedConfigMap(K8sUtils.DHORSE_CONFIGMAP_NAME,
+						namespace, configMap, null, null, null, null);
+			}
+		} catch (ApiException e) {
+			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
+			LogUtils.throwException(logger, message, MessageCodeEnum.DHORSE_SERVER_URL_FAILURE);
+		}
 	}
 	
 	public static Map<String, String> dhorseLabel(String value) {

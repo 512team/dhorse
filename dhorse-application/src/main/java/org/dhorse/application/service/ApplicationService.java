@@ -171,7 +171,7 @@ public abstract class ApplicationService {
 	}
 	
 	protected String mavenRepo() {
-		return componentConstants.getDataPath() + "repository/";
+		return componentConstants.getDataPath() + "/maven/repository/";
 	}
 	
 	public AppPO validateApp(String appId) {

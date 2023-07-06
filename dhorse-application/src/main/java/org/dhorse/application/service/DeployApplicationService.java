@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.cli.DefaultCliRequest;
@@ -50,6 +52,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
+import org.dhorse.api.response.model.AppExtendNodeJS;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -542,28 +545,15 @@ public abstract class DeployApplicationService extends ApplicationService {
 		DefaultCliRequest request = new DefaultCliRequest(commands, null);
 		request.setWorkingDirectory(localPathOfBranch);
 		
-		Repository repository = new Repository();
-		repository.setId("nexus");
-		repository.setName("nexus");
-		repository.setUrl(maven != null && StringUtils.isNotBlank(maven.getMavenRepoUrl())
-				? maven.getMavenRepoUrl() : MAVEN_REPOSITORY_URL);
-		
-		RepositoryPolicy policy = new RepositoryPolicy();
-		policy.setEnabled(true);
-		policy.setUpdatePolicy("always");
-		policy.setChecksumPolicy("fail");
-		
-		repository.setReleases(policy);
-		repository.setSnapshots(policy);
-		
+		List<Repository> repository = mavenRepos(maven);
 		Profile profile = new Profile();
 		profile.setId(MAVEN_REPOSITORY_ID);
 		Activation activation = new Activation();
 		activation.setActiveByDefault(true);
 		activation.setJdk(javaVersion);
 		profile.setActivation(activation);
-		profile.setRepositories(Arrays.asList(repository));
-		profile.setPluginRepositories(Arrays.asList(repository));
+		profile.setRepositories(repository);
+		profile.setPluginRepositories(repository);
 		
 		Properties properties = new Properties();
 		properties.put("java.home", javaHome);
@@ -591,6 +581,48 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return status == 0;
 	}
 
+	private List<Repository> mavenRepos(Maven maven) {
+		if(maven == null) {
+			return Arrays.asList(mavenRepo(MAVEN_REPOSITORY_URL, 1));
+		}
+		
+		Set<String> urls = new HashSet<>();
+		for(String r : maven.getMavenRepoUrl()) {
+			if(!StringUtils.isBlank(r)) {
+				urls.add(r);
+			}
+		}
+		
+		int urlSize = urls.size();
+		if(urlSize == 0) {
+			return Arrays.asList(mavenRepo(MAVEN_REPOSITORY_URL, 1));
+		}
+		
+		List<Repository> repos = new ArrayList<>(urlSize);
+		int i = 1;
+		for(String r : urls) {
+			repos.add(mavenRepo(StringUtils.isBlank(r) ? MAVEN_REPOSITORY_URL : r, i));
+			i++;
+		}
+		return repos;
+	}
+	
+	private Repository mavenRepo(String repoUrl, int i) {
+		RepositoryPolicy policy = new RepositoryPolicy();
+		policy.setEnabled(true);
+		policy.setUpdatePolicy("always");
+		policy.setChecksumPolicy("fail");
+		
+		String id = "nexus" + i;
+		Repository repository = new Repository();
+		repository.setId(id);
+		repository.setName(id);
+		repository.setUrl(repoUrl);
+		repository.setReleases(policy);
+		repository.setSnapshots(policy);
+		return repository;
+	}
+	
 	private boolean packByGradle(DeploymentContext context) {
 		logger.info("Start to pack by gradle");
 		
@@ -603,7 +635,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 	
 	private void doPackByGradle(DeploymentContext context, String gradlePathName) {
-		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/ && /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle -g /opt/dhorse/data/gradle/cache clean release
+		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/&& /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle -g /opt/dhorse/data/gradle/cache clean release
 		String cmd = new StringBuilder()
 			.append("cd " + context.getLocalPathOfBranch())
 			.append(" && ")
@@ -672,30 +704,36 @@ public abstract class DeployApplicationService extends ApplicationService {
 	}
 	
 	private boolean buildImage(DeploymentContext context) {
-		if(TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())){
-			return buildSpringBootImage(context);
-		}
 		
-		if(TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
-				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())){
-			return buildNodeImage(context);
-		}
+		buildSpringBootImage(context);
 		
-		return false;
+		buildNodeImage(context);
+		
+		buildNodejsImage(context);
+		
+		buildHtmlImage(context);
+		
+		return true;
 	}
 	
-	private boolean buildSpringBootImage(DeploymentContext context) {
+	private void buildSpringBootImage(DeploymentContext context) {
+		if(!TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())){
+			return;
+		}
 		AppExtendJava appExtend = context.getApp().getAppExtend();
 		String fullTargetPath = context.getLocalPathOfBranch();
 		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
 			fullTargetPath += "target/";
+			if(PackageBuildTypeEnum.GRADLE.getCode().equals(appExtend.getPackageBuildType())) {
+				fullTargetPath += "build/";
+			}
 		}else {
 			fullTargetPath += appExtend.getPackageTargetPath();
 		}
 		File packageTargetPath = Paths.get(fullTargetPath).toFile();
 		if (!packageTargetPath.exists()) {
 			logger.error("The target path does not exist");
-			return false;
+			return;
 		}
 
 		List<Path> targetFiles = new ArrayList<>();
@@ -711,10 +749,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 		if (targetFiles.size() == 0) {
 			logger.error("The target file does not exist");
-			return false;
+			return;
 		} else if (targetFiles.size() > 1) {
 			logger.error("Multiple target files exist");
-			return false;
+			return;
 		}
 
 		//基础镜像
@@ -722,11 +760,14 @@ public abstract class DeployApplicationService extends ApplicationService {
 		String fileNameWithExtension = targetFiles.get(0).toFile().getName();
 		List<String> entrypoint = Arrays.asList("java", "-jar", fileNameWithExtension);
 		doBuildImage(context, baseImage, entrypoint, targetFiles);
-
-		return true;
 	}
 	
-	private boolean buildNodeImage(DeploymentContext context) {
+	private void buildNodeImage(DeploymentContext context) {
+		if(!TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
+				&& !TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		
 		AppExtendNode appExtend = context.getApp().getAppExtend();
 		String fullDistPath = context.getLocalPathOfBranch();
 		if(StringUtils.isBlank(appExtend.getPackageTargetPath())) {
@@ -741,21 +782,44 @@ public abstract class DeployApplicationService extends ApplicationService {
 		File fullDistPathFile = new File(fullDistPath);
 		if (!fullDistPathFile.exists()) {
 			logger.error("The target path does not exist");
-			return false;
+			return;
 		}
 		
 		//创建app的编译文件
 		File appPathFile = new File(context.getLocalPathOfBranch() + context.getApp().getAppName());
 		appPathFile.mkdirs();
 		try {
-			FileUtils.copyDirectory(fullDistPathFile, appPathFile);
+			FileUtils.moveFile(fullDistPathFile, appPathFile);
 		} catch (IOException e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.COPY_FILE_FAILURE);
 		}
 		
 		doBuildImage(context, Constants.BUSYBOX_IMAGE_URL, null, Arrays.asList(appPathFile.toPath()));
-
-		return true;
+	}
+	
+	private void buildNodejsImage(DeploymentContext context) {
+		if(!TechTypeEnum.NODEJS.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		File branchFile = new File(context.getLocalPathOfBranch());
+		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
+		if(!branchFile.renameTo(targetFile)) {
+			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
+		}
+		AppExtendNodeJS extend = (AppExtendNodeJS)context.getApp().getAppExtend();
+		//Node的版本格式为：v16.15.1，镜像的版本格式为：node:16.15.1
+		//因此需要对版本号进行处理
+		String baseImage = Constants.nodeImage(extend.getNodeVersion().substring(1));
+		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
+	}
+	
+	private void buildHtmlImage(DeploymentContext context) {
+		if(!TechTypeEnum.HTML.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		File branchFile = new File(context.getLocalPathOfBranch());
+		AppExtendNodeJS extend = (AppExtendNodeJS)context.getApp().getAppExtend();
+		doBuildImage(context, Constants.nodeImage(extend.getNodeVersion()), null, Arrays.asList(branchFile.toPath()));
 	}
 
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
@@ -765,7 +829,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		
 		//Jib环境变量
 		jibProperty();
-				
+		
 		try {
 			RegistryImage baseImage = RegistryImage.named(baseImageName);
 			if(baseImageName.startsWith(imageServer)) {

@@ -5,7 +5,8 @@ public enum TechTypeEnum {
 	SPRING_BOOT(1, "SpringBoot"),
 	VUE(2, "Vue"),
 	REACT(3, "React"),
-	;
+	NODEJS(4, "Nodejs"),
+	HTML(5, "Html");
 	
 	private Integer code;
 

@@ -124,7 +124,12 @@ public class DeploymentDetailApplicationService extends DeployApplicationService
 		if(replica == null) {
 			return null;
 		}
-		return replica.getImageName().substring(replica.getImageName().lastIndexOf("/") + 1);
+		String iamgeName = replica.getImageName();
+		if(iamgeName == null) {
+			return null;
+		}
+		
+		return iamgeName.substring(iamgeName.lastIndexOf("/") + 1);
 	}
 	
 	public Void approveToDeploy(LoginUser loginUser, DeploymentApprovementParam requestParam) {

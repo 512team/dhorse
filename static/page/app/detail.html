@@ -59,7 +59,7 @@
 				<label class="layui-form-label text-value" id="npmVersion"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="packageTargetPathDiv">
 			<label class="layui-form-label">文件路径：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="packageTargetPath"></label>
@@ -71,7 +71,7 @@
 				<label class="layui-form-label text-value" id="packageFileType"></label>
 			</div>
 		</div>
-		<div class="layui-form-item">
+		<div class="layui-form-item" id="baseImageSourceDiv">
 			<label class="layui-form-label">基础镜像来源：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="baseImageSource"></label>
@@ -187,6 +187,18 @@
 				//React
 				}else if(res.data.techType == 3){
 					techType = "React";
+					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#npmVersion").text(res.data.appExtend.npmVersion);
+					$("#nodeVersionDiv").show();
+					$("#npmVersionDiv").show();
+				//Node
+				}else if(res.data.techType == 4){
+					techType = "Nodejs";
+					$("#baseImageSourceDiv").hide();
+					$("#packageTargetPathDiv").hide();
+				//Html
+				}else if(res.data.techType == 5){
+					techType = "Html";
 					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
 					$("#npmVersion").text(res.data.appExtend.npmVersion);
 					$("#nodeVersionDiv").show();

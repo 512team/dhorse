@@ -156,11 +156,12 @@
 			contentType: 'application/json;charset=UTF-8',
 			data: JSON.stringify({'appId': appId}),
 			success: function(res){
-				//SpringBoot
-				if(res.data.techType == 1){
+				var techType = res.data.techType
+				//SpringBoot、Nodejs、Html
+				if(techType == 1 || techType == 4 || techType == 5){
 					doBuild($, appId, '0', branchName);
 				//Vue和React
-				}else if(res.data.techType == 2 || res.data.techType == 3){
+				}else if(techType == 2 || techType == 3){
 					var index = layer.open({
 						title: '构建版本',
 						type: 2,

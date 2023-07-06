@@ -18,6 +18,8 @@
 								<option value="1">SpringBoot</option>
 								<option value="2">Vue</option>
 								<option value="3">React</option>
+								<option value="4">Nodejs</option>
+								<option value="5">Html</option>
 							</select>
 						</div>
 					</div>
@@ -71,7 +73,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
-							<select name="extendSpringBootParam.packageBuildType">
+							<select name="extendSpringBootParam.packageBuildType" lay-filter="packageBuildType">
 								<option value="">请选择</option>
 								<option value="1">Maven</option>
 								<option value="2">Gradle</option>
@@ -81,7 +83,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">文件路径</label>
 						<div class="layui-input-block">
-							<input name="extendSpringBootParam.packageTargetPath" placeholder="以应用作为根目录，默认路径：target/" autocomplete="off"  class="layui-input">
+							<input name="extendSpringBootParam.packageTargetPath" id="extendSpringBootParam-packageTargetPath" placeholder="以应用作为根目录，默认路径：target/" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -191,6 +193,20 @@
 						</div>
 					</div>
 				</div>
+				<div class="layui-form layuimini-form" id="nodejsFormItem" lay-filter="nodejsFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Node版本</label>
+						<div class="layui-input-block">
+							<input name="extendNodejsParam.nodeVersion" placeholder="如：v16.15.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnNodejs">确认保存</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -249,35 +265,37 @@
 				});
 				
 				affinityAppName = initApp($, appId, res.data.affinityAppNames);
-				
+				var extend = res.data.appExtend;
 				//Java
 				if(res.data.techType == 1){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					//初始化下个表单
 					form.val("springBootFormItem", {
-						"extendSpringBootParam.packageBuildType": res.data.appExtend.packageBuildType
-						,"extendSpringBootParam.packageFileType": res.data.appExtend.packageFileType
-						,"extendSpringBootParam.packageTargetPath": res.data.appExtend.packageTargetPath
+						"extendSpringBootParam.packageBuildType": extend.packageBuildType
+						,"extendSpringBootParam.packageFileType": extend.packageFileType
+						,"extendSpringBootParam.packageTargetPath": extend.packageTargetPath
 						,"baseImageSource": res.data.baseImageSource
 					});
 					//初始化镜像
-					initBaseImage(res.data.appExtend.packageFileType, res.data.baseImageSource,
+					initBaseImage(extend.packageFileType, res.data.baseImageSource,
 						res.data.baseImageVersion, res.data.baseImage, $, form);
 					$("#springBootFormItem").show();
 					$("#nodeFormItem").hide();
+					$("#nodejsFormItem").hide();
 				//Vue和React
 				}else if(res.data.techType == 2 || res.data.techType == 3){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					form.val("nodeFormItem", {
-						"extendNodeParam.nodeVersion": res.data.appExtend.nodeVersion
-						,"extendNodeParam.npmVersion": res.data.appExtend.npmVersion
-						,"extendNodeParam.packageTargetPath": res.data.appExtend.packageTargetPath
+						"extendNodeParam.nodeVersion": extend.nodeVersion
+						,"extendNodeParam.npmVersion": extend.npmVersion
+						,"extendNodeParam.packageTargetPath": extend.packageTargetPath
 						,"baseImageSourceNode": res.data.baseImageSource
 						,"baseImageVersionNode": res.data.baseImageVersion
 						,"baseImageNode": res.data.baseImage
 					});
 					$("#springBootFormItem").hide();
 					$("#nodeFormItem").show();
+					$("#nodejsFormItem").hide();
 					
 					//版本号
 					if(res.data.baseImageSource == 1){
@@ -291,6 +309,18 @@
 					if(res.data.techType == 3){
 						$("#extendNodeParam-packageTargetPath").attr("placeholder", "以应用作为根目录，默认路径：build/");
 					}
+				//Nodejs
+				}else if(res.data.techType == 4){
+					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");					
+					$("#springBootFormItem").hide();
+					$("#nodeFormItem").hide();
+					$("#nodejsFormItem").show();
+					if(!extend || extend == null){
+						return;
+					}
+					form.val("nodejsFormItem", {
+						"extendNodejsParam.nodeVersion": extend.nodeVersion
+					});
 				}else{
 					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 				}
@@ -323,6 +353,18 @@
 			}
 		});
 		
+		//构建方式
+		form.on('select(packageBuildType)', function(data) {
+			var obj = $("#extendSpringBootParam-packageTargetPath");
+			//Maven
+			if(data.value == 1){
+				obj.attr("placeholder", "以应用作为根目录，默认路径：target/");
+			//Gradle
+			}else if(data.value == 2){
+				obj.attr("placeholder", "以应用作为根目录，默认路径：build/");
+			}
+		});
+		
 		form.on('submit(formStep)', function (data) {
 			var firstFormData = '<div id="firstFormData">';
 			firstFormData += '<input type="hidden" name="affinityAppNames" value="'+ affinityAppName.getValue('value') +'"/>';
@@ -337,6 +379,9 @@
 			//Vue和React
 			}else if(data.field.techType == 2 || data.field.techType == 3){
 				$("#nodeFormItem").append(firstFormData);
+			//Nodejs
+			}else if(data.field.techType == 4){
+				$("#nodejsFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
             return false;
@@ -444,6 +489,54 @@
 				}
 			}
 			allParams['extendNodeParam'] = extendParams;
+		
+			$.ajax({
+				url: '/app/update',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.initForm($, appId);
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+		
+		//Nodejs
+		form.on('submit(saveBtnNodejs)', function(data) {
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendNodejsParam'] = extendParams;
 		
 			$.ajax({
 				url: '/app/update',

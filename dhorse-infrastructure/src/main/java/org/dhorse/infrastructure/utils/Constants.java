@@ -139,4 +139,8 @@ public class Constants {
 		}
 		return null;
 	}
+	
+	public static String nodeImage(String version) {
+		return "dockerproxy.com/library/node:" + version + "-alpine";
+	}
 }

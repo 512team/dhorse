@@ -400,6 +400,12 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				|| TechTypeEnum.REACT.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendNode();
 			BeanUtils.copyProperties(requestParam.getExtendNodeParam(), appExtend);
+		}else if(TechTypeEnum.NODEJS.getCode().equals(requestParam.getTechType())) {
+			appExtend = new AppExtendNode();
+			BeanUtils.copyProperties(requestParam.getExtendNodejsParam(), appExtend);
+		}else if(TechTypeEnum.HTML.getCode().equals(requestParam.getTechType())) {
+			appExtend = new AppExtendNode();
+			BeanUtils.copyProperties(requestParam.getExtendHtmlCreationParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);
 		return bizParam;
