@@ -310,7 +310,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean createIngress(DeploymentContext context) throws ApiException {
-		if(!this.nodeApp(context.getApp())) {
+		if(!this.nginxApp(context.getApp())) {
 			return true;
 		}
 		if(StringUtils.isBlank(context.getAppEnv().getExt())){
@@ -923,7 +923,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Container container = new V1Container();
 		container.setName(context.getDeploymentName());
 		containerOfJar(context, container);
-		containerOfNode(context, container);
+		//Vue、React、Html应用会通过Nginx来启动服务
+		containerOfNginx(context, container);
 		containerOfNodejs(context, container);
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
@@ -977,12 +978,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		argsOfJar(container, context);
 	}
 	
-	private void containerOfNode(DeploymentContext context, V1Container container) {
-		if(!TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
-				&& !TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
+	private void containerOfNginx(DeploymentContext context, V1Container container) {
+		if(!nginxApp(context.getApp())) {
 			return;
 		}
-		
 		container.setImage(nginxImage(context));
 	}
 	
@@ -1215,14 +1214,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		initContainerOfWar(context, containers);
 		initContainerOfTraceAgent(context, containers);
 		initContainerOfDHorseAgent(context, containers);
-		initContainerOfNode(context, containers);
+		//Vue、React、Html应用会通过Nginx来启动服务
+		initContainerOfNginx(context, containers);
 		return containers;
 	}
 	
 	private String nginxImage(DeploymentContext context) {
 		//如：dockerproxy.com/library/nginx:1.23.3-alpine
 		if(ImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
-			return "dockerproxy.com/library/nginx:" + NginxVersionEnum.getByCode(context.getApp().getBaseImageVersion()).getValue() + "-alpine";
+			String v = NginxVersionEnum.getByCode(context.getApp().getBaseImageVersion()).getValue();
+			return "dockerproxy.com/library/nginx:" + v + "-alpine";
 		}
 		return context.getApp().getBaseImage();
 	}
@@ -1302,23 +1303,22 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		containers.add(container);
 	}
 	
-	private void initContainerOfNode(DeploymentContext context, List<V1Container> containers) {
-		if(!TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
-				&& !TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
+	private void initContainerOfNginx(DeploymentContext context, List<V1Container> containers) {
+		if(!nginxApp(context.getApp())) {
 			return;
 		}
 		
 		V1Container container = new V1Container();
-		container.setName("node");
+		container.setName("nginx");
 		container.setImage(context.getFullNameOfImage());
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
 		String file = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
-		container.setArgs(Arrays.asList("cp -rf " + file + "/* " + K8sUtils.NODE_VOLUME_PATH));
+		container.setArgs(Arrays.asList("cp -rf " + file + "/* " + K8sUtils.NGINX_VOLUME_PATH));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();
-		volumeMount.setMountPath(K8sUtils.NODE_VOLUME_PATH);
-		volumeMount.setName(K8sUtils.NODE_VOLUME);
+		volumeMount.setMountPath(K8sUtils.NGINX_VOLUME_PATH);
+		volumeMount.setName(K8sUtils.NGINX_VOLUME);
 		container.setVolumeMounts(Arrays.asList(volumeMount));
 		containers.add(container);
 	}
@@ -1349,23 +1349,27 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType());
 	}
 	
-	private boolean nodeApp(AppPO appPO) {
+	/**
+	 * Nginx服务，如：Vue、React、Html
+	 */
+	private boolean nginxApp(AppPO appPO) {
 		return TechTypeEnum.VUE.getCode().equals(appPO.getTechType())
-				|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType());
+				|| TechTypeEnum.REACT.getCode().equals(appPO.getTechType())
+				|| TechTypeEnum.HTML.getCode().equals(appPO.getTechType());
 	}
 
-	private boolean nodeApp(App app) {
+	/**
+	 * Nginx服务，如：Vue、React、Html
+	 */
+	private boolean nginxApp(App app) {
 		return TechTypeEnum.VUE.getCode().equals(app.getTechType())
-				|| TechTypeEnum.REACT.getCode().equals(app.getTechType());
+				|| TechTypeEnum.REACT.getCode().equals(app.getTechType())
+				|| TechTypeEnum.HTML.getCode().equals(app.getTechType());
 	}
 	
 	private boolean nodejsApp(App app) {
 		return TechTypeEnum.NODEJS.getCode().equals(app.getTechType());
 	}
-	
-//	private boolean htmlApp(App app) {
-//		return TechTypeEnum.HTML.getCode().equals(app.getTechType());
-//	}
 	
 	private List<V1VolumeMount> volumeMounts(DeploymentContext context) {
 		List<V1VolumeMount> volumeMounts = new ArrayList<>();
@@ -1402,10 +1406,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		
 		//Node
-		if(nodeApp(context.getApp())) {
+		if(nginxApp(context.getApp())) {
 			V1VolumeMount volumeMountWar = new V1VolumeMount();
-			volumeMountWar.setMountPath(K8sUtils.NODE_VOLUME_PATH);
-			volumeMountWar.setName(K8sUtils.NODE_VOLUME);
+			volumeMountWar.setMountPath(K8sUtils.NGINX_VOLUME_PATH);
+			volumeMountWar.setName(K8sUtils.NGINX_VOLUME);
 			volumeMounts.add(volumeMountWar);
 		}
 		
@@ -1451,10 +1455,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			volumes.add(volumeWar);
 		}
 		
-		//Node
-		if(nodeApp(context.getApp())) {
+		//Nginx服务，如：Vue、React、Html
+		if(nginxApp(context.getApp())) {
 			V1Volume volumeWar = new V1Volume();
-			volumeWar.setName(K8sUtils.NODE_VOLUME);
+			volumeWar.setName(K8sUtils.NGINX_VOLUME);
 			V1EmptyDirVolumeSource emptyDirWar = new V1EmptyDirVolumeSource();
 			volumeWar.setEmptyDir(emptyDirWar);
 			volumes.add(volumeWar);
@@ -1592,7 +1596,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					return initC.getImage();
 				}
 			}
-		}else if(nodeApp(appPO)) {
+		}else if(nginxApp(appPO)) {
 			for(V1Container initC : podSpec.getInitContainers()){
 				if("node".equals(initC.getName())) {
 					return initC.getImage();

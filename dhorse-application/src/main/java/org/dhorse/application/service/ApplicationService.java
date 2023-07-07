@@ -546,7 +546,7 @@ public abstract class ApplicationService {
 		}
 		
 		if(gradleHome != null) {
-			logger.info("Gradle home exists, and is {}", gradleHome);
+			logger.info("Gradle home is {}", gradleHome);
 			return;
 		}
 		

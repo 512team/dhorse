@@ -111,7 +111,7 @@
 					</div>
 					<div class="layui-form-item" style="display:none" id="baseImageVersionDiv2">
 						<label class="layui-form-label required" id="baseImageLabel">Tomcat版本</label>
-						<div class="layui-input-inline">
+						<div class="layui-input-block">
 							<select name="baseImageVersion" lay-filter="baseImageVersion" id="baseImageVersion2">
 								<option value="">请选择</option>
 								<option value="10">v10</option>
@@ -119,11 +119,10 @@
 								<option value="8">v8</option>
 							</select>
 						</div>
-						<div class="layui-form-mid layui-word-aux" id="baseImageVersionDesc">会自动下载依赖包，请确保能够访问外网</div>
 					</div>
 					<div class="layui-form-item" style="display:none" id="baseImageDiv2">
 						<label class="layui-form-label required">基础镜像</label>
-						<div class="layui-input-inline" style="width: 350px;">
+						<div class="layui-input-inline" style="width: 75%">
 							<input type="text" name="baseImage" id="baseImage2" placeholder="如：dockerproxy.com/library/openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
 						</div>
 						<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="#" target="_blank">《镜像制作指引》</a></div>
@@ -166,7 +165,7 @@
 					</div>
 					<div class="layui-form-item" style="display:none" id="baseImageVersionNodeDiv">
 						<label class="layui-form-label required" id="baseImageLabel">Nginx版本</label>
-						<div class="layui-input-inline">
+						<div class="layui-input-block">
 							<select name="baseImageVersionNode" lay-filter="baseImageVersionNode" id="baseImageVersionNode">
 								<option value="">请选择</option>
 								<option value="1.23">v1.23</option>
@@ -177,14 +176,12 @@
 								<option value="1.18">v1.18</option>
 							</select>
 						</div>
-						<div class="layui-form-mid layui-word-aux">会自动下载依赖包，请确保能够访问外网</div>
 					</div>
 					<div class="layui-form-item" style="display:none" id="baseImageNodeDiv">
 						<label class="layui-form-label required">基础镜像</label>
-						<div class="layui-input-inline" style="width: 350px;">
+						<div class="layui-input-inline">
 							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：dockerproxy.com/library/nginx:1.23.3" autocomplete="off" class="layui-input">
 						</div>
-						<div class="layui-form-mid layui-word-aux"><a href="#" target="_blank">《镜像制作指引》</a></div>
 					</div>
 					<div class="layui-form-item required">
 						<div class="layui-input-block">
@@ -195,15 +192,29 @@
 				</div>
 				<div class="layui-form layuimini-form" id="nodejsFormItem" lay-filter="nodejsFormItem">
 					<div class="layui-form-item">
-						<label class="layui-form-label required">Node版本</label>
+						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-block">
-							<input name="extendNodejsParam.nodeVersion" placeholder="如：v16.15.1" autocomplete="off"  class="layui-input">
+							<input type="text" name="baseImageNodejs" placeholder="如：dockerproxy.com/library/node:16.15.1" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item required">
 						<div class="layui-input-block">
 							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
 							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnNodejs">确认保存</button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-form layuimini-form" id="htmlFormItem" lay-filter="htmlFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">基础镜像</label>
+						<div class="layui-input-block">
+							<input type="text" name="baseImageHtml" placeholder="如：dockerproxy.com/library/nginx:1.23.3" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnHtml">确认保存</button>
 						</div>
 					</div>
 				</div>
@@ -282,6 +293,7 @@
 					$("#springBootFormItem").show();
 					$("#nodeFormItem").hide();
 					$("#nodejsFormItem").hide();
+					$("#htmlFormItem").hide();
 				//Vue和React
 				}else if(res.data.techType == 2 || res.data.techType == 3){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
@@ -296,6 +308,7 @@
 					$("#springBootFormItem").hide();
 					$("#nodeFormItem").show();
 					$("#nodejsFormItem").hide();
+					$("#htmlFormItem").hide();
 					
 					//版本号
 					if(res.data.baseImageSource == 1){
@@ -311,15 +324,23 @@
 					}
 				//Nodejs
 				}else if(res.data.techType == 4){
-					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");					
+					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					$("#springBootFormItem").hide();
 					$("#nodeFormItem").hide();
 					$("#nodejsFormItem").show();
-					if(!extend || extend == null){
-						return;
-					}
+					$("#htmlFormItem").hide();
 					form.val("nodejsFormItem", {
-						"extendNodejsParam.nodeVersion": extend.nodeVersion
+						"baseImageNodejs": res.data.baseImage
+					});
+				//Html
+				}else if(res.data.techType == 5){
+					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+					$("#springBootFormItem").hide();
+					$("#nodeFormItem").hide();
+					$("#nodejsFormItem").hide();
+					$("#htmlFormItem").show();
+					form.val("htmlFormItem", {
+						"baseImageHtml": res.data.baseImage
 					});
 				}else{
 					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
@@ -382,6 +403,9 @@
 			//Nodejs
 			}else if(data.field.techType == 4){
 				$("#nodejsFormItem").append(firstFormData);
+			//Html
+			}else if(data.field.techType == 5){
+				$("#htmlFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
             return false;
@@ -525,6 +549,8 @@
 				data.field.affinityAppNames = [];
 			}
 			
+			data.field.baseImage = data.field.baseImageNodejs;
+			
 			var fields = data.field;
 			var allParams = {};
 			var extendParams = {};
@@ -537,6 +563,56 @@
 				}
 			}
 			allParams['extendNodejsParam'] = extendParams;
+		
+			$.ajax({
+				url: '/app/update',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.initForm($, appId);
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+		
+		//Html
+		form.on('submit(saveBtnHtml)', function(data) {
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
+			data.field.baseImage = data.field.baseImageHtml;
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendHtmlParam'] = extendParams;
 		
 			$.ajax({
 				url: '/app/update',

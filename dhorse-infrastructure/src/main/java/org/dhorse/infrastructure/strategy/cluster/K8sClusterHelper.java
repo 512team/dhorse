@@ -64,7 +64,7 @@ public class K8sClusterHelper {
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		AppsV1Api appsApi = new AppsV1Api(apiClient);
 		RbacAuthorizationV1Api rbacApi = new RbacAuthorizationV1Api(apiClient);
-		File fileBeatFile = new File(Constants.CONF_PATH + "filebeat-k8s.yml");
+		File fileBeatFile = new File(Constants.CONF_PATH + "kubernetes-filebeat.yml");
 		if (!fileBeatFile.exists()) {
 			LogUtils.throwException(logger, MessageCodeEnum.FILE_BEAT_K8S_FILE_INEXISTENCE);
 		}

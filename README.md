@@ -26,9 +26,6 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 * 支持日志收集
 * 支持链路追踪
 
-## 主要技术
-Springboot、Mybatis、Mybatis-plus、Maven-core、Jib-core、Layuimini、Smart-doc、SQLite、Mysql等。
-
 ## 快速开始
 
 1. 环境要求

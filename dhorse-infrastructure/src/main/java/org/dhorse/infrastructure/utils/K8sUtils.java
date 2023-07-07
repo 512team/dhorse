@@ -17,7 +17,7 @@ public class K8sUtils {
 	
 	public static final String DATA_PATH = "/usr/local/data/";
 	
-	public static final String NODE_VOLUME_PATH = "/usr/share/nginx/html/";
+	public static final String NGINX_VOLUME_PATH = "/usr/share/nginx/html/";
 	
 	public static final String TOMCAT_APP_PATH = "/usr/local/tomcat/webapps/";
 	
@@ -25,7 +25,7 @@ public class K8sUtils {
 	
 	public static final String WAR_VOLUME = "war-volume";
 	
-	public static final String NODE_VOLUME = "node-volume";
+	public static final String NGINX_VOLUME = "nginx-volume";
 	
 	public static final String TMP_DATA_VOLUME = "tmp-data-volume";
 	

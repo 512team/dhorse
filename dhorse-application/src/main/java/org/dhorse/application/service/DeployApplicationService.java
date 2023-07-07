@@ -52,7 +52,6 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
-import org.dhorse.api.response.model.AppExtendNodeJS;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -634,15 +633,16 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return true;
 	}
 	
-	private void doPackByGradle(DeploymentContext context, String gradlePathName) {
+	private void doPackByGradle(DeploymentContext context, String gradleHome) {
 		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/&& /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle -g /opt/dhorse/data/gradle/cache clean release
+		String gradleBin = gradleHome + Constants.GRADLE_VERSION + "/bin/gradle";
 		String cmd = new StringBuilder()
-			.append("cd " + context.getLocalPathOfBranch())
-			.append(" && ")
-			.append(gradlePathName + Constants.GRADLE_VERSION + "/bin/gradle")
-			.append(" -g "+ gradlePathName + "cache")
-			.append(" clean build")
-			.toString();
+				.append("chmod +x ").append(gradleBin)
+				.append(" && cd " + context.getLocalPathOfBranch())
+				.append(" && ").append(gradleBin)
+				.append(" -g " + gradleHome + "cache")
+				.append(" clean build")
+				.toString();
 		List<String> cmds = systemCmd();
 		cmds.add(cmd);
         ProcessBuilder pb = new ProcessBuilder();
@@ -779,22 +779,21 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}else {
 			fullDistPath += appExtend.getPackageTargetPath();
 		}
-		File fullDistPathFile = new File(fullDistPath);
-		if (!fullDistPathFile.exists()) {
+		File distFile = new File(fullDistPath);
+		if (!distFile.exists()) {
 			logger.error("The target path does not exist");
 			return;
 		}
 		
 		//创建app的编译文件
-		File appPathFile = new File(context.getLocalPathOfBranch() + context.getApp().getAppName());
-		appPathFile.mkdirs();
+		File appFile = new File(context.getLocalPathOfBranch() + context.getApp().getAppName());
 		try {
-			FileUtils.moveFile(fullDistPathFile, appPathFile);
+			FileUtils.moveDirectory(distFile, appFile);
 		} catch (IOException e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.COPY_FILE_FAILURE);
 		}
 		
-		doBuildImage(context, Constants.BUSYBOX_IMAGE_URL, null, Arrays.asList(appPathFile.toPath()));
+		doBuildImage(context, Constants.BUSYBOX_IMAGE_URL, null, Arrays.asList(appFile.toPath()));
 	}
 	
 	private void buildNodejsImage(DeploymentContext context) {
@@ -806,11 +805,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		if(!branchFile.renameTo(targetFile)) {
 			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
 		}
-		AppExtendNodeJS extend = (AppExtendNodeJS)context.getApp().getAppExtend();
-		//Node的版本格式为：v16.15.1，镜像的版本格式为：node:16.15.1
-		//因此需要对版本号进行处理
-		String baseImage = Constants.nodeImage(extend.getNodeVersion().substring(1));
-		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
+		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
 	
 	private void buildHtmlImage(DeploymentContext context) {
@@ -818,8 +813,11 @@ public abstract class DeployApplicationService extends ApplicationService {
 			return;
 		}
 		File branchFile = new File(context.getLocalPathOfBranch());
-		AppExtendNodeJS extend = (AppExtendNodeJS)context.getApp().getAppExtend();
-		doBuildImage(context, Constants.nodeImage(extend.getNodeVersion()), null, Arrays.asList(branchFile.toPath()));
+		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
+		if(!branchFile.renameTo(targetFile)) {
+			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
+		}
+		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
 
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {

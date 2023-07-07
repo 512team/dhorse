@@ -328,19 +328,6 @@ public class AppCreationParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
-		/**
-		 * Node版本
-		 */
-		private String nodeVersion;
-
-		public String getNodeVersion() {
-			return nodeVersion;
-		}
-
-		public void setNodeVersion(String nodeVersion) {
-			this.nodeVersion = nodeVersion;
-		}
-
 	}
 
 	/**
@@ -351,19 +338,6 @@ public class AppCreationParam implements Serializable {
 	public static class AppExtendHtmlCreationParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
-
-		/**
-		 * Node版本
-		 */
-		private String nodeVersion;
-
-		public String getNodeVersion() {
-			return nodeVersion;
-		}
-
-		public void setNodeVersion(String nodeVersion) {
-			this.nodeVersion = nodeVersion;
-		}
 
 	}
 }

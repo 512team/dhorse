@@ -133,7 +133,7 @@
 				maxmin: false,
 				shadeClose: false,
 				area: ['45%', '80%'],
-				offset: ['10%', '32%'],
+				offset: ['10%', '28%'],
 				content: miniPage.getHrefContent('page/app/update.html')
 			});
 		});
@@ -191,18 +191,18 @@
 					$("#npmVersion").text(res.data.appExtend.npmVersion);
 					$("#nodeVersionDiv").show();
 					$("#npmVersionDiv").show();
-				//Node
+				//Nodejs
 				}else if(res.data.techType == 4){
 					techType = "Nodejs";
+					$("#baseImageDiv").show();
 					$("#baseImageSourceDiv").hide();
 					$("#packageTargetPathDiv").hide();
 				//Html
 				}else if(res.data.techType == 5){
 					techType = "Html";
-					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
-					$("#npmVersion").text(res.data.appExtend.npmVersion);
-					$("#nodeVersionDiv").show();
-					$("#npmVersionDiv").show();
+					$("#baseImageDiv").show();
+					$("#baseImageSourceDiv").hide();
+					$("#packageTargetPathDiv").hide();
 				}
 				$("#techType").text(techType);
 				if(res.data.affinityAppNames){

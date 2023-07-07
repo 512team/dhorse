@@ -30,10 +30,12 @@ import org.dhorse.api.param.app.AppPageParam;
 import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
+import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
+import org.dhorse.api.response.model.AppExtendNodeJS;
 import org.dhorse.api.response.model.GlobalConfigAgg;
-import org.dhorse.api.response.model.App.AppExtend;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppEnvParam;
@@ -400,11 +402,13 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				|| TechTypeEnum.REACT.getCode().equals(requestParam.getTechType())) {
 			appExtend = new AppExtendNode();
 			BeanUtils.copyProperties(requestParam.getExtendNodeParam(), appExtend);
-		}else if(TechTypeEnum.NODEJS.getCode().equals(requestParam.getTechType())) {
-			appExtend = new AppExtendNode();
+		}else if(TechTypeEnum.NODEJS.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendNodejsParam() != null) {
+			appExtend = new AppExtendNodeJS();
 			BeanUtils.copyProperties(requestParam.getExtendNodejsParam(), appExtend);
-		}else if(TechTypeEnum.HTML.getCode().equals(requestParam.getTechType())) {
-			appExtend = new AppExtendNode();
+		}else if(TechTypeEnum.HTML.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendHtmlCreationParam() != null) {
+			appExtend = new AppExtendHtml();
 			BeanUtils.copyProperties(requestParam.getExtendHtmlCreationParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);

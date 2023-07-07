@@ -17,6 +17,13 @@
 			<outputDirectory>static</outputDirectory>
 		</fileSet>
 		<fileSet>
+			<directory>../conf</directory>
+			<includes>
+				<include>**</include>
+			</includes>
+			<outputDirectory>conf</outputDirectory>
+		</fileSet>
+		<fileSet>
 			<directory>../bin/unix</directory>
 			<includes>
 				<include>**</include>
@@ -41,11 +48,6 @@
 			<source>src/main/resources/dhorse.yml</source>
 			<outputDirectory>conf</outputDirectory>
 			<destName>dhorse.yml</destName>
-		</file>
-		<file>
-			<source>../conf/filebeat-k8s.yml</source>
-			<outputDirectory>conf</outputDirectory>
-			<destName>filebeat-k8s.yml</destName>
 		</file>
 		<file>
 			<source>target/${project.artifactId}-${project.version}.jar</source>

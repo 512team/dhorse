@@ -276,8 +276,8 @@
 					$("#traceStatusDiv").show();
 					$("#jvmMetricsStatusDiv").show();
 					$("#jvmArgsDiv").show();
-				//Node
-				}else if(res.data.techType == 2 || res.data.techType == 3){
+				//Vue、React、Html默认端口是80
+				}else if(res.data.techType == 2 || res.data.techType == 3 || res.data.techType == 5){
 					$("#ingressHostDiv").show();
 					$("#servicePort").val("80").attr("disabled", "disabled");
 				}
@@ -366,8 +366,9 @@
 					,"description": data.description
 				});
 				
-				//如果是Node应用，默认80端口
-				if($("#servicePort").attr("techType") == 2 || $("#servicePort").attr("techType") == 3){
+				//Vue、React、Html默认80端口
+				var tech = $("#servicePort").attr("techType");
+				if(tech == 2 || tech == 3 || tech == 5){
 					$("#servicePort").val("80").attr("disabled", "disabled");
 				}
 				
