@@ -92,6 +92,13 @@
 		</div>
 		-->
 		<div class="layui-form-item">
+			<label class="layui-form-label">访问域名</label>
+			<div class="layui-input-inline" style="width: 50%">
+				<input type="text" name="ingressHost" placeholder="如：www.app_name.com" autocomplete="off" class="layui-input">
+			</div>
+			<div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E5%AE%89%E8%A3%85Ingress-Nginx.md" target="_blank">《Ingress-nginx安装指引》</a></div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">部署审批</label>
 			<div class="layui-input-block">
 				<input type="radio" name="requiredDeployApproval" value="0" title="否" checked>
@@ -131,13 +138,6 @@
 			<div class="layui-input-block">
 				<textarea name="extendSpringBootParam.jvmArgs" placeholder="请输入Jvm参数" autocomplete="off" class="layui-textarea"></textarea>
 			</div>
-		</div>
-		<div class="layui-form-item" style="display:none" id="ingressHostDiv">
-			<label class="layui-form-label">访问域名</label>
-			<div class="layui-input-inline" style="width: 50%">
-				<input type="text" name="extendNodeParam.ingressHost" placeholder="如：www.512.team" autocomplete="off" class="layui-input">
-			</div>
-			<div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E5%AE%89%E8%A3%85Ingress-Nginx.md" target="_blank">《Ingress-nginx安装指引》</a></div>
 		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">描述</label>
@@ -278,7 +278,6 @@
 					$("#jvmArgsDiv").show();
 				//Vue、React、Html默认端口是80
 				}else if(res.data.techType == 2 || res.data.techType == 3 || res.data.techType == 5){
-					$("#ingressHostDiv").show();
 					$("#servicePort").val("80").attr("disabled", "disabled");
 				}
 			},

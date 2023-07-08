@@ -97,6 +97,11 @@ public class AppEnvParam extends PageParam {
 	private String traceTemplateId;
 
 	/**
+	 * 访问域名
+	 */
+	private String ingressHost;
+
+	/**
 	 * 环境描述
 	 */
 	private String description;
@@ -197,6 +202,14 @@ public class AppEnvParam extends PageParam {
 
 	public void setAutoScalingMemory(Integer autoScalingMemory) {
 		this.autoScalingMemory = autoScalingMemory;
+	}
+
+	public String getIngressHost() {
+		return ingressHost;
+	}
+
+	public void setIngressHost(String ingressHost) {
+		this.ingressHost = ingressHost;
 	}
 
 	public Integer getReplicaCpu() {

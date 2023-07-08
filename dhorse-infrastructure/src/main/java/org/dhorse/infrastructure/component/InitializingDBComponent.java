@@ -46,10 +46,9 @@ public class InitializingDBComponent implements InitializingBean {
 		File userVersionFile = userVersionFile();
 		String userVersion = loadUserVersion(userVersionFile);
 		List<String> sqls = parseSqlOfHighVersion(userVersion);
-		if(CollectionUtils.isEmpty(sqls)) {
-			return;
+		if(!CollectionUtils.isEmpty(sqls)) {
+			initSchema(sqls);
 		}
-		initSchema(sqls);
 		storeUserVersion(userVersionFile);
 	}
 	

@@ -138,7 +138,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 				if (pack(context)) {
 					logger.info("Pack successfully");
 				} else {
-					LogUtils.throwException(logger, MessageCodeEnum.PACK);
+					LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
 				}
 
 				// 4.制作镜像并上传仓库
@@ -636,15 +636,16 @@ public abstract class DeployApplicationService extends ApplicationService {
 	private void doPackByGradle(DeploymentContext context, String gradleHome) {
 		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/&& /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle -g /opt/dhorse/data/gradle/cache clean release
 		String gradleBin = gradleHome + Constants.GRADLE_VERSION + "/bin/gradle";
-		String cmd = new StringBuilder()
-				.append("chmod +x ").append(gradleBin)
-				.append(" && cd " + context.getLocalPathOfBranch())
+		StringBuilder cmd = new StringBuilder();
+		if(!isWindows()) {
+			cmd.append("chmod +x && ").append(gradleBin);
+		}
+		cmd.append("cd " + context.getLocalPathOfBranch())
 				.append(" && ").append(gradleBin)
 				.append(" -g " + gradleHome + "cache")
-				.append(" clean build")
-				.toString();
+				.append(" clean build");
 		List<String> cmds = systemCmd();
-		cmds.add(cmd);
+		cmds.add(cmd.toString());
         ProcessBuilder pb = new ProcessBuilder();
         String javaHome = javaHome(context.getGlobalConfigAgg().getMaven());
 		logger.info("Java home is {}", javaHome);
@@ -668,6 +669,7 @@ public abstract class DeployApplicationService extends ApplicationService {
             }
         }catch (IOException e) {
         	logger.error("Failed read proccss message", e);
+        	LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
         }finally {
         	if(p != null) {
         		p.destroy();
@@ -733,6 +735,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		File packageTargetPath = Paths.get(fullTargetPath).toFile();
 		if (!packageTargetPath.exists()) {
 			logger.error("The target path does not exist");
+			LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
 			return;
 		}
 
@@ -749,10 +752,10 @@ public abstract class DeployApplicationService extends ApplicationService {
 
 		if (targetFiles.size() == 0) {
 			logger.error("The target file does not exist");
-			return;
+			LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
 		} else if (targetFiles.size() > 1) {
 			logger.error("Multiple target files exist");
-			return;
+			LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
 		}
 
 		//基础镜像

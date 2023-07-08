@@ -34,7 +34,6 @@ import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv;
-import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.ClusterNamespace;
@@ -266,7 +265,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			//默认创建一个ClusterIP的Service
 			createService(context);
 			
-			//如果Vue和React应用设置了域名，则创建Ingress
+			//创建Ingress
 			createIngress(context);
 			
 		} catch (ApiException e) {
@@ -321,19 +320,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private boolean createIngress(DeploymentContext context) throws ApiException {
-		if(!this.nginxApp(context.getApp())) {
-			return true;
-		}
-		if(StringUtils.isBlank(context.getAppEnv().getExt())){
-			return true;
-		}
-		String ingressHost = ((EnvExtendNode)context.getEnvExtend()).getIngressHost();
-		String namespace = context.getAppEnv().getNamespaceName();
-		String ingressName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
-		
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
+		
+		String ingressHost = context.getAppEnv().getIngressHost();
+		String namespace = context.getAppEnv().getNamespaceName();
+		String ingressName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
+		
 		V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
 				K8sUtils.DHORSE_SELECTOR_KEY + ingressName, 1, null, null, null, null);
 		V1Ingress ingress = null;

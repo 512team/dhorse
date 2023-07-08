@@ -55,6 +55,18 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">服务端口：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="servicePort"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">辅助端口：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="minorPorts"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">最小副本数：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="minReplicas"></label>
@@ -93,6 +105,12 @@
 		</div>
 		-->
 		<div class="layui-form-item">
+			<label class="layui-form-label">访问域名：</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="ingressHost"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">部署审批：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="requiredDeployApproval"></label>
@@ -102,18 +120,6 @@
 			<label class="layui-form-label">部署后合并代码：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="requiredMerge"></label>
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">服务端口：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="servicePort"></label>
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">辅助端口：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="minorPorts"></label>
 			</div>
 		</div>
 		<div class="layui-form-item" id="traceStatusDiv" style="display:none">
@@ -138,12 +144,6 @@
 			<label class="layui-form-label">Jvm参数：</label>
 			<div class="layui-input-block">
 				<label class="text-value" id="jvmArgs"></label>
-			</div>
-		</div>
-		<div class="layui-form-item" id="ingressHostDiv" style="display:none">
-			<label class="layui-form-label">访问域名：</label>
-			<div class="layui-input-block">
-				<label class="text-value" id="ingressHost"></label>
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -230,6 +230,7 @@
 				}else{
 					$("#jvmMetricsStatus").text('开启');
 				}
+				$("#ingressHost").text(res.data.ingressHost);
 				$("#traceTemplateName").text(res.data.traceTemplateName);
 				$("#jvmArgs").text(res.data.envExtend.jvmArgs);
 				$("#description").text(res.data.description);
@@ -262,12 +263,6 @@
 					$("#jvmMetricsStatusDiv").show();
 					$("#traceTemplateNameDiv").show();
 					$("#jvmArgsDiv").show();
-				//Node
-				}else if(res.data.techType == 2 || res.data.techType == 3){
-					if(data.envExtend != null){
-						$("#ingressHost").text(data.envExtend.ingressHost);
-					}
-					$("#ingressHostDiv").show();
 				}
 			},
 			error: function(data){

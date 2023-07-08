@@ -101,6 +101,11 @@ public class AppEnvPO extends BaseAppPO {
 	private String traceTemplateId;
 
 	/**
+	 * 访问域名
+	 */
+	private String ingressHost;
+
+	/**
 	 * 环境描述
 	 */
 	private String description;
@@ -241,6 +246,14 @@ public class AppEnvPO extends BaseAppPO {
 
 	public void setNamespaceName(String namespaceName) {
 		this.namespaceName = namespaceName;
+	}
+
+	public String getIngressHost() {
+		return ingressHost;
+	}
+
+	public void setIngressHost(String ingressHost) {
+		this.ingressHost = ingressHost;
 	}
 
 	public Integer getServicePort() {

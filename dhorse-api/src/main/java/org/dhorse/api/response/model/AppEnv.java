@@ -123,6 +123,11 @@ public class AppEnv extends BaseDto {
 	private String traceTemplateId;
 
 	/**
+	 * 访问域名
+	 */
+	private String ingressHost;
+
+	/**
 	 * 链路追踪模板名称
 	 */
 	private String traceTemplateName;
@@ -334,6 +339,14 @@ public class AppEnv extends BaseDto {
 		this.traceStatus = traceStatus;
 	}
 
+	public String getIngressHost() {
+		return ingressHost;
+	}
+
+	public void setIngressHost(String ingressHost) {
+		this.ingressHost = ingressHost;
+	}
+
 	public String getDescription() {
 		return description;
 	}
@@ -360,16 +373,6 @@ public class AppEnv extends BaseDto {
 	public static class EnvExtendNode extends EnvExtend {
 
 		private static final long serialVersionUID = 1L;
-
-		private String ingressHost;
-
-		public String getIngressHost() {
-			return ingressHost;
-		}
-
-		public void setIngressHost(String ingressHost) {
-			this.ingressHost = ingressHost;
-		}
 
 	}
 

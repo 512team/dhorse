@@ -190,16 +190,16 @@
 					elem: '.dropdown-operate'
 					,trigger: 'hover'
 					,data: [{
-					  title: '日志'
+					  title: '查看日志'
 					  ,id: 'log'
 					}, {
-					  title: '日志下载'
+					  title: '下载日志'
 					  ,id: 'log-download'
 					},{
-					  title: '终端'
+					  title: '终端命令'
 					  ,id: 'terminal'
 					},{
-					  title: '重建'
+					  title: '重建副本'
 					  ,id: 'rebuild'
 					}]
 					,click: function(data, othis){
@@ -220,7 +220,7 @@
 							$("<a>").attr("href","/app/env/replica/downloadLog?replicaName=" + replicaName)[0].click();
 						}else if (data.id === 'terminal') {
 							var index = layer.open({
-								title: '终端',
+								title: '终端命令',
 								type: 2,
 								shade: 0.5,
 								maxmin: false,

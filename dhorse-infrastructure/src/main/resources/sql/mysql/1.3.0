@@ -1,0 +1,1 @@
+alter table app_env add column ingress_host varchar(128) default null comment '访问域名' after trace_template_id;

@@ -97,6 +97,11 @@ public class AppEnvCreationParam implements Serializable {
 	private String traceTemplateId;
 
 	/**
+	 * 访问域名
+	 */
+	private String ingressHost;
+
+	/**
 	 * 服务端口
 	 */
 	private Integer servicePort;
@@ -203,6 +208,14 @@ public class AppEnvCreationParam implements Serializable {
 		this.autoScalingMemory = autoScalingMemory;
 	}
 
+	public String getIngressHost() {
+		return ingressHost;
+	}
+
+	public void setIngressHost(String ingressHost) {
+		this.ingressHost = ingressHost;
+	}
+
 	public Integer getReplicaCpu() {
 		return replicaCpu;
 	}
@@ -294,17 +307,7 @@ public class AppEnvCreationParam implements Serializable {
 	public static class EnvExtendNodeParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
-
-		private String ingressHost;
-
-		public String getIngressHost() {
-			return ingressHost;
-		}
-
-		public void setIngressHost(String ingressHost) {
-			this.ingressHost = ingressHost;
-		}
-
+		
 	}
 
 	public static class EnvExtendSpringBootParam implements Serializable {
