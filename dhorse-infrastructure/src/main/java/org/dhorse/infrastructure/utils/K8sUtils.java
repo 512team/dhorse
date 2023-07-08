@@ -85,11 +85,11 @@ public class K8sUtils {
 	}
 	
 	public static String getDeploymentLabelSelector(String appName) {
-		return "app=" + appName;
+		return DHORSE_SELECTOR_KEY + appName;
 	}
 	
 	public static String getDeploymentLabelSelector(String appName, String appEnvTag) {
-		return "app=" + getReplicaAppName(appName, appEnvTag);
+		return DHORSE_SELECTOR_KEY + getReplicaAppName(appName, appEnvTag);
 	}
 	
 	public static Set<String> getSystemNamspaces() {

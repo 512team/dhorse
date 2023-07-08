@@ -169,6 +169,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
 				return null;
 			}
+			String selector = K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DOCKER_REGISTRY_KEY;
 			for(V1Namespace n : namespaceList.getItems()) {
 				String namespace = n.getMetadata().getName();
 				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
@@ -179,7 +180,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 					continue;
 				}
 				V1SecretList secretList = coreApi.listNamespacedSecret(namespace, null, null, null, null,
-						"app=" + K8sUtils.DOCKER_REGISTRY_KEY, null, null, null, null, null);
+						selector, null, null, null, null, null);
 				if(CollectionUtils.isEmpty(secretList.getItems())) {
 					coreApi.createNamespacedSecret(namespace, secret, null, null, null, null);
 				}else {
@@ -247,9 +248,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
-				deployment = api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
+				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				deployment = api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
+				api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
 						null, null);
 			}
 			
@@ -287,7 +288,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String namespace = context.getAppEnv().getNamespaceName();
 		String serviceName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-				"app=" + serviceName, 1, null, null, null, null);
+				K8sUtils.DHORSE_SELECTOR_KEY + serviceName, 1, null, null, null, null);
 		if (CollectionUtils.isEmpty(serviceList.getItems())) {
 			logger.info("Start to create service");
 			V1Service service = new V1Service();
@@ -304,6 +305,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				V1Patch patch = new V1Patch(JsonUtils.toJsonString(patchs));
 				coreApi.patchNamespacedService(serviceName, namespace, patch, null, null, null, null, null);
 				logger.info("Start to update service");
+			}
+			
+			//配合升级，v1.3.0以后版本应当删除
+			V1Service service = serviceList.getItems().get(0);
+			if(service.getMetadata().getLabels().get(K8sUtils.APP_KEY) != null) {
+				//先删除，再创建
+				deleteService(namespace, serviceName, apiClient);
+				service.setMetadata(serviceMeta(serviceName, context));
+				service.setSpec(serviceSpec(context));
+				coreApi.createNamespacedService(namespace, service, null, null, null, null);
 			}
 		}
 		return true;
@@ -324,7 +335,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				context.getCluster().getAuthToken());
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
 		V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
-				"app=" + ingressName, 1, null, null, null, null);
+				K8sUtils.DHORSE_SELECTOR_KEY + ingressName, 1, null, null, null, null);
 		V1Ingress ingress = null;
 		if (!StringUtils.isBlank(ingressHost) && CollectionUtils.isEmpty(list.getItems())) {
 			logger.info("Start to create ingress");
@@ -385,7 +396,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		ingressRule.setHttp(http);
 		
 		V1IngressSpec spec = new V1IngressSpec();
-		spec.setIngressClassName("nginx");
+		spec.setIngressClassName(Constants.NGINX);
 		spec.setDefaultBackend(ingressBackend);
 		spec.setRules(Arrays.asList(ingressRule));
 		return spec;
@@ -496,7 +507,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		try {
 			V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-					"app=" + serviceName, 1, null, null, null, null);
+					K8sUtils.DHORSE_SELECTOR_KEY + serviceName, 1, null, null, null, null);
 			if (CollectionUtils.isEmpty(serviceList.getItems())) {
 				return true;
 			}
@@ -520,7 +531,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
 		try {
 			V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
-					"app=" + serviceName, 1, null, null, null, null);
+					K8sUtils.DHORSE_SELECTOR_KEY + serviceName, 1, null, null, null, null);
 			if (CollectionUtils.isEmpty(list.getItems())) {
 				return true;
 			}
@@ -546,7 +557,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private V1ServiceSpec serviceSpec(DeploymentContext context) {
 		V1ServiceSpec spec = new V1ServiceSpec();
-		spec.setSelector(Collections.singletonMap("app", context.getDeploymentName()));
+		spec.setSelector(Collections.singletonMap(K8sUtils.DHORSE_LABEL_KEY, context.getDeploymentName()));
 		spec.setPorts(servicePorts(context));
 		spec.setType("ClusterIP");
 		return spec;
@@ -596,7 +607,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 
 	private V1LabelSelector specSelector(String deploymentName) {
 		V1LabelSelector selector = new V1LabelSelector();
-		selector.setMatchLabels(Collections.singletonMap("app", deploymentName));
+		selector.setMatchLabels(Collections.singletonMap(K8sUtils.DHORSE_LABEL_KEY, deploymentName));
 		return selector;
 	}
 	
@@ -868,7 +879,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		
 		V1LabelSelectorRequirement sr = new V1LabelSelectorRequirement();
-		sr.setKey(K8sUtils.APP_KEY);
+		sr.setKey(K8sUtils.DHORSE_LABEL_KEY);
 		sr.setOperator("In");
 		sr.setValues(affinityValues);
 		
@@ -1309,7 +1320,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		
 		V1Container container = new V1Container();
-		container.setName("nginx");
+		container.setName(Constants.NGINX);
 		container.setImage(context.getFullNameOfImage());
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
@@ -1598,7 +1609,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			}
 		}else if(nginxApp(appPO)) {
 			for(V1Container initC : podSpec.getInitContainers()){
-				if("node".equals(initC.getName())) {
+				if(Constants.NGINX.equals(initC.getName())) {
 					return initC.getImage();
 				}
 			}

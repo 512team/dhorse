@@ -60,6 +60,8 @@ public class Constants {
 	
 	public static final String LOCALHOST_IP = "127.0.0.1";
 	
+	public static final String NGINX = "nginx";
+	
 	/**
 	 * 部署目录
 	 */

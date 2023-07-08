@@ -12,6 +12,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
+import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public abstract class CodeRepoStrategy {
 	String localPathOfBranch(DeploymentContext context) {
 		return new StringBuilder()
 				.append(context.getComponentConstants().getDataPath())
-				.append("app")
+				.append(K8sUtils.APP_KEY)
 				.append(File.separator)
 				.append(context.getApp().getAppName())
 				.append(File.separator)

@@ -503,6 +503,7 @@ public class K8sClusterHelper {
 			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
 				return;
 			}
+			String selector = K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DHORSE_CONFIGMAP_NAME;
 			for(V1Namespace n : namespaceList.getItems()) {
 				String namespace = n.getMetadata().getName();
 				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
@@ -513,7 +514,7 @@ public class K8sClusterHelper {
 					continue;
 				}
 				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
-						"app=" + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+						selector, null, null, null, null, null);
 				if(CollectionUtils.isEmpty(list.getItems())) {
 					continue;
 				}
@@ -546,7 +547,6 @@ public class K8sClusterHelper {
 	
 	public static Map<String, String> dhorseLabel(String value) {
 		Map<String, String> labels = new HashMap<>();
-		labels.put("app", value);
 		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
 		return labels;
 	}
