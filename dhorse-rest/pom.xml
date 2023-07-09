@@ -78,10 +78,9 @@
 				<version>3.3.0</version>
 				<configuration>
 					<finalName>dhorse-v${project.version}-bin</finalName>
-					<appendAssemblyId>true</appendAssemblyId>
+					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
-						<descriptor>src/main/resources/assemble/unix.xml</descriptor>
-						<descriptor>src/main/resources/assemble/windows.xml</descriptor>
+						<descriptor>src/main/resources/assemble.xml</descriptor>
 					</descriptors>
 					<outputDirectory>../target</outputDirectory>
 				</configuration>

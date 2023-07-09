@@ -24,7 +24,7 @@
 			<outputDirectory>conf</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>../bin/unix</directory>
+			<directory>../bin</directory>
 			<includes>
 				<include>**</include>
 			</includes>
