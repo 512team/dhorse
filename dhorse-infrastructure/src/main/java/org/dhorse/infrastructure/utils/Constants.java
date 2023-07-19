@@ -21,7 +21,11 @@ public class Constants {
 	
 	public static final String GRADLE_VERSION = "gradle-8.1.1";
 	
+	public static final String MAVEN_VERSION = "apache-maven-3.9.3";
+	
 	public static final String GRADLE_FILE_URL = "https://downloads.gradle.org/distributions/" + GRADLE_VERSION + "-bin.zip";
+	
+	public static final String MAVEN_FILE_URL = "https://dlcdn.apache.org/maven/maven-3/3.9.3/binaries/"+ MAVEN_VERSION +"-bin.tar.gz";
 	
 	/**
 	 * 24小时

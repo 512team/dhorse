@@ -10,10 +10,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>11</java.version>
 		<!--
-		<java.version>1.8</java.version>
+		<java.version>11</java.version>
 		-->
+		<java.version>1.8</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.version>1.3.0</project.version>
@@ -127,26 +127,6 @@
 				<version>5.0.1</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-embedder</artifactId>
-				<version>3.8.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-compat</artifactId>
-				<version>3.8.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.resolver</groupId>
-				<artifactId>maven-resolver-connector-basic</artifactId>
-				<version>1.7.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.resolver</groupId>
-				<artifactId>maven-resolver-transport-http</artifactId>
-				<version>1.7.1</version>
-			</dependency>
-			<dependency>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-core</artifactId>
 				<version>0.23.0</version>
@@ -190,11 +170,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.9.0</version>
 				<configuration>
-					<release>${java.version}</release>
 					<!--
+					<release>${java.version}</release>
+					-->
 					<source>${java.version}</source>
                     <target>${java.version}</target>
-					-->
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>

@@ -60,12 +60,6 @@
 					"target": "_self"
 				},
 				{
-					"title": "Maven",
-					"href": "page/common_config/maven.html",
-					"icon": "fa fa-cog",
-					"target": "_self"
-				},
-				{
 					"title": "环境模板",
 					"href": "page/common_config/env_template/list.html",
 					"icon": "fa fa-cog",

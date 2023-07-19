@@ -127,6 +127,12 @@
 						</div>
 						<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="#" target="_blank">《镜像制作指引》</a></div>
 					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">Java安装目录</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendSpringBootParam.javaHome" placeholder="默认：DHorse所在的环境" autocomplete="off" class="layui-input">
+						</div>
+					</div>
 					<div class="layui-form-item required">
 						<div class="layui-input-block">
 							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
@@ -277,7 +283,7 @@
 				
 				affinityAppName = initApp($, appId, res.data.affinityAppNames);
 				var extend = res.data.appExtend;
-				//Java
+				//SpringBoot
 				if(res.data.techType == 1){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 					//初始化下个表单
@@ -285,6 +291,7 @@
 						"extendSpringBootParam.packageBuildType": extend.packageBuildType
 						,"extendSpringBootParam.packageFileType": extend.packageFileType
 						,"extendSpringBootParam.packageTargetPath": extend.packageTargetPath
+						,"extendSpringBootParam.javaHome": extend.javaHome
 						,"baseImageSource": res.data.baseImageSource
 					});
 					//初始化镜像

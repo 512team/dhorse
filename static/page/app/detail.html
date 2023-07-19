@@ -89,6 +89,12 @@
 				<label class="layui-form-label text-value" id="baseImage"></label>
 			</div>
 		</div>
+		<div class="layui-form-item" style="display:none" id="javaHomeDiv">
+			<label class="layui-form-label">Java安装目录：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="javaHome"></label>
+			</div>
+		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">部门：</label>
 			<div class="layui-input-block">
@@ -175,8 +181,10 @@
 				//SpringBoot
 				if(res.data.techType == 1){
 					techType = "SpringBoot";
+					$("#javaHome").text(res.data.appExtend.javaHome);
 					$("#packageBuildTypeDiv").show();
 					$("#packageFileTypeDiv").show();
+					$("#javaHomeDiv").show();
 				//Vue
 				}else if(res.data.techType == 2){
 					techType = "Vue";

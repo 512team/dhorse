@@ -41,6 +41,7 @@ import org.dhorse.infrastructure.repository.po.GlobalConfigPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -151,10 +152,10 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	
 	private class MavenRepo implements Runnable {
 
-		private Maven mavenConf;
+		private Maven maven;
 
-		public MavenRepo(Maven mavenConf) {
-			this.mavenConf = mavenConf;
+		public MavenRepo(Maven maven) {
+			this.maven = maven;
 		}
 
 		@Override
@@ -164,8 +165,16 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 			if (!localPathOfPom.exists()) {
 				localPathOfPom.mkdirs();
 			}
+			
 			buildTmpApp(localPathName);
-			packByMaven(mavenConf, localPathName);
+			
+			DeploymentContext context = new DeploymentContext();
+			GlobalConfigAgg globalConfigAgg = new GlobalConfigAgg();
+			globalConfigAgg.setMaven(maven);
+			context.setGlobalConfigAgg(globalConfigAgg);
+			context.setLocalPathOfBranch(localPathName);
+			packByMaven(context, null);
+			
 			deleteTmpApp(localPathName);
 		}
 
@@ -464,10 +473,8 @@ public class GlobalConfigApplicationService extends DeployApplicationService {
 	}
 	
 	public Void addOrUpdateMore(More more) {
-		if(StringUtils.isBlank(more.getEventNotifyUrl())){
-			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "事件通知地址不能为空");
-		}
-		if(!more.getEventNotifyUrl().startsWith("http")) {
+		if(!StringUtils.isBlank(more.getEventNotifyUrl())
+				&& !more.getEventNotifyUrl().startsWith("http")) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "事件通知地址格式不正确");
 		}
 		more.setItemType(GlobalConfigItemTypeEnum.MORE.getCode());

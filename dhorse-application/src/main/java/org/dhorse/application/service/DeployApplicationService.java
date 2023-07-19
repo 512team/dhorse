@@ -16,20 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.cli.DefaultCliRequest;
-import org.apache.maven.cli.MavenCli;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.model.Activation;
-import org.apache.maven.model.Profile;
-import org.apache.maven.model.Repository;
-import org.apache.maven.model.RepositoryPolicy;
 import org.dhorse.api.enums.BuildStatusEnum;
 import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
@@ -58,7 +48,6 @@ import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.api.response.model.EnvPrometheus;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
-import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.infrastructure.param.AffinityTolerationParam;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.DeployParam;
@@ -89,6 +78,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ResourceUtils;
 
 import com.google.cloud.tools.jib.api.Containerizer;
@@ -106,8 +96,6 @@ import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
 public abstract class DeployApplicationService extends ApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeployApplicationService.class);
-	
-	private static final String MAVEN_REPOSITORY_ID = "customized-nexus";
 	
 	private static final String MAVEN_REPOSITORY_URL = "https://repo.maven.apache.org/maven2";
 	
@@ -482,7 +470,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 		if (TechTypeEnum.SPRING_BOOT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendJava appExtend = context.getApp().getAppExtend();
 			if(PackageBuildTypeEnum.MAVEN.getCode().equals(appExtend.getPackageBuildType())) {
-				return packByMaven(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
+				return packByMaven(context, appExtend.getJavaHome());
 			}else if(PackageBuildTypeEnum.GRADLE.getCode().equals(appExtend.getPackageBuildType())){
 				return packByGradle(context);
 			}
@@ -510,7 +498,7 @@ public abstract class DeployApplicationService extends ApplicationService {
 			} catch (IOException e) {
 				logger.error("Failed to build node app", e);
 			}
-			return packByMaven(context.getGlobalConfigAgg().getMaven(), context.getLocalPathOfBranch());
+			return packByMaven(context, null);
 		}
 		
 		return true;
@@ -524,132 +512,115 @@ public abstract class DeployApplicationService extends ApplicationService {
 		}
 	}
 
-	public boolean packByMaven(Maven maven, String localPathOfBranch) {
+	public boolean packByMaven(DeploymentContext context, String customizedJavaHome) {
 		logger.info("Start to pack by maven");
 		
+		downloadMaven();
+		
 		String localRepoPath = mavenRepo();
-		System.setProperty(MavenCli.LOCAL_REPO_PROPERTY, localRepoPath);
-		System.setProperty(MavenCli.MULTIMODULE_PROJECT_DIRECTORY, localRepoPath);
+		String[] repoUrls = repoUrls(context);
 		
-		String javaHome = javaHome(maven);
-		String javaVersion = queryJavaMajorVersion(maven);
-		if(javaVersion == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.JAVA_VERSION_IS_EMPTY);
+		Resource resource = new PathMatchingResourcePatternResolver()
+				.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/settings.xml");
+		File appHome = new File(context.getLocalPathOfBranch());
+		try (InputStream in = resource.getInputStream();
+				FileOutputStream out = new FileOutputStream(appHome.getParent() + "/settings.xml")) {
+			byte[] buffer = new byte[in.available()];
+			in.read(buffer);
+			String lines = new String(buffer, "UTF-8");
+			String result = lines.replace("${localRepository}", localRepoPath)
+					.replace("${repositoryUrl1}", repoUrls[0])
+					.replace("${repositoryUrl2}", repoUrls[1]);
+			out.write(result.toString().getBytes("UTF-8"));
+		} catch (IOException e) {
+			logger.error("Failed to build node app", e);
 		}
 		
-		logger.info("Java home is {}", javaHome);
-		logger.info("Java version is {}", javaVersion);
-		
-		String[] commands = new String[] {"clean", "package", "-Dmaven.test.skip"};
-		DefaultCliRequest request = new DefaultCliRequest(commands, null);
-		request.setWorkingDirectory(localPathOfBranch);
-		
-		List<Repository> repository = mavenRepos(maven);
-		Profile profile = new Profile();
-		profile.setId(MAVEN_REPOSITORY_ID);
-		Activation activation = new Activation();
-		activation.setActiveByDefault(true);
-		activation.setJdk(javaVersion);
-		profile.setActivation(activation);
-		profile.setRepositories(repository);
-		profile.setPluginRepositories(repository);
-		
-		Properties properties = new Properties();
-		properties.put("java.home", javaHome);
-		properties.put("java.version", javaVersion);
-		properties.put("maven.compiler.source", javaVersion);
-		properties.put("maven.compiler.target", javaVersion);
-		properties.put("maven.compiler.compilerVersion", javaVersion);
-		properties.put("project.build.sourceEncoding", "UTF-8");
-		properties.put("project.reporting.outputEncoding", "UTF-8");
-		profile.setProperties(properties);
-		MavenExecutionRequest executionRequest = request.getRequest();
-		executionRequest.setProfiles(Arrays.asList(profile));
-		executionRequest.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
-		
-		MavenCli cli = new MavenCli();
-		int status = 0;
-		try {
-			status = cli.doMain(request);
-		} catch (Exception e) {
-			logger.error("Failed to pack by maven", e);
-			return false;
-		}
+		doPackByMaven(context, componentConstants.getDataPath() + "maven/", customizedJavaHome);
 		
 		logger.info("End to pack by maven");
-		return status == 0;
-	}
-
-	private List<Repository> mavenRepos(Maven maven) {
-		if(maven == null) {
-			return Arrays.asList(mavenRepo(MAVEN_REPOSITORY_URL, 1));
-		}
-		
-		Set<String> urls = new HashSet<>();
-		for(String r : maven.getMavenRepoUrl()) {
-			if(!StringUtils.isBlank(r)) {
-				urls.add(r);
-			}
-		}
-		
-		int urlSize = urls.size();
-		if(urlSize == 0) {
-			return Arrays.asList(mavenRepo(MAVEN_REPOSITORY_URL, 1));
-		}
-		
-		List<Repository> repos = new ArrayList<>(urlSize);
-		int i = 1;
-		for(String r : urls) {
-			repos.add(mavenRepo(StringUtils.isBlank(r) ? MAVEN_REPOSITORY_URL : r, i));
-			i++;
-		}
-		return repos;
+		return true;
 	}
 	
-	private Repository mavenRepo(String repoUrl, int i) {
-		RepositoryPolicy policy = new RepositoryPolicy();
-		policy.setEnabled(true);
-		policy.setUpdatePolicy("always");
-		policy.setChecksumPolicy("fail");
+	private String[] repoUrls(DeploymentContext context) {
+		String[] result = new String[] {MAVEN_REPOSITORY_URL, MAVEN_REPOSITORY_URL};
+		if(context.getGlobalConfigAgg().getMaven() == null) {
+			return result;
+		}
+		List<String> repoUrls = context.getGlobalConfigAgg().getMaven().getMavenRepoUrl();
+		if(!CollectionUtils.isEmpty(repoUrls) && repoUrls.size() == 1) {
+			result[0] = repoUrls.get(0);
+		}else if(!CollectionUtils.isEmpty(repoUrls) && repoUrls.size() == 2) {
+			result[0] = repoUrls.get(0);
+			result[1] = repoUrls.get(1);
+		}
 		
-		String id = "nexus" + i;
-		Repository repository = new Repository();
-		repository.setId(id);
-		repository.setName(id);
-		repository.setUrl(repoUrl);
-		repository.setReleases(policy);
-		repository.setSnapshots(policy);
-		return repository;
+		if(StringUtils.isBlank(result[0])) {
+			result[0] = MAVEN_REPOSITORY_URL;
+		}
+		if(StringUtils.isBlank(result[1])) {
+			result[1] = MAVEN_REPOSITORY_URL;
+		}
+		
+		return result;
 	}
+	
+	private void doPackByMaven(DeploymentContext context, String mavenHome, String customizedJavaHome) {
+		//命令格式：
+		//cd /opt/dhorse/data/app/hello\hello-1689587261061 && \
+		//opt/dhorse/data/maven/apache-maven-3.9.3/bin/mvn clean package \
+		//-s /opt/dhorse/data/app/hello/settings.xml
+		String settingsFile = new File(context.getLocalPathOfBranch()).getParent() + "/settings.xml";
+		String mavenBin = mavenHome + Constants.MAVEN_VERSION + "/bin/mvn";
+		StringBuilder cmd = new StringBuilder();
+		if(!isWindows()) {
+			cmd.append("chmod +x ").append(mavenBin).append(" && ");
+		}
+		cmd.append("cd " + context.getLocalPathOfBranch())
+				.append(" && ").append(mavenBin)
+				.append(" clean package ")
+				.append("-s " + settingsFile);
+		
+		execCommand(customizedJavaHome, cmd.toString());
+    }
 	
 	private boolean packByGradle(DeploymentContext context) {
 		logger.info("Start to pack by gradle");
 		
 		downloadGradle();
 		
-		doPackByGradle(context, componentConstants.getDataPath() + "gradle/");
+		AppExtendJava appExtend = context.getApp().getAppExtend();
+		doPackByGradle(context, componentConstants.getDataPath() + "gradle/", appExtend.getJavaHome());
 		
 		logger.info("End to pack by gradle");
 		return true;
 	}
 	
-	private void doPackByGradle(DeploymentContext context, String gradleHome) {
-		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/&& /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle -g /opt/dhorse/data/gradle/cache clean release
+	private void doPackByGradle(DeploymentContext context, String gradleHome, String customizedJavaHome) {
+		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/ \
+		//&& /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle \
+		//clean build
+		//-g /opt/dhorse/data/gradle/cache
 		String gradleBin = gradleHome + Constants.GRADLE_VERSION + "/bin/gradle";
 		StringBuilder cmd = new StringBuilder();
 		if(!isWindows()) {
-			cmd.append("chmod +x && ").append(gradleBin);
+			cmd.append("chmod +x ").append(gradleBin).append(" && ");
 		}
 		cmd.append("cd " + context.getLocalPathOfBranch())
 				.append(" && ").append(gradleBin)
-				.append(" -g " + gradleHome + "cache")
-				.append(" clean build");
+				.append(" clean build")
+				.append(" -g " + gradleHome + "cache");
+		
+		execCommand(customizedJavaHome, cmd.toString());
+    }
+	
+	private void execCommand(String customizedJavaHome, String cmd) {
 		List<String> cmds = systemCmd();
 		cmds.add(cmd.toString());
         ProcessBuilder pb = new ProcessBuilder();
-        String javaHome = javaHome(context.getGlobalConfigAgg().getMaven());
-		logger.info("Java home is {}", javaHome);
+        String javaHome = javaHome(customizedJavaHome);
         pb.environment().put("JAVA_HOME", javaHome);
+        logger.info("Java home is {}", javaHome);
         //将标准输入流和错误输入流合并，通过标准输入流读取信息
         pb.redirectErrorStream(true);
         pb.command(cmds);
@@ -689,20 +660,12 @@ public abstract class DeployApplicationService extends ApplicationService {
 		return cmd;
 	}
 	
-	private String javaHome(Maven maven) {
-		//首先使用指定的javaHome
-		String javaHome = null;
-		if(maven != null && !StringUtils.isBlank(maven.getJavaHome())) {
-			javaHome = maven.getJavaHome();
-		}else {
-			javaHome = System.getenv("JAVA_HOME");
+	private String javaHome(String customizedHome) {
+		//优先使用指定的javaHome
+		if(!StringUtils.isBlank(customizedHome)) {
+			return customizedHome;
 		}
-		
-		if(javaHome == null) {
-			LogUtils.throwException(logger, MessageCodeEnum.JAVA_HOME_IS_EMPTY);
-		}
-		
-		return javaHome;
+		return System.getenv("JAVA_HOME");
 	}
 	
 	private boolean buildImage(DeploymentContext context) {
