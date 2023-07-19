@@ -61,7 +61,7 @@
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"itemType": 2}),
+			data: JSON.stringify({"itemTypes": [2]}),
 			success: function(res){
 				if(res.code != "000000"){
 					layer.msg(res.message, {icon: 5, shift: 6});

@@ -48,7 +48,7 @@
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"itemType": 1}),
+			data: JSON.stringify({"itemTypes": [1]}),
 			success: function(res){
 				form.render();
 				if(res.code != "000000"){
