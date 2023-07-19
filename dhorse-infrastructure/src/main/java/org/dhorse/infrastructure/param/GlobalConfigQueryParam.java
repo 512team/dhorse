@@ -1,6 +1,7 @@
 package org.dhorse.infrastructure.param;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 全局配置查询参数
@@ -19,7 +20,7 @@ public class GlobalConfigQueryParam implements Serializable {
 	/**
 	 * 配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven，5：链路追踪模板，6：环境模板
 	 */
-	private Integer itemType;
+	private List<Integer> itemTypes;
 
 	public String getGlobalConfigId() {
 		return globalConfigId;
@@ -29,12 +30,12 @@ public class GlobalConfigQueryParam implements Serializable {
 		this.globalConfigId = globalConfigId;
 	}
 
-	public Integer getItemType() {
-		return itemType;
+	public List<Integer> getItemTypes() {
+		return itemTypes;
 	}
 
-	public void setItemType(Integer itemType) {
-		this.itemType = itemType;
+	public void setItemTypes(List<Integer> itemTypes) {
+		this.itemTypes = itemTypes;
 	}
 
 }

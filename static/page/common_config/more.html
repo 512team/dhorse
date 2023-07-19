@@ -1,11 +1,29 @@
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>Maven</legend>
+		</fieldset>
+		<div class="layui-form-item">
+			<label class="layui-form-label">仓库地址1</label>
+			<div class="layui-input-block">
+				<input type="text" name="mavenRepoUrl[0]" placeholder="如：https://repo.maven.apache.org/maven2" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">仓库地址2</label>
+			<div class="layui-input-block">
+				<input type="text" name="mavenRepoUrl[1]" placeholder="如：https://repo.maven.apache.org/maven2" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>其他</legend>
+		</fieldset>
 		<div class="layui-form-item">
 			<label class="layui-form-label">事件通知地址</label>
-			<div class="layui-input-inline" style="width: 700px;">
+			<div class="layui-input-inline" style="width: 70%">
 				<input type="text" name="eventNotifyUrl" placeholder="格式如：http(s)://notify_server:port/receive" autocomplete="off" class="layui-input">
 			</div>
-			<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="https://github.com/tiandizhiguai/dhorse-doc/blob/main/guide/%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5.md" target="_blank">《使用指引》</a></div>
+			<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E4%BA%8B%E4%BB%B6%E9%80%9A%E7%9F%A5.md" target="_blank">《使用指引》</a></div>
 		</div>
 		<div class="layui-form-item">
 			<div class="layui-input-block">
@@ -27,7 +45,7 @@
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"itemType": 100}),
+			data: JSON.stringify({"itemTypes": [4, 100]}),
 			success: function(res){
 				if(res.code != "000000"){
 					layer.msg(res.message, {icon: 5, shift: 6});
@@ -36,9 +54,26 @@
 				if(JSON.stringify(res.data) === '{}'){
 					return false;
 				}
+				
+				var morData = res.data.more;
+				var mavenRepoUrl1, mavenRepoUrl2;
+				var mavenData = res.data.maven;
+				if(mavenData){
+					var repoUrls = res.data.maven.mavenRepoUrl;
+					if(repoUrls){
+						if(repoUrls.length == 1){
+							mavenRepoUrl1 = repoUrls[0];
+						}else if(repoUrls.length == 2){
+							mavenRepoUrl1 = repoUrls[0];
+							mavenRepoUrl2 = repoUrls[1];
+						}
+					}
+				}
 				//给表单赋值
 				form.val("form-data", {
-				  "eventNotifyUrl": res.data.more.eventNotifyUrl
+					"mavenRepoUrl[0]": mavenRepoUrl1
+					,"mavenRepoUrl[1]": mavenRepoUrl2
+					,"eventNotifyUrl": morData.eventNotifyUrl
 				});
 			},
 			error: function(res){
@@ -48,7 +83,34 @@
 		
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-			//增加类型
+			var mavenRepoUrl = [];
+			var fields = data.field;
+			for(var fieldName in fields){
+				if(fieldName.substring(0, 12) == 'mavenRepoUrl'){
+					mavenRepoUrl.push(fields[fieldName]);
+				}
+			}
+			data.field.mavenRepoUrl = mavenRepoUrl;
+			//Maven类型
+			data.field.itemType = 4;
+			$.ajax({
+				url: '/globalConfig/maven/addOrUpdate',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}	
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+			//更多类型
 			data.field.itemType = 100;
 			$.ajax({
 				url: '/globalConfig/more/addOrUpdate',
@@ -72,7 +134,7 @@
 					layer.msg(res.message, {icon: 5, shift: 6});
 				}
 			});
-
+			
             return false;
         });
 

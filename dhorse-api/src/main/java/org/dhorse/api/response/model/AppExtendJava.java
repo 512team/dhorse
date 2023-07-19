@@ -22,9 +22,9 @@ public class AppExtendJava extends AppExtend {
 	private String packageTargetPath;
 
 	/**
-	 * Java版本
+	 * Java安装目录
 	 */
-	private String javaVersion;
+	private String javaHome;
 
 	public Integer getPackageBuildType() {
 		return packageBuildType;
@@ -50,12 +50,12 @@ public class AppExtendJava extends AppExtend {
 		this.packageTargetPath = packageTargetPath;
 	}
 
-	public String getJavaVersion() {
-		return javaVersion;
+	public String getJavaHome() {
+		return javaHome;
 	}
 
-	public void setJavaVersion(String javaVersion) {
-		this.javaVersion = javaVersion;
+	public void setJavaHome(String javaHome) {
+		this.javaHome = javaHome;
 	}
 
 }

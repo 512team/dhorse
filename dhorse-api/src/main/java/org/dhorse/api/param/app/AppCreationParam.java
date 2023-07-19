@@ -236,6 +236,11 @@ public class AppCreationParam implements Serializable {
 		 */
 		private String packageTargetPath;
 
+		/**
+		 * Java安装目录
+		 */
+		private String javaHome;
+
 		public String getAppId() {
 			return appId;
 		}
@@ -267,6 +272,15 @@ public class AppCreationParam implements Serializable {
 		public void setPackageTargetPath(String packageTargetPath) {
 			this.packageTargetPath = packageTargetPath;
 		}
+
+		public String getJavaHome() {
+			return javaHome;
+		}
+
+		public void setJavaHome(String javaHome) {
+			this.javaHome = javaHome;
+		}
+
 	}
 
 	/**

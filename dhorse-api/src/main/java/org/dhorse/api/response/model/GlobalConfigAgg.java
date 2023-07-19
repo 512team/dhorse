@@ -315,22 +315,9 @@ public class GlobalConfigAgg implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * java home
-		 */
-		private String javaHome;
-
-		/**
 		 * maven仓库地址
 		 */
 		private List<String> mavenRepoUrl;
-
-		public String getJavaHome() {
-			return javaHome;
-		}
-
-		public void setJavaHome(String javaHome) {
-			this.javaHome = javaHome;
-		}
 
 		public List<String> getMavenRepoUrl() {
 			return mavenRepoUrl;

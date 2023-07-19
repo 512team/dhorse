@@ -31,7 +31,6 @@ import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
-import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.exception.ApplicationException;
@@ -144,7 +143,7 @@ public abstract class ApplicationService {
 	public GlobalConfigAgg globalConfig(GlobalConfigQueryParam queryParam) {
 		GlobalConfigParam configParam = new GlobalConfigParam();
 		configParam.setId(queryParam.getGlobalConfigId());
-		configParam.setItemType(queryParam.getItemType());
+		configParam.setItemTypes(queryParam.getItemTypes());
 		return globalConfigRepository.queryAgg(configParam);
 	}
 	
@@ -171,7 +170,7 @@ public abstract class ApplicationService {
 	}
 	
 	protected String mavenRepo() {
-		return componentConstants.getDataPath() + "/maven/repository/";
+		return componentConstants.getDataPath() + "maven/repository/";
 	}
 	
 	public AppPO validateApp(String appId) {
@@ -273,15 +272,8 @@ public abstract class ApplicationService {
 		return "v" + version;
 	}
 	
-	public List<String> queryJavaVersion(){
-		GlobalConfigParam bizParam = new GlobalConfigParam();
-		bizParam.setItemType(GlobalConfigItemTypeEnum.MAVEN.getCode());
-		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
-		return queryJavaVersion(globalConfigAgg.getMaven());
-	}
-	
-	public String queryJavaMajorVersion(Maven mavenConf){
-		List<String> javaVersions = queryJavaVersion(mavenConf);
+	public String queryJavaMajorVersion(String javaHome){
+		List<String> javaVersions = queryJavaVersion(javaHome);
 		String[] versions = javaVersions.get(0).split("\\.");
 		if(Integer.valueOf(versions[0]) < 9) {
 			return versions[0] + "." + versions[1];
@@ -289,10 +281,13 @@ public abstract class ApplicationService {
 		return versions[0];
 	}
 	
-	public List<String> queryJavaVersion(Maven mavenConf){
-		String javaHome = null;
-		if(mavenConf != null && !StringUtils.isBlank(mavenConf.getJavaHome())) {
-			javaHome = mavenConf.getJavaHome();
+	public List<String> queryJavaVersion(){
+		return queryJavaVersion("xxxxxxxxxx");
+	}
+	
+	public List<String> queryJavaVersion(String javaHome){
+		if(StringUtils.isBlank(javaHome)) {
+			return null;
 		}
 		
 		List<String> javaVersions = new ArrayList<>();
@@ -393,6 +388,13 @@ public abstract class ApplicationService {
 			} catch (Exception e) {
 				logger.error("Failed to download gradle", e);
 			}
+			
+			try {
+				downloadMaven();
+			} catch (Exception e) {
+				logger.error("Failed to download maven", e);
+			}
+			
 		});
 	}
 	
@@ -553,6 +555,37 @@ public abstract class ApplicationService {
 		File targetFile = new File(gradlePathName + "gradle.zip");
 		FileUtils.downloadFile(Constants.GRADLE_FILE_URL, targetFile);
 		FileUtils.unZip(targetFile.getAbsolutePath(), gradlePathName);
+		targetFile.delete();
+	}
+	
+	protected void downloadMaven() {
+		String rootPath = componentConstants.getDataPath() + "maven/";
+		File rootPathFile = new File(rootPath);
+		if(!rootPathFile.exists()) {
+			if(rootPathFile.mkdirs()) {
+				logger.info("Create maven path successfully");
+			}else {
+				logger.warn("Failed to create maven path");
+			}
+		}
+		
+		String mavenHome = null;
+		File[] files = rootPathFile.listFiles();
+		for(File f : files) {
+			if(f.getName().equals(Constants.MAVEN_VERSION)) {
+				mavenHome = f.getAbsolutePath();
+				break;
+			}
+		}
+		
+		if(mavenHome != null) {
+			logger.info("Maven home is {}", mavenHome);
+			return;
+		}
+		
+		File targetFile = new File(rootPath + "maven.zip");
+		FileUtils.downloadFile(Constants.MAVEN_FILE_URL, targetFile);
+		FileUtils.unTarGz(targetFile.getAbsolutePath(), rootPath);
 		targetFile.delete();
 	}
 	

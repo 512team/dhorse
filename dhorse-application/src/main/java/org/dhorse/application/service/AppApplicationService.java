@@ -193,7 +193,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		bizParam.setItemTypes(Arrays.asList(GlobalConfigItemTypeEnum.MAVEN.getCode(),
 				GlobalConfigItemTypeEnum.IMAGEREPO.getCode()));
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
-		List<String> jdkVersions = globalConfigApplicationService.queryJavaVersion();
+		List<String> jdkVersions = globalConfigApplicationService.queryJavaVersion("xxxxxx");
 		
 		//构建Jdk镜像
 		String jdkImageName = doBuildJdkImage(jdkVersions.get(0), globalConfigAgg);
@@ -266,9 +266,9 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		}
 		
 		String javaHome = null;
-		if(globalConfigAgg.getMaven() != null && !StringUtils.isBlank(globalConfigAgg.getMaven().getJavaHome())) {
-			javaHome = globalConfigAgg.getMaven().getJavaHome();
-		}
+//		if(globalConfigAgg.getMaven() != null && !StringUtils.isBlank(globalConfigAgg.getMaven().getJavaHome())) {
+//			javaHome = globalConfigAgg.getMaven().getJavaHome();
+//		}
 		if(StringUtils.isBlank(javaHome)){
 			javaHome = System.getProperty("java.home");
 		}
