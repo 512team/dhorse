@@ -194,7 +194,16 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 		return clusterStrategy.podLog(appEnvClusterEntity.getClusterPO(),
 				replicaName, appEnvClusterEntity.getAppEnvPO().getNamespaceName());
 	}
-	
+
+	public String downloadYaml(LoginUser loginUser, EnvReplicaParam requestParam) {
+		String replicaName = requestParam.getReplicaName();
+		AppEnvClusterContext appEnvClusterEntity = queryCluster(replicaName, loginUser);
+		ClusterStrategy clusterStrategy = clusterStrategy(
+				appEnvClusterEntity.getClusterPO().getClusterType());
+		return clusterStrategy.podYaml(appEnvClusterEntity.getClusterPO(),
+				replicaName, appEnvClusterEntity.getAppEnvPO().getNamespaceName());
+	}
+
 	public void clearMetrics(Date date) {
 		metricsRepository.delete(date);
 	}

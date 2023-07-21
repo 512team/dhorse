@@ -35,6 +35,8 @@ public interface ClusterStrategy {
 	
 	String podLog(ClusterPO clusterPO, String replicaName, String namespace);
 
+	String podYaml(ClusterPO clusterPO, String replicaName, String namespace);
+
 	boolean autoScaling(AppPO appPO, AppEnvPO appEnvPO, ClusterPO clusterPO);
 
 	void openLogCollector(ClusterPO clusterPO);
