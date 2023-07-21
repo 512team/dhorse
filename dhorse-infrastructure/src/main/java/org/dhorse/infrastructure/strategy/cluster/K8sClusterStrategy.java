@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.kubernetes.client.util.Yaml;
 import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.ActionTypeEnum;
 import org.dhorse.api.enums.AffinityLevelEnum;
@@ -1685,6 +1686,18 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		try {
 			//目前只支持下载最近50万行的日志
 			return coreApi.readNamespacedPodLog(replicaName, namespace, null, null, null, null, null, null, null, 500000, null);
+		} catch (ApiException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.REPLICA_RESTARTED_FAILURE);
+		}
+		return null;
+	}
+
+	public String podYaml(ClusterPO clusterPO, String replicaName, String namespace) {
+		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		CoreV1Api coreApi = new CoreV1Api(apiClient);
+		try {
+			V1Pod v1Pod = coreApi.readNamespacedPod(replicaName, namespace, null);
+			return Yaml.dump(v1Pod);
 		} catch (ApiException e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.REPLICA_RESTARTED_FAILURE);
 		}

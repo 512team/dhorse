@@ -133,6 +133,27 @@ public class EnvReplicaRest extends AbstractRest {
 		}
 		return null;
 	}
+
+	/**
+	 * 下载yaml
+	 *
+	 * @param envReplicaParam 下载yaml参数模型
+	 * @return 日志文件
+	 */
+	@GetMapping("/downloadYaml")
+	public Void downloadYaml(@CookieValue("login_token") String loginToken,
+			EnvReplicaParam envReplicaParam) {
+		response.setContentType("application/octet-stream");
+		response.setHeader("Content-Disposition", "attachment;filename="+envReplicaParam.getReplicaName()+".yaml");
+		String context = envReplicaApplicationService.downloadYaml(queryLoginUserByToken(loginToken), envReplicaParam);
+		try (OutputStream out = response.getOutputStream()) {
+			out.write(context.getBytes());
+			out.flush();
+		} catch (IOException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.DOWNLOAD_FILE_FAILURE);
+		}
+		return null;
+	}
 	
 	/**
 	 * 查询副本的指标数据集

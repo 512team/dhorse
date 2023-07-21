@@ -195,6 +195,9 @@
 					}, {
 					  title: '下载日志'
 					  ,id: 'log-download'
+					}, {
+					  title: '下载yaml'
+					  ,id: 'yaml-download'
 					},{
 					  title: '终端命令'
 					  ,id: 'terminal'
@@ -218,6 +221,8 @@
 							});
 						}else if(data.id === 'log-download'){
 							$("<a>").attr("href","/app/env/replica/downloadLog?replicaName=" + replicaName)[0].click();
+						}else if(data.id === 'yaml-download'){
+							$("<a>").attr("href","/app/env/replica/downloadYaml?replicaName=" + replicaName)[0].click();
 						}else if (data.id === 'terminal') {
 							var index = layer.open({
 								title: '终端命令',
