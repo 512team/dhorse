@@ -6,7 +6,7 @@ package org.dhorse.api.event;
  * @author Dahi
  *
  */
-public class BuildMessage {
+public class BuildVersionMessage {
 
 	/**
 	 * 提交人
@@ -14,14 +14,9 @@ public class BuildMessage {
 	private String submitter;
 
 	/**
-	 * 分支
+	 * 分支（Tag）
 	 */
 	private String branchName;
-
-	/**
-	 * tag
-	 */
-	private String tagName;
 
 	/**
 	 * 应用名称
@@ -56,14 +51,6 @@ public class BuildMessage {
 
 	public void setBranchName(String branchName) {
 		this.branchName = branchName;
-	}
-
-	public String getTagName() {
-		return tagName;
-	}
-
-	public void setTagName(String tagName) {
-		this.tagName = tagName;
 	}
 
 	public String getAppName() {

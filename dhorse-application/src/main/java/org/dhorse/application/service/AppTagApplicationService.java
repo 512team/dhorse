@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
  * @author 无双
  */
 @Service
-public class AppTagApplicationService extends DeployApplicationService {
+public class AppTagApplicationService extends DeploymentApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(AppTagApplicationService.class);
 

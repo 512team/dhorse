@@ -45,7 +45,7 @@ import org.springframework.util.CollectionUtils;
  * @author 天地之怪
  */
 @Service
-public class DeploymentDetailApplicationService extends DeployApplicationService {
+public class DeploymentDetailApplicationService extends DeploymentApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeploymentDetailApplicationService.class);
 

@@ -6,7 +6,7 @@ package org.dhorse.api.event;
  * @author Dahi
  *
  */
-public class DeploymentMessage extends BuildMessage {
+public class DeploymentMessage extends BuildVersionMessage {
 
 	/**
 	 * 环境标识

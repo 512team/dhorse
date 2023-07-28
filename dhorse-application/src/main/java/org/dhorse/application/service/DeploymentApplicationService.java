@@ -31,7 +31,7 @@ import org.dhorse.api.enums.PackageBuildTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.event.BuildMessage;
+import org.dhorse.api.event.BuildVersionMessage;
 import org.dhorse.api.event.DeploymentMessage;
 import org.dhorse.api.param.app.branch.BuildParam;
 import org.dhorse.api.param.app.branch.deploy.AbortDeploymentParam;
@@ -93,9 +93,9 @@ import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
  * 
  * @author 天地之怪
  */
-public abstract class DeployApplicationService extends ApplicationService {
+public abstract class DeploymentApplicationService extends ApplicationService {
 
-	private static final Logger logger = LoggerFactory.getLogger(DeployApplicationService.class);
+	private static final Logger logger = LoggerFactory.getLogger(DeploymentApplicationService.class);
 	
 	private static final String MAVEN_REPOSITORY_URL = "https://repo.maven.apache.org/maven2";
 	
@@ -114,6 +114,8 @@ public abstract class DeployApplicationService extends ApplicationService {
 			
 			try {
 				logger.info("Start to build version");
+				
+				logger.info("The version name is {}", context.getVersionName());
 
 				// 2.下载分支代码
 				if (context.getCodeRepoStrategy().downloadCode(context)) {
@@ -159,16 +161,15 @@ public abstract class DeployApplicationService extends ApplicationService {
 		if(StringUtils.isBlank(url)){
 			return;
 		}
-		BuildMessage message = new BuildMessage();
+		
+		BuildVersionMessage message = new BuildVersionMessage();
 		message.setAppName(context.getApp().getAppName());
 		message.setBranchName(context.getBranchName());
 		message.setSubmitter(context.getSubmitter());
 		message.setStatus(status);
-		//todo
-		//message.setTagName(context.get);
 		message.setVerionName(context.getVersionName());
 		
-		EventResponse<BuildMessage> response = new EventResponse<>();
+		EventResponse<BuildVersionMessage> response = new EventResponse<>();
 		response.setEventCode(EventTypeEnum.BUILD_VERSION.getCode());
 		response.setData(message);
 		doNotify(url, JsonUtils.toJsonString(response));
@@ -790,6 +791,13 @@ public abstract class DeployApplicationService extends ApplicationService {
 		ImageRepo imageRepo = context.getGlobalConfigAgg().getImageRepo();
 		String imageUrl = imageRepo.getUrl();
 		String imageServer = imageUrl.substring(imageUrl.indexOf("//") + 2);
+		
+		logger.info("The base image is {}", baseImageName);
+		
+		targetFiles.forEach(e -> {
+			logger.info("The target file is {}", e.toFile().getPath());
+		});
+		
 		
 		//Jib环境变量
 		jibProperty();

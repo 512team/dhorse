@@ -250,8 +250,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
 				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
-						null, null);
+				//api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
+				//		null, null);
+				//todo 升级v1.3.0版本做的兼容逻辑，后续版本应该使用replaceNamespacedDeployment
+				api.deleteNamespacedDeployment(context.getDeploymentName(), namespace, null, null, null, null, null, null);
+				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			}
 			
 			// 自动扩容任务
@@ -1086,7 +1089,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		probe.setPeriodSeconds(item != null && item.getPeriod() != null ? item.getPeriod() : 5);
 		probe.setTimeoutSeconds(item != null && item.getTimeout() != null ? item.getTimeout() : 1);
 		probe.setSuccessThreshold(item != null && item.getSuccessThreshold() != null ? item.getSuccessThreshold() : 1);
-		probe.setFailureThreshold(item != null && item.getFailureThreshold() != null ? item.getFailureThreshold() : 3);
+		probe.setFailureThreshold(item != null && item.getFailureThreshold() != null ? item.getFailureThreshold() : 300);
 		container.readinessProbe(probe);
 	}
 	
@@ -1649,7 +1652,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			return metrics.getPodMetrics(namespace);
 		} catch (ApiException e) {
 			if(e.getCode() == 404) {
-				logger.error("Failed to collect pod metrics, metrics server may not bee installed");
+				logger.warn("Unable to collect pod metrics, metrics server may not bee installed");
 			}else {
 				logger.error("Failed to collect pod metrics", e);
 			}
@@ -1699,7 +1702,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			V1Pod v1Pod = coreApi.readNamespacedPod(replicaName, namespace, null);
 			return Yaml.dump(v1Pod);
 		} catch (ApiException e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.REPLICA_RESTARTED_FAILURE);
+			LogUtils.throwException(logger, e, MessageCodeEnum.DOWNLOAD_FILE_FAILURE);
 		}
 		return null;
 	}

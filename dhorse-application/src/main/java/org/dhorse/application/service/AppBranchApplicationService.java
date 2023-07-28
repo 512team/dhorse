@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
  * @author 天地之怪
  */
 @Service
-public class AppBranchApplicationService extends DeployApplicationService {
+public class AppBranchApplicationService extends DeploymentApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(AppBranchApplicationService.class);
 

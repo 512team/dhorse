@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
  * @author 天地之怪
  */
 @Service
-public class DeploymentVersionApplicationService extends DeployApplicationService {
+public class DeploymentVersionApplicationService extends DeploymentApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeploymentVersionApplicationService.class);
 	

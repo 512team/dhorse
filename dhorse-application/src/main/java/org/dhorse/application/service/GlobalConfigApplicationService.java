@@ -70,7 +70,7 @@ import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
  * @author 天地之怪
  */
 @Service
-public class GlobalConfigApplicationService extends DeployApplicationService {
+public class GlobalConfigApplicationService extends DeploymentApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(GlobalConfigApplicationService.class);
 
