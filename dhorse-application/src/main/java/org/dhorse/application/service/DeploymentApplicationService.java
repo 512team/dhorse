@@ -114,8 +114,6 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			
 			try {
 				logger.info("Start to build version");
-				
-				logger.info("The version name is {}", context.getVersionName());
 
 				// 2.下载分支代码
 				if (context.getCodeRepoStrategy().downloadCode(context)) {

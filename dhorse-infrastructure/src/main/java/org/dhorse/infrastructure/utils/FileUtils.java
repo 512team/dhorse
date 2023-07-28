@@ -39,7 +39,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				try(OutputStream out = Files.newOutputStream(targetFile.toPath())){
 					IOUtils.copy(in, out);
 				}catch (Exception ex) {
-                	logger.error("Failed to unZip entry", ex);
+                	logger.error("Failed to unzip entry", ex);
                 }
 			}
 		} catch (Exception e) {
