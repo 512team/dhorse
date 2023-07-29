@@ -4,10 +4,9 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 ## 主要特性
 * 简洁的操作界面
 * 以应用为中心，屏蔽K8S的底层概念
-* 无需安装Docker即可构建镜像
-* 无需安装Maven即可打包
-* 无需安装Node即可打包
 * 支持SpringBoot、Vue、React、Nodejs、Html应用部署
+* 无需安装Docker即可构建镜像
+* 无需安装Maven、Gradle、Node即可打包
 * 支持多环境部署
 * 支持日志收集
 * 支持链路追踪
