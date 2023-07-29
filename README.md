@@ -1,6 +1,20 @@
 # DHorse项目
 DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具有持续集成、持续部署、微服务治理等功能，主要特点：部署简单、操作简洁、功能快速。
 
+## 主要特性
+* 简洁的操作界面
+* 以应用为中心，屏蔽K8S的底层概念
+* 无需安装Docker即可构建镜像
+* 无需安装Maven即可打包
+* 无需安装Node即可打包
+* 支持SpringBoot、Vue、React、Nodejs、Html应用部署
+* 支持多环境部署
+* 支持日志收集
+* 支持链路追踪
+
+## 架构
+ ![Image text](./static/images/architecture.jpg)
+
 # 项目地址
 
 * [GitHub](https://github.com/512team/dhorse)
@@ -8,51 +22,28 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 * [演示1](http://dhorse-demo1.512.team)
 * [演示2](http://dhorse-demo2.512.team)
 
-## 架构
- ![Image text](./static/images/architecture.jpg)
-
-## 主要特性
-* 简洁的操作界面
-* 以应用为中心，屏蔽K8S的底层概念
-* 无需安装Docker即可构建镜像
-* 无需安装Maven即可打包
-* 无需安装Node即可打包
-* 支持SpringBoot应用部署
-* 支持Vue和React应用部署
-* 支持多环境部署
-* 支持日志收集
-* 支持链路追踪
-
 ## 快速开始
 
 1. 环境要求
 
-| Harbor | kubernetes |
-| :----: | :----: |
-| >=2.0.0 | [1.18.x, 1.26.x] |
+| Java | kubernetes | Harbor |
+| :----: | :----: | :----: |
+| >=8 | [1.18.x, 1.26.x] | >=2.0.0 |
 
 2. 下载安装文件
 
-| Java版本 | Linux、Mac或Cygwin | Windows |
-| :-----: | :----: | :----: | 
-| 1.8 | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.2.1/dhorse-v1.2.1-jdk1.8-bin-unix.tar.gz) | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.2.1/dhorse-v1.2.1-jdk1.8-bin-windows.zip) |
-| >=11 | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.2.1/dhorse-v1.2.1-bin-unix.tar.gz) | [下载](https://gitee.com/i512team/dhorse/releases/download/v1.2.1/dhorse-v1.2.1-bin-windows.zip) |
+[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.3.0/dhorse-v1.3.0-bin.tar.gz)
 
-3. 下载文件之后，然后解压
+3. 解压
 
 ```bash
-$  tar -xzf dhorse-*.tar.gz
+$  tar zxvf dhorse-*.tar.gz
 ```
 
-4. 进入解压目录并查看文件列表
+4. 查看文件列表
 
 ```bash
 $  cd dhorse-* && ls -l
-```
-
-5. 内容如下
-
-```bash
 total 24
 drwxr-xr-x 2 root root   115 Oct  6 19:56 bin
 drwxr-xr-x 2 root root    48 Oct  6 19:56 conf
@@ -63,17 +54,17 @@ drwxr-xr-x 3 root root    46 Oct  6 19:56 lib
 drwxr-xr-x 8 root root    93 Sep 23 16:09 static
 ```
 
-6. 启动服务
+5. 启动服务
 
 ```bash
 $  bin/dhorse-start.sh
 ```
 
-7. 在浏览器里输入地址：`http://127.0.0.1:8100`，并输入登录信息：admin/admin，登录之后如下图所示
+6. 在浏览器里输入地址：`http://127.0.0.1:8100`，并输入认证信息：admin/admin，登录之后如下图所示
 
  ![Image text](./static/images/home.jpg)
 
-8. 最后，关闭服务
+7. 最后，关闭服务
 
 ```bash
 $  bin/dhorse-stop.sh
