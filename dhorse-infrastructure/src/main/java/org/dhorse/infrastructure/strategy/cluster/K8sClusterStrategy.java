@@ -250,11 +250,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
 				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				//api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
-				//		null, null);
-				//todo 升级v1.3.0版本做的兼容逻辑，后续版本应该使用replaceNamespacedDeployment
-				api.deleteNamespacedDeployment(context.getDeploymentName(), namespace, null, null, null, null, null, null);
-				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
+				//配合升级，v1.3.0以后版本应该只使用replaceNamespacedDeployment
+				if(oldDeployment.getItems().get(0).getMetadata().getLabels().get(K8sUtils.APP_KEY) == null) {
+					api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
+							null, null);
+				}else {
+					api.deleteNamespacedDeployment(context.getDeploymentName(), namespace, null, null, null, null, null, null);
+					api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
+				}
 			}
 			
 			// 自动扩容任务
