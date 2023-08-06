@@ -1,7 +1,6 @@
 package org.dhorse.application.service;
 
 import java.io.InputStream;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +28,7 @@ import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.Metrics;
 import org.dhorse.api.response.model.MetricsView;
 import org.dhorse.infrastructure.context.AppEnvClusterContext;
+import org.dhorse.infrastructure.model.ReplicaMetrics;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.AppParam;
@@ -54,10 +54,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
-import io.kubernetes.client.custom.PodMetrics;
-import io.kubernetes.client.custom.PodMetricsList;
-import io.kubernetes.client.custom.Quantity;
 
 /**
  * 
@@ -253,29 +249,20 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 			ClusterStrategy clusterStrategy = clusterStrategy(cluster.getClusterType());
 			List<ClusterNamespace> namespaces = clusterStrategy.namespaceList(cluster, null);
 			for(ClusterNamespace n : namespaces) {
-				PodMetricsList podMetricsList = clusterStrategy.replicaMetrics(cluster, n.getNamespaceName());
-				if(podMetricsList == null) {
+				List<ReplicaMetrics> replicaMetrics = clusterStrategy.replicaMetrics(cluster, n.getNamespaceName());
+				if(CollectionUtils.isEmpty(replicaMetrics)) {
 					continue;
 				}
-				List<PodMetrics> metrics = podMetricsList.getItems();
-				for(PodMetrics metric : metrics) {
-					String replicaName = metric.getMetadata().getName();
+				for(ReplicaMetrics metric : replicaMetrics) {
+					String replicaName = metric.getReplicaName();
 					AppEnvPO appEnvPO = envMap.get(replicaName.substring(0, replicaName.indexOf("-dhorse-") + 7));
 					if(appEnvPO == null) {
 						continue;
 					}
-					if(CollectionUtils.isEmpty(metric.getContainers())) {
-						continue;
-					}
-					
 					List<MetricsParam> metricsList = new ArrayList<>();
-					Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
-					long cpuUsed = usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue();
-					item(MetricsTypeEnum.REPLICA_CPU_USED, replicaName, metricsList, cpuUsed);
+					item(MetricsTypeEnum.REPLICA_CPU_USED, replicaName, metricsList, metric.getCpuUsed());
 					item(MetricsTypeEnum.REPLICA_CPU_MAX, replicaName, metricsList, appEnvPO.getReplicaCpu());
-					
-					long memoryUsed = usage.get("memory").getNumber().setScale(0, RoundingMode.HALF_UP).longValue();
-					item(MetricsTypeEnum.REPLICA_MEMORY_USED, replicaName, metricsList, memoryUsed);
+					item(MetricsTypeEnum.REPLICA_MEMORY_USED, replicaName, metricsList, metric.getMemoryUsed());
 					item(MetricsTypeEnum.REPLICA_MEMORY_MAX, replicaName, metricsList, appEnvPO.getReplicaMemory() * Constants.ONE_MB);
 					metricsRepository.addList(metricsList);
 				}

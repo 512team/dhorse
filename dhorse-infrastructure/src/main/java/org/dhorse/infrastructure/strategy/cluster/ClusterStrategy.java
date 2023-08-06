@@ -10,13 +10,12 @@ import org.dhorse.api.response.model.AppEnv;
 import org.dhorse.api.response.model.ClusterNamespace;
 import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
+import org.dhorse.infrastructure.model.ReplicaMetrics;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.DeploymentContext;
-
-import io.kubernetes.client.custom.PodMetricsList;
 
 public interface ClusterStrategy {
 
@@ -59,7 +58,7 @@ public interface ClusterStrategy {
 	
 	boolean deleteNamespace(ClusterPO clusterPO, String namespaceName);
 	
-	PodMetricsList replicaMetrics(ClusterPO clusterPO, String namespace);
+	List<ReplicaMetrics> replicaMetrics(ClusterPO clusterPO, String namespace);
 	
 	Void createDHorseConfig(ClusterPO clusterPO);
 	

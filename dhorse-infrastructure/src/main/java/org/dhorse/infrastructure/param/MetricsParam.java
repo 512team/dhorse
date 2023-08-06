@@ -20,7 +20,7 @@ public class MetricsParam extends PageParam {
 	private Integer metricsType;
 
 	/**
-	 * 指标值
+	 * 指标值，cpu的存储单位：m，内存的存储单位：字节
 	 */
 	private Long metricsValue;
 

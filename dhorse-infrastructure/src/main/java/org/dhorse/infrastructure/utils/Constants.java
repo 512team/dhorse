@@ -40,11 +40,15 @@ public class Constants {
 	
 	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	
+	public static final String DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	
 	public static final String DATE_FORMAT_YYYYMMDD_HHMMSS = "yyyyMMdd_HHmmss";
 	
 	public static final int DAYS_14 = 14;
 	
 	public static final int DAYS_7 = 7;
+	
+	public static final int DAYS_3 = 3;
 	
 	public static final String USR_LOCAL_HOME = "/usr/local/";
 	

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.util.Yaml;
 import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.ActionTypeEnum;
 import org.dhorse.api.enums.AffinityLevelEnum;
@@ -45,6 +44,7 @@ import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.infrastructure.model.JsonPatch;
+import org.dhorse.infrastructure.model.ReplicaMetrics;
 import org.dhorse.infrastructure.repository.po.AffinityTolerationPO;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
@@ -65,10 +65,8 @@ import org.springframework.util.CollectionUtils;
 import io.kubernetes.client.Copy;
 import io.kubernetes.client.Exec;
 import io.kubernetes.client.KubernetesConstants;
-import io.kubernetes.client.Metrics;
 import io.kubernetes.client.PodLogs;
 import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.custom.PodMetricsList;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
@@ -144,6 +142,7 @@ import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
 import io.kubernetes.client.openapi.models.V1WeightedPodAffinityTerm;
 import io.kubernetes.client.util.ClientBuilder;
+import io.kubernetes.client.util.Yaml;
 import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
 public class K8sClusterStrategy implements ClusterStrategy {
@@ -250,7 +249,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
 				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				//配合升级，v1.3.0以后版本应该只使用replaceNamespacedDeployment
+				//配合升级，v1.4.0以后版本应该只使用replaceNamespacedDeployment
 				if(oldDeployment.getItems().get(0).getMetadata().getLabels().get(K8sUtils.APP_KEY) == null) {
 					api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
 							null, null);
@@ -313,7 +312,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				logger.info("Start to update service");
 			}
 			
-			//配合升级，v1.3.0以后版本应当删除
+			//配合升级，v1.4.0以后版本应当删除
 			V1Service service = serviceList.getItems().get(0);
 			if(service.getMetadata().getLabels().get(K8sUtils.APP_KEY) != null) {
 				//先删除，再创建
@@ -1648,18 +1647,18 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return ReplicaStatusEnum.RUNNING.getCode();
 	}
 
-	public PodMetricsList replicaMetrics(ClusterPO clusterPO, String namespace) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		Metrics metrics = new Metrics(apiClient);
-		try {
-			return metrics.getPodMetrics(namespace);
-		} catch (ApiException e) {
-			if(e.getCode() == 404) {
-				logger.warn("Unable to collect pod metrics, metrics server may not bee installed");
-			}else {
-				logger.error("Failed to collect pod metrics", e);
-			}
-		}
+	public List<ReplicaMetrics> replicaMetrics(ClusterPO clusterPO, String namespace) {
+//		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+//		Metrics metrics = new Metrics(apiClient);
+//		try {
+//			return metrics.getPodMetrics(namespace);
+//		} catch (ApiException e) {
+//			if(e.getCode() == 404) {
+//				logger.warn("Unable to collect pod metrics, metrics server may not bee installed");
+//			}else {
+//				logger.error("Failed to collect pod metrics", e);
+//			}
+//		}
 		return null;
 	}
 	

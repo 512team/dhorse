@@ -545,6 +545,12 @@ public class K8sClusterHelper {
 		}
 	}
 	
+	public static Map<String, String> deploymentLabel(DeploymentContext context) {
+		Map<String, String> labels = K8sClusterHelper.dhorseLabel(context.getDeploymentName());
+		labels.put("version", String.valueOf(System.currentTimeMillis()));
+		return labels;
+	}
+	
 	public static Map<String, String> dhorseLabel(String value) {
 		Map<String, String> labels = new HashMap<>();
 		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
