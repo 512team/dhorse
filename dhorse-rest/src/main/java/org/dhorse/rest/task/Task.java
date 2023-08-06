@@ -44,7 +44,7 @@ public class Task {
 		Date now = new Date();
 		try {
 			//清除指标数据
-			replicaApplicationService.clearMetrics(DateUtils.addDays(now, -Constants.DAYS_7));
+			replicaApplicationService.clearMetrics(DateUtils.addDays(now, -Constants.DAYS_3));
 			//清除日志
 			logRecordRepository.delete(DateUtils.addDays(now, -Constants.DAYS_14));
 		}catch(Exception e) {
