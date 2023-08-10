@@ -75,7 +75,6 @@ import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.AutoscalingV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.apis.NetworkingV1Api;
-import io.kubernetes.client.openapi.apis.VersionApi;
 import io.kubernetes.client.openapi.models.V1Affinity;
 import io.kubernetes.client.openapi.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.openapi.models.V1Container;
@@ -145,6 +144,10 @@ import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.Yaml;
 import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
+/**
+ * k8s操作功能
+ * @author Dahai
+ */
 public class K8sClusterStrategy implements ClusterStrategy {
 
 	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy.class);
@@ -1804,18 +1807,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
 		} catch (IOException e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.FAILURE);
-		}
-		return null;
-	}
-	
-	public String getClusterVersion(String clusterUrl, String authToken) {
-		ApiClient apiClient = this.apiClient(clusterUrl, authToken);
-		VersionApi versionApi = new VersionApi(apiClient);
-		try {
-			return versionApi.getCode().getGitVersion();
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
 		}
 		return null;
 	}

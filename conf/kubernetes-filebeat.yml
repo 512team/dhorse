@@ -215,7 +215,8 @@ spec:
       volumes:
       - name: config
         configMap:
-          defaultMode: 0640
+          #493是十进制，对应的八进制是0755
+          defaultMode: 493
           name: filebeat-config
       - name: varlibdockercontainers
         hostPath:

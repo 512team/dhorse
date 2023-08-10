@@ -1,4 +1,4 @@
-package org.dhorse.infrastructure.strategy.cluster.model.k8s;
+package org.dhorse.infrastructure.strategy.cluster.k8s;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -73,9 +73,9 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment;
 
-public class K8sDeployment {
+public class K8sDeploymentHelper {
 
-	private static final Logger logger = LoggerFactory.getLogger(K8sDeployment.class);
+	private static final Logger logger = LoggerFactory.getLogger(K8sDeploymentHelper.class);
 	
 	public static Deployment build(DeploymentContext context) {
 		Deployment deployment = new DeploymentBuilder()

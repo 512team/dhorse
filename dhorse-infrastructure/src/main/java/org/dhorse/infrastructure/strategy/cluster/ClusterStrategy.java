@@ -50,8 +50,6 @@ public interface ClusterStrategy {
 
 	InputStream downloadFile(ClusterPO clusterPO, String namespace, String replicaName, String fileName);
 	
-	String getClusterVersion(String clusterUrl, String authToken);
-	
 	List<ClusterNamespace> namespaceList(ClusterPO clusterPO, ClusterNamespacePageParam clusterNamespacePageParam);
 	
 	boolean addNamespace(ClusterPO clusterPO, String namespaceName);

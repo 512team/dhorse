@@ -54,7 +54,6 @@ import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
-import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy2;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
@@ -184,7 +183,7 @@ public abstract class ApplicationService {
 	
 	protected ClusterStrategy clusterStrategy(Integer clusterType) {
 		if (ClusterTypeEnum.K8S.getCode().equals(clusterType)) {
-			return new K8sClusterStrategy2();
+			return new K8sClusterStrategy();
 		} else {
 			return new K8sClusterStrategy();
 		}

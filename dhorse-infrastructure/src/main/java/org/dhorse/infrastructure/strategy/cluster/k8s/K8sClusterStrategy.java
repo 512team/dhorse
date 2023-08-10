@@ -1,10 +1,8 @@
-package org.dhorse.infrastructure.strategy.cluster;
+package org.dhorse.infrastructure.strategy.cluster.k8s;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -34,10 +32,10 @@ import org.dhorse.infrastructure.model.ReplicaMetrics;
 import org.dhorse.infrastructure.repository.po.AppEnvPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
+import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson;
 import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson.Auth;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
-import org.dhorse.infrastructure.strategy.cluster.model.k8s.K8sDeployment;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.DeploymentContext;
@@ -49,9 +47,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
@@ -64,13 +64,16 @@ import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServiceAccount;
 import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.ServiceSpec;
 import io.fabric8.kubernetes.api.model.StatusDetails;
+import io.fabric8.kubernetes.api.model.apps.DaemonSet;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.CrossVersionObjectReference;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscaler;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscalerSpec;
+import io.fabric8.kubernetes.api.model.metrics.v1beta1.NodeMetrics;
 import io.fabric8.kubernetes.api.model.metrics.v1beta1.PodMetrics;
 import io.fabric8.kubernetes.api.model.metrics.v1beta1.PodMetricsList;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPath;
@@ -81,53 +84,61 @@ import io.fabric8.kubernetes.api.model.networking.v1.IngressRule;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressServiceBackend;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressSpec;
 import io.fabric8.kubernetes.api.model.networking.v1.ServiceBackendPort;
+import io.fabric8.kubernetes.api.model.rbac.ClusterRole;
+import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
+import io.fabric8.kubernetes.api.model.rbac.Role;
+import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
+import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.utils.Serialization;
-import io.kubernetes.client.Copy;
-import io.kubernetes.client.Exec;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.apis.VersionApi;
-import io.kubernetes.client.openapi.models.V1Namespace;
-import io.kubernetes.client.openapi.models.V1NamespaceList;
-import io.kubernetes.client.openapi.models.V1ObjectMeta;
-import io.kubernetes.client.util.ClientBuilder;
-import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
-public class K8sClusterStrategy2 implements ClusterStrategy {
+/**
+ * k8s操作功能，采用fabric8客户端实现。
+ * @author Dahai
+ */
+public class K8sClusterStrategy implements ClusterStrategy {
 
-	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy2.class);
+	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy.class);
+	
+	private static final String FILEBEAT_NAME = "filebeat";
+	
+	private static final String FILEBEAT_KUBEADM_NAME = "filebeat-kubeadm-config";
+	
+	private static final String FILEBEAT_CONFIG = "filebeat-config";
+	
+	private static final String NS = K8sUtils.KUBE_SYSTEM_NAMESPACE;
 	
 	@Override
 	public Void createSecret(ClusterPO clusterPO, ImageRepo imageRepo) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		Secret secret = new Secret();
-		secret.setType("kubernetes.io/dockerconfigjson");
-		ObjectMeta meta = new ObjectMeta();
-		meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
-		meta.setLabels(K8sClusterHelper.dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
-		secret.setMetadata(meta);
-		secret.setData(dockerConfigData(imageRepo));
-		NamespaceList namespaceList = client.namespaces().list();
-		if(CollectionUtils.isEmpty(namespaceList.getItems())) {
-			return null;
-		}
-		for(Namespace n : namespaceList.getItems()) {
-			String namespace = n.getMetadata().getName();
-			if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
-					&& K8sUtils.getSystemNamspaces().contains(namespace)) {
-				continue;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			Secret secret = new Secret();
+			secret.setType("kubernetes.io/dockerconfigjson");
+			ObjectMeta meta = new ObjectMeta();
+			meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
+			meta.setLabels(dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
+			secret.setMetadata(meta);
+			secret.setData(dockerConfigData(imageRepo));
+			NamespaceList namespaceList = client.namespaces().list();
+			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
+				return null;
 			}
-			if(!"Active".equals(n.getStatus().getPhase())){
-				continue;
+			for(Namespace n : namespaceList.getItems()) {
+				String namespace = n.getMetadata().getName();
+				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
+						&& K8sUtils.getSystemNamspaces().contains(namespace)) {
+					continue;
+				}
+				if(!"Active".equals(n.getStatus().getPhase())){
+					continue;
+				}
+				Resource<Secret> resource = client.secrets().inNamespace(namespace).resource(secret);
+				this.doOperation(resource);
 			}
-			Resource<Secret> resource = client.secrets().inNamespace(namespace).resource(secret);
-			this.doOperation(resource);
 		}
 		return null;
 	}
@@ -148,10 +159,12 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	
 	@Override
 	public Replica readDeployment(ClusterPO clusterPO, AppEnv appEnv, AppPO appPO) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		String deploymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnv.getTag());
-		Deployment deployment = client.apps().deployments().inNamespace(appEnv.getNamespaceName())
-				.withName(deploymentName).get();
+		Deployment deployment = null;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			deployment = client.apps().deployments().inNamespace(appEnv.getNamespaceName())
+					.withName(deploymentName).get();
+		}
 		if(deployment == null) {
 			return null;
 		}
@@ -164,28 +177,29 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	public boolean createDeployment(DeploymentContext context) {
 		logger.info("Start to deploy k8s server");
 		String namespace = context.getAppEnv().getNamespaceName();
-		KubernetesClient client = client(context.getCluster().getClusterUrl(),
-				context.getCluster().getAuthToken());
+		try(KubernetesClient client = client(context.getCluster().getClusterUrl(),
+				context.getCluster().getAuthToken())){
 
-		//执行deployment
-		Resource<Deployment> resource = client.apps().deployments()
-				.inNamespace(namespace).resource(K8sDeployment.build(context));
-		doOperation(resource);
-		
-		// 自动扩容任务
-		createAutoScaling(context.getAppEnv(), context.getDeploymentName(), client);
-
-		if(!checkHealthOfAll(client, namespace)) {
-			logger.error("Failed to create k8s deployment, because the replica is not fully started");
-			LogUtils.throwException(logger, MessageCodeEnum.CREATE_PART_POD);
-			return false;
-		}
+			//执行deployment
+			Resource<Deployment> resource = client.apps().deployments()
+					.inNamespace(namespace).resource(K8sDeploymentHelper.build(context));
+			doOperation(resource);
 			
-		//创建ClusterIP类型的Service
-		createService(context, client);
-		
-		//创建Ingress
-		createIngress(context, client);
+			// 自动扩容任务
+			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), client);
+	
+			if(!checkHealthOfAll(client, namespace)) {
+				logger.error("Failed to create k8s deployment, because the replica is not fully started");
+				LogUtils.throwException(logger, MessageCodeEnum.CREATE_PART_POD);
+				return false;
+			}
+				
+			//创建ClusterIP类型的Service
+			createService(context, client);
+			
+			//创建Ingress
+			createIngress(context, client);
+		}
 			
 		logger.info("End to deploy k8s server");
 		return true;
@@ -230,8 +244,8 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	private ObjectMeta ingressMeta(String appName, DeploymentContext context) {
 		ObjectMeta metadata = new ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(K8sClusterHelper.dhorseLabel(appName));
-		metadata.setAnnotations(K8sClusterHelper.addPrometheus("Ingress", context));
+		metadata.setLabels(dhorseLabel(appName));
+		metadata.setAnnotations(PrometheusHelper.addPrometheus("Ingress", context));
 		return metadata;
 	}
 	
@@ -262,31 +276,33 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	}
 	
 	public boolean deleteDeployment(ClusterPO clusterPO, AppPO appPO, AppEnvPO appEnvPO) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		String namespace = appEnvPO.getNamespaceName();
-		String depolymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnvPO.getTag());
-		List<StatusDetails> statusList = client.apps().deployments().inNamespace(namespace)
-				.withName(depolymentName).delete();
-		if(!isSuccess(statusList)) {
-			return false;
-		}
-		if(!deleteAutoScaling(namespace, depolymentName, client)) {
-			return false;
-		}
-		String serviceName = K8sUtils.getServiceName(appPO.getAppName(), appEnvPO.getTag());
-		if(!deleteService(namespace, serviceName, client)) {
-			return false;
-		}
-		if(!deleteIngress(namespace, serviceName, client)) {
-			return false;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			String namespace = appEnvPO.getNamespaceName();
+			String depolymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnvPO.getTag());
+			List<StatusDetails> statusList = client.apps().deployments().inNamespace(namespace)
+					.withName(depolymentName).delete();
+			if(!isSuccess(statusList)) {
+				return false;
+			}
+			if(!deleteAutoScaling(namespace, depolymentName, client)) {
+				return false;
+			}
+			String serviceName = K8sUtils.getServiceName(appPO.getAppName(), appEnvPO.getTag());
+			if(!deleteService(namespace, serviceName, client)) {
+				return false;
+			}
+			if(!deleteIngress(namespace, serviceName, client)) {
+				return false;
+			}
 		}
 		return true;
 	}
 
 	public boolean autoScaling(AppPO appPO, AppEnvPO appEnvPO, ClusterPO clusterPO) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		String deploymentName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
-		return createAutoScaling(appEnvPO, deploymentName, client);
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			return createAutoScaling(appEnvPO, deploymentName, client);
+		}
 	}
 
 	private boolean createAutoScaling(AppEnvPO appEnvPO, String deploymentName, KubernetesClient client) {
@@ -336,8 +352,8 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	private ObjectMeta serviceMeta(String appName, DeploymentContext context) {
 		ObjectMeta metadata = new ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(K8sClusterHelper.dhorseLabel(appName));
-		metadata.setAnnotations(K8sClusterHelper.addPrometheus("Service", context));
+		metadata.setLabels(dhorseLabel(appName));
+		metadata.setAnnotations(PrometheusHelper.addPrometheus("Service", context));
 		return metadata;
 	}
 	
@@ -378,7 +394,7 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	private ObjectMeta deploymentMetaData(String deploymentName) {
 		ObjectMeta metadata = new ObjectMeta();
 		metadata.setName(deploymentName);
-		metadata.setLabels(K8sClusterHelper.dhorseLabel(deploymentName));
+		metadata.setLabels(dhorseLabel(deploymentName));
 		return metadata;
 	}
 	
@@ -403,38 +419,6 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 				|| TechTypeEnum.HTML.getCode().equals(appPO.getTechType());
 	}
 
-	private ApiClient apiClient(String basePath, String accessToken) {
-		return apiClient(basePath, accessToken, 1000, 1000);
-	}
-
-	private ApiClient apiClient(String basePath, String accessToken, int connectTimeout, int readTimeout) {
-		ApiClient apiClient = new ClientBuilder()
-				.setBasePath(basePath)
-				.setVerifyingSsl(false)
-				.setAuthentication(new AccessTokenAuthentication(accessToken))
-				.build();
-		apiClient.setConnectTimeout(connectTimeout);
-		apiClient.setReadTimeout(readTimeout);
-		return apiClient;
-	}
-	
-	private KubernetesClient client(String basePath, String accessToken) {
-		return client(basePath, accessToken, 1000, 1000);
-	}
-	
-	private KubernetesClient client(String basePath, String accessToken, int connectTimeout, int readTimeout) {
-		 Config config = new ConfigBuilder()
-				 .withTrustCerts(true)
-				 .withMasterUrl(basePath)
-				 .withOauthToken(accessToken)
-				 .withConnectionTimeout(connectTimeout)
-				 .withRequestTimeout(readTimeout)
-				 .build();
-		return new KubernetesClientBuilder()
-				.withConfig(config)
-				.build();
-	}
-	
 	private boolean checkHealthOfAll(KubernetesClient client, String namespace) {
 		// 检查pod状态，检查时长20分钟
 		for (int i = 0; i < 60 * 20; i++) {
@@ -475,8 +459,10 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	public PageData<EnvReplica> replicaPage(EnvReplicaPageParam pageParam, ClusterPO clusterPO,
 			AppPO appPO, AppEnvPO appEnvPO) {
 		String namespace = appEnvPO.getNamespaceName();
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		PodList podList = client.pods().inNamespace(namespace).list();
+		PodList podList = null;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			podList = client.pods().inNamespace(namespace).list();
+		}
 		PageData<EnvReplica> pageData = new PageData<>();
 		int dataCount = podList.getItems().size();
 		if (dataCount == 0) {
@@ -570,8 +556,14 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	}
 
 	public List<ReplicaMetrics> replicaMetrics(ClusterPO clusterPO, String namespace) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		PodMetricsList podMetricsList = client.top().pods().metrics();
+		PodMetricsList podMetricsList = null;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			if (!client.supports(NodeMetrics.class)) {
+				logger.warn("Metrics API is not enabled in your cluster");
+				return null;
+			}
+			podMetricsList = client.top().pods().metrics();
+		}
 		if(podMetricsList == null) {
 			return null;
 		}
@@ -594,210 +586,184 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	
 	@Override
 	public boolean rebuildReplica(ClusterPO clusterPO, String replicaName, String namespace) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		client.pods().inNamespace(namespace).withName(replicaName).delete();
-		return true;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			client.pods().inNamespace(namespace).withName(replicaName).delete();
+			return true;
+		}
 	}
 
 	public InputStream streamPodLog(ClusterPO clusterPO, String replicaName, String namespace) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(),
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(),
 				clusterPO.getAuthToken(), 1 * 1000, 5 * 60 * 1000);
-	    return client.pods().inNamespace(namespace).withName(replicaName)
-	    		.tailingLines(2000).watchLog().getOutput();
+			LogWatch watch = client.pods().inNamespace(namespace).withName(replicaName)
+		    		.tailingLines(2000).watchLog()){
+			return watch.getOutput();
+		}
 	}
 	
 	public String podLog(ClusterPO clusterPO, String replicaName, String namespace) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		//目前只支持下载最近50万行的日志
-		return client.pods().inNamespace(namespace).withName(replicaName)
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			//目前只支持下载最近50万行的日志
+			return client.pods().inNamespace(namespace).withName(replicaName)
 		    		.tailingLines(500000).getLog();
+		}
 	}
 
 	public String podYaml(ClusterPO clusterPO, String replicaName, String namespace) {
-		KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		return Serialization.asYaml(client.pods()
-				.inNamespace(namespace).withName(replicaName).get());
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			return Serialization.asYaml(client.pods()
+					.inNamespace(namespace).withName(replicaName).get());
+		}
 	}
 
 	public void openLogCollector(ClusterPO clusterPO) {
-		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		K8sClusterHelper.openLogCollector(apiCLient);
-	}
-
-	public void closeLogCollector(ClusterPO clusterPO) {
-		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		K8sClusterHelper.closeLogCollector(apiCLient);
-	}
-	
-	public boolean logSwitchStatus(ClusterPO clusterPO) {
-		ApiClient apiCLient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		return K8sClusterHelper.logSwitchStatus(apiCLient);
-	}
-	
-	private void clusterError(ApiException e) {
-		String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-		if(message.contains("SocketTimeoutException")) {
-			LogUtils.throwException(logger, message, MessageCodeEnum.CONNECT_CLUSTER_FAILURE);
-		}
-		LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
-	}
-	
-	public List<String> queryFiles(ClusterPO clusterPO, String replicaName, String namespace) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		Exec exec = new Exec(apiClient);
-		try {
-			String[] commands = new String[] {"ls", K8sUtils.TMP_DATA_PATH};
-			Process proc = exec.exec(namespace, replicaName, commands, true, true);
-			final StringBuilder message = new StringBuilder();
-			Thread out = new Thread(new Runnable() {
-				public void run() {
-					message.append(copy(proc.getInputStream()));
-				}
-			});
-			out.start();
-			proc.waitFor();
-			out.join();
-			proc.destroy();
-			if (proc.exitValue() == 0) {
-				return Arrays.asList(message.toString().replaceAll("\u001B\\[[\\d;]*[^\\d;]", "").split("\\s+"));
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			File beatFile = new File(Constants.CONF_PATH + "kubernetes-filebeat.yml");
+			if (!beatFile.exists()) {
+				LogUtils.throwException(logger, MessageCodeEnum.FILE_BEAT_K8S_FILE_INEXISTENCE);
 			}
-			return null;
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
-		} catch (IOException | InterruptedException e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.FAILURE);
-		}
-		return null;
-	}
-	
-	private String copy(InputStream from) {
-		BufferedReader in = null;
-		Reader reader = null;
-		StringBuilder sb = new StringBuilder();
-		try {
-			reader = new InputStreamReader(from);
-			in = new BufferedReader(reader);
-			String line;
-			while ((line = in.readLine()) != null) {
-				sb.append(line);
-				break;
-			}
-		} catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.FAILURE);
-		} finally {
-			try {
-				if (from != null) {
-					from.close();
-				}
-				if (reader != null) {
-					reader.close();
-				}
-				if (in != null) {
-					in.close();
-				}
+			
+			List<HasMetadata> metas = null;
+			try (InputStream in = new FileInputStream(beatFile)){
+				metas = client.load(in).items();
 			} catch (Exception e) {
 				LogUtils.throwException(logger, e, MessageCodeEnum.FAILURE);
 			}
+			
+			for (HasMetadata o : metas) {
+				//ServiceAccount
+				if (o instanceof ServiceAccount) {
+					Resource<ServiceAccount> resource = client.serviceAccounts().resource((ServiceAccount)o);
+					doOperation(resource);
+					continue;
+				}
+				
+				//ClusterRole
+				if (o instanceof ClusterRole) {
+					Resource<ClusterRole> resource = client.rbac().clusterRoles().resource((ClusterRole)o);
+					doOperation(resource);
+					continue;
+				}
+				
+				//Role
+				if (o instanceof Role) {
+					Resource<Role> resource = client.rbac().roles().resource((Role) o);
+					doOperation(resource);
+					continue;
+				}
+				
+				//ClusterRoleBinding
+				if (o instanceof ClusterRoleBinding) {
+					Resource<ClusterRoleBinding> resource = client.rbac().clusterRoleBindings().resource((ClusterRoleBinding) o);
+					doOperation(resource);
+					continue;
+				}
+				
+				//RoleBinding
+				if (o instanceof RoleBinding) {
+					Resource<RoleBinding> resource = client.rbac().roleBindings().resource((RoleBinding) o);
+					doOperation(resource);
+					continue;
+				}
+				
+				//ConfigMap
+				if (o instanceof ConfigMap) {
+					Resource<ConfigMap> resource = client.configMaps().resource((ConfigMap) o);
+					doOperation(resource);
+					continue;
+				}
+				
+				//DaemonSet
+				if (o instanceof DaemonSet) {
+					Resource<DaemonSet> resource = client.apps().daemonSets().resource((DaemonSet) o);
+					doOperation(resource);
+					continue;
+				}
+			}
 		}
+	}
 
-		return sb.toString();
+	public void closeLogCollector(ClusterPO clusterPO) {
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			client.serviceAccounts().inNamespace(NS).withName(FILEBEAT_NAME).delete();
+			client.rbac().clusterRoles().withName(FILEBEAT_NAME).delete();
+			client.rbac().roles().inNamespace(NS).withName(FILEBEAT_NAME).delete();
+			client.rbac().roles().inNamespace(NS).withName(FILEBEAT_KUBEADM_NAME).delete();
+			client.rbac().clusterRoleBindings().withName(FILEBEAT_NAME).delete();
+			client.rbac().roleBindings().inNamespace(NS).withName(FILEBEAT_NAME).delete();
+			client.rbac().roleBindings().inNamespace(NS).withName(FILEBEAT_KUBEADM_NAME).delete();
+			client.configMaps().inNamespace(NS).withName(FILEBEAT_CONFIG).delete();
+			client.apps().daemonSets().inNamespace(NS).withName(FILEBEAT_NAME).delete();
+		}
 	}
 	
-	public InputStream downloadFile(ClusterPO clusterPO, String namespace,  String replicaName, String fileName) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		Copy copy = new Copy(apiClient);
-		try {
-			return copy.copyFileFromPod(namespace, replicaName, K8sUtils.TMP_DATA_PATH + fileName);
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
-		} catch (IOException e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.FAILURE);
+	public boolean logSwitchStatus(ClusterPO clusterPO) {
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			return client.apps().daemonSets()
+					.inNamespace(NS)
+					.withName(FILEBEAT_NAME)
+					.get() != null;
+		}
+	}
+	
+	public List<String> queryFiles(ClusterPO clusterPO, String replicaName, String namespace) {
+		String[] commands = new String[] {"sh", "-c", "ls", K8sUtils.TMP_DATA_PATH};
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+				ExecWatch watch = client.pods().inNamespace(namespace).withName(replicaName)
+				        .writingOutput(System.out)
+						.exec(commands)){
 		}
 		return null;
 	}
 	
-	public String getClusterVersion(String clusterUrl, String authToken) {
-		ApiClient apiClient = this.apiClient(clusterUrl, authToken);
-		VersionApi versionApi = new VersionApi(apiClient);
-		try {
-			return versionApi.getCode().getGitVersion();
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_FAILURE);
-		}
+	public InputStream downloadFile(ClusterPO clusterPO, String namespace,  String replicaName, String fileName) {
 		return null;
 	}
 	
 	public List<ClusterNamespace> namespaceList(ClusterPO clusterPO,
 			ClusterNamespacePageParam pageParam) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
+		NamespaceList namespaceList = null;
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			namespaceList = client.namespaces().list();
+		}
 		List<ClusterNamespace> namespaces = new ArrayList<>();
-		String labelSelector = null;
-		if(pageParam != null && !StringUtils.isBlank(pageParam.getNamespaceName())) {
-			labelSelector = "kubernetes.io/metadata.name=" + pageParam.getNamespaceName();
-		}
-		try {
-			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, labelSelector, null, null, null, null, null);
-			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
-				return namespaces;
-			}
-			for(V1Namespace n : namespaceList.getItems()) {
-				if(K8sUtils.getSystemNamspaces().contains(n.getMetadata().getName())) {
-					continue;
-				}
-				if(!"Active".equals(n.getStatus().getPhase())){
-					continue;
-				}
-				ClusterNamespace one = new ClusterNamespace();
-				one.setNamespaceName(n.getMetadata().getName());
-				namespaces.add(one);
-			}
+		if(CollectionUtils.isEmpty(namespaceList.getItems())) {
 			return namespaces;
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.CLUSTER_NAMESPACE_FAILURE);
 		}
-		return null;
+		for(Namespace n : namespaceList.getItems()) {
+			if(K8sUtils.getSystemNamspaces().contains(n.getMetadata().getName())) {
+				continue;
+			}
+			if(!"Active".equals(n.getStatus().getPhase())){
+				continue;
+			}
+			ClusterNamespace one = new ClusterNamespace();
+			one.setNamespaceName(n.getMetadata().getName());
+			namespaces.add(one);
+		}
+		return namespaces;
 	}
 	
 	public boolean addNamespace(ClusterPO clusterPO, String namespaceName) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		String labelSelector = "custom.name=" + namespaceName;
-		try {
-			V1NamespaceList namespaceList = coreApi.listNamespace(null, null, null, null, labelSelector, null, null, null, null, null);
-			if(!CollectionUtils.isEmpty(namespaceList.getItems())) {
+		ObjectMeta metaData = new ObjectMeta();
+		metaData.setName(namespaceName);
+		metaData.setLabels(Collections.singletonMap("custom.name", namespaceName));
+		Namespace namespace = new Namespace();
+		namespace.setMetadata(metaData);
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			Resource<Namespace> resource = client.namespaces().resource(namespace);
+			if(resource.get() != null) {
 				logger.info("The namespace {} already exists ", namespaceName);
 				return true;
 			}
-			V1ObjectMeta metaData = new V1ObjectMeta();
-			metaData.setName(namespaceName);
-			metaData.setLabels(Collections.singletonMap("custom.name", namespaceName));
-			V1Namespace namespace = new V1Namespace();
-			namespace.setMetadata(metaData);
-			coreApi.createNamespace(namespace, null, null, null, null);
-		} catch (ApiException e) {
-			clusterError(e);
-		}catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
+			resource.create();
 		}
 		return true;
 	}
 	
 	public boolean deleteNamespace(ClusterPO clusterPO, String namespaceName) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		try {
-			coreApi.readNamespace(namespaceName, null);
-			coreApi.deleteNamespace(namespaceName, null, null, null, null, null, null);
-		} catch (ApiException e) {
-			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			LogUtils.throwException(logger, message, MessageCodeEnum.DELETE_NAMESPACE_FAILURE);
-		}catch (Exception e) {
-			LogUtils.throwException(logger, e, MessageCodeEnum.CLUSTER_FAILURE);
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			client.namespaces().withName(namespaceName).delete();
 		}
 		return true;
 	}
@@ -807,9 +773,9 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	 */
 	@Override
 	public Void createDHorseConfig(ClusterPO clusterPO) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		K8sClusterHelper.createDHorseConfig(clusterPO, coreApi);
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			DHorseConfigHelper.writeServerIp(clusterPO, client);
+		}
 		return null;
 	}
 	
@@ -818,9 +784,38 @@ public class K8sClusterStrategy2 implements ClusterStrategy {
 	 */
 	@Override
 	public Void deleteDHorseConfig(ClusterPO clusterPO) {
-		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-		CoreV1Api coreApi = new CoreV1Api(apiClient);
-		K8sClusterHelper.deleteDHorseConfig(clusterPO, coreApi);
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			DHorseConfigHelper.deleteServerIp(clusterPO, client);
+		}
 		return null;
+	}
+	
+	public static Map<String, String> deploymentLabel(DeploymentContext context) {
+		Map<String, String> labels = dhorseLabel(context.getDeploymentName());
+		labels.put("version", String.valueOf(System.currentTimeMillis()));
+		return labels;
+	}
+	
+	public static Map<String, String> dhorseLabel(String value) {
+		Map<String, String> labels = new HashMap<>();
+		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
+		return labels;
+	}
+	
+	private KubernetesClient client(String basePath, String accessToken) {
+		return client(basePath, accessToken, 1000, 1000);
+	}
+	
+	private KubernetesClient client(String basePath, String accessToken, int connectTimeout, int readTimeout) {
+		 Config config = new ConfigBuilder()
+				 .withTrustCerts(true)
+				 .withMasterUrl(basePath)
+				 .withOauthToken(accessToken)
+				 .withConnectionTimeout(connectTimeout)
+				 .withRequestTimeout(readTimeout)
+				 .build();
+		return new KubernetesClientBuilder()
+				.withConfig(config)
+				.build();
 	}
 }
