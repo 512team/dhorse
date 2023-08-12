@@ -6,9 +6,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.dhorse.api.param.app.env.replica.EnvReplicaTerminalParam;
 import org.dhorse.application.service.EnvReplicaApplicationService;
@@ -186,14 +184,7 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 		sshConnectInfo.setWatch(execWatch);
 		try {
 			return data.get(5, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
