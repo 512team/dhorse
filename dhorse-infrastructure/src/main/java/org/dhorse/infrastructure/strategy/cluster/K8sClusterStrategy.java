@@ -250,7 +250,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
 				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				//配合升级，v1.3.0以后版本应该只使用replaceNamespacedDeployment
+				//配合升级，v1.3.1以后版本应该只使用replaceNamespacedDeployment
 				if(oldDeployment.getItems().get(0).getMetadata().getLabels().get(K8sUtils.APP_KEY) == null) {
 					api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
 							null, null);
@@ -313,7 +313,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				logger.info("Start to update service");
 			}
 			
-			//配合升级，v1.3.0以后版本应当删除
+			//配合升级，v1.3.1以后版本应当删除
 			V1Service service = serviceList.getItems().get(0);
 			if(service.getMetadata().getLabels().get(K8sUtils.APP_KEY) != null) {
 				//先删除，再创建
