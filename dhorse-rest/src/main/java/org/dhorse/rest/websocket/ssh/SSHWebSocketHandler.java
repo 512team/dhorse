@@ -1,12 +1,9 @@
 package org.dhorse.rest.websocket.ssh;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import org.dhorse.api.param.app.env.replica.EnvReplicaTerminalParam;
 import org.dhorse.application.service.EnvReplicaApplicationService;
@@ -15,14 +12,11 @@ import org.dhorse.infrastructure.context.AppEnvClusterContext;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.JsonUtils;
-import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
@@ -32,58 +26,51 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.dsl.ExecListener;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 
 /**
  * 
  * 副本终端
  * 
- * @author 天地之怪
+ * @author Dahi
  */
 @Component
 public class SSHWebSocketHandler implements WebSocketHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(SSHWebSocketHandler.class);
 
-	private static Map<String, SSHConnectContext> sshMap = new ConcurrentHashMap<>();
+	private static Map<String, SSHContext> sshMap = new ConcurrentHashMap<>();
 
 	@Autowired
 	private SysUserApplicationService sysUserApplicationService;
 	
 	@Autowired
 	private EnvReplicaApplicationService replicaApplicationService;
-
+	
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		SSHConnectContext sshConnectInfo = new SSHConnectContext();
-		sshConnectInfo.setWebSocketSession(session);
-		sshMap.put(session.getId(), sshConnectInfo);
+		SSHContext sshContext = new SSHContext();
+		sshContext.setSession(session);
+		sshMap.put(session.getId(), sshContext);
 	}
 
 	@Override
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
 		if (message instanceof TextMessage) {
 			terminal(((TextMessage) message).getPayload(), session);
-		} else if (message instanceof BinaryMessage) {
-
-		} else if (message instanceof PongMessage) {
-
-		} else {
-			logger.info("Unexpected WebSocket message type: {}", message);
 		}
-
 	}
 
-	public void terminal(String payload, WebSocketSession session) {
-		EnvReplicaTerminalParam replicaTerminalParam = JsonUtils.parseToObject(payload, EnvReplicaTerminalParam.class);
-		SSHConnectContext sshConnectInfo = sshMap.get(session.getId());
+	private void terminal(String payload, WebSocketSession session) {
+		EnvReplicaTerminalParam replicaTerminalParam = JsonUtils.parseToObject(payload,
+				EnvReplicaTerminalParam.class);
+		SSHContext sshContext = sshMap.get(session.getId());
 		if ("connect".equals(replicaTerminalParam.getOperate())) {
 			
 			LoginUser loginUser = sysUserApplicationService
 					.queryLoginUserByToken(replicaTerminalParam.getLoginToken());
 			if(loginUser == null) {
-				sendMessage(session, "用户未登录".getBytes());
+				sendMessage(session, "用户未登录");
 				return;
 			}
 			
@@ -92,79 +79,84 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 				appEnvClusterContext = replicaApplicationService
 						.queryCluster(replicaTerminalParam.getReplicaName(), loginUser);
 			}catch(ApplicationException e) {
-				sendMessage(session, e.getMessage().getBytes());
+				sendMessage(session, e.getMessage());
 				return;
 			}
 			
 			KubernetesClient client = client(appEnvClusterContext.getClusterPO().getClusterUrl(),
 					appEnvClusterContext.getClusterPO().getAuthToken());
 			String namespace = appEnvClusterContext.getAppEnvPO().getNamespaceName();
-			
-			ThreadPoolUtils.terminal(new Runnable() {
-				@Override
-				public void run() {
-					if(!doConnect(client, namespace, sshConnectInfo, replicaTerminalParam, session, "sh")) {
-						doConnect(client, namespace, sshConnectInfo, replicaTerminalParam, session, "sh");
-					}
-				}
-			});
-		} else if ("command".equals(replicaTerminalParam.getOperate())) {
-			try {
-				transToSSH(sshConnectInfo, replicaTerminalParam.getCommand());
-			} catch (IOException e) {
-				logger.error("websocket error.", e);
-				close(session);
+			sshContext.setNamespace(namespace);
+			sshContext.setReplicaName(replicaTerminalParam.getReplicaName());
+			sshContext.setClient(client);
+			if(!doConnect(sshContext, "bash")) {
+				doConnect(sshContext, "sh");
 			}
+		} else if ("command".equals(replicaTerminalParam.getOperate())) {
+			transToSSH(sshContext, replicaTerminalParam.getCommand());
 		} else {
 			logger.warn("Unsupported operation, websocket session id : {}", session.getId());
 			close(session);
 		}
 	}
 
-	private boolean doConnect(KubernetesClient client, String namespace, SSHConnectContext sshConnectInfo,
-			EnvReplicaTerminalParam replicaTerminalParam, WebSocketSession session, String bash) {
-		String cmdOutput = execCommandOnPod(sshConnectInfo, client, replicaTerminalParam.getReplicaName(), namespace, bash);
-		if(cmdOutput.contains("executable file not found")) {
+	private boolean doConnect(SSHContext sshContext, String bash) {
+		ExecWatch watch = sshContext.getClient().pods()
+				.inNamespace(sshContext.getNamespace())
+				.withName(sshContext.getReplicaName())
+				.redirectingInput()
+				.writingOutput(sshContext.getBaos())
+				.writingError(sshContext.getBaos())
+				.withTTY()
+				.exec(bash);
+		sshContext.setWatch(watch);
+		try {
+			Thread.sleep(300);
+		} catch (InterruptedException e) {
+			//忽略
+		}
+		String output = output(sshContext);
+		if(output.contains("executable file not found")) {
 			return false;
 		}
-		TextMessage textMessage = new TextMessage(cmdOutput);
-				sendMessage(session, textMessage);
+		sendMessage(sshContext.getSession(), output);
 		return true;
 	}
 	
-	public void close(WebSocketSession session) {
-		SSHConnectContext sshConnectInfo = sshMap.get(session.getId());
-		if (sshConnectInfo == null) {
+	private void close(WebSocketSession session) {
+		SSHContext sshContext = sshMap.get(session.getId());
+		if (sshContext == null) {
 			return;
 		}
-		sshMap.remove(session.getId());
+		sshContext = sshMap.remove(session.getId());
+		sshContext.setBaos(null);
+		sshContext.getWatch().close();
+		try {
+			Thread.sleep(50);
+		} catch (InterruptedException e) {
+			//忽略
+		}
+		sshContext.getClient().close();
 	}
 
-	public void sendMessage(WebSocketSession session, byte[] buffer){
-		try {
-			session.sendMessage(new TextMessage(buffer));
-		} catch (IOException e) {
-			logger.error("Failed to send websocket buffer", e);
-		}
-	}
-	
-	public void sendMessage(WebSocketSession session, TextMessage message){
-		try {
-			session.sendMessage(message);
-		} catch (IOException e) {
-			logger.error("Failed to send websocket message", e);
-		}
-	}
-
-	private void transToSSH(SSHConnectContext sshConnectInfo, String command) throws IOException {
-		if(!sshConnectInfo.getWebSocketSession().isOpen()
-				|| sshConnectInfo.getWatch() == null) {
+	private void transToSSH(SSHContext sshContext, String command) {
+		if(!sshContext.getSession().isOpen()
+				|| sshContext.getWatch() == null) {
 			return;
 		}
-		
-		OutputStream outputStream = sshConnectInfo.getWatch().getInput();
-		outputStream.write(command.getBytes());
-		outputStream.flush();
+		OutputStream outputStream = sshContext.getWatch().getInput();
+		try {
+			outputStream.write(command.getBytes());
+			outputStream.flush();
+		} catch (IOException e) {
+			logger.error("Failed to interact with terminal", e);
+		}
+		try {
+			Thread.sleep(70);
+		} catch (InterruptedException e) {
+			//忽略
+		}
+		sendMessage(sshContext.getSession(), output(sshContext));
 	}
 
 	private KubernetesClient client(String basePath, String accessToken) {
@@ -178,49 +170,17 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 				.build();
 	}
 	
-	public static String execCommandOnPod(SSHConnectContext sshConnectInfo, KubernetesClient client, String podName, String namespace, String... cmd) {
-		CompletableFuture<String> data = new CompletableFuture<>();
-		ExecWatch execWatch = execCmd(client, podName, namespace, data, cmd);
-		sshConnectInfo.setWatch(execWatch);
+	private String output(SSHContext sshConnectInfo) {
+		String content = sshConnectInfo.getBaos().toString();
+		sshConnectInfo.getBaos().reset();
+		return content;
+	}
+	
+	private void sendMessage(WebSocketSession session, String output){
 		try {
-			return data.get(5, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	private static ExecWatch execCmd(KubernetesClient client, String podName, String namespace, CompletableFuture<String> data, String... command) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		return client.pods().inNamespace(namespace).withName(podName).writingOutput(baos).writingError(baos)
-				.usingListener(new SimpleListener(data, baos)).exec(command);
-	}
-
-	static class SimpleListener implements ExecListener {
-
-		private CompletableFuture<String> data;
-		private ByteArrayOutputStream baos;
-
-		public SimpleListener(CompletableFuture<String> data, ByteArrayOutputStream baos) {
-			this.data = data;
-			this.baos = baos;
-		}
-
-		@Override
-		public void onOpen() {
-			System.out.println("Reading data... ");
-		}
-
-		@Override
-		public void onFailure(Throwable t, Response failureResponse) {
-			System.err.println(t.getMessage());
-			data.completeExceptionally(t);
-		}
-
-		@Override
-		public void onClose(int code, String reason) {
-			System.out.println("Exit with: " + code + " and with reason: " + reason);
-			data.complete(baos.toString());
+			session.sendMessage(new TextMessage(output));
+		} catch (IOException e) {
+			logger.error("Failed to send websocket message", e);
 		}
 	}
 	
@@ -238,5 +198,4 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 	public boolean supportsPartialMessages() {
 		return false;
 	}
-
 }

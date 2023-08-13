@@ -15,6 +15,7 @@ import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
+import org.dhorse.rest.websocket.ssh.SSHWebSocketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,11 @@ import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
 /**
  * 
- * 副本终端
+ * 副本终端，该类已经过时，{@link SSHWebSocketHandler}代替。
  * 
  * @author 天地之怪
  */
+@Deprecated
 @Component
 public class TerminalWebSocketHandler implements WebSocketHandler {
 

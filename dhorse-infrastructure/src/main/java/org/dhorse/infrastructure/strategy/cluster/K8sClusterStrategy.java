@@ -145,9 +145,10 @@ import io.kubernetes.client.util.Yaml;
 import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
 /**
- * k8s操作功能
+ * k8s操作功能，该类已经过时，{@link org.dhorse.infrastructure.strategy.cluster.k8s.K8sClusterStrategy}代替。
  * @author Dahai
  */
+@Deprecated
 public class K8sClusterStrategy implements ClusterStrategy {
 
 	private static final Logger logger = LoggerFactory.getLogger(K8sClusterStrategy.class);
