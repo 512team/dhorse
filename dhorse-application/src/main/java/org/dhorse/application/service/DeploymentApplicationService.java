@@ -459,7 +459,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				return packByGradle(context);
 			}
 		}
-		//Node应用
+		// Node应用
 		if (TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
 				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendNode appExtend =  context.getApp().getAppExtend();
