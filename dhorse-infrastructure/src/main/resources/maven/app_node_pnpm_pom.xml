@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.dhorse</groupId>
+	<artifactId>app-node-pnpm</artifactId>
+	<packaging>pom</packaging>
+	<version>1.3.1</version>
+	
+	<!-- 该文件的代码行数是固定的，在解析时会用到行号，文件内容谨慎改动 -->
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.12.1</version>
+				<executions>
+					<execution>
+						<id>install node and pnpm</id>
+						<goals>
+							<goal>install-node-and-pnpm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+					</execution>
+					<!--<execution>
+						<id>pnpm cache clear</id>
+						<goals>
+							<goal>pnpm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>cache clear &#45;&#45;force</arguments>
+						</configuration>
+					</execution>-->
+					<!-- 安装pnpm -->
+					<!--<execution>
+						<id>install pnpm</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>install pnpm@6.33.1 &#45;&#45;force</arguments>
+						</configuration>
+					</execution>-->
+					<execution>
+						<id>pnpm install</id>
+						<goals>
+							<goal>pnpm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>pnpm run build</id>
+						<goals>
+							<goal>pnpm</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<arguments>run build${env}</arguments>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<nodeVersion>${nodeVersion}</nodeVersion>
+					<pnpmVersion>${pnpmVersion}</pnpmVersion>
+					<installDirectory>${installDirectory}</installDirectory>
+<!--					<nodeDownloadRoot>https://npm.taobao.org/mirrors/node/</nodeDownloadRoot>-->
+<!--					<pnpmDownloadRoot>https://registry.npm.taobao.org/npm/-/</pnpmDownloadRoot>-->
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

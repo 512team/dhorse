@@ -146,9 +146,25 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
+						<label class="layui-form-label required">编译工具</label>
+						<div class="layui-input-block">
+							<select name="extendNodeParam.compileType" lay-filter="extendNodeParam-compileType" id="extendNodeParam-compileType" lay-verify="required" lay-reqtext="编译工具不能为空">
+								<option value="">请选择</option>
+								<option value="1">Npm</option>
+								<option value="2">Pnpm</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="npmVersionAddDiv">
 						<label class="layui-form-label required">Npm版本</label>
 						<div class="layui-input-block">
-							<input name="extendNodeParam.npmVersion" placeholder="如：v8.11.0" autocomplete="off"  class="layui-input">
+							<input type="text" name="extendNodeParam.npmVersion" id="npmVersion" placeholder="如：v8.11.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="pnpmVersionAddDiv">
+						<label class="layui-form-label required">Pnpm版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNodeParam.pnpmVersion" id="pnpmVersion"  placeholder="如：v8.11.0" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -305,7 +321,20 @@
 				$("#baseImageNodeDiv").show();
 			}
 		});
-		
+
+		//Node的编译方式
+		form.on('select(extendNodeParam-compileType)', function(data) {
+			//版本号
+			if(data.value == 1){
+				$("#npmVersionAddDiv").show();
+				$("#pnpmVersionAddDiv").hide();
+				//自定义
+			}else if(data.value == 2){
+				$("#npmVersionAddDiv").hide();
+				$("#pnpmVersionAddDiv").show();
+			}
+		});
+
 		//构建方式
 		form.on('select(packageBuildType)', function(data) {
 			var obj = $("#extendSpringBootParam-packageTargetPath");

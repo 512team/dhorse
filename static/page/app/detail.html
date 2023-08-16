@@ -53,10 +53,22 @@
 				<label class="layui-form-label text-value" id="nodeVersion"></label>
 			</div>
 		</div>
+		<div class="layui-form-item" id="extendNodeParam-compileType" style="display: none">
+			<label class="layui-form-label">编译工具：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="compileType"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="npmVersionDiv" style="display: none">
 			<label class="layui-form-label">Npm版本：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="npmVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="pnpmVersionDiv" style="display: none">
+			<label class="layui-form-label">Pnpm版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="pnpmVersion"></label>
 			</div>
 		</div>
 		<div class="layui-form-item" id="packageTargetPathDiv">
@@ -189,16 +201,40 @@
 				}else if(res.data.techType == 2){
 					techType = "Vue";
 					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
-					$("#npmVersion").text(res.data.appExtend.npmVersion);
+					if(res.data.appExtend.compileType == 1){
+						$("#compileType").text("Npm");
+						$("#npmVersionDiv").show();
+						$("#npmVersion").text(res.data.appExtend.npmVersion);
+					}else if(res.data.appExtend.compileType == 2){
+						$("#compileType").text("Pnpm");
+						$("#pnpmVersionDiv").show();
+						$("#pnpmVersion").text(res.data.appExtend.pnpmVersion);
+					}else{// 兼容之前创建的应用
+						$("#compileType").text("Npm");
+						$("#npmVersionDiv").show();
+						$("#npmVersion").text(res.data.appExtend.npmVersion);
+					}
 					$("#nodeVersionDiv").show();
-					$("#npmVersionDiv").show();
+					$("#extendNodeParam-compileType").show();
 				//React
 				}else if(res.data.techType == 3){
 					techType = "React";
 					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
-					$("#npmVersion").text(res.data.appExtend.npmVersion);
+					if(res.data.appExtend.compileType == 1){
+						$("#compileType").text("Npm");
+						$("#npmVersionDiv").show();
+						$("#npmVersion").text(res.data.appExtend.npmVersion);
+					}else if(res.data.appExtend.compileType == 2){
+						$("#compileType").text("Pnpm");
+						$("#pnpmVersionDiv").show();
+						$("#pnpmVersion").text(res.data.appExtend.pnpmVersion);
+					}else{// 兼容之前创建的应用
+						$("#compileType").text("Npm");
+						$("#npmVersionDiv").show();
+						$("#npmVersion").text(res.data.appExtend.npmVersion);
+					}
 					$("#nodeVersionDiv").show();
-					$("#npmVersionDiv").show();
+					$("#extendNodeParam-compileType").show();
 				//Nodejs
 				}else if(res.data.techType == 4){
 					techType = "Nodejs";
