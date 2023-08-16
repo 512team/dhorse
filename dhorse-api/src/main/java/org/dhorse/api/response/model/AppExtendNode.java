@@ -17,6 +17,16 @@ public class AppExtendNode extends AppExtend {
 	private String npmVersion;
 
 	/**
+	 * pnpm版本
+	 */
+	private String pnpmVersion;
+
+	/**
+	 * 类型
+	 */
+	private Integer compileType;
+
+	/**
 	 * 文件路径
 	 */
 	private String packageTargetPath;
@@ -45,4 +55,19 @@ public class AppExtendNode extends AppExtend {
 		this.packageTargetPath = packageTargetPath;
 	}
 
+	public String getPnpmVersion() {
+		return pnpmVersion;
+	}
+
+	public void setPnpmVersion(String pnpmVersion) {
+		this.pnpmVersion = pnpmVersion;
+	}
+
+	public Integer getCompileType() {
+		return compileType;
+	}
+
+	public void setCompileType(Integer compileType) {
+		this.compileType = compileType;
+	}
 }

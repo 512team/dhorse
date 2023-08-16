@@ -17,13 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.dhorse.api.enums.AppMemberRoleTypeEnum;
-import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
-import org.dhorse.api.enums.ImageSourceEnum;
-import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.enums.PackageFileTypeEnum;
-import org.dhorse.api.enums.TechTypeEnum;
-import org.dhorse.api.enums.TomcatVersionEnum;
+import org.dhorse.api.enums.*;
 import org.dhorse.api.param.app.AppCreationParam;
 import org.dhorse.api.param.app.AppDeletionParam;
 import org.dhorse.api.param.app.AppPageParam;
@@ -385,8 +379,14 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			if(StringUtils.isBlank(addParam.getExtendNodeParam().getNodeVersion())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Node版本不能为空");
 			}
-			if(StringUtils.isBlank(addParam.getExtendNodeParam().getNpmVersion())) {
+			if(Objects.isNull(addParam.getExtendNodeParam().getCompileType())) {
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "编译工具不能为空");
+			}
+			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.NPM.getCode()) && StringUtils.isBlank(addParam.getExtendNodeParam().getNpmVersion())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Npm版本不能为空");
+			}
+			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.PNPM.getCode()) && StringUtils.isBlank(addParam.getExtendNodeParam().getPnpmVersion())) {
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pnpm版本不能为空");
 			}
 		}
 	}

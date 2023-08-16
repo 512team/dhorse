@@ -303,6 +303,16 @@ public class AppCreationParam implements Serializable {
 		private String npmVersion;
 
 		/**
+		 * pnpm版本
+		 */
+		private String pnpmVersion;
+
+		/**
+		 * pnpm版本
+		 */
+		private Integer compileType;
+
+		/**
 		 * 打包文件路径
 		 */
 		private String packageTargetPath;
@@ -331,6 +341,21 @@ public class AppCreationParam implements Serializable {
 			this.packageTargetPath = packageTargetPath;
 		}
 
+		public String getPnpmVersion() {
+			return pnpmVersion;
+		}
+
+		public void setPnpmVersion(String pnpmVersion) {
+			this.pnpmVersion = pnpmVersion;
+		}
+
+		public Integer getCompileType() {
+			return compileType;
+		}
+
+		public void setCompileType(Integer compileType) {
+			this.compileType = compileType;
+		}
 	}
 
 	/**
