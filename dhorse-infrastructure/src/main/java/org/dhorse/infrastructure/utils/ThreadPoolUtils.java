@@ -24,7 +24,7 @@ public class ThreadPoolUtils {
 
 	private static final int CPU_SIZE_2 = 2 * CPU_SIZE;
 	
-	private static final int CPU_SIZE_4 = 4 * CPU_SIZE;
+	private static final int CPU_SIZE_8 = 8 * CPU_SIZE;
 	
 	private static ThreadPoolExecutor THREAD_POOL_BUILD;
 
@@ -50,10 +50,10 @@ public class ThreadPoolUtils {
 
 	public static void initThreadPool() {
 		ComponentConstants componentConstants = SpringBeanContext.getBean(ComponentConstants.class);
-		int buildCore = CPU_SIZE_2;
-		int buildMax = CPU_SIZE_4;
-		int deploymentCore = CPU_SIZE_2;
-		int deploymentMax = CPU_SIZE_4;
+		int buildCore = CPU_SIZE_8;
+		int buildMax = CPU_SIZE_8;
+		int deploymentCore = CPU_SIZE_8;
+		int deploymentMax = CPU_SIZE_8;
 		if(componentConstants.getThreadPoolBuildCore() != null) {
 			buildCore = componentConstants.getThreadPoolBuildCore();
 		}
@@ -72,7 +72,7 @@ public class ThreadPoolUtils {
 				buildMax,
 				5,
 				TimeUnit.SECONDS,
-				new ArrayBlockingQueue<Runnable>(5),
+				new ArrayBlockingQueue<Runnable>(8),
 				threadFactory("build-pool-%d"));
 
 		THREAD_POOL_DEPLOYMENT = new ThreadPoolExecutor(
@@ -80,7 +80,7 @@ public class ThreadPoolUtils {
 				deploymentMax,
 				5,
 				TimeUnit.SECONDS,
-				new ArrayBlockingQueue<Runnable>(5),
+				new ArrayBlockingQueue<Runnable>(8),
 				threadFactory("deployment-pool-%d"));
 	}
 
