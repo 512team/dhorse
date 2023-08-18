@@ -9,7 +9,7 @@ DHORSE_HOME=`dirname "$bin"`
 JAR_PATH=$DHORSE_HOME/lib/$JAR_NAME
 CONF_PATH=$DHORSE_HOME/conf/$APP_NAME.yml
 
-#jvm参数
+#Jvm参数
 JAVA_OPTS="-server -Xms256m -Xmx256m -Xmn96m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
 
 dhorse_banner(){
