@@ -21,7 +21,19 @@ public class ComponentConstants {
 	private String logPath;
 
 	private boolean h2Enable = false;
+	
+	@Value("${thread_pool.build.core:#{null}}")
+	private Integer threadPoolBuildCore;
+	
+	@Value("${thread_pool.build.max:#{null}}")
+	private Integer threadPoolBuildMax;
 
+	@Value("${thread_pool.deployment.core:#{null}}")
+	private Integer threadPoolDeploymentCore;
+
+	@Value("${thread_pool.deployment.max:#{null}}")
+	private Integer threadPoolDeploymentMax;
+	
 	@Autowired
 	private MysqlConfig mysqlConfig;
 
@@ -71,4 +83,19 @@ public class ComponentConstants {
 		return mysqlConfig;
 	}
 
+	public Integer getThreadPoolBuildCore() {
+		return threadPoolBuildCore;
+	}
+
+	public Integer getThreadPoolBuildMax() {
+		return threadPoolBuildMax;
+	}
+
+	public Integer getThreadPoolDeploymentCore() {
+		return threadPoolDeploymentCore;
+	}
+
+	public Integer getThreadPoolDeploymentMax() {
+		return threadPoolDeploymentMax;
+	}
 }
