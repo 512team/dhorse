@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
@@ -593,12 +593,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	public InputStream streamPodLog(ClusterPO clusterPO, String replicaName, String namespace) {
-		try(KubernetesClient client = client(clusterPO.getClusterUrl(),
+		KubernetesClient client = client(clusterPO.getClusterUrl(),
 				clusterPO.getAuthToken(), 1 * 1000, 5 * 60 * 1000);
 			LogWatch watch = client.pods().inNamespace(namespace).withName(replicaName)
-		    		.tailingLines(2000).watchLog()){
+		    		.tailingLines(2000).watchLog();
 			return watch.getOutput();
-		}
 	}
 	
 	public String podLog(ClusterPO clusterPO, String replicaName, String namespace) {

@@ -4,7 +4,7 @@ import java.io.File;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.apache.ibatis.session.AutoMappingBehavior;
 import org.apache.ibatis.session.SqlSessionFactory;

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.MessageCodeEnum;

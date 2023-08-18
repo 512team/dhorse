@@ -101,4 +101,91 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 		}
 		logger.info("End to download file from {}", fileUrl);
 	}
+	
+//	public static void deleteDirectory(final File directory) throws IOException {
+//        Objects.requireNonNull(directory, "directory");
+//        if (!directory.exists()) {
+//            return;
+//        }
+//        if (!isSymlink(directory)) {
+//            cleanDirectory(directory);
+//        }
+//        delete(directory);
+//    }
+//	
+//	public static boolean isSymlink(final File file) {
+//        return file != null && Files.isSymbolicLink(file.toPath());
+//    }
+//	
+//	public static void cleanDirectory(final File directory) throws IOException {
+//        final File[] files = listFiles(directory, null);
+//
+//        final List<Exception> causeList = new ArrayList<>();
+//        for (final File file : files) {
+//            try {
+//                forceDelete(file);
+//            } catch (final IOException ioe) {
+//                causeList.add(ioe);
+//            }
+//        }
+//
+//        if (!causeList.isEmpty()) {
+//            throw new IOExceptionList(directory.toString(), causeList);
+//        }
+//    }
+//	
+//	private static File[] listFiles(final File directory, final FileFilter fileFilter) throws IOException {
+//        requireDirectoryExists(directory, "directory");
+//        final File[] files = fileFilter == null ? directory.listFiles() : directory.listFiles(fileFilter);
+//        if (files == null) {
+//            // null if the directory does not denote a directory, or if an I/O error occurs.
+//            throw new IOException("Unknown I/O error listing contents of directory: " + directory);
+//        }
+//        return files;
+//    }
+//	
+//	private static File requireDirectoryExists(final File directory, final String name) {
+//        requireExists(directory, name);
+//        requireDirectory(directory, name);
+//        return directory;
+//    }
+//	
+//	private static File requireExists(final File file, final String fileParamName) {
+//        Objects.requireNonNull(file, fileParamName);
+//        if (!file.exists()) {
+//            throw new IllegalArgumentException(
+//                "File system element for parameter '" + fileParamName + "' does not exist: '" + file + "'");
+//        }
+//        return file;
+//    }
+//	
+//	private static File requireDirectory(final File directory, final String name) {
+//        Objects.requireNonNull(directory, name);
+//        if (!directory.isDirectory()) {
+//            throw new IllegalArgumentException("Parameter '" + name + "' is not a directory: '" + directory + "'");
+//        }
+//        return directory;
+//    }
+//	
+//	public static File delete(final File file) throws IOException {
+//        Objects.requireNonNull(file, "file");
+//        Files.delete(file.toPath());
+//        return file;
+//    }
+//	
+//	public static void forceDelete(final File file) throws IOException {
+//        Objects.requireNonNull(file, "file");
+//        final Counters.PathCounters deleteCounters;
+//        try {
+//            deleteCounters = PathUtils.delete(file.toPath(), PathUtils.EMPTY_LINK_OPTION_ARRAY,
+//                StandardDeleteOption.OVERRIDE_READ_ONLY);
+//        } catch (final IOException e) {
+//            throw new IOException("Cannot delete file: " + file, e);
+//        }
+//
+//        if (deleteCounters.getFileCounter().get() < 1 && deleteCounters.getDirectoryCounter().get() < 1) {
+//            // didn't find a file to delete.
+//            throw new FileNotFoundException("File does not exist: " + file);
+//        }
+//    }
 }

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.dhorse.api.enums.ActionTypeEnum;
 import org.dhorse.api.enums.AffinityLevelEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
@@ -33,6 +32,7 @@ import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -81,7 +81,7 @@ public class K8sDeploymentHelper {
 		Deployment deployment = new DeploymentBuilder()
 	            .withNewMetadata()
 	            .withName(context.getDeploymentName())
-	            .withLabels(K8sClusterHelper.dhorseLabel(context.getDeploymentName()))
+	            .withLabels(dhorseLabel(context.getDeploymentName()))
 	            .endMetadata()
 	            .withNewSpec()
 	            .withNewSelector()
@@ -90,8 +90,8 @@ public class K8sDeploymentHelper {
 	            .withReplicas(context.getAppEnv().getMinReplicas())
 	            .withNewTemplate()
 	            .withNewMetadata()
-	            .addToLabels(K8sClusterHelper.deploymentLabel(context))
-	            .withAnnotations(K8sClusterHelper.addPrometheus("Pod", context))
+	            .addToLabels(deploymentLabel(context))
+	            .withAnnotations(PrometheusHelper.addPrometheus("Pod", context))
 	            .endMetadata()
 	            .withNewSpec()
 	            .withImagePullSecrets(imagePullSecrets())
@@ -401,7 +401,7 @@ public class K8sDeploymentHelper {
 			t.setOperator(c.getOperator());
 			t.setValue(c.getValueList());
 			t.setEffect(c.getEffectType());
-			t.setTolerationSeconds(StringUtils.isEmpty(c.getDuration()) ? null : Long.valueOf(c.getDuration()));
+			t.setTolerationSeconds(StringUtils.isBlank(c.getDuration()) ? null : Long.valueOf(c.getDuration()));
 			tolerations.add(t);
 		}
 		
@@ -934,5 +934,17 @@ public class K8sDeploymentHelper {
 		}
 		
 		return volumes;
+	}
+	
+	public static Map<String, String> deploymentLabel(DeploymentContext context) {
+		Map<String, String> labels = dhorseLabel(context.getDeploymentName());
+		labels.put("version", String.valueOf(System.currentTimeMillis()));
+		return labels;
+	}
+	
+	public static Map<String, String> dhorseLabel(String value) {
+		Map<String, String> labels = new HashMap<>();
+		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
+		return labels;
 	}
 }

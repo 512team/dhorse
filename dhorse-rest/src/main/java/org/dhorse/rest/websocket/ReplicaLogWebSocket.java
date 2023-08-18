@@ -2,7 +2,6 @@ package org.dhorse.rest.websocket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.websocket.OnClose;
@@ -11,13 +10,12 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import org.dhorse.application.service.EnvReplicaApplicationService;
-import org.dhorse.application.service.SysUserApplicationService;
-import org.dhorse.infrastructure.component.SpringBeanContext;
-import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
+import org.dhorse.rest.websocket.ssh.SSHContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import io.fabric8.kubernetes.client.dsl.LogWatch;
 
 /**
  * 
@@ -27,26 +25,25 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ServerEndpoint("/replica/log/{replicaname}/{logintoken}")
-public class ReplicaLogWebSocket {
+public class ReplicaLogWebSocket extends AbstracWebSocket{
 
 	private static final Logger logger = LoggerFactory.getLogger(ReplicaLogWebSocket.class);
 
 	@OnOpen
-	public void onOpen(@PathParam("replicaname") String replicaName, @PathParam("logintoken") String loginToken,
-			Session session) {
-		SysUserApplicationService sysUserApplicationService = SpringBeanContext
-				.getBean(SysUserApplicationService.class);
-		LoginUser loginUser = sysUserApplicationService.queryLoginUserByToken(loginToken);
-		EnvReplicaApplicationService replicaApplicationService = SpringBeanContext
-				.getBean(EnvReplicaApplicationService.class);
-		InputStream is = replicaApplicationService.streamPodLog(loginUser, replicaName);
-		if (is == null) {
-			return;
-		}
-
+	public void onOpen(@PathParam("replicaname") String replicaName,
+			@PathParam("logintoken") String loginToken, Session session) {
+		SSHContext ssContext = sshContext(loginToken, replicaName);
+		LogWatch watch = ssContext.getClient()
+				.pods()
+				.inNamespace(ssContext.getNamespace())
+				.withName(replicaName)
+	    		.tailingLines(2000)
+	    		.watchLog();
+		ssContext.setWatch(watch);
+		ssContext.setSession(session);
 		try {
-			WebSocketCache.putReplicaLog(session.getId(), is);
-			BufferedReader buffer = new BufferedReader(new InputStreamReader(is));
+			WebSocketCache.putReplicaLog(session.getId(), ssContext);
+			BufferedReader buffer = new BufferedReader(new InputStreamReader(watch.getOutput()));
 			String line = null;
 			while ((line = buffer.readLine()) != null) {
 				session.getBasicRemote().sendText(line + "</br>");
@@ -58,7 +55,7 @@ public class ReplicaLogWebSocket {
 
 	@OnClose
 	public void onClose(Session session) {
-		logger.info("close socket, id : {}", session.getId());
+		logger.info("Close socket, id : {}", session.getId());
 		WebSocketCache.removeReplicaLog(session.getId());
 		try {
 			session.close();
@@ -66,5 +63,4 @@ public class ReplicaLogWebSocket {
 			logger.error("Failed to close websocket", e);
 		}
 	}
-
 }

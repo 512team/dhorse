@@ -15,7 +15,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -53,13 +52,14 @@ import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
-import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
+import org.dhorse.infrastructure.strategy.cluster.k8s.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,10 +72,6 @@ import com.google.cloud.tools.jib.api.Jib;
 import com.google.cloud.tools.jib.api.LogEvent;
 import com.google.cloud.tools.jib.api.RegistryImage;
 import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath;
-
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.util.ClientBuilder;
-import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
 /**
  * 
@@ -122,12 +118,6 @@ public abstract class ApplicationService {
 	
 	@Autowired
 	protected MetricsRepository metricsRepository;
-	
-	protected ApiClient apiClient(String basePath, String accessToken) {
-		ApiClient apiClient = new ClientBuilder().setBasePath(basePath).setVerifyingSsl(false)
-				.setAuthentication(new AccessTokenAuthentication(accessToken)).build();
-		return apiClient;
-	}
 	
 	public GlobalConfigAgg globalConfig() {
 		GlobalConfigParam param = new GlobalConfigParam();

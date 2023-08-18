@@ -1,11 +1,9 @@
 package org.dhorse.rest.websocket.ssh;
 
 import java.io.ByteArrayOutputStream;
-
-import org.springframework.web.socket.WebSocketSession;
+import java.io.Closeable;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.dsl.ExecWatch;
 
 public class SSHContext {
 
@@ -13,11 +11,11 @@ public class SSHContext {
 
 	private String replicaName;
 
-	private WebSocketSession session;
+	private Closeable session;
 
 	private KubernetesClient client;
 
-	private ExecWatch watch;
+	private Closeable watch;
 
 	private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -37,11 +35,12 @@ public class SSHContext {
 		this.replicaName = replicaName;
 	}
 
-	public WebSocketSession getSession() {
-		return session;
+	@SuppressWarnings("unchecked")
+	public <T extends Closeable> T getSession() {
+		return (T)session;
 	}
 
-	public void setSession(WebSocketSession session) {
+	public void setSession(Closeable session) {
 		this.session = session;
 	}
 
@@ -61,11 +60,12 @@ public class SSHContext {
 		this.baos = baos;
 	}
 
-	public ExecWatch getWatch() {
-		return watch;
+	@SuppressWarnings("unchecked")
+	public <T extends Closeable> T getWatch() {
+		return (T)watch;
 	}
 
-	public void setWatch(ExecWatch watch) {
+	public void setWatch(Closeable watch) {
 		this.watch = watch;
 	}
 

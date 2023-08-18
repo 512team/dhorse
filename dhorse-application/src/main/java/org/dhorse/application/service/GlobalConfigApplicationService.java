@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;

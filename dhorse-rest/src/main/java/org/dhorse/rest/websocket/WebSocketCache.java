@@ -1,12 +1,12 @@
 package org.dhorse.rest.websocket;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.dhorse.infrastructure.repository.po.LogRecordPO;
+import org.dhorse.rest.websocket.ssh.SSHContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketSession;
@@ -19,7 +19,7 @@ public class WebSocketCache {
 	
 	private static final Map<String, WebSocketSession> BIZ_ID_KEY_CACHE = new ConcurrentHashMap<>();
 	
-	private static Map<String, InputStream> REPLICA_LOG = new ConcurrentHashMap<>();
+	private static Map<String, SSHContext> REPLICA_LOG = new ConcurrentHashMap<>();
 	
 	public static void put(WebSocketSession session, LogRecordPO lastRecordPO) {
 		SESSION_KEY_CACHE.put(session, lastRecordPO);
@@ -57,25 +57,26 @@ public class WebSocketCache {
 		}
 	}
 	
-	public static void putReplicaLog(String key, InputStream in) {
+	public static void putReplicaLog(String key, SSHContext in) {
 		REPLICA_LOG.put(key, in);
 	}
 	
 	public static void removeReplicaLog(String key) {
-		InputStream is = REPLICA_LOG.remove(key);
+		SSHContext is = REPLICA_LOG.remove(key);
 		if (is == null) {
 			return;
 		}
 		try {
-			is.close();
-			is = null;
+			is.getWatch().close();
+			is.getClient().close();
+			is.getSession().close();
 		} catch (IOException e) {
 			logger.error("Failed to close websocket", e);
 		}
 	}
 	
 	public static void removeAllReplicaLog() {
-		for(Entry<String, InputStream>  e : REPLICA_LOG.entrySet()) {
+		for(Entry<String, SSHContext>  e : REPLICA_LOG.entrySet()) {
 			removeReplicaLog(e.getKey());
 		}
 	}

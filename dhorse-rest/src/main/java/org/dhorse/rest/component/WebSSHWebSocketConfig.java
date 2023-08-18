@@ -2,7 +2,7 @@ package org.dhorse.rest.component;
 
 import org.dhorse.rest.websocket.BuildVersionLogWebSocket;
 import org.dhorse.rest.websocket.DeploymentDetailLogWebSocket;
-import org.dhorse.rest.websocket.TerminalWebSocketHandler;
+import org.dhorse.rest.websocket.ssh.SSHWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -19,7 +19,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSSHWebSocketConfig implements WebSocketConfigurer {
 	
 	@Autowired
-	private TerminalWebSocketHandler terminalWebSocketHandler;
+	private SSHWebSocketHandler terminalWebSocketHandler;
 	
 	@Autowired
 	private DeploymentDetailLogWebSocket deploymentDetailLogWebSocket;

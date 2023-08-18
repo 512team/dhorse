@@ -12,6 +12,7 @@ import org.dhorse.infrastructure.context.AppEnvClusterContext;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.JsonUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +117,7 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 			//忽略
 		}
 		String output = output(sshContext);
-		if(output.contains("executable file not found")) {
+		if(StringUtils.isBlank(output) || output.contains("executable file not found")) {
 			return false;
 		}
 		sendMessage(sshContext.getSession(), output);
@@ -130,7 +131,7 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 		}
 		sshContext = sshMap.remove(session.getId());
 		sshContext.setBaos(null);
-		sshContext.getWatch().close();
+		((ExecWatch)sshContext.getWatch()).close();
 		try {
 			Thread.sleep(50);
 		} catch (InterruptedException e) {
@@ -140,11 +141,10 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 	}
 
 	private void transToSSH(SSHContext sshContext, String command) {
-		if(!sshContext.getSession().isOpen()
-				|| sshContext.getWatch() == null) {
+		if(sshContext.getWatch() == null) {
 			return;
 		}
-		OutputStream outputStream = sshContext.getWatch().getInput();
+		OutputStream outputStream = ((ExecWatch)sshContext.getWatch()).getInput();
 		try {
 			outputStream.write(command.getBytes());
 			outputStream.flush();

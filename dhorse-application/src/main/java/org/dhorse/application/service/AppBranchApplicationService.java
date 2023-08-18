@@ -3,7 +3,7 @@ package org.dhorse.application.service;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.param.app.branch.AppBranchCreationParam;

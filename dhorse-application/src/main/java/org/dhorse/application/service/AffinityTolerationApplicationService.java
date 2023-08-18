@@ -2,7 +2,7 @@ package org.dhorse.application.service;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.app.env.affinity.AffinityTolerationCreationParam;
 import org.dhorse.api.param.app.env.affinity.AffinityTolerationDeletionParam;

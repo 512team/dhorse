@@ -2,13 +2,14 @@ package org.dhorse.infrastructure.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
+public class DateUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
 	
@@ -43,4 +44,15 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 		}
 		return null;
 	}
+	
+	public static Date addDays(final Date date, final int amount) {
+        return add(date, Calendar.DAY_OF_MONTH, amount);
+    }
+	
+	private static Date add(final Date date, final int calendarField, final int amount) {
+        final Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(calendarField, amount);
+        return c.getTime();
+    }
 }

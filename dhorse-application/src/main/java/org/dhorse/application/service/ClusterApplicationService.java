@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.AuthTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -184,7 +184,7 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 			addParam.setAuthToken(addParam.getAuthToken().trim());
 		}
 		if (AuthTypeEnum.ACCOUNT.getCode().equals(addParam.getAuthType())
-				&& (StringUtils.isNotBlank(addParam.getAuthName())
+				&& (StringUtils.isBlank(addParam.getAuthName())
 				|| StringUtils.isBlank(addParam.getAuthPassword()))) {
 			LogUtils.throwException(logger, MessageCodeEnum.CLUSTER_AUTHP_ASSWORD_IS_EMPTY);
 		}
