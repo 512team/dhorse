@@ -220,19 +220,8 @@
 				}
 				$("#servicePort").text(res.data.servicePort);
 				$("#minorPorts").text(res.data.minorPorts);
-				if(res.data.traceStatus == 0){
-					$("#traceStatus").text('关闭');
-				}else{
-					$("#traceStatus").text('开启');
-				}
-				if(!res.data.envExtend.jvmMetricsStatus || res.data.envExtend.jvmMetricsStatus == 0){
-					$("#jvmMetricsStatus").text('关闭');
-				}else{
-					$("#jvmMetricsStatus").text('开启');
-				}
 				$("#ingressHost").text(res.data.ingressHost);
 				$("#traceTemplateName").text(res.data.traceTemplateName);
-				$("#jvmArgs").text(res.data.envExtend.jvmArgs);
 				$("#description").text(res.data.description);
 				$("#deploymentTime").text(res.data.deploymentTime);
 				$("#creationTime").text(res.data.creationTime);
@@ -249,7 +238,7 @@
 		});
     });
 	
-	function initApp(form, $, appId, data){
+	function initApp(form, $, appId, envData){
 		$.ajax({
 			url: '/app/query',
 			type: 'POST',
@@ -259,9 +248,21 @@
 			success: function(res){
 				//SpringBoot
 				if(res.data.techType == 1){
+					if(envData.traceStatus == 0){
+						$("#traceStatus").text('关闭');
+					}else{
+						$("#traceStatus").text('开启');
+						$("#traceTemplateNameDiv").show();
+					}
+					var extend = envData.envExtend;
+					if(!extend.jvmMetricsStatus || extend.jvmMetricsStatus == 0){
+						$("#jvmMetricsStatus").text('关闭');
+					}else{
+						$("#jvmMetricsStatus").text('开启');
+					}
+					$("#jvmArgs").text(extend.jvmArgs);
 					$("#traceStatusDiv").show();
 					$("#jvmMetricsStatusDiv").show();
-					$("#traceTemplateNameDiv").show();
 					$("#jvmArgsDiv").show();
 				}
 			},

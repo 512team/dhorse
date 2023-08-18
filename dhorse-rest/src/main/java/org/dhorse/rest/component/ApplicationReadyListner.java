@@ -1,6 +1,7 @@
 package org.dhorse.rest.component;
 
 import org.dhorse.application.service.InitializingService;
+import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -15,5 +16,6 @@ public class ApplicationReadyListner implements ApplicationListener<ApplicationR
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
 		initializingService.asynInitConfig();
+		ThreadPoolUtils.initThreadPool();
 	}
 }

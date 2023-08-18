@@ -53,6 +53,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 	}
 
 	public static void unTarGz(File sourceTarGzFile, File parentPath) {
+		logger.error("Start to decompress gz file");
 		try (TarArchiveInputStream in = new TarArchiveInputStream(
 				new GzipCompressorInputStream(Files.newInputStream(sourceTarGzFile.toPath())))) {
 			ArchiveEntry entry;
@@ -68,12 +69,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				try(OutputStream out = Files.newOutputStream(targetFile.toPath())){
 					IOUtils.copy(in, out);
 				}catch (Exception ex) {
-                	logger.error("Failed to unTarGz entry", ex);
+                	logger.error("Failed to decompress gz entry", ex);
                 }
 			}
 		} catch (Exception e) {
-			logger.error("Failed to decompress file", e);
+			logger.error("Failed to decompress gz file", e);
 		}
+		logger.error("End to decompress gz file");
 	}
 
 	public static void downloadFile(String fileUrl, File targetFile) {
@@ -99,7 +101,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 		} catch (Exception e) {
 			logger.error("Failed to download file", e);
 		}
-		logger.info("End to download file from {}", fileUrl);
+		logger.info("End to download file");
 	}
 	
 //	public static void deleteDirectory(final File directory) throws IOException {
