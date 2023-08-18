@@ -32,7 +32,7 @@ DHorse是一个简单易用、以应用为中心的云原生DevOps系统，具�
 
 2. 下载安装文件
 
-[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.3.1/dhorse-v1.3.1-bin.tar.gz)
+[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.3.2/dhorse-v1.3.2-bin.tar.gz)
 
 3. 解压
 
