@@ -120,7 +120,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			secret.setType("kubernetes.io/dockerconfigjson");
 			ObjectMeta meta = new ObjectMeta();
 			meta.setName(K8sUtils.DOCKER_REGISTRY_KEY);
-			meta.setLabels(dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
+			meta.setLabels(K8sUtils.dhorseLabel(K8sUtils.DOCKER_REGISTRY_KEY));
 			secret.setMetadata(meta);
 			secret.setData(dockerConfigData(imageRepo));
 			NamespaceList namespaceList = client.namespaces().list();
@@ -244,7 +244,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private ObjectMeta ingressMeta(String appName, DeploymentContext context) {
 		ObjectMeta metadata = new ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(dhorseLabel(appName));
+		metadata.setLabels(K8sUtils.dhorseLabel(appName));
 		metadata.setAnnotations(PrometheusHelper.addPrometheus("Ingress", context));
 		return metadata;
 	}
@@ -352,7 +352,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private ObjectMeta serviceMeta(String appName, DeploymentContext context) {
 		ObjectMeta metadata = new ObjectMeta();
 		metadata.setName(appName);
-		metadata.setLabels(dhorseLabel(appName));
+		metadata.setLabels(K8sUtils.dhorseLabel(appName));
 		metadata.setAnnotations(PrometheusHelper.addPrometheus("Service", context));
 		return metadata;
 	}
@@ -394,7 +394,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private ObjectMeta deploymentMetaData(String deploymentName) {
 		ObjectMeta metadata = new ObjectMeta();
 		metadata.setName(deploymentName);
-		metadata.setLabels(dhorseLabel(deploymentName));
+		metadata.setLabels(K8sUtils.dhorseLabel(deploymentName));
 		return metadata;
 	}
 	
@@ -460,8 +460,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			AppPO appPO, AppEnvPO appEnvPO) {
 		String namespace = appEnvPO.getNamespaceName();
 		PodList podList = null;
+		String deploymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnvPO.getTag());
 		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
-			podList = client.pods().inNamespace(namespace).list();
+			podList = client.pods()
+					.inNamespace(namespace)
+					.withLabelSelector(K8sUtils.DHORSE_LABEL_KEY + "=" + deploymentName)
+					.list();
 		}
 		PageData<EnvReplica> pageData = new PageData<>();
 		int dataCount = podList.getItems().size();
@@ -787,18 +791,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			DHorseConfigHelper.deleteServerIp(clusterPO, client);
 		}
 		return null;
-	}
-	
-	public static Map<String, String> deploymentLabel(DeploymentContext context) {
-		Map<String, String> labels = dhorseLabel(context.getDeploymentName());
-		labels.put("version", String.valueOf(System.currentTimeMillis()));
-		return labels;
-	}
-	
-	public static Map<String, String> dhorseLabel(String value) {
-		Map<String, String> labels = new HashMap<>();
-		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
-		return labels;
 	}
 	
 	private KubernetesClient client(String basePath, String accessToken) {

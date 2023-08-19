@@ -80,7 +80,7 @@ public class K8sDeploymentHelper {
 		Deployment deployment = new DeploymentBuilder()
 	            .withNewMetadata()
 	            .withName(context.getDeploymentName())
-	            .withLabels(dhorseLabel(context.getDeploymentName()))
+	            .withLabels(K8sUtils.dhorseLabel(context.getDeploymentName()))
 	            .endMetadata()
 	            .withNewSpec()
 	            .withNewSelector()
@@ -936,14 +936,8 @@ public class K8sDeploymentHelper {
 	}
 	
 	public static Map<String, String> deploymentLabel(DeploymentContext context) {
-		Map<String, String> labels = dhorseLabel(context.getDeploymentName());
+		Map<String, String> labels = K8sUtils.dhorseLabel(context.getDeploymentName());
 		labels.put("version", String.valueOf(System.currentTimeMillis()));
-		return labels;
-	}
-	
-	public static Map<String, String> dhorseLabel(String value) {
-		Map<String, String> labels = new HashMap<>();
-		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
 		return labels;
 	}
 }

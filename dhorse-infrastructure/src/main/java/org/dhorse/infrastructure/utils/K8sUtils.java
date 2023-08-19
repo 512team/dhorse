@@ -1,6 +1,8 @@
 package org.dhorse.infrastructure.utils;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class K8sUtils {
@@ -94,5 +96,11 @@ public class K8sUtils {
 	
 	public static Set<String> getSystemNamspaces() {
 		return SYSTEM_NAMESPACES;
+	}
+	
+	public static Map<String, String> dhorseLabel(String value) {
+		Map<String, String> labels = new HashMap<>();
+		labels.put(K8sUtils.DHORSE_LABEL_KEY, value);
+		return labels;
 	}
 }
