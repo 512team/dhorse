@@ -48,8 +48,6 @@
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>com.h2database</groupId> <artifactId>h2</artifactId> 
-			</dependency> -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -62,8 +60,6 @@
 			<groupId>org.gitlab4j</groupId>
 			<artifactId>gitlab4j-api</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>com.aliyun</groupId> <artifactId>cr20181201</artifactId> 
-			</dependency> -->
 		<dependency>
 			<groupId>com.google.cloud.tools</groupId>
 			<artifactId>jib-core</artifactId>
@@ -78,8 +74,10 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>io.kubernetes</groupId> <artifactId>client-java</artifactId> 
-			</dependency> -->
+		<dependency>
+			<groupId>io.kubernetes</groupId>
+			<artifactId>client-java</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>kubernetes-client</artifactId>

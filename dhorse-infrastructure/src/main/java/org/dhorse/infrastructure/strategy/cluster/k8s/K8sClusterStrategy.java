@@ -460,11 +460,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			AppPO appPO, AppEnvPO appEnvPO) {
 		String namespace = appEnvPO.getNamespaceName();
 		PodList podList = null;
-		String deploymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnvPO.getTag());
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(appPO.getAppName(), appEnvPO.getTag());
 		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
 			podList = client.pods()
 					.inNamespace(namespace)
-					.withLabelSelector(K8sUtils.DHORSE_LABEL_KEY + "=" + deploymentName)
+					.withLabelSelector(labelSelector)
 					.list();
 		}
 		PageData<EnvReplica> pageData = new PageData<>();
