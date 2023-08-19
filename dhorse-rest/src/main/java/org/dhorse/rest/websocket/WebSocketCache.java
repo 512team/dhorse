@@ -41,7 +41,7 @@ public class WebSocketCache {
 			session.close();
 			session = null;
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Failed to close session", e);
 		}
 	}
 	
@@ -67,6 +67,8 @@ public class WebSocketCache {
 			return;
 		}
 		try {
+			is.getBaos().close();
+			is.setBaos(null);
 			is.getWatch().close();
 			is.getClient().close();
 			is.getSession().close();

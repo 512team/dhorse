@@ -95,9 +95,6 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 			}
 		} else if ("command".equals(replicaTerminalParam.getOperate())) {
 			transToSSH(sshContext, replicaTerminalParam.getCommand());
-		} else {
-			logger.warn("Unsupported operation, websocket session id : {}", session.getId());
-			close(session);
 		}
 	}
 
@@ -111,6 +108,7 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 				.withTTY()
 				.exec(bash);
 		sshContext.setWatch(watch);
+		//解决打开终端后，不能显示连接符的问题
 		try {
 			Thread.sleep(300);
 		} catch (InterruptedException e) {
@@ -125,19 +123,21 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 	}
 	
 	private void close(WebSocketSession session) {
-		SSHContext sshContext = sshMap.get(session.getId());
+		SSHContext sshContext = sshMap.remove(session.getId());
 		if (sshContext == null) {
 			return;
 		}
-		sshContext = sshMap.remove(session.getId());
-		sshContext.setBaos(null);
-		((ExecWatch)sshContext.getWatch()).close();
 		try {
+			sshContext.getBaos().close();
+			sshContext.setBaos(null);
+			((ExecWatch)sshContext.getWatch()).close();
+			//解决关闭终端后，报Socket closed异常的问题
 			Thread.sleep(50);
-		} catch (InterruptedException e) {
-			//忽略
+			sshContext.getClient().close();
+			session.close();
+		} catch (Exception e) {
+			logger.error("Failed to close WebSocketSession", e);
 		}
-		sshContext.getClient().close();
 	}
 
 	private void transToSSH(SSHContext sshContext, String command) {
@@ -151,6 +151,7 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 		} catch (IOException e) {
 			logger.error("Failed to interact with terminal", e);
 		}
+		//解决在终端输入命令后，不能正常展示的问题
 		try {
 			Thread.sleep(70);
 		} catch (InterruptedException e) {

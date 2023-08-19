@@ -1,7 +1,6 @@
 package org.dhorse.rest.websocket;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 import javax.websocket.OnClose;
@@ -57,10 +56,5 @@ public class ReplicaLogWebSocket extends AbstracWebSocket{
 	public void onClose(Session session) {
 		logger.info("Close socket, id : {}", session.getId());
 		WebSocketCache.removeReplicaLog(session.getId());
-		try {
-			session.close();
-		} catch (IOException e) {
-			logger.error("Failed to close websocket", e);
-		}
 	}
 }
