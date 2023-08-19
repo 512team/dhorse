@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -65,8 +66,11 @@ import org.springframework.util.CollectionUtils;
 import io.kubernetes.client.Copy;
 import io.kubernetes.client.Exec;
 import io.kubernetes.client.KubernetesConstants;
+import io.kubernetes.client.Metrics;
 import io.kubernetes.client.PodLogs;
 import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.custom.PodMetrics;
+import io.kubernetes.client.custom.PodMetricsList;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
@@ -1652,18 +1656,35 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 
 	public List<ReplicaMetrics> replicaMetrics(ClusterPO clusterPO, String namespace) {
-//		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
-//		Metrics metrics = new Metrics(apiClient);
-//		try {
-//			return metrics.getPodMetrics(namespace);
-//		} catch (ApiException e) {
-//			if(e.getCode() == 404) {
-//				logger.warn("Unable to collect pod metrics, metrics server may not bee installed");
-//			}else {
-//				logger.error("Failed to collect pod metrics", e);
-//			}
-//		}
-		return null;
+		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
+		Metrics metricsApi = new Metrics(apiClient);
+		PodMetricsList podMetricsList = null;
+		try {
+			podMetricsList = metricsApi.getPodMetrics(namespace);
+		} catch (ApiException e) {
+			if(e.getCode() == 404) {
+				logger.warn("Unable to collect pod metrics, metrics server may not bee installed");
+			}else {
+				logger.error("Failed to collect pod metrics", e);
+			}
+		}
+		if(podMetricsList == null || CollectionUtils.isEmpty(podMetricsList.getItems())) {
+			return null;
+		}
+		List<ReplicaMetrics> metricsList = new ArrayList<>();
+		List<PodMetrics> metrics = podMetricsList.getItems();
+		for(PodMetrics metric : metrics) {
+			String replicaName = metric.getMetadata().getName();
+			if(CollectionUtils.isEmpty(metric.getContainers())) {
+				continue;
+			}
+			Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
+			long cpuUsed = usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue();
+			long memoryUsed = usage.get("memory").getNumber().setScale(0, RoundingMode.HALF_UP).longValue();
+			metricsList.add(ReplicaMetrics.of(replicaName, cpuUsed, memoryUsed));
+		}
+		
+		return metricsList;
 	}
 	
 	@Override
