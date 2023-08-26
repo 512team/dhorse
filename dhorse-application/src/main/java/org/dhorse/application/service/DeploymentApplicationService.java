@@ -592,7 +592,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		cmd.append("cd " + context.getLocalPathOfBranch())
 				.append(" && ").append(mavenBin)
-				.append(" clean package ")
+				.append(" clean package -Dmaven.test.skip ")
 				.append("-s " + settingsFile);
 
 		return execCommand(customizedJavaHome, cmd.toString());
