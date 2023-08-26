@@ -46,6 +46,10 @@ import io.kubernetes.client.openapi.models.V1ServiceAccount;
 import io.kubernetes.client.openapi.models.V1ServiceAccountList;
 import io.kubernetes.client.util.Yaml;
 
+/**
+ * k8s辅助功能，该类已过时，请使用{@link org.dhorse.infrastructure.strategy.cluster.k8s.K8sDeploymentHelper}代替。
+ * @author Dahai
+ */
 public class K8sClusterHelper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(K8sClusterHelper.class);

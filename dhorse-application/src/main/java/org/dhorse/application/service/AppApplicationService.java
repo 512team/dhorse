@@ -382,10 +382,12 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			if(Objects.isNull(addParam.getExtendNodeParam().getCompileType())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "编译工具不能为空");
 			}
-			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.NPM.getCode()) && StringUtils.isBlank(addParam.getExtendNodeParam().getNpmVersion())) {
+			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.NPM.getCode())
+					&& StringUtils.isBlank(addParam.getExtendNodeParam().getNpmVersion())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Npm版本不能为空");
 			}
-			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.PNPM.getCode()) && StringUtils.isBlank(addParam.getExtendNodeParam().getPnpmVersion())) {
+			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.PNPM.getCode())
+					&& StringUtils.isBlank(addParam.getExtendNodeParam().getPnpmVersion())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pnpm版本不能为空");
 			}
 		}

@@ -549,10 +549,11 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			logger.error("Failed to build node app", e);
 		}
 
-		doPackByMaven(context, componentConstants.getDataPath() + "maven/", customizedJavaHome);
+		boolean isSuccess = doPackByMaven(context, componentConstants.getDataPath() + "maven/", customizedJavaHome);
 
 		logger.info("End to pack by maven");
-		return true;
+		
+		return isSuccess;
 	}
 
 	private String[] repoUrls(DeploymentContext context) {
@@ -578,7 +579,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		return result;
 	}
 
-	private void doPackByMaven(DeploymentContext context, String mavenHome, String customizedJavaHome) {
+	private boolean doPackByMaven(DeploymentContext context, String mavenHome, String customizedJavaHome) {
 		//命令格式：
 		//cd /opt/dhorse/data/app/hello\hello-1689587261061 && \
 		//opt/dhorse/data/maven/apache-maven-3.9.3/bin/mvn clean package \
@@ -594,7 +595,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				.append(" clean package ")
 				.append("-s " + settingsFile);
 
-		execCommand(customizedJavaHome, cmd.toString());
+		return execCommand(customizedJavaHome, cmd.toString());
     }
 
 	private boolean packByGradle(DeploymentContext context) {
@@ -603,13 +604,13 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		downloadGradle();
 
 		AppExtendJava appExtend = context.getApp().getAppExtend();
-		doPackByGradle(context, componentConstants.getDataPath() + "gradle/", appExtend.getJavaHome());
+		boolean isSuccess = doPackByGradle(context, componentConstants.getDataPath() + "gradle/", appExtend.getJavaHome());
 
 		logger.info("End to pack by gradle");
-		return true;
+		return isSuccess;
 	}
 
-	private void doPackByGradle(DeploymentContext context, String gradleHome, String customizedJavaHome) {
+	private boolean doPackByGradle(DeploymentContext context, String gradleHome, String customizedJavaHome) {
 		//命令格式：cd /opt/dhorse/data/app/hello-gradle/hello-gradle-1688370652223/ \
 		//&& /opt/dhorse/data/gradle/gradle-8.1.1/bin/gradle \
 		//clean build
@@ -624,10 +625,10 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				.append(" clean build")
 				.append(" -g " + gradleHome + "cache");
 
-		execCommand(customizedJavaHome, cmd.toString());
+		return execCommand(customizedJavaHome, cmd.toString());
     }
 
-	private void execCommand(String customizedJavaHome, String cmd) {
+	private boolean execCommand(String customizedJavaHome, String cmd) {
 		List<String> cmds = systemCmd();
 		cmds.add(cmd.toString());
         ProcessBuilder pb = new ProcessBuilder();
@@ -651,6 +652,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
             while ((line = in.readLine()) != null) {
                 logger.info(line);
             }
+            
+            return p.exitValue() == 0;
         }catch (IOException e) {
         	logger.error("Failed read proccss message", e);
         	LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
@@ -659,6 +662,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
         		p.destroy();
         	}
         }
+        return false;
     }
 
 	private List<String> systemCmd(){

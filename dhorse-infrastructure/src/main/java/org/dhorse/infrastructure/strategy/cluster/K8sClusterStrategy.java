@@ -149,7 +149,7 @@ import io.kubernetes.client.util.Yaml;
 import io.kubernetes.client.util.credentials.AccessTokenAuthentication;
 
 /**
- * k8s操作功能，该类已过时，{@link org.dhorse.infrastructure.strategy.cluster.k8s.K8sClusterStrategy}代替。
+ * k8s操作功能，该类已过时，请使用{@link org.dhorse.infrastructure.strategy.cluster.k8s.K8sClusterStrategy}代替。
  * @author Dahai
  */
 @Deprecated
