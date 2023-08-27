@@ -41,7 +41,7 @@ import org.gitlab4j.api.models.TreeItem.Type;
 public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
-	public boolean doDownloadCode(DeploymentContext context) {
+	public boolean doDownloadBranch(DeploymentContext context) {
 		String appId = context.getApp().getCodeRepoPath();
 		String branchName = context.getBranchName();
 		GitLabApi gitLabApi = gitLabApi(context.getGlobalConfigAgg().getCodeRepo());

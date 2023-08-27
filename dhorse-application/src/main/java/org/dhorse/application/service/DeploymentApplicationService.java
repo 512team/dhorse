@@ -118,7 +118,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				logger.info("Start to build version");
 
 				// 2.下载分支代码
-				if (context.getCodeRepoStrategy().downloadCode(context)) {
+				if (context.getCodeRepoStrategy().downloadBranch(context)) {
 					logger.info("Download branch successfully");
 				} else {
 					LogUtils.throwException(logger, MessageCodeEnum.DOWNLOAD_BRANCH);
@@ -652,9 +652,9 @@ public abstract class DeploymentApplicationService extends ApplicationService {
             while ((line = in.readLine()) != null) {
                 logger.info(line);
             }
-            
+            p.waitFor();
             return p.exitValue() == 0;
-        }catch (IOException e) {
+        }catch (Exception e) {
         	logger.error("Failed read proccss message", e);
         	LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
         }finally {

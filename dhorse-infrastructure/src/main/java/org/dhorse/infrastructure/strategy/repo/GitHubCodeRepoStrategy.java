@@ -13,7 +13,7 @@ import org.dhorse.infrastructure.utils.DeploymentContext;
 public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
 
 	@Override
-	public boolean doDownloadCode(DeploymentContext context) {
+	public boolean doDownloadBranch(DeploymentContext context) {
 		return true;
 	}
 

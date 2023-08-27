@@ -21,7 +21,7 @@ public abstract class CodeRepoStrategy {
 
 	public static final Logger logger = LoggerFactory.getLogger(CodeRepoStrategy.class);
 	
-	void clearOldCode(DeploymentContext context) {
+	void clearHistoryBranch(DeploymentContext context) {
 		File[] hisBranchs = new File(localPathOfBranch(context)).getParentFile().listFiles();
 		//异步清除历史代码
 		ThreadPoolUtils.async(new Runnable() {
@@ -31,19 +31,19 @@ public abstract class CodeRepoStrategy {
 					try {
 						FileUtils.deleteDirectory(h);
 					} catch (IOException e) {
-						logger.error("Failed to clear branch file", e);
+						logger.error("Failed to clear local branch", e);
 					}
 				}
 			}
 		});
 	}
 	
-	public boolean downloadCode(DeploymentContext context) {
-		clearOldCode(context);
-		return doDownloadCode(context);
+	public boolean downloadBranch(DeploymentContext context) {
+		clearHistoryBranch(context);
+		return doDownloadBranch(context);
 	}
 	
-	abstract boolean doDownloadCode(DeploymentContext context);
+	abstract boolean doDownloadBranch(DeploymentContext context);
 	
 	public abstract void mergeBranch(DeploymentContext context);
 	
