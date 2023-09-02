@@ -85,7 +85,12 @@ public class AppCreationParam implements Serializable {
 	/**
 	 * Html应用扩展扩展参数
 	 */
-	private AppExtendHtmlCreationParam extendHtmlCreationParam;
+	private AppExtendHtmlCreationParam extendHtmlParam;
+
+	/**
+	 * Go应用扩展扩展参数
+	 */
+	private AppExtendGoCreationParam extendGoParam;
 
 	public String getAppName() {
 		return appName;
@@ -199,12 +204,20 @@ public class AppCreationParam implements Serializable {
 		this.extendNodejsParam = extendNodejsParam;
 	}
 
-	public AppExtendHtmlCreationParam getExtendHtmlCreationParam() {
-		return extendHtmlCreationParam;
+	public AppExtendHtmlCreationParam getExtendHtmlParam() {
+		return extendHtmlParam;
 	}
 
-	public void setExtendHtmlCreationParam(AppExtendHtmlCreationParam extendHtmlCreationParam) {
-		this.extendHtmlCreationParam = extendHtmlCreationParam;
+	public void setExtendHtmlParam(AppExtendHtmlCreationParam extendHtmlParam) {
+		this.extendHtmlParam = extendHtmlParam;
+	}
+
+	public AppExtendGoCreationParam getExtendGoParam() {
+		return extendGoParam;
+	}
+
+	public void setExtendGoParam(AppExtendGoCreationParam extendGoParam) {
+		this.extendGoParam = extendGoParam;
 	}
 
 	/**
@@ -361,7 +374,7 @@ public class AppCreationParam implements Serializable {
 	/**
 	 * Nodejs应用扩展参数模型
 	 * 
-	 * @author 无双 2023-07-04
+	 * @author 无双
 	 */
 	public static class AppExtendNodejsCreationParam implements Serializable {
 
@@ -372,11 +385,35 @@ public class AppCreationParam implements Serializable {
 	/**
 	 * Html应用扩展参数模型
 	 * 
-	 * @author 无双 2023-07-04
+	 * @author 无双
 	 */
 	public static class AppExtendHtmlCreationParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
+
+	}
+
+	/**
+	 * Go应用扩展参数模型
+	 * 
+	 * @author Dahai
+	 */
+	public static class AppExtendGoCreationParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * Go版本
+		 */
+		private String goVersion;
+
+		public String getGoVersion() {
+			return goVersion;
+		}
+
+		public void setGoVersion(String goVersion) {
+			this.goVersion = goVersion;
+		}
 
 	}
 }

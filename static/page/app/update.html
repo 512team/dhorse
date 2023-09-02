@@ -20,6 +20,7 @@
 								<option value="3">React</option>
 								<option value="4">Nodejs</option>
 								<option value="5">Html</option>
+								<option value="6">Go</option>
 							</select>
 						</div>
 					</div>
@@ -240,6 +241,20 @@
 						</div>
 					</div>
 				</div>
+				<div class="layui-form layuimini-form" id="goFormItem" lay-filter="goFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Go版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendGoParam.goVersion" placeholder="如：v1.20.7" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnGo">确认保存</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -317,6 +332,7 @@
 					$("#nodeFormItem").hide();
 					$("#nodejsFormItem").hide();
 					$("#htmlFormItem").hide();
+					$("#goFormItem").hide();
 				//Vue和React
 				}else if(res.data.techType == 2 || res.data.techType == 3){
 					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
@@ -334,6 +350,7 @@
 					$("#nodeFormItem").show();
 					$("#nodejsFormItem").hide();
 					$("#htmlFormItem").hide();
+					$("#goFormItem").hide();
 					
 					//版本号
 					if(res.data.baseImageSource == 1){
@@ -366,6 +383,7 @@
 					$("#nodeFormItem").hide();
 					$("#nodejsFormItem").show();
 					$("#htmlFormItem").hide();
+					$("#goFormItem").hide();
 					form.val("nodejsFormItem", {
 						"baseImageNodejs": res.data.baseImage
 					});
@@ -376,8 +394,20 @@
 					$("#nodeFormItem").hide();
 					$("#nodejsFormItem").hide();
 					$("#htmlFormItem").show();
+					$("#goFormItem").hide();
 					form.val("htmlFormItem", {
 						"baseImageHtml": res.data.baseImage
+					});
+				//Go
+				}else if(res.data.techType == 6){
+					$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+					$("#springBootFormItem").hide();
+					$("#nodeFormItem").hide();
+					$("#nodejsFormItem").hide();
+					$("#htmlFormItem").hide();
+					$("#goFormItem").show();
+					form.val("goFormItem", {
+						"extendGoParam.goVersion": extend.goVersion
 					});
 				}else{
 					$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
@@ -456,6 +486,9 @@
 			//Html
 			}else if(data.field.techType == 5){
 				$("#htmlFormItem").append(firstFormData);
+			//Go
+			}else if(data.field.techType == 6){
+				$("#goFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
             return false;
@@ -686,6 +719,54 @@
 				},
 				error: function(data){
 					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+		
+		//Go
+		form.on('submit(saveBtnGo)', function(data) {
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendGoParam'] = extendParams;
+		
+			$.ajax({
+				url: '/app/update',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.initForm($, appId);
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
 				}
 			});
             return false;

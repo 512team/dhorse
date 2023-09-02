@@ -13,7 +13,8 @@ public enum MessageCodeEnum {
 	QUERY_FAILURE("200000", "查询失败"),
 	CREATE_FAILURE("200000", "创建失败"),
 	DELETE_FAILURE("200000", "删除失败"),
-	DOWNLOAD_FAILURE("200000", "下载失败"),
+	DOWNLOAD_FAILURE("200000", "下载文件失败"),
+	DECOMPRESSION_FILE_FAILURE("200000", "解压文件失败"),
 	
 	SYS_USER_NOT_LOGINED("300000", "用户未登录"),
 	NO_ACCESS_RIGHT("200000", "无权限"),

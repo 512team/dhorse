@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -272,7 +274,8 @@ public abstract class ApplicationService {
 	}
 	
 	public List<String> queryJavaVersion(){
-		return queryJavaVersion("xxxxxxxxxx");
+		//todo
+		return queryJavaVersion("xxx");
 	}
 	
 	public List<String> queryJavaVersion(String javaHome){
@@ -308,16 +311,6 @@ public abstract class ApplicationService {
 			process.destroy();
 		}
 		return javaVersions;
-	}
-	
-	public String queryOsName() {
-		//目前只支持自定义基础镜像
-		return "Windows";
-		//return System.getProperty("os.name");
-	}
-	
-	protected boolean isWindows() {
-		return System.getProperty("os.name").indexOf("Windows") > -1;
 	}
 	
 	protected void doNotify(String url, String reponse) {
@@ -528,18 +521,12 @@ public abstract class ApplicationService {
 			}
 		}
 		
-		String gradleHome = null;
 		File[] files = gradlePath.listFiles();
 		for(File f : files) {
 			if(f.getName().equals(Constants.GRADLE_VERSION)) {
-				gradleHome = f.getAbsolutePath();
-				break;
+				logger.info("Gradle home is {}", f.getAbsolutePath());
+				return;
 			}
-		}
-		
-		if(gradleHome != null) {
-			logger.info("Gradle home is {}", gradleHome);
-			return;
 		}
 		
 		File targetFile = new File(gradlePathName + "gradle.zip");
@@ -559,24 +546,115 @@ public abstract class ApplicationService {
 			}
 		}
 		
-		String mavenHome = null;
 		File[] files = rootPathFile.listFiles();
 		for(File f : files) {
 			if(f.getName().equals(Constants.MAVEN_VERSION)) {
-				mavenHome = f.getAbsolutePath();
-				break;
+				logger.info("Maven home is {}", f.getAbsolutePath());
+				return;
 			}
-		}
-		
-		if(mavenHome != null) {
-			logger.info("Maven home is {}", mavenHome);
-			return;
 		}
 		
 		File targetFile = new File(rootPath + "maven.zip");
 		FileUtils.downloadFile(Constants.MAVEN_FILE_URL, targetFile);
 		FileUtils.unTarGz(targetFile.getAbsolutePath(), rootPath);
 		targetFile.delete();
+	}
+	
+	protected String downloadGo(String version) {
+		String goPath = "go-" + version;
+		String rootPath = componentConstants.getDataPath() + "go/";
+		File rootPathFile = new File(rootPath);
+		if(!rootPathFile.exists()) {
+			if(rootPathFile.mkdirs()) {
+				logger.info("Create go path successfully");
+			}else {
+				logger.warn("Failed to create go path");
+			}
+		}
+		
+		String goHome = rootPath + goPath + "/";
+		File[] files = rootPathFile.listFiles();
+		for(File f : files) {
+			if(f.getName().equals(goPath)) {
+				logger.info("Go home is {}", f.getAbsolutePath());
+				return goHome;
+			}
+		}
+		
+		String suffixName = ".linux-amd64.tar.gz";
+		if(Constants.isWindows()) {
+			suffixName = ".windows-amd64.zip";
+		}else if(Constants.isMac()) {
+			suffixName = ".darwin-amd64.tar.gz";
+		}
+		//fileName格式：go1.21.0.linux-amd64.tar.gz
+		String fileName = "go" + version + suffixName;
+		File targetFile = new File(rootPath + fileName);
+		FileUtils.downloadFile(Constants.GO_FILE_PRE_URL + fileName, targetFile);
+		String destPath = null;
+		if(Constants.isWindows()) {
+			destPath = FileUtils.unZip(targetFile.getAbsolutePath(), rootPath);
+		}else {
+			destPath = FileUtils.unTarGz(targetFile.getAbsolutePath(), rootPath);
+		}
+		new File(destPath).renameTo(new File(rootPath + goPath));
+		targetFile.delete();
+		return goHome;
+	}
+	
+	protected boolean execCommand(Map<String, String> env, String cmd) {
+		List<String> cmds = systemCmd();
+		cmds.add(cmd.toString());
+        ProcessBuilder pb = new ProcessBuilder();
+        pb.environment().putAll(env);
+        //将标准输入流和错误输入流合并，通过标准输入流读取信息
+        pb.redirectErrorStream(true);
+        pb.command(cmds);
+
+        Process p = null;
+        try {
+            p = pb.start();
+        }catch (IOException e) {
+            logger.error("Failed to start proccss", e);
+        }
+
+        try(BufferedReader in = new BufferedReader(new InputStreamReader(
+        		p.getInputStream(), Charset.defaultCharset()))){
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                logger.info(line);
+            }
+            p.waitFor();
+            return p.exitValue() == 0;
+        }catch (Exception e) {
+        	logger.error("Failed read proccss message", e);
+        	LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
+        }finally {
+        	if(p != null) {
+        		p.destroy();
+        	}
+        }
+        return false;
+    }
+	
+	private List<String> systemCmd(){
+		List<String> cmd = new ArrayList<>();
+		if(Constants.isWindows()) {
+			cmd.add("cmd");
+			cmd.add("/c");
+		}else {
+			cmd.add("/bin/sh");
+			cmd.add("-c");
+		}
+		return cmd;
+	}
+
+	protected String javaHome(String customizedHome) {
+		//优先使用指定的javaHome
+		if(!StringUtils.isBlank(customizedHome)) {
+			return customizedHome;
+		}
+		return System.getenv("JAVA_HOME");
 	}
 	
 	protected void jibProperty() {

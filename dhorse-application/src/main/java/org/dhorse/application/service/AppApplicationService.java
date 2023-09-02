@@ -13,11 +13,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.dhorse.api.enums.*;
+import org.dhorse.api.enums.AppMemberRoleTypeEnum;
+import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
+import org.dhorse.api.enums.ImageSourceEnum;
+import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.NodeCompileTypeEnum;
+import org.dhorse.api.enums.PackageFileTypeEnum;
+import org.dhorse.api.enums.TechTypeEnum;
+import org.dhorse.api.enums.TomcatVersionEnum;
 import org.dhorse.api.param.app.AppCreationParam;
 import org.dhorse.api.param.app.AppDeletionParam;
 import org.dhorse.api.param.app.AppPageParam;
@@ -25,6 +31,7 @@ import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
@@ -44,6 +51,7 @@ import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -391,6 +399,14 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pnpm版本不能为空");
 			}
 		}
+		if(TechTypeEnum.GO.getCode().equals(addParam.getTechType())
+				&& addParam.getExtendGoParam() == null
+				&& StringUtils.isBlank(addParam.getExtendGoParam().getGoVersion())){
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Go版本不能为空");
+		}
+		if(!addParam.getExtendGoParam().getGoVersion().startsWith("v")){
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Go版本格式不正确");
+		}
 	}
 	
 	private AppParam buildBizParam(AppCreationParam requestParam) {
@@ -409,9 +425,13 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			appExtend = new AppExtendNodeJS();
 			BeanUtils.copyProperties(requestParam.getExtendNodejsParam(), appExtend);
 		}else if(TechTypeEnum.HTML.getCode().equals(requestParam.getTechType())
-				&& requestParam.getExtendHtmlCreationParam() != null) {
+				&& requestParam.getExtendHtmlParam() != null) {
 			appExtend = new AppExtendHtml();
-			BeanUtils.copyProperties(requestParam.getExtendHtmlCreationParam(), appExtend);
+			BeanUtils.copyProperties(requestParam.getExtendHtmlParam(), appExtend);
+		}else if(TechTypeEnum.GO.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendGoParam() != null) {
+			appExtend = new AppExtendGo();
+			BeanUtils.copyProperties(requestParam.getExtendGoParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);
 		return bizParam;

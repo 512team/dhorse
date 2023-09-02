@@ -27,6 +27,8 @@ public class Constants {
 	
 	public static final String MAVEN_FILE_URL = "http://file.512.team/list/"+ MAVEN_VERSION +"-bin.tar.gz";
 	
+	public static final String GO_FILE_PRE_URL = "https://dl.google.com/go/";
+	
 	/**
 	 * 24小时
 	 */
@@ -148,5 +150,21 @@ public class Constants {
 			logger.error("Failed to get localhost ip", e);
 		}
 		return null;
+	}
+	
+	public static boolean isWindows() {
+		return osName().indexOf("win") > -1;
+	}
+	
+	public static boolean isMac() {
+		return osName().indexOf("mac") > -1;
+	}
+	
+	public static boolean isUnix() {
+		return !isWindows() && !isMac();
+	}
+	
+	public static String osName() {
+		return System.getProperty("os.name").toLowerCase();
 	}
 }

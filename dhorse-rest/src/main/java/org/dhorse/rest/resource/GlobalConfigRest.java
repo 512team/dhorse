@@ -277,6 +277,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 */
 	@PostMapping("/queryOsName")
 	public RestResponse<String> queryOsName() {
-		return this.success(globalConfigApplicationService.queryOsName());
+		//return this.success(globalConfigApplicationService.queryOsName());
+		return this.success("Windows");
 	}
 }

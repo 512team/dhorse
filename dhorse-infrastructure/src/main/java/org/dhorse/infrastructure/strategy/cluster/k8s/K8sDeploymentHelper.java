@@ -415,6 +415,7 @@ public class K8sDeploymentHelper {
 		//Vue、React、Html应用会通过Nginx来启动服务
 		containerOfNginx(context, container);
 		containerOfNodejs(context, container);
+		containerOfGo(context, container);
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
 		
@@ -521,6 +522,21 @@ public class K8sDeploymentHelper {
 		envVar.setName("JAVA_OPTS");
 		envVar.setValue(argsStr.toString());
 		container.getEnv().add(envVar);
+	}
+	
+	private static void containerOfGo(DeploymentContext context, Container container) {
+		if(!goApp(context.getApp())) {
+			return;
+		}
+		
+		String executableFile = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String commands = new StringBuilder().append("export GO_ENV=" + context.getAppEnv().getTag())
+			.append(" && chmod +x "+ executableFile)
+			.append(" && " + executableFile)
+			.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
+		
+		container.setImage(context.getFullNameOfImage());
 	}
 	
 	private static void lifecycle(Container container, DeploymentContext context) {
@@ -659,7 +675,8 @@ public class K8sDeploymentHelper {
 			}
 		}
 		commands.append(" ").append("-jar");
-		String packageFileType = PackageFileTypeEnum.getByCode(((AppExtendJava)context.getApp().getAppExtend()).getPackageFileType()).getValue();
+		String packageFileType = PackageFileTypeEnum.getByCode(((AppExtendJava)context.getApp()
+				.getAppExtend()).getPackageFileType()).getValue();
 		commands.append(" ").append(Constants.USR_LOCAL_HOME + context.getApp().getAppName() + "." + packageFileType);
 		
 		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
@@ -824,6 +841,10 @@ public class K8sDeploymentHelper {
 	
 	private static boolean springBootApp(App app) {
 		return TechTypeEnum.SPRING_BOOT.getCode().equals(app.getTechType());
+	}
+	
+	private static boolean goApp(App app) {
+		return TechTypeEnum.GO.getCode().equals(app.getTechType());
 	}
 	
 	/**

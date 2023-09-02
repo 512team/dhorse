@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
@@ -17,6 +16,7 @@ import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
@@ -32,6 +32,7 @@ import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,6 +148,9 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		}
 		if (TechTypeEnum.HTML.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendHtml.class);
+		}
+		if (TechTypeEnum.GO.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendGo.class);
 		}
 		return null;
 	}

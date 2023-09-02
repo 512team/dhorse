@@ -7,13 +7,15 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
+import org.dhorse.api.enums.MessageCodeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,46 +24,71 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
-	public static void unZip(String orgFileName, String parentPath) {
-		logger.info("Start to unzip file: {}", orgFileName);
-		try (ZipArchiveInputStream in = new ZipArchiveInputStream(Files
-				.newInputStream(Paths.get(orgFileName)))) {
-			ArchiveEntry entry;
-			while ((entry = in.getNextEntry()) != null) {
-				if (entry.isDirectory()) {
-					continue;
-				}
-				File targetFile = new File(parentPath, entry.getName());
-				File parent = targetFile.getParentFile();
-				if (!parent.exists()) {
-					parent.mkdirs();
-				}
-				try(OutputStream out = Files.newOutputStream(targetFile.toPath())){
-					IOUtils.copy(in, out);
-				}catch (Exception ex) {
-                	logger.error("Failed to unzip entry", ex);
+	public static String unZip(String zipPath, String destParentPath) {
+		logger.info("Start to decompress zip file");
+	    File destFile = new File(destParentPath);
+	    if (!destFile.exists()) {
+	        destFile.mkdirs();
+	    }
+	    String destPath = null;
+	    try(ZipFile zip = new ZipFile(zipPath)){
+	    	Enumeration<? extends ZipEntry> entries = zip.entries();
+		    for (int i = 0; entries.hasMoreElements(); i++) {
+		        ZipEntry entry = entries.nextElement();
+		        String curEntryName = entry.getName();
+		        int endIndex = curEntryName.lastIndexOf('/');
+		        String outPath = (destParentPath + curEntryName).replaceAll("\\*", "/");
+		        if(i == 0) {
+		        	destPath = outPath;
+		        }
+		        if (endIndex != -1) {
+		            File file = new File(outPath.substring(0, outPath.lastIndexOf("/")));
+		            if (!file.exists()) {
+		                file.mkdirs();
+		            }
+		        }
+	
+		        File outFile = new File(outPath);
+		        if (outFile.isDirectory()) {
+		            continue;
+		        }
+		        
+		        byte[] buffer = new byte[1024 * 1024];
+		        int len;
+		        try(InputStream in = zip.getInputStream(entry);
+				        OutputStream out = new FileOutputStream(outPath)){
+			        while ((len = in.read(buffer)) > 0) {
+			            out.write(buffer, 0, len);
+			        }
+		        }catch (Exception ex) {
+                	LogUtils.throwException(logger, ex, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
                 }
-			}
-		} catch (Exception e) {
-			logger.error("Failed to unzip", e);
-		}
-		logger.info("End to unzip file: {}", orgFileName);
+		    }
+	    }catch(Exception e) {
+	    	LogUtils.throwException(logger, e, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
+	    }
+	    logger.info("End to decompress zip file");
+	    return destPath;
 	}
 	
-	public static void unTarGz(String orgFileName, String parentPath) {
-		unTarGz(new File(orgFileName), new File(parentPath));
+	public static String unTarGz(String orgFileName, String parentPath) {
+		return unTarGz(new File(orgFileName), new File(parentPath));
 	}
 
-	public static void unTarGz(File sourceTarGzFile, File parentPath) {
-		logger.error("Start to decompress gz file");
+	public static String unTarGz(File sourceTarGzFile, File parentPath) {
+		logger.info("Start to decompress gz file");
+		String destPath = null;
 		try (TarArchiveInputStream in = new TarArchiveInputStream(
 				new GzipCompressorInputStream(Files.newInputStream(sourceTarGzFile.toPath())))) {
 			ArchiveEntry entry;
-			while ((entry = in.getNextEntry()) != null) {
+			for (int i = 0; (entry = in.getNextEntry()) != null; i++) {
+				File targetFile = new File(parentPath, entry.getName());
+				if(i == 0) {
+					destPath = targetFile.getPath();
+			    }
 				if (entry.isDirectory()) {
 					continue;
 				}
-				File targetFile = new File(parentPath, entry.getName());
 				File parent = targetFile.getParentFile();
 				if (!parent.exists()) {
 					parent.mkdirs();
@@ -69,13 +96,14 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				try(OutputStream out = Files.newOutputStream(targetFile.toPath())){
 					IOUtils.copy(in, out);
 				}catch (Exception ex) {
-                	logger.error("Failed to decompress gz entry", ex);
+					LogUtils.throwException(logger, ex, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
                 }
 			}
 		} catch (Exception e) {
-			logger.error("Failed to decompress gz file", e);
+			LogUtils.throwException(logger, e, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
 		}
-		logger.error("End to decompress gz file");
+		logger.info("End to decompress gz file");
+		return destPath;
 	}
 
 	public static void downloadFile(String fileUrl, File targetFile) {
@@ -99,7 +127,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 			}
 			fs.flush();
 		} catch (Exception e) {
-			logger.error("Failed to download file", e);
+			LogUtils.throwException(logger, e, MessageCodeEnum.DOWNLOAD_FAILURE);
 		}
 		logger.info("End to download file");
 	}

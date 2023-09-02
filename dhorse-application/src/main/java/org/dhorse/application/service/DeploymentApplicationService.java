@@ -1,14 +1,11 @@
 package org.dhorse.application.service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -16,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +39,7 @@ import org.dhorse.api.response.EventResponse;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
+import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.DeploymentDetail;
@@ -481,7 +480,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendNode appExtend =  context.getApp().getAppExtend();
 			String pomName = "";
-			if (Objects.isNull(appExtend.getCompileType()) || NodeCompileTypeEnum.NPM.getCode().equals(appExtend.getCompileType())) {
+			if (Objects.isNull(appExtend.getCompileType())
+					|| NodeCompileTypeEnum.NPM.getCode().equals(appExtend.getCompileType())) {
 				pomName = "maven/app_node_pom.xml";
 			} else if (NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
 				pomName = "maven/app_node_pnpm_pom.xml";
@@ -500,7 +500,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				String result = lines.replace("${env}", envTag)
 						.replace("${nodeVersion}", appExtend.getNodeVersion())
 						.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
-				if (Objects.isNull(appExtend.getCompileType()) || NodeCompileTypeEnum.NPM.getCode().equals(appExtend.getCompileType())) {
+				if (Objects.isNull(appExtend.getCompileType())
+						|| NodeCompileTypeEnum.NPM.getCode().equals(appExtend.getCompileType())) {
 					result = result
 							.replace("${npmVersion}", appExtend.getNpmVersion().substring(1));
 				} else if (NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
@@ -512,6 +513,11 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				logger.error("Failed to build node app", e);
 			}
 			return packByMaven(context, null);
+		}
+		
+		// Go应用
+		if (TechTypeEnum.GO.getCode().equals(context.getApp().getTechType())) {
+			return packByGo(context);
 		}
 
 		return true;
@@ -587,7 +593,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		String settingsFile = new File(context.getLocalPathOfBranch()).getParent() + "/settings.xml";
 		String mavenBin = mavenHome + Constants.MAVEN_VERSION + "/bin/mvn";
 		StringBuilder cmd = new StringBuilder();
-		if(!isWindows()) {
+		if(!Constants.isWindows()) {
 			cmd.append("chmod +x ").append(mavenBin).append(" && ");
 		}
 		cmd.append("cd " + context.getLocalPathOfBranch())
@@ -617,7 +623,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		//-g /opt/dhorse/data/gradle/cache
 		String gradleBin = gradleHome + Constants.GRADLE_VERSION + "/bin/gradle";
 		StringBuilder cmd = new StringBuilder();
-		if(!isWindows()) {
+		if(!Constants.isWindows()) {
 			cmd.append("chmod +x ").append(gradleBin).append(" && ");
 		}
 		cmd.append("cd " + context.getLocalPathOfBranch())
@@ -629,62 +635,50 @@ public abstract class DeploymentApplicationService extends ApplicationService {
     }
 
 	private boolean execCommand(String customizedJavaHome, String cmd) {
-		List<String> cmds = systemCmd();
-		cmds.add(cmd.toString());
-        ProcessBuilder pb = new ProcessBuilder();
         String javaHome = javaHome(customizedJavaHome);
-        pb.environment().put("JAVA_HOME", javaHome);
         logger.info("Java home is {}", javaHome);
-        //将标准输入流和错误输入流合并，通过标准输入流读取信息
-        pb.redirectErrorStream(true);
-        pb.command(cmds);
-
-        Process p = null;
-        try {
-            p = pb.start();
-        }catch (IOException e) {
-            logger.error("Failed to start proccss", e);
-        }
-
-        try(BufferedReader in = new BufferedReader(new InputStreamReader(
-        		p.getInputStream(), Charset.defaultCharset()))){
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                logger.info(line);
-            }
-            p.waitFor();
-            return p.exitValue() == 0;
-        }catch (Exception e) {
-        	logger.error("Failed read proccss message", e);
-        	LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
-        }finally {
-        	if(p != null) {
-        		p.destroy();
-        	}
-        }
-        return false;
+        Map<String, String> env = new HashMap<>();
+        env.put("JAVA_HOME", javaHome);
+        return execCommand(env, cmd);
     }
-
-	private List<String> systemCmd(){
-		List<String> cmd = new ArrayList<>();
-		if(isWindows()) {
-			cmd.add("cmd");
-			cmd.add("/c");
-		}else {
-			cmd.add("/bin/sh");
-			cmd.add("-c");
+	
+	public boolean packByGo(DeploymentContext context) {
+		AppExtendGo appExtend = context.getApp().getAppExtend();
+		String goHome = downloadGo(appExtend.getGoVersion().substring(1));
+		String goBin = goHome + "bin/go";
+		Map<String, String> env = new HashMap<>();
+        env.put("CGO_ENABLED", "0");
+        env.put("GOOS", "linux");
+        env.put("GOARCH", "amd64");
+        
+        String appName = context.getApp().getAppName();
+        StringBuilder cmd = new StringBuilder();
+		if(!Constants.isWindows()) {
+			cmd.append("chmod +x ").append(goBin).append(" && ");
+			cmd.append("chmod +x ").append(goHome + "pkg/tool/linux_amd64/*").append(" && ");
 		}
-		return cmd;
-	}
-
-	private String javaHome(String customizedHome) {
-		//优先使用指定的javaHome
-		if(!StringUtils.isBlank(customizedHome)) {
-			return customizedHome;
+		//指令格式：
+		//cd /opt/data/app/hello-go/hello-go-1693449686623 \
+		//&& /opt/data/go/go-1.20.7/bin/go env -w GOPROXY=https://goproxy.cn \
+		//&& /opt/data/go/go-1.20.7/bin/go mod init hello-go \
+		//&& /opt/data/go/go-1.20.7/bin/go mod tidy \
+		//&& /opt/data/go/go-1.20.7/bin/go mod download \
+		//&& /opt/data/go/go-1.20.7/bin/go build -o hello-go
+		cmd.append("cd " + context.getLocalPathOfBranch())
+				.append(" && " + goBin + " env -w GOPROXY=https://goproxy.cn")
+				.append(" && " + goBin + " mod init " + appName)
+				.append(" && " + goBin + " mod tidy")
+				.append(" && " + goBin + " mod download")
+				.append(" && " + goBin + " build -o " + appName);
+        
+		if(!execCommand(env, cmd.toString())) {
+			logger.error("Failed to pack by go");
+			return false;
 		}
-		return System.getenv("JAVA_HOME");
+		
+		return true;
 	}
-
+	
 	private boolean buildImage(DeploymentContext context) {
 
 		buildSpringBootImage(context);
@@ -694,6 +688,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		buildNodejsImage(context);
 
 		buildHtmlImage(context);
+		
+		buildGoImage(context);
 
 		return true;
 	}
@@ -801,6 +797,18 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
 		}
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
+	}
+	
+	private void buildGoImage(DeploymentContext context) {
+		if(!TechTypeEnum.GO.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		App app = context.getApp();
+		File targetFile = new File(context.getLocalPathOfBranch() + app.getAppName());
+		String baseImage = Constants.BUSYBOX_IMAGE_URL;
+		String executableFile = Constants.USR_LOCAL_HOME + app.getAppName();
+		List<String> entrypoint = Arrays.asList("chmod", "+x", executableFile, executableFile);
+		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
 	}
 
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
