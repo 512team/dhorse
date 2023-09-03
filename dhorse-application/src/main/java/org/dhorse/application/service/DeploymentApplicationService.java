@@ -644,12 +644,18 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 	
 	public boolean packByGo(DeploymentContext context) {
 		AppExtendGo appExtend = context.getApp().getAppExtend();
+		//统一下载amd64安装文件，并允许交叉编译，即设置CGO_ENABLED=0
 		String goHome = downloadGo(appExtend.getGoVersion().substring(1));
+		String goPath = new File(goHome).getParent();
 		String goBin = goHome + "bin/go";
 		Map<String, String> env = new HashMap<>();
         env.put("CGO_ENABLED", "0");
         env.put("GOOS", "linux");
         env.put("GOARCH", "amd64");
+        env.put("GOPROXY", "https://goproxy.cn");
+        env.put("GOCACHE", goPath + "/cache/build");
+        env.put("GOMODCACHE", goPath + "/cache/pkg/mod");
+        env.put("GOPATH", goPath + "/cache");
         
         String appName = context.getApp().getAppName();
         StringBuilder cmd = new StringBuilder();
@@ -659,13 +665,11 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		//指令格式：
 		//cd /opt/data/app/hello-go/hello-go-1693449686623 \
-		//&& /opt/data/go/go-1.20.7/bin/go env -w GOPROXY=https://goproxy.cn \
 		//&& /opt/data/go/go-1.20.7/bin/go mod init hello-go \
 		//&& /opt/data/go/go-1.20.7/bin/go mod tidy \
 		//&& /opt/data/go/go-1.20.7/bin/go mod download \
 		//&& /opt/data/go/go-1.20.7/bin/go build -o hello-go
 		cmd.append("cd " + context.getLocalPathOfBranch())
-				.append(" && " + goBin + " env -w GOPROXY=https://goproxy.cn")
 				.append(" && " + goBin + " mod init " + appName)
 				.append(" && " + goBin + " mod tidy")
 				.append(" && " + goBin + " mod download")
