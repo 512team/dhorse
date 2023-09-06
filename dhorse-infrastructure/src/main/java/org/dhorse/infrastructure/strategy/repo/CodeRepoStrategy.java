@@ -31,7 +31,7 @@ public abstract class CodeRepoStrategy {
 					try {
 						FileUtils.deleteDirectory(h);
 					} catch (IOException e) {
-						logger.error("Failed to clear local branch", e);
+						logger.error("Failed to clear local history branch", e);
 					}
 				}
 			}

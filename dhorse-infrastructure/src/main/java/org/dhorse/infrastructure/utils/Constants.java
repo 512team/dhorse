@@ -68,6 +68,8 @@ public class Constants {
 	
 	public static final String CENTOS_IMAGE_URL = "dockerproxy.com/library/centos:latest";
 	
+	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.com/library/python:";
+	
 	public static final String LOCALHOST_IP = "127.0.0.1";
 	
 	public static final String NGINX = "nginx";

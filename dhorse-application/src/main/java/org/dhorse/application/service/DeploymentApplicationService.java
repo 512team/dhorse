@@ -42,6 +42,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
+import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -694,6 +695,12 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		buildHtmlImage(context);
 		
 		buildGoImage(context);
+		
+		buildPythonImage(context);
+		
+		buildFlaskImage(context);
+		
+		buildDjangoImage(context);
 
 		return true;
 	}
@@ -785,9 +792,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		File branchFile = new File(context.getLocalPathOfBranch());
 		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
-		if(!branchFile.renameTo(targetFile)) {
-			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
-		}
+		rename(branchFile, targetFile);
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
 
@@ -797,9 +802,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		File branchFile = new File(context.getLocalPathOfBranch());
 		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
-		if(!branchFile.renameTo(targetFile)) {
-			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
-		}
+		rename(branchFile, targetFile);
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
 	
@@ -814,7 +817,61 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		List<String> entrypoint = Arrays.asList("chmod", "+x", executableFile, executableFile);
 		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
 	}
+	
+	private void buildPythonImage(DeploymentContext context) {
+		if(!TechTypeEnum.PYTHON.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		List<String> entrypoint = Arrays.asList("python", "main.py");
+		buildPythonImage(context, entrypoint);
+	}
+	
+	private void buildFlaskImage(DeploymentContext context) {
+		if(!TechTypeEnum.FLASK.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		List<String> entrypoint = Arrays.asList("flask", "run");
+		buildPythonImage(context, entrypoint);
+	}
+	
+	private void buildDjangoImage(DeploymentContext context) {
+		if(!TechTypeEnum.DJANGO.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		List<String> entrypoint = Arrays.asList("python", "manage.py", "runserver");
+		buildPythonImage(context, entrypoint);
+	}
 
+	private void buildPythonImage(DeploymentContext context, List<String> entrypoint) {
+		App app = context.getApp();
+		File branchFile = new File(context.getLocalPathOfBranch());
+		File targetFile = new File(branchFile.getParent() + "/" + app.getAppName());
+		rename(branchFile, targetFile);
+		String version = ((AppExtendPython)app.getAppExtend()).getPythonVersion();
+		String baseImage = Constants.PYTHON_IMAGE_BASE_URL + version.substring(1);
+		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
+	}
+	
+	private boolean rename(File source, File target) {
+		boolean success = false;
+		//如果10秒钟还没成功，则报错
+		for(int i = 0; i < 1000; i++) {
+			if(source.renameTo(target)) {
+				success = true;
+				break;
+			}
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				//ignore
+			}
+		}
+		if(!success) {
+			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
+		}
+		return success;
+	}
+	
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
 		ImageRepo imageRepo = context.getGlobalConfigAgg().getImageRepo();
 		String imageUrl = imageRepo.getUrl();

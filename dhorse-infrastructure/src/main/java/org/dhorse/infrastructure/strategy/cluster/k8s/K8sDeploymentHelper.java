@@ -19,7 +19,10 @@ import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
+import org.dhorse.api.response.model.AppExtendDjango;
+import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvHealth.Item;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -416,6 +419,9 @@ public class K8sDeploymentHelper {
 		containerOfNginx(context, container);
 		containerOfNodejs(context, container);
 		containerOfGo(context, container);
+		containerOfPython(context, container);
+		containerOfFlask(context, container);
+		containerOfDjango(context, container);
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
 		
@@ -528,14 +534,72 @@ public class K8sDeploymentHelper {
 		if(!goApp(context.getApp())) {
 			return;
 		}
-		
 		String executableFile = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
-		String commands = new StringBuilder().append("export GO_ENV=" + context.getAppEnv().getTag())
-			.append(" && chmod +x "+ executableFile)
-			.append(" && " + executableFile)
-			.toString();
+		String commands = new StringBuilder()
+				.append("export GO_ENV=" + context.getAppEnv().getTag())
+				.append(" && chmod +x "+ executableFile)
+				.append(" && " + executableFile)
+				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
-		
+		container.setImage(context.getFullNameOfImage());
+	}
+	
+	private static void containerOfPython(DeploymentContext context, Container container) {
+		if(!pythonApp(context.getApp())) {
+			return;
+		}
+		String startFile = ((AppExtendPython)context.getApp().getAppExtend()).getStartFile();
+		if(StringUtils.isBlank(startFile)) {
+			startFile = "main.py";
+		}
+		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String commands = new StringBuilder()
+				.append("cd " + appHome)
+				.append(" && pip install -r requirements.txt")
+				.append(" && python " + startFile)
+				.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
+		container.setImage(context.getFullNameOfImage());
+	}
+	
+	private static void containerOfFlask(DeploymentContext context, Container container) {
+		if(!flaskApp(context.getApp())) {
+			return;
+		}
+		String startFile = ((AppExtendFlask)context.getApp().getAppExtend()).getStartFile();
+		if(StringUtils.isBlank(startFile)) {
+			startFile = "app.py";
+		}
+		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String commands = new StringBuilder()
+				.append("export FLASK_APP=" + startFile)
+				.append(" && export FLASK_ENV=" + context.getAppEnv().getTag())
+				.append(" && cd " + appHome)
+				.append(" && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --use-deprecated=legacy-resolver")
+				.append(" && flask run --host 0.0.0.0 --port " + context.getAppEnv().getServicePort())
+				.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
+		container.setImage(context.getFullNameOfImage());
+	}
+	
+	private static void containerOfDjango(DeploymentContext context, Container container) {
+		if(!djangoApp(context.getApp())) {
+			return;
+		}
+		String startFile = ((AppExtendDjango)context.getApp().getAppExtend()).getStartFile();
+		if(StringUtils.isBlank(startFile)) {
+			startFile = "manage.py";
+		}
+		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String commands = new StringBuilder()
+				.append("cd " + appHome)
+				.append(" && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --use-deprecated=legacy-resolver")
+				.append(" && python ")
+				.append(startFile)
+				.append(" runserver")
+				.append(" 0.0.0.0:" + context.getAppEnv().getServicePort())
+				.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
 	}
 	
@@ -845,6 +909,18 @@ public class K8sDeploymentHelper {
 	
 	private static boolean goApp(App app) {
 		return TechTypeEnum.GO.getCode().equals(app.getTechType());
+	}
+	
+	private static boolean pythonApp(App app) {
+		return TechTypeEnum.FLASK.getCode().equals(app.getTechType());
+	}
+	
+	private static boolean flaskApp(App app) {
+		return TechTypeEnum.FLASK.getCode().equals(app.getTechType());
+	}
+	
+	private static boolean djangoApp(App app) {
+		return TechTypeEnum.DJANGO.getCode().equals(app.getTechType());
 	}
 	
 	/**

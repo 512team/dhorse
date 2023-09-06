@@ -92,6 +92,21 @@ public class AppCreationParam implements Serializable {
 	 */
 	private AppExtendGoCreationParam extendGoParam;
 
+	/**
+	 * Python应用扩展扩展参数
+	 */
+	private AppExtendPythonCreationParam extendPythonParam;
+
+	/**
+	 * Flask应用扩展扩展参数
+	 */
+	private AppExtendFlaskCreationParam extendFlaskParam;
+
+	/**
+	 * Django应用扩展扩展参数
+	 */
+	private AppExtendDjangoCreationParam extendDjangoParam;
+
 	public String getAppName() {
 		return appName;
 	}
@@ -218,6 +233,30 @@ public class AppCreationParam implements Serializable {
 
 	public void setExtendGoParam(AppExtendGoCreationParam extendGoParam) {
 		this.extendGoParam = extendGoParam;
+	}
+
+	public AppExtendFlaskCreationParam getExtendFlaskParam() {
+		return extendFlaskParam;
+	}
+
+	public void setExtendFlaskParam(AppExtendFlaskCreationParam extendFlaskParam) {
+		this.extendFlaskParam = extendFlaskParam;
+	}
+
+	public AppExtendDjangoCreationParam getExtendDjangoParam() {
+		return extendDjangoParam;
+	}
+
+	public void setExtendDjangoParam(AppExtendDjangoCreationParam extendDjangoParam) {
+		this.extendDjangoParam = extendDjangoParam;
+	}
+
+	public AppExtendPythonCreationParam getExtendPythonParam() {
+		return extendPythonParam;
+	}
+
+	public void setExtendPythonParam(AppExtendPythonCreationParam extendPythonParam) {
+		this.extendPythonParam = extendPythonParam;
 	}
 
 	/**
@@ -414,6 +453,65 @@ public class AppCreationParam implements Serializable {
 		public void setGoVersion(String goVersion) {
 			this.goVersion = goVersion;
 		}
+
+	}
+
+	/**
+	 * Python应用扩展参数模型
+	 * 
+	 * @author Dahai
+	 */
+	public static class AppExtendPythonCreationParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * Python版本
+		 */
+		private String pythonVersion;
+
+		/**
+		 * 启动文件
+		 */
+		private String startFile;
+
+		public String getPythonVersion() {
+			return pythonVersion;
+		}
+
+		public void setPythonVersion(String pythonVersion) {
+			this.pythonVersion = pythonVersion;
+		}
+
+		public String getStartFile() {
+			return startFile;
+		}
+
+		public void setStartFile(String startFile) {
+			this.startFile = startFile;
+		}
+
+	}
+
+	/**
+	 * Flask应用扩展参数模型
+	 * 
+	 * @author Dahai
+	 */
+	public static class AppExtendFlaskCreationParam extends AppExtendPythonCreationParam {
+
+		private static final long serialVersionUID = 1L;
+
+	}
+
+	/**
+	 * Django应用扩展参数模型
+	 * 
+	 * @author Dahai
+	 */
+	public static class AppExtendDjangoCreationParam extends AppExtendPythonCreationParam {
+
+		private static final long serialVersionUID = 1L;
 
 	}
 }

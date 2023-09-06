@@ -20,6 +20,9 @@
 								<option value="4">Nodejs</option>
 								<option value="5">Html</option>
 								<option value="6">Go</option>
+								<!--<option value="7">Python</option>-->
+								<option value="8">Flask</option>
+								<option value="9">Django</option>
 							</select>
 						</div>
 					</div>
@@ -253,6 +256,66 @@
 						</div>
 					</div>
 				</div>
+				<div class="layui-form layuimini-form" id="pythonFormItem" lay-filter="pythonFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Python版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendPythonParam.pythonVersion" placeholder="如：v3.11.5" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">启动文件</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendPythonParam.startFile" placeholder="默认：main.py" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnPython">确认保存</button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-form layuimini-form" id="flaskFormItem" lay-filter="flaskFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Python版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendFlaskParam.pythonVersion" placeholder="如：v3.11.5" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">启动文件</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendFlaskParam.startFile" placeholder="默认：app.py" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnFlask">确认保存</button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-form layuimini-form" id="djangoFormItem" lay-filter="djangoFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Python版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendDjangoParam.pythonVersion" placeholder="如：v3.11.5" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">启动文件</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendDjangoParam.startFile" placeholder="默认：manage.py" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnDjango">确认保存</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -287,6 +350,9 @@
 				$("#nodejsFormItem").hide();
 				$("#htmlFormItem").hide();
 				$("#goFormItem").hide();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").hide();
 			//Vue和React
 			}else if(data.value == 2 || data.value == 3){
 				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
@@ -295,6 +361,9 @@
 				$("#nodejsFormItem").hide();
 				$("#htmlFormItem").hide();
 				$("#goFormItem").hide();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").hide();
 				if(data.value == 3){
 					$("#extendNodeParam-packageTargetPath").attr("placeholder", "以应用作为根目录，默认路径：build/");
 				}
@@ -306,6 +375,9 @@
 				$("#nodejsFormItem").show();
 				$("#htmlFormItem").hide();
 				$("#goFormItem").hide();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").hide();
 			//Html
 			}else if(data.value == 5){
 				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
@@ -314,6 +386,9 @@
 				$("#nodejsFormItem").hide();
 				$("#htmlFormItem").show();
 				$("#goFormItem").hide();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").hide();
 			//Go
 			}else if(data.value == 6){
 				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
@@ -322,6 +397,42 @@
 				$("#nodejsFormItem").hide();
 				$("#htmlFormItem").hide();
 				$("#goFormItem").show();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").hide();
+			//Python
+			}else if(data.value == 7){
+				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+				$("#springBootFormItem").hide();
+				$("#nodeFormItem").hide();
+				$("#nodejsFormItem").hide();
+				$("#htmlFormItem").hide();
+				$("#goFormItem").hide();
+				$("#pythonFormItem").show();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").hide();
+			//Flask
+			}else if(data.value == 8){
+				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+				$("#springBootFormItem").hide();
+				$("#nodeFormItem").hide();
+				$("#nodejsFormItem").hide();
+				$("#htmlFormItem").hide();
+				$("#goFormItem").hide();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").show();
+				$("#djangoFormItem").hide();
+			//Django
+			}else if(data.value == 9){
+				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
+				$("#springBootFormItem").hide();
+				$("#nodeFormItem").hide();
+				$("#nodejsFormItem").hide();
+				$("#htmlFormItem").hide();
+				$("#goFormItem").hide();
+				$("#pythonFormItem").hide();
+				$("#flaskFormItem").hide();
+				$("#djangoFormItem").show();
 			}else{
 				$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 			}
@@ -398,6 +509,15 @@
 			//Go
 			}else if(data.field.techType == 6){
 				$("#goFormItem").append(firstFormData);
+			//Python
+			}else if(data.field.techType == 7){
+				$("#pythonFormItem").append(firstFormData);
+			//Flask
+			}else if(data.field.techType == 8){
+				$("#flaskFormItem").append(firstFormData);
+			//Django
+			}else if(data.field.techType == 9){
+				$("#djangoFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
             return false;
@@ -635,7 +755,6 @@
             return false;
         });
 		
-		
 		//Go
 		form.on('submit(saveBtnGo)', function(data) {
 			if(data.field.affinityAppNames != ''){
@@ -684,9 +803,150 @@
             return false;
         });
 		
+		//Python
+		form.on('submit(saveBtnPython)', function(data) {
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendPythonParam'] = extendParams;
 		
+			$.ajax({
+				url: '/app/add',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						window.location = '/index.html';
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+		
+		//Flask
+		form.on('submit(saveBtnFlask)', function(data) {
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendFlaskParam'] = extendParams;
+		
+			$.ajax({
+				url: '/app/add',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						window.location = '/index.html';
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+		
+		//Django
+		form.on('submit(saveBtnDjango)', function(data) {
+			if(data.field.affinityAppNames != ''){
+				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
+			}else{
+				data.field.affinityAppNames = [];
+			}
+			
+			var fields = data.field;
+			var allParams = {};
+			var extendParams = {};
+			for(var fieldName in fields){
+				var fs = fieldName.split(".");
+				if(fs.length > 1){
+					extendParams[fs[1]] = fields[fieldName];
+				}else{
+					allParams[fieldName] = fields[fieldName];
+				}
+			}
+			allParams['extendDjangoParam'] = extendParams;
+		
+			$.ajax({
+				url: '/app/add',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(allParams),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						window.location = '/index.html';
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
     });
-	
 	
 	function initBaseImage(packageFileType, baseImageSource, selectedVersion, baseImageValue, $, form){
 		//在非Linux环境下，基础镜像来源不能有“版本号”选项，因为只有制作Linux环境下的Jdk镜像才有意义

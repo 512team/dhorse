@@ -16,11 +16,14 @@ import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendDjango;
+import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.AppExtendNodeJS;
+import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.AppParam;
 import org.dhorse.infrastructure.repository.mapper.AppMapper;
@@ -151,6 +154,15 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		}
 		if (TechTypeEnum.GO.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendGo.class);
+		}
+		if (TechTypeEnum.PYTHON.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendPython.class);
+		}
+		if (TechTypeEnum.FLASK.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendFlask.class);
+		}
+		if (TechTypeEnum.DJANGO.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendDjango.class);
 		}
 		return null;
 	}

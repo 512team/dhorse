@@ -31,11 +31,14 @@ import org.dhorse.api.param.app.AppUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.App.AppExtend;
+import org.dhorse.api.response.model.AppExtendDjango;
+import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.AppExtendNodeJS;
+import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.infrastructure.exception.ApplicationException;
@@ -399,13 +402,24 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pnpm版本不能为空");
 			}
 		}
-		if(TechTypeEnum.GO.getCode().equals(addParam.getTechType())
-				&& addParam.getExtendGoParam() == null
-				&& StringUtils.isBlank(addParam.getExtendGoParam().getGoVersion())){
-			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Go版本不能为空");
+		if(TechTypeEnum.GO.getCode().equals(addParam.getTechType())) {
+			if(addParam.getExtendGoParam() == null
+					|| StringUtils.isBlank(addParam.getExtendGoParam().getGoVersion())){
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Go版本不能为空");
+			}
+			if(!addParam.getExtendGoParam().getGoVersion().startsWith("v")){
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Go版本格式不正确");
+			}
 		}
-		if(!addParam.getExtendGoParam().getGoVersion().startsWith("v")){
-			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Go版本格式不正确");
+		if(TechTypeEnum.FLASK.getCode().equals(addParam.getTechType())
+				&& addParam.getExtendFlaskParam() == null
+				&& StringUtils.isBlank(addParam.getExtendFlaskParam().getPythonVersion())){
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pyton版本不能为空");
+		}
+		if(TechTypeEnum.DJANGO.getCode().equals(addParam.getTechType())
+				&& addParam.getExtendDjangoParam() == null
+				&& StringUtils.isBlank(addParam.getExtendDjangoParam().getPythonVersion())){
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pyton版本不能为空");
 		}
 	}
 	
@@ -432,6 +446,18 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				&& requestParam.getExtendGoParam() != null) {
 			appExtend = new AppExtendGo();
 			BeanUtils.copyProperties(requestParam.getExtendGoParam(), appExtend);
+		}else if(TechTypeEnum.PYTHON.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendPythonParam() != null) {
+			appExtend = new AppExtendPython();
+			BeanUtils.copyProperties(requestParam.getExtendPythonParam(), appExtend);
+		}else if(TechTypeEnum.FLASK.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendFlaskParam() != null) {
+			appExtend = new AppExtendFlask();
+			BeanUtils.copyProperties(requestParam.getExtendFlaskParam(), appExtend);
+		}else if(TechTypeEnum.DJANGO.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendDjangoParam() != null) {
+			appExtend = new AppExtendDjango();
+			BeanUtils.copyProperties(requestParam.getExtendDjangoParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);
 		return bizParam;

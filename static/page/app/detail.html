@@ -77,6 +77,18 @@
 				<label class="layui-form-label text-value" id="pnpmVersion"></label>
 			</div>
 		</div>
+		<div class="layui-form-item" id="pythonVersionDiv" style="display: none">
+			<label class="layui-form-label">Python版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="pythonVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="startFileDiv" style="display: none">
+			<label class="layui-form-label">启动文件：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="startFile"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="packageTargetPathDiv">
 			<label class="layui-form-label">文件路径：</label>
 			<div class="layui-input-block">
@@ -261,6 +273,36 @@
 					$("#packageTargetPathDiv").hide();
 					$("#goVersionDiv").show();
 					$("#goVersion").text(res.data.appExtend.goVersion);
+				//Python
+				}else if(res.data.techType == 7){
+					techType = "Python";
+					$("#baseImageDiv").hide();
+					$("#baseImageSourceDiv").hide();
+					$("#packageTargetPathDiv").hide();
+					$("#pythonVersionDiv").show();
+					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
+					$("#startFileDiv").show();
+					$("#startFile").text(res.data.appExtend.startFile);
+				//Flask
+				}else if(res.data.techType == 8){
+					techType = "Flask";
+					$("#baseImageDiv").hide();
+					$("#baseImageSourceDiv").hide();
+					$("#packageTargetPathDiv").hide();
+					$("#pythonVersionDiv").show();
+					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
+					$("#startFileDiv").show();
+					$("#startFile").text(res.data.appExtend.startFile);
+				//Django
+				}else if(res.data.techType == 9){
+					techType = "Django";
+					$("#baseImageDiv").hide();
+					$("#baseImageSourceDiv").hide();
+					$("#packageTargetPathDiv").hide();
+					$("#pythonVersionDiv").show();
+					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
+					$("#startFileDiv").show();
+					$("#startFile").text(res.data.appExtend.startFile);
 				}
 				$("#techType").text(techType);
 				if(res.data.affinityAppNames){
