@@ -158,6 +158,7 @@
 								<option value="">请选择</option>
 								<option value="1">Npm</option>
 								<option value="2">Pnpm</option>
+								<option value="3">Yarn</option>
 							</select>
 						</div>
 					</div>
@@ -171,6 +172,12 @@
 						<label class="layui-form-label required">Pnpm版本</label>
 						<div class="layui-input-block">
 							<input type="text" name="extendNodeParam.pnpmVersion" id="pnpmVersion"  placeholder="如：v8.7.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="yarnVersionUpdateDiv">
+						<label class="layui-form-label required">Yarn版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNodeParam.yarnVersion" id="yarnVersion"  placeholder="如：v8.7.0" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -406,9 +413,10 @@
 						"extendNodeParam.nodeVersion": extend.nodeVersion
 						,"extendNodeParam.npmVersion": extend.npmVersion
 						,"extendNodeParam.pnpmVersion": extend.pnpmVersion
+						,"extendNodeParam.yarnVersion": extend.yarnVersion
 						,"extendNodeParam.packageTargetPath": extend.packageTargetPath
 						,"baseImageSourceNode": res.data.baseImageSource
-						,"extendNodeParam.compileType": extend.compileType==null?1:2
+						,"extendNodeParam.compileType": extend.compileType==null?1:extend.compileType
 						,"baseImageVersionNode": res.data.baseImageVersion
 						,"baseImageNode": res.data.baseImage
 					});
@@ -434,12 +442,19 @@
 					if(extend.compileType == 1){
 						$("#npmVersionUpdateDiv").show();
 						$("#pnpmVersionUpdateDiv").hide();
+						$("#yarnVersionUpdateDiv").hide();
 					}else if(extend.compileType == 2){
 						$("#npmVersionUpdateDiv").hide();
 						$("#pnpmVersionUpdateDiv").show();
+						$("#yarnVersionUpdateDiv").hide();
+					}else if(extend.compileType == 3){
+						$("#npmVersionUpdateDiv").hide();
+						$("#pnpmVersionUpdateDiv").hide();
+						$("#yarnVersionUpdateDiv").show();
 					}else{
 						$("#npmVersionUpdateDiv").show();
 						$("#pnpmVersionUpdateDiv").hide();
+						$("#yarnVersionUpdateDiv").hide();
 					}
 
 					if(res.data.techType == 3){
@@ -570,10 +585,16 @@
 			if(data.value == 1){
 				$("#npmVersionUpdateDiv").show();
 				$("#pnpmVersionUpdateDiv").hide();
+				$("#yarnVersionUpdateDiv").hide();
 			//自定义
 			}else if(data.value == 2){
 				$("#npmVersionUpdateDiv").hide();
 				$("#pnpmVersionUpdateDiv").show();
+				$("#yarnVersionUpdateDiv").hide();
+			}else if(data.value == 3){
+				$("#npmVersionUpdateDiv").hide();
+				$("#pnpmVersionUpdateDiv").hide();
+				$("#yarnVersionUpdateDiv").show();
 			}
 		});
 		

@@ -486,6 +486,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				pomName = "maven/app_node_pom.xml";
 			} else if (NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
 				pomName = "maven/app_node_pnpm_pom.xml";
+			} else if (NodeCompileTypeEnum.YARN.getCode().equals(appExtend.getCompileType())) {
+				pomName = "maven/app_node_yarn_pom.xml";
 			}
 			Resource resource = new PathMatchingResourcePatternResolver()
 					.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + pomName);
@@ -508,6 +510,9 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				} else if (NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
 					result = result
 							.replace("${pnpmVersion}", appExtend.getPnpmVersion().substring(1));
+				} else if (NodeCompileTypeEnum.YARN.getCode().equals(appExtend.getCompileType())) {
+					result = result
+							.replace("${yarnVersion}", appExtend.getYarnVersion());
 				}
 				out.write(result.toString().getBytes("UTF-8"));
 			} catch (IOException e) {
@@ -515,7 +520,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			}
 			return packByMaven(context, null);
 		}
-		
+
 		// Go应用
 		if (TechTypeEnum.GO.getCode().equals(context.getApp().getTechType())) {
 			return packByGo(context);
@@ -559,7 +564,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		boolean isSuccess = doPackByMaven(context, componentConstants.getDataPath() + "maven/", customizedJavaHome);
 
 		logger.info("End to pack by maven");
-		
+
 		return isSuccess;
 	}
 
@@ -642,7 +647,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
         env.put("JAVA_HOME", javaHome);
         return execCommand(env, cmd);
     }
-	
+
 	public boolean packByGo(DeploymentContext context) {
 		AppExtendGo appExtend = context.getApp().getAppExtend();
 		//统一下载amd64安装文件，并允许交叉编译，即设置CGO_ENABLED=0
@@ -657,7 +662,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
         env.put("GOCACHE", goPath + "/cache/build");
         env.put("GOMODCACHE", goPath + "/cache/pkg/mod");
         env.put("GOPATH", goPath + "/cache");
-        
+
         String appName = context.getApp().getAppName();
         StringBuilder cmd = new StringBuilder();
 		if(!Constants.isWindows()) {
@@ -675,15 +680,15 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				.append(" && " + goBin + " mod tidy")
 				.append(" && " + goBin + " mod download")
 				.append(" && " + goBin + " build -o " + appName);
-        
+
 		if(!execCommand(env, cmd.toString())) {
 			logger.error("Failed to pack by go");
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	private boolean buildImage(DeploymentContext context) {
 
 		buildSpringBootImage(context);
@@ -693,13 +698,13 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		buildNodejsImage(context);
 
 		buildHtmlImage(context);
-		
+
 		buildGoImage(context);
-		
+
 		buildPythonImage(context);
-		
+
 		buildFlaskImage(context);
-		
+
 		buildDjangoImage(context);
 
 		return true;
@@ -805,7 +810,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		rename(branchFile, targetFile);
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
-	
+
 	private void buildGoImage(DeploymentContext context) {
 		if(!TechTypeEnum.GO.getCode().equals(context.getApp().getTechType())) {
 			return;
@@ -817,7 +822,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		List<String> entrypoint = Arrays.asList("chmod", "+x", executableFile, executableFile);
 		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
 	}
-	
+
 	private void buildPythonImage(DeploymentContext context) {
 		if(!TechTypeEnum.PYTHON.getCode().equals(context.getApp().getTechType())) {
 			return;
@@ -825,7 +830,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		List<String> entrypoint = Arrays.asList("python", "main.py");
 		buildPythonImage(context, entrypoint);
 	}
-	
+
 	private void buildFlaskImage(DeploymentContext context) {
 		if(!TechTypeEnum.FLASK.getCode().equals(context.getApp().getTechType())) {
 			return;
@@ -833,7 +838,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		List<String> entrypoint = Arrays.asList("flask", "run");
 		buildPythonImage(context, entrypoint);
 	}
-	
+
 	private void buildDjangoImage(DeploymentContext context) {
 		if(!TechTypeEnum.DJANGO.getCode().equals(context.getApp().getTechType())) {
 			return;
@@ -851,7 +856,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		String baseImage = Constants.PYTHON_IMAGE_BASE_URL + version.substring(1);
 		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
 	}
-	
+
 	private boolean rename(File source, File target) {
 		boolean success = false;
 		//如果30秒还没成功，则报错
@@ -871,7 +876,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		return success;
 	}
-	
+
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
 		ImageRepo imageRepo = context.getGlobalConfigAgg().getImageRepo();
 		String imageUrl = imageRepo.getUrl();

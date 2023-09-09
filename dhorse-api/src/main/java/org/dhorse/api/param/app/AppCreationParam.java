@@ -360,7 +360,12 @@ public class AppCreationParam implements Serializable {
 		private String pnpmVersion;
 
 		/**
-		 * pnpm版本
+		 * yarn版本
+		 */
+		private String yarnVersion;
+
+		/**
+		 * 编译方式
 		 */
 		private Integer compileType;
 
@@ -407,6 +412,14 @@ public class AppCreationParam implements Serializable {
 
 		public void setCompileType(Integer compileType) {
 			this.compileType = compileType;
+		}
+
+		public String getYarnVersion() {
+			return yarnVersion;
+		}
+
+		public void setYarnVersion(String yarnVersion) {
+			this.yarnVersion = yarnVersion;
 		}
 	}
 

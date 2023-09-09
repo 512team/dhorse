@@ -401,6 +401,10 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 					&& StringUtils.isBlank(addParam.getExtendNodeParam().getPnpmVersion())) {
 				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Pnpm版本不能为空");
 			}
+			if(addParam.getExtendNodeParam().getCompileType().equals(NodeCompileTypeEnum.YARN.getCode())
+					&& StringUtils.isBlank(addParam.getExtendNodeParam().getYarnVersion())) {
+				throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "Yarn版本不能为空");
+			}
 		}
 		if(TechTypeEnum.GO.getCode().equals(addParam.getTechType())) {
 			if(addParam.getExtendGoParam() == null

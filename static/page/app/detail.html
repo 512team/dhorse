@@ -77,6 +77,12 @@
 				<label class="layui-form-label text-value" id="pnpmVersion"></label>
 			</div>
 		</div>
+		<div class="layui-form-item" id="yarnVersionDiv" style="display: none">
+			<label class="layui-form-label">Yarn版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="yarnVersion"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="pythonVersionDiv" style="display: none">
 			<label class="layui-form-label">Python版本：</label>
 			<div class="layui-input-block">
@@ -227,6 +233,10 @@
 						$("#compileType").text("Pnpm");
 						$("#pnpmVersionDiv").show();
 						$("#pnpmVersion").text(res.data.appExtend.pnpmVersion);
+					}else if(res.data.appExtend.compileType == 3){
+						$("#compileType").text("Yarn");
+						$("#yarnVersionDiv").show();
+						$("#yarnVersion").text(res.data.appExtend.yarnVersion);
 					}else{// 兼容之前创建的应用
 						$("#compileType").text("Npm");
 						$("#npmVersionDiv").show();
@@ -246,6 +256,10 @@
 						$("#compileType").text("Pnpm");
 						$("#pnpmVersionDiv").show();
 						$("#pnpmVersion").text(res.data.appExtend.pnpmVersion);
+					}else if(res.data.appExtend.compileType == 3){
+						$("#compileType").text("Yarn");
+						$("#yarnVersionDiv").show();
+						$("#yarnVersion").text(res.data.appExtend.yarnVersion);
 					}else{// 兼容之前创建的应用
 						$("#compileType").text("Npm");
 						$("#npmVersionDiv").show();

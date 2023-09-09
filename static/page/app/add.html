@@ -156,6 +156,7 @@
 								<option value="">请选择</option>
 								<option value="1">Npm</option>
 								<option value="2">Pnpm</option>
+								<option value="3">Yarn</option>
 							</select>
 						</div>
 					</div>
@@ -169,6 +170,12 @@
 						<label class="layui-form-label required">Pnpm版本</label>
 						<div class="layui-input-block">
 							<input type="text" name="extendNodeParam.pnpmVersion" id="pnpmVersion"  placeholder="如：v8.7.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="yarnVersionAddDiv">
+						<label class="layui-form-label required">Yarn版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNodeParam.yarnVersion" id="yarnVersion"  placeholder="如：v3.6.3" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -466,10 +473,16 @@
 			if(data.value == 1){
 				$("#npmVersionAddDiv").show();
 				$("#pnpmVersionAddDiv").hide();
+				$("#yarnVersionAddDiv").hide();
 				//自定义
 			}else if(data.value == 2){
 				$("#npmVersionAddDiv").hide();
 				$("#pnpmVersionAddDiv").show();
+				$("#yarnVersionAddDiv").hide();
+			}else if(data.value == 3){
+				$("#npmVersionAddDiv").hide();
+				$("#pnpmVersionAddDiv").hide();
+				$("#yarnVersionAddDiv").show();
 			}
 		});
 

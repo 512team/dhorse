@@ -3,7 +3,8 @@ package org.dhorse.api.enums;
 public enum NodeCompileTypeEnum {
 
     NPM(1, "npm"),
-    PNPM(2, "pnpm");
+    PNPM(2, "pnpm"),
+    YARN(3, "yarn");
 
     private Integer code;
 

@@ -22,6 +22,11 @@ public class AppExtendNode extends AppExtend {
 	private String pnpmVersion;
 
 	/**
+	 * yarn版本
+	 */
+	private String yarnVersion;
+
+	/**
 	 * 类型
 	 */
 	private Integer compileType;
@@ -69,5 +74,13 @@ public class AppExtendNode extends AppExtend {
 
 	public void setCompileType(Integer compileType) {
 		this.compileType = compileType;
+	}
+
+	public String getYarnVersion() {
+		return yarnVersion;
+	}
+
+	public void setYarnVersion(String yarnVersion) {
+		this.yarnVersion = yarnVersion;
 	}
 }
