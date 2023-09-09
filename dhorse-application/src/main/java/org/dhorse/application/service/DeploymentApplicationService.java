@@ -854,14 +854,14 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 	
 	private boolean rename(File source, File target) {
 		boolean success = false;
-		//如果10秒钟还没成功，则报错
-		for(int i = 0; i < 1000; i++) {
+		//如果30秒还没成功，则报错
+		for(int i = 0; i < 300; i++) {
 			if(source.renameTo(target)) {
 				success = true;
 				break;
 			}
 			try {
-				Thread.sleep(10);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				//ignore
 			}

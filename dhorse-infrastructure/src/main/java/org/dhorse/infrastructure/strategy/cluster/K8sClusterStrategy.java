@@ -1017,11 +1017,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
 		String commands = new StringBuilder()
-			.append("export NODE_ENV=").append(context.getAppEnv().getTag())
-			.append(" && cd ").append(appHome)
-			.append(" && npm install")
-			.append(" && npm start")
-			.toString();
+				.append("export NODE_ENV=" + context.getAppEnv().getTag())
+				.append(" && export PORT=" + context.getAppEnv().getServicePort())
+				.append(" && cd ").append(appHome)
+				.append(" && npm cache verify")
+				.append(" && npm install --legacy-peer-deps --registry=https://registry.npm.taobao.org")
+				.append(" && npm start")
+				.toString();
 		container.setCommand(Arrays.asList("/bin/sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
 	}
@@ -1122,7 +1124,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
 		String commands = new StringBuilder()
-				.append("cd " + appHome)
+				.append("export DJANGO_ENV=" + context.getAppEnv().getTag())
+				.append(" && cd " + appHome)
 				.append(" && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --use-deprecated=legacy-resolver")
 				.append(" && python ")
 				.append(startFile)
