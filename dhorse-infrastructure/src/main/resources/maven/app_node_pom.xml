@@ -32,7 +32,7 @@
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>cache clear --force</arguments>
+							<arguments>cache verify</arguments>
 						</configuration>
 					</execution>
 					<execution>
