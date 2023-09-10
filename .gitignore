@@ -52,3 +52,4 @@ hs_err_pid*
 /dhorse-agent/.project
 /dhorse-agent/.settings
 /dhorse-agent/target
+/.idea
