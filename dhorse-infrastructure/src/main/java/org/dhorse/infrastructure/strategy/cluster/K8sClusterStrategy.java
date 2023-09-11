@@ -21,9 +21,11 @@ import java.util.stream.Collectors;
 
 import org.dhorse.api.enums.ActionTypeEnum;
 import org.dhorse.api.enums.AffinityLevelEnum;
+import org.dhorse.api.enums.NuxtDeploymentTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.NginxVersionEnum;
+import org.dhorse.api.enums.NodeCompileTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
 import org.dhorse.api.enums.SchedulingTypeEnum;
@@ -38,6 +40,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendDjango;
 import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.ClusterNamespace;
 import org.dhorse.api.response.model.EnvHealth;
@@ -948,6 +951,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		//Vue、React、Html应用会通过Nginx来启动服务
 		containerOfNginx(context, container);
 		containerOfNodejs(context, container);
+		containerOfNuxt(context, container);
 		containerOfGo(context, container);
 		containerOfPython(context, container);
 		containerOfFlask(context, container);
@@ -1018,13 +1022,41 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
 		String commands = new StringBuilder()
 				.append("export NODE_ENV=" + context.getAppEnv().getTag())
+				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
 				.append(" && cd ").append(appHome)
-				.append(" && npm cache verify")
-				.append(" && npm install --legacy-peer-deps --registry=https://registry.npm.taobao.org")
+				.append(" && npm install --registry=https://registry.npm.taobao.org")
 				.append(" && npm start")
 				.toString();
 		container.setCommand(Arrays.asList("/bin/sh", "-c", commands));
+		container.setImage(context.getFullNameOfImage());
+	}
+	
+	private void containerOfNuxt(DeploymentContext context, V1Container container) {
+		if(!nuxtApp(context.getApp())) {
+			return;
+		}
+		AppExtendNuxt appExtend = context.getApp().getAppExtend();
+		if(!NuxtDeploymentTypeEnum.DYNAMIC.getCode().equals(appExtend.getDeploymentType())) {
+			return;
+		}
+		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		StringBuilder commands = new StringBuilder()
+				.append("export NODE_ENV=" + context.getAppEnv().getTag())
+				.append(" && export HOST=0.0.0.0")
+				.append(" && export PORT=" + context.getAppEnv().getServicePort())
+				.append(" && cd ").append(appHome);
+		String commandType = "npm";
+		if(NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
+			commands.append(" && npm install pnpm@"+ appExtend.getPnpmVersion() +" --location=global");
+			commandType = "pnpm";
+		}else if(NodeCompileTypeEnum.YARN.getCode().equals(appExtend.getCompileType())) {
+			commandType = "yarn";
+		}
+		commands.append(" && "+ commandType +" install --registry=https://registry.npm.taobao.org")
+				.append(" && "+ commandType +" run build")
+				.append(" && "+ commandType +" start");
+		container.setCommand(Arrays.asList("/bin/sh", "-c", commands.toString()));
 		container.setImage(context.getFullNameOfImage());
 	}
 	
@@ -1086,7 +1118,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}
 		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
 		String commands = new StringBuilder()
-				.append("cd " + appHome)
+				.append("export PYTHON_ENV=" + context.getAppEnv().getTag())
+				.append(" && cd " + appHome)
 				.append(" && pip install -r requirements.txt")
 				.append(" && python " + startFile)
 				.toString();
@@ -1487,6 +1520,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private boolean nodejsApp(App app) {
 		return TechTypeEnum.NODEJS.getCode().equals(app.getTechType());
+	}
+	
+	private boolean nuxtApp(App app) {
+		return TechTypeEnum.NUXT.getCode().equals(app.getTechType());
 	}
 	
 	private List<V1VolumeMount> volumeMounts(DeploymentContext context) {

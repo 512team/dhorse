@@ -42,6 +42,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
+import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
@@ -696,6 +697,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		buildNodeImage(context);
 
 		buildNodejsImage(context);
+		
+		buildNuxtImage(context);
 
 		buildHtmlImage(context);
 
@@ -799,6 +802,19 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
 		rename(branchFile, targetFile);
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
+	}
+	
+	private void buildNuxtImage(DeploymentContext context) {
+		if(!TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		
+		AppExtendNuxt appExted = context.getApp().getAppExtend();
+		File branchFile = new File(context.getLocalPathOfBranch());
+		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
+		rename(branchFile, targetFile);
+		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExted.getNodeVersion().substring(1);
+		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
 	}
 
 	private void buildHtmlImage(DeploymentContext context) {

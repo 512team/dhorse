@@ -10,7 +10,9 @@ public enum TechTypeEnum {
 	GO(6, "Go"),
 	PYTHON(7, "Python"),
 	FLASK(8, "Flask"),
-	DJANGO(9, "Django");
+	DJANGO(9, "Django"),
+	NUXT(10, "Nuxt"),
+	NEXT(11, "Next");
 	
 	private Integer code;
 

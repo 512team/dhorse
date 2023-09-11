@@ -36,8 +36,10 @@ import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.AppExtendNext;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.AppExtendNodeJS;
+import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
@@ -462,6 +464,14 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				&& requestParam.getExtendDjangoParam() != null) {
 			appExtend = new AppExtendDjango();
 			BeanUtils.copyProperties(requestParam.getExtendDjangoParam(), appExtend);
+		}else if(TechTypeEnum.NUXT.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendNuxtParam() != null) {
+			appExtend = new AppExtendNuxt();
+			BeanUtils.copyProperties(requestParam.getExtendNuxtParam(), appExtend);
+		}else if(TechTypeEnum.NEXT.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendNextParam() != null) {
+			appExtend = new AppExtendNext();
+			BeanUtils.copyProperties(requestParam.getExtendNextParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);
 		return bizParam;

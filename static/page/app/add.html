@@ -12,8 +12,8 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label required">技术类型</label>
 						<div class="layui-input-block">
-							<select name="techType" lay-filter="techType">
-								<option value="">请选择</option>
+							<select name="techType" lay-filter="techType" lay-search>
+								<option value="">请输入或选择</option>
 								<option value="1">SpringBoot</option>
 								<option value="2">Vue</option>
 								<option value="3">React</option>
@@ -23,6 +23,8 @@
 								<!--<option value="7">Python</option>-->
 								<option value="8">Flask</option>
 								<option value="9">Django</option>
+								<option value="10">Nuxt</option>
+								<!--<option value="11">Next</option>-->
 							</select>
 						</div>
 					</div>
@@ -71,7 +73,7 @@
 				</div>
 			</div>
 			<div id="secondForm">
-				<div class="layui-form layuimini-form" id="springBootFormItem" lay-filter="springBootFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="springBootFormItem" lay-filter="springBootFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">构建方式</label>
 						<div class="layui-input-block">
@@ -142,7 +144,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="nodeFormItem" lay-filter="nodeFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="nodeFormItem" lay-filter="nodeFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">Node版本</label>
 						<div class="layui-input-block">
@@ -221,7 +223,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="nodejsFormItem" lay-filter="nodejsFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="nodejsFormItem" lay-filter="nodejsFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-block">
@@ -235,7 +237,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="htmlFormItem" lay-filter="htmlFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="htmlFormItem" lay-filter="htmlFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-block">
@@ -249,7 +251,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="goFormItem" lay-filter="goFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="goFormItem" lay-filter="goFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">Go版本</label>
 						<div class="layui-input-block">
@@ -263,7 +265,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="pythonFormItem" lay-filter="pythonFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="pythonFormItem" lay-filter="pythonFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">Python版本</label>
 						<div class="layui-input-block">
@@ -283,7 +285,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="flaskFormItem" lay-filter="flaskFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="flaskFormItem" lay-filter="flaskFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">Python版本</label>
 						<div class="layui-input-block">
@@ -303,7 +305,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="layui-form layuimini-form" id="djangoFormItem" lay-filter="djangoFormItem">
+				<div class="layui-form layuimini-form" style="display:none" id="djangoFormItem" lay-filter="djangoFormItem">
 					<div class="layui-form-item">
 						<label class="layui-form-label required">Python版本</label>
 						<div class="layui-input-block">
@@ -323,6 +325,99 @@
 						</div>
 					</div>
 				</div>
+				<div class="layui-form layuimini-form" style="display:none" id="nuxtFormItem" lay-filter="nuxtFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Node版本</label>
+						<div class="layui-input-block">
+							<input name="extendNuxtParam.nodeVersion" placeholder="如：v18.17.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">编译工具</label>
+						<div class="layui-input-block">
+							<select name="extendNuxtParam.compileType" lay-filter="extendNuxtParam-compileType" id="extendNuxtParam-compileType" lay-verify="required" lay-reqtext="编译工具不能为空">
+								<option value="">请选择</option>
+								<option value="1">Npm</option>
+								<option value="2">Pnpm</option>
+								<option value="3">Yarn</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="extendNuxtParam-pnpmVersionDiv">
+						<label class="layui-form-label required">Pnpm版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNuxtParam.pnpmVersion"  placeholder="如：v8.7.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="extendNuxtParam-yarnVersionDiv">
+						<label class="layui-form-label required">Yarn版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNuxtParam.yarnVersion" placeholder="如：v3.6.3" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" id="nuxtDeploymentTypeDiv">
+						<label class="layui-form-label required" id="baseImageLabel">部署方式</label>
+						<div class="layui-input-block">
+							<select name="extendNuxtParam.deploymentType" id="extendNuxtParam-deploymentType" lay-verify="required" lay-reqtext="部署方式不能为空">
+								<option value="1">动态部署</option>
+								<option value="2">静态部署</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnNuxt">确认保存</button>
+						</div>
+					</div>
+				</div>
+				<div class="layui-form layuimini-form" style="display:none" id="nextFormItem" lay-filter="nextFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">Node版本</label>
+						<div class="layui-input-block">
+							<input name="extendNextParam.nodeVersion" placeholder="如：v18.17.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label required">编译工具</label>
+						<div class="layui-input-block">
+							<select name="extendNextParam.compileType" lay-filter="extendNextParam-compileType" lay-verify="required" lay-reqtext="编译工具不能为空">
+								<option value="">请选择</option>
+								<option value="1">Npm</option>
+								<option value="2">Pnpm</option>
+								<option value="3">Yarn</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="extendNextParam-pnpmVersionDiv">
+						<label class="layui-form-label required">Pnpm版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNextParam.pnpmVersion" id="extendNextParam-pnpmVersion"  placeholder="如：v8.7.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" style="display:none" id="extendNextParam-yarnVersionDiv">
+						<label class="layui-form-label required">Yarn版本</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNextParam.yarnVersion" id="extendNextParam-yarnVersion"  placeholder="如：v3.6.3" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item" id="nextDeploymentTypeDiv">
+						<label class="layui-form-label required" id="baseImageLabel">部署方式</label>
+						<div class="layui-input-block">
+							<select name="extendNextParam.deploymentType" id="extendNextParam-deploymentType" lay-verify="required" lay-reqtext="部署方式不能为空">
+								<option value="1">动态部署</option>
+								<option value="2">静态部署</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnNext">确认保存</button>
+						</div>
+					</div>
+				</div>
+				
 			</div>
 		</div>
 	</div>
@@ -349,97 +444,40 @@
         });
 		
 		form.on('select(techType)', function(data) {
+			$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 			//SpringBoot
 			if(data.value == 1){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
 				$("#springBootFormItem").show();
-				$("#nodeFormItem").hide();
-				$("#nodejsFormItem").hide();
-				$("#htmlFormItem").hide();
-				$("#goFormItem").hide();
-				$("#pythonFormItem").hide();
-				$("#flaskFormItem").hide();
-				$("#djangoFormItem").hide();
 			//Vue和React
 			}else if(data.value == 2 || data.value == 3){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
 				$("#nodeFormItem").show();
-				$("#nodejsFormItem").hide();
-				$("#htmlFormItem").hide();
-				$("#goFormItem").hide();
-				$("#pythonFormItem").hide();
-				$("#flaskFormItem").hide();
-				$("#djangoFormItem").hide();
 				if(data.value == 3){
 					$("#extendNodeParam-packageTargetPath").attr("placeholder", "以应用作为根目录，默认路径：build/");
 				}
 			//Nodejs
 			}else if(data.value == 4){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
-				$("#nodeFormItem").hide();
 				$("#nodejsFormItem").show();
-				$("#htmlFormItem").hide();
-				$("#goFormItem").hide();
-				$("#pythonFormItem").hide();
-				$("#flaskFormItem").hide();
-				$("#djangoFormItem").hide();
 			//Html
 			}else if(data.value == 5){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
-				$("#nodeFormItem").hide();
-				$("#nodejsFormItem").hide();
 				$("#htmlFormItem").show();
-				$("#goFormItem").hide();
-				$("#pythonFormItem").hide();
-				$("#flaskFormItem").hide();
-				$("#djangoFormItem").hide();
 			//Go
 			}else if(data.value == 6){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
-				$("#nodeFormItem").hide();
-				$("#nodejsFormItem").hide();
-				$("#htmlFormItem").hide();
 				$("#goFormItem").show();
-				$("#pythonFormItem").hide();
-				$("#flaskFormItem").hide();
-				$("#djangoFormItem").hide();
 			//Python
 			}else if(data.value == 7){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
-				$("#nodeFormItem").hide();
-				$("#nodejsFormItem").hide();
-				$("#htmlFormItem").hide();
-				$("#goFormItem").hide();
 				$("#pythonFormItem").show();
-				$("#flaskFormItem").hide();
-				$("#djangoFormItem").hide();
 			//Flask
 			}else if(data.value == 8){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
-				$("#nodeFormItem").hide();
-				$("#nodejsFormItem").hide();
-				$("#htmlFormItem").hide();
-				$("#goFormItem").hide();
-				$("#pythonFormItem").hide();
 				$("#flaskFormItem").show();
-				$("#djangoFormItem").hide();
 			//Django
 			}else if(data.value == 9){
-				$("#saveBtn").attr("lay-filter", "formStep").text("下一步");
-				$("#springBootFormItem").hide();
-				$("#nodeFormItem").hide();
-				$("#nodejsFormItem").hide();
-				$("#htmlFormItem").hide();
-				$("#goFormItem").hide();
-				$("#pythonFormItem").hide();
-				$("#flaskFormItem").hide();
 				$("#djangoFormItem").show();
+			//Nuxt
+			}else if(data.value == 10){
+				$("#nuxtFormItem").show();
+			//Next
+			}else if(data.value == 11){
+				$("#nextFormItem").show();
 			}else{
 				$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 			}
@@ -486,6 +524,12 @@
 			}
 		});
 
+		//Nuxt的编译方式
+		compileType($, form, 'extendNuxtParam');
+		
+		//Next的编译方式
+		compileType($, form, 'extendNextParam');
+
 		//构建方式
 		form.on('select(packageBuildType)', function(data) {
 			var obj = $("#extendSpringBootParam-packageTargetPath");
@@ -531,6 +575,12 @@
 			//Django
 			}else if(data.field.techType == 9){
 				$("#djangoFormItem").append(firstFormData);
+			//Nuxt
+			}else if(data.field.techType == 10){
+				$("#nuxtFormItem").append(firstFormData);
+			//Next
+			}else if(data.field.techType == 11){
+				$("#nextFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
             return false;
@@ -719,201 +769,44 @@
         });
 		
 		//Html
-		form.on('submit(saveBtnHtml)', function(data) {
-			if(data.field.affinityAppNames != ''){
-				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
-			}else{
-				data.field.affinityAppNames = [];
-			}
-			
-			data.field.baseImage = data.field.baseImageHtml;
-			
-			var fields = data.field;
-			var allParams = {};
-			var extendParams = {};
-			for(var fieldName in fields){
-				var fs = fieldName.split(".");
-				if(fs.length > 1){
-					extendParams[fs[1]] = fields[fieldName];
-				}else{
-					allParams[fieldName] = fields[fieldName];
-				}
-			}
-			allParams['extendHtmlParam'] = extendParams;
-		
-			$.ajax({
-				url: '/app/add',
-				type: 'POST',
-				dataType: "json",
-				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(allParams),
-				success: function(res){
-					if(res.code != "000000"){
-						layer.msg(res.message, {icon: 5, shift: 6});
-						return false;
-					}
-					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
-					layer.msg("保存成功", {
-						icon: 1,
-						time: 500,
-						shade: 0.01,
-						shadeClose: false}, function(){
-						window.location = '/index.html';
-					});
-				},
-				error: function(res){
-					layer.msg(res.message, {icon: 5, shift: 6});
-				}
-			});
-            return false;
-        });
+		submmit($, layer, form, 'saveBtnHtml', 'extendHtmlParam');
 		
 		//Go
-		form.on('submit(saveBtnGo)', function(data) {
-			if(data.field.affinityAppNames != ''){
-				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
-			}else{
-				data.field.affinityAppNames = [];
-			}
-			
-			var fields = data.field;
-			var allParams = {};
-			var extendParams = {};
-			for(var fieldName in fields){
-				var fs = fieldName.split(".");
-				if(fs.length > 1){
-					extendParams[fs[1]] = fields[fieldName];
-				}else{
-					allParams[fieldName] = fields[fieldName];
-				}
-			}
-			allParams['extendGoParam'] = extendParams;
-		
-			$.ajax({
-				url: '/app/add',
-				type: 'POST',
-				dataType: "json",
-				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(allParams),
-				success: function(res){
-					if(res.code != "000000"){
-						layer.msg(res.message, {icon: 5, shift: 6});
-						return false;
-					}
-					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
-					layer.msg("保存成功", {
-						icon: 1,
-						time: 500,
-						shade: 0.01,
-						shadeClose: false}, function(){
-						window.location = '/index.html';
-					});
-				},
-				error: function(res){
-					layer.msg(res.message, {icon: 5, shift: 6});
-				}
-			});
-            return false;
-        });
+		submmit($, layer, form, 'saveBtnGo', 'extendGoParam');
 		
 		//Python
-		form.on('submit(saveBtnPython)', function(data) {
-			if(data.field.affinityAppNames != ''){
-				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
-			}else{
-				data.field.affinityAppNames = [];
-			}
-			
-			var fields = data.field;
-			var allParams = {};
-			var extendParams = {};
-			for(var fieldName in fields){
-				var fs = fieldName.split(".");
-				if(fs.length > 1){
-					extendParams[fs[1]] = fields[fieldName];
-				}else{
-					allParams[fieldName] = fields[fieldName];
-				}
-			}
-			allParams['extendPythonParam'] = extendParams;
-		
-			$.ajax({
-				url: '/app/add',
-				type: 'POST',
-				dataType: "json",
-				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(allParams),
-				success: function(res){
-					if(res.code != "000000"){
-						layer.msg(res.message, {icon: 5, shift: 6});
-						return false;
-					}
-					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
-					layer.msg("保存成功", {
-						icon: 1,
-						time: 500,
-						shade: 0.01,
-						shadeClose: false}, function(){
-						window.location = '/index.html';
-					});
-				},
-				error: function(res){
-					layer.msg(res.message, {icon: 5, shift: 6});
-				}
-			});
-            return false;
-        });
+		submmit($, layer, form, 'saveBtnPython', 'extendPythonParam');
 		
 		//Flask
-		form.on('submit(saveBtnFlask)', function(data) {
-			if(data.field.affinityAppNames != ''){
-				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
-			}else{
-				data.field.affinityAppNames = [];
-			}
-			
-			var fields = data.field;
-			var allParams = {};
-			var extendParams = {};
-			for(var fieldName in fields){
-				var fs = fieldName.split(".");
-				if(fs.length > 1){
-					extendParams[fs[1]] = fields[fieldName];
-				}else{
-					allParams[fieldName] = fields[fieldName];
-				}
-			}
-			allParams['extendFlaskParam'] = extendParams;
-		
-			$.ajax({
-				url: '/app/add',
-				type: 'POST',
-				dataType: "json",
-				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(allParams),
-				success: function(res){
-					if(res.code != "000000"){
-						layer.msg(res.message, {icon: 5, shift: 6});
-						return false;
-					}
-					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
-					layer.msg("保存成功", {
-						icon: 1,
-						time: 500,
-						shade: 0.01,
-						shadeClose: false}, function(){
-						window.location = '/index.html';
-					});
-				},
-				error: function(res){
-					layer.msg(res.message, {icon: 5, shift: 6});
-				}
-			});
-            return false;
-        });
+		submmit($, layer, form, 'saveBtnFlask', 'extendFlaskParam');
 		
 		//Django
-		form.on('submit(saveBtnDjango)', function(data) {
+		submmit($, layer, form, 'saveBtnDjango', 'extendDjangoParam');
+		
+		//Nuxt
+		submmit($, layer, form, 'saveBtnNuxt', 'extendNuxtParam');
+		
+		//Next
+		submmit($, layer, form, 'saveBtnNext', 'extendDjangoNext');
+    });
+	
+	function compileType($, form, extendParamName){
+		form.on('select('+extendParamName+'-compileType)', function(data) {
+			if(data.value == 1){
+				$("#"+extendParamName+"-pnpmVersionDiv").hide();
+				$("#"+extendParamName+"-yarnVersionDiv").hide();
+			}else if(data.value == 2){
+				$("#"+extendParamName+"-pnpmVersionDiv").show();
+				$("#"+extendParamName+"-yarnVersionDiv").hide();
+			}else if(data.value == 3){
+				$("#"+extendParamName+"-pnpmVersionDiv").hide();
+				$("#"+extendParamName+"-yarnVersionDiv").show();
+			}
+		});
+	}
+	
+	function submmit($, layer, form, saveBtnName, extendParamName){
+		form.on('submit('+saveBtnName+')', function(data) {
 			if(data.field.affinityAppNames != ''){
 				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
 			}else{
@@ -931,7 +824,7 @@
 					allParams[fieldName] = fields[fieldName];
 				}
 			}
-			allParams['extendDjangoParam'] = extendParams;
+			allParams[extendParamName] = extendParams;
 		
 			$.ajax({
 				url: '/app/add',
@@ -959,7 +852,7 @@
 			});
             return false;
         });
-    });
+	}
 	
 	function initBaseImage(packageFileType, baseImageSource, selectedVersion, baseImageValue, $, form){
 		//在非Linux环境下，基础镜像来源不能有“版本号”选项，因为只有制作Linux环境下的Jdk镜像才有意义

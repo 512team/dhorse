@@ -59,7 +59,7 @@
 				<label class="layui-form-label text-value" id="nodeVersion"></label>
 			</div>
 		</div>
-		<div class="layui-form-item" id="extendNodeParam-compileType" style="display: none">
+		<div class="layui-form-item" id="compileTypeDiv" style="display: none">
 			<label class="layui-form-label">编译工具：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="compileType"></label>
@@ -81,6 +81,12 @@
 			<label class="layui-form-label">Yarn版本：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="yarnVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="deploymentTypeDiv" style="display: none">
+			<label class="layui-form-label">部署方式：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="deploymentType"></label>
 			</div>
 		</div>
 		<div class="layui-form-item" id="pythonVersionDiv" style="display: none">
@@ -243,7 +249,7 @@
 						$("#npmVersion").text(res.data.appExtend.npmVersion);
 					}
 					$("#nodeVersionDiv").show();
-					$("#extendNodeParam-compileType").show();
+					$("#compileTypeDiv").show();
 				//React
 				}else if(res.data.techType == 3){
 					techType = "React";
@@ -266,7 +272,7 @@
 						$("#npmVersion").text(res.data.appExtend.npmVersion);
 					}
 					$("#nodeVersionDiv").show();
-					$("#extendNodeParam-compileType").show();
+					$("#compileTypeDiv").show();
 				//Nodejs
 				}else if(res.data.techType == 4){
 					techType = "Nodejs";
@@ -317,7 +323,26 @@
 					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
 					$("#startFileDiv").show();
 					$("#startFile").text(res.data.appExtend.startFile);
+				//Nuxt
+				}else if(res.data.techType == 10){
+					techType = "Nuxt";
+					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#nodeVersionDiv").show();
+					showCompileType($, res.data);
+					showDeploymentType($, res.data);
+					$("#packageTargetPathDiv").hide();
+					$("#baseImageSourceDiv").hide();
+				//Next
+				}else if(res.data.techType == 11){
+					techType = "Next";
+					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#nodeVersionDiv").show();
+					showCompileType($, res.data);
+					showDeploymentType($, res.data);
+					$("#packageTargetPathDiv").hide();
+					$("#baseImageSourceDiv").hide();
 				}
+				
 				$("#techType").text(techType);
 				if(res.data.affinityAppNames){
 					$("#affinityAppNames").text(res.data.affinityAppNames);
@@ -385,6 +410,32 @@
 				layer.msg(res.message, {icon: 5, shift: 6});
 			}
 		});
+	}
+	
+	function showCompileType($, data){
+		if(data.appExtend.compileType == 1){
+			$("#compileType").text("Npm");
+			$("#npmVersionDiv").show();
+			$("#npmVersion").text(data.appExtend.npmVersion);
+		}else if(data.appExtend.compileType == 2){
+			$("#compileType").text("Pnpm");
+			$("#pnpmVersionDiv").show();
+			$("#pnpmVersion").text(data.appExtend.pnpmVersion);
+		}else if(data.appExtend.compileType == 3){
+			$("#compileType").text("Yarn");
+			$("#yarnVersionDiv").show();
+			$("#yarnVersion").text(data.appExtend.yarnVersion);
+		}
+		$("#compileTypeDiv").show();
+	}
+	
+	function showDeploymentType($, data){
+		if(data.appExtend.deploymentType == 1){
+			$("#deploymentType").text("动态部署");
+		}else if(data.appExtend.deploymentType == 2){
+			$("#deploymentType").text("静态部署");
+		}
+		$("#deploymentTypeDiv").show();
 	}
 	
 	function doDelete($, id) {

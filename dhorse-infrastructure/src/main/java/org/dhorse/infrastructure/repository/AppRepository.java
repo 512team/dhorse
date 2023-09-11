@@ -21,8 +21,10 @@ import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.AppExtendNext;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.AppExtendNodeJS;
+import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.infrastructure.param.AppMemberParam;
 import org.dhorse.infrastructure.param.AppParam;
@@ -163,6 +165,12 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		}
 		if (TechTypeEnum.DJANGO.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendDjango.class);
+		}
+		if (TechTypeEnum.NUXT.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNuxt.class);
+		}
+		if (TechTypeEnum.NEXT.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNext.class);
 		}
 		return null;
 	}
