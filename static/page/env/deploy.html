@@ -7,9 +7,28 @@
 	.layui-form-select dl{
 		max-height: 200px;
 	}
+	.text-value{
+		text-align: left;
+		width: 80%;
+		word-break:break-all;
+		white-space:pre-wrap;
+		cursor:auto;
+		float: left;
+		display: block;
+		padding: 9px 0px;
+		font-weight: 400;
+		line-height: 20px;
+		position: relative;
+	}
 </style>
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">环境名称</label>
+			<div class="layui-input-block">
+				<label class="text-value" id="deploy-envName"></label>
+			</div>
+		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label required">版本名称</label>
 			<div class="layui-input-block">
@@ -41,6 +60,7 @@
 		$("#appId2").val(appId);
 		$("#envId").val(parentData.envId);
 		
+		$("#deploy-envName").text(parentData.envName);
 		initVersion(form, $, appId, parentData.envId);
 		
         form.on('submit(deployBtn)', function(data) {
