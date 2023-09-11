@@ -121,7 +121,7 @@
 						var elem = $(this.elem)
 						,envId = elem.data('env-id')
 						,envName = elem.data('env-name');
-						data2 = JSON.stringify({'envId': envId});
+						data2 = JSON.stringify({'envId': envId, 'envName': envName});
 						if(data.id == 'delete'){
 							doDelete($, appId, envId, envName);
 						}else if(data.id == 'update'){
@@ -221,7 +221,7 @@
         });
 
         table.on('tool(currentTableFilter)', function (obj) {
-			data2 = JSON.stringify({'envId': obj.data.id});
+			data2 = JSON.stringify({'envId': obj.data.id, 'envName': obj.data.envName});
 			if (obj.event === 'deploy') {
                 var index = layer.open({
                     title: '部署',
