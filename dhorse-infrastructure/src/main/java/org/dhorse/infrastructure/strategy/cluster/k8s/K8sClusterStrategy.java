@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
@@ -43,6 +42,7 @@ import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -177,6 +177,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public boolean createDeployment(DeploymentContext context) {
 		logger.info("Start to deploy k8s server");
 		String namespace = context.getAppEnv().getNamespaceName();
+		String labelSelector = K8sUtils.getDeploymentLabelSelector(context.getDeploymentName());
 		try(KubernetesClient client = client(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken())){
 
@@ -188,7 +189,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			// 自动扩容任务
 			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), client);
 	
-			if(!checkHealthOfAll(client, namespace)) {
+			if(!checkHealthOfAll(client, namespace, labelSelector)) {
 				logger.error("Failed to create k8s deployment, because the replica is not fully started");
 				LogUtils.throwException(logger, MessageCodeEnum.CREATE_PART_POD);
 				return false;
@@ -419,7 +420,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				|| TechTypeEnum.HTML.getCode().equals(appPO.getTechType());
 	}
 
-	private boolean checkHealthOfAll(KubernetesClient client, String namespace) {
+	private boolean checkHealthOfAll(KubernetesClient client, String namespace, String labelSelector) {
 		// 检查pod状态，检查时长20分钟
 		for (int i = 0; i < 60 * 20; i++) {
 			if(DeploymentThreadPoolUtils.isInterrupted()) {
@@ -430,7 +431,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			} catch (InterruptedException e) {
 				// ignore
 			}
-			PodList podList = client.pods().inNamespace(namespace).list();
+			PodList podList = client.pods()
+					.inNamespace(namespace)
+					.withLabelSelector(labelSelector)
+					.list();
 			if (CollectionUtils.isEmpty(podList.getItems())) {
 				logger.warn("Replica size is 0");
 				continue;
@@ -804,6 +808,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				 .withOauthToken(accessToken)
 				 .withConnectionTimeout(connectTimeout)
 				 .withRequestTimeout(readTimeout)
+				 .withRequestRetryBackoffLimit(0)
 				 .build();
 		return new KubernetesClientBuilder()
 				.withConfig(config)
