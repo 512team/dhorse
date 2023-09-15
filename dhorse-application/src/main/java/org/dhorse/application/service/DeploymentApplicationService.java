@@ -100,7 +100,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeploymentApplicationService.class);
 
-	private static final String MAVEN_REPOSITORY_URL = "https://repo.maven.apache.org/maven2";
+	private static final String MAVEN_REPOSITORY_URL = "https://maven.aliyun.com/nexus/content/groups/public";
 
 	@Value("${server.port}")
 	private Integer serverPort;
