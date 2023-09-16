@@ -263,14 +263,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if (CollectionUtils.isEmpty(oldDeployment.getItems())) {
 				api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
 			} else {
-				//配合升级，v1.3.1以后版本应该只使用replaceNamespacedDeployment
-				if(oldDeployment.getItems().get(0).getMetadata().getLabels().get(K8sUtils.APP_KEY) == null) {
-					api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
-							null, null);
-				}else {
-					api.deleteNamespacedDeployment(context.getDeploymentName(), namespace, null, null, null, null, null, null);
-					api.createNamespacedDeployment(namespace, deployment, null, null, null, null);
-				}
+				api.replaceNamespacedDeployment(context.getDeploymentName(), namespace, deployment, null, null,
+						null, null);
 			}
 			
 			// 自动扩容任务
@@ -324,16 +318,6 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				V1Patch patch = new V1Patch(JsonUtils.toJsonString(patchs));
 				coreApi.patchNamespacedService(serviceName, namespace, patch, null, null, null, null, null);
 				logger.info("Start to update service");
-			}
-			
-			//配合升级，v1.3.1以后版本应当删除
-			V1Service service = serviceList.getItems().get(0);
-			if(service.getMetadata().getLabels().get(K8sUtils.APP_KEY) != null) {
-				//先删除，再创建
-				deleteService(namespace, serviceName, apiClient);
-				service.setMetadata(serviceMeta(serviceName, context));
-				service.setSpec(serviceSpec(context));
-				coreApi.createNamespacedService(namespace, service, null, null, null, null);
 			}
 		}
 		return true;

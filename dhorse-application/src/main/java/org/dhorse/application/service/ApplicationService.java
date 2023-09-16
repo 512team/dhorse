@@ -335,10 +335,9 @@ public abstract class ApplicationService {
 	public void asynInitConfig() {
 		ThreadPoolUtils.async(() -> {
 			
-			//随机休眠几秒，两个目的：
-			//1.集群部署时，服务并行启动可能带来的并发操作问题
-			//2.休眠30-40秒，可以让部署者有足够的时间看到DHorse服务已经启动完成的日志
-			int secods = 30 + new Random().nextInt(10) + 1;
+			//随机休眠几秒：
+			//集群部署时，服务并行启动可能带来的并发操作问题
+			int secods = new Random().nextInt(10) + 1;
 			try {
 				Thread.sleep(secods * 1000);
 			} catch (InterruptedException e) {
