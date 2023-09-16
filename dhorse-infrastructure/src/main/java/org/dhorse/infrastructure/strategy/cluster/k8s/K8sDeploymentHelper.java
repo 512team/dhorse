@@ -495,7 +495,7 @@ public class K8sDeploymentHelper {
 				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
 				.append(" && cd ").append(appHome)
-				.append(" && npm install --registry=https://registry.npm.taobao.org")
+				.append(" && npm install --registry=https://registry.npmmirror.com")
 				.append(" && npm start")
 				.toString();
 		container.setCommand(Arrays.asList("/bin/sh", "-c", commands));
@@ -516,14 +516,15 @@ public class K8sDeploymentHelper {
 				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
 				.append(" && cd ").append(appHome);
+		String registryMirror = " --registry=https://registry.npmmirror.com";
 		String commandType = "npm";
 		if(NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
-			commands.append(" && npm install pnpm@"+ appExtend.getPnpmVersion() +" --location=global");
+			commands.append(" && npm install pnpm@"+ appExtend.getPnpmVersion() +" --location=global" + registryMirror);
 			commandType = "pnpm";
 		}else if(NodeCompileTypeEnum.YARN.getCode().equals(appExtend.getCompileType())) {
 			commandType = "yarn";
 		}
-		commands.append(" && "+ commandType +" install --registry=https://registry.npm.taobao.org")
+		commands.append(" && "+ commandType +" install" + registryMirror)
 				.append(" && "+ commandType +" run build")
 				.append(" && "+ commandType +" start");
 		container.setCommand(Arrays.asList("/bin/sh", "-c", commands.toString()));

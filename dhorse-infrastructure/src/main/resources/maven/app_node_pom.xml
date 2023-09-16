@@ -9,8 +9,6 @@
 	<packaging>pom</packaging>
 	<version>1.4.0</version>
 	
-	<!-- 该文件的代码行数是固定的，在解析时会用到行号，文件内容谨慎改动 -->
-	
 	<build>
 		<plugins>
 			<plugin>
@@ -43,7 +41,7 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<!-- legacy-peer-deps参数的作用是忽略版本问题 -->
-							<arguments>install --legacy-peer-deps --registry=https://registry.npm.taobao.org</arguments>
+							<arguments>install --legacy-peer-deps --registry=https://registry.npmmirror.com</arguments>
 						</configuration>
 					</execution>
 					<execution>

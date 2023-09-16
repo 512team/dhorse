@@ -9,8 +9,6 @@
 	<packaging>pom</packaging>
 	<version>1.4.0</version>
 	
-	<!-- 该文件的代码行数是固定的，在解析时会用到行号，文件内容谨慎改动 -->
-	
 	<build>
 		<plugins>
 			<plugin>
@@ -25,16 +23,6 @@
 						</goals>
 						<phase>generate-resources</phase>
 					</execution>
-					<!--<execution>
-						<id>yarn init</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>init</arguments>
-						</configuration>
-					</execution>-->
 					<execution>
 						<id>yarn install</id>
 						<goals>
@@ -42,7 +30,7 @@
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>install</arguments>
+							<arguments>install --registry=https://registry.npmmirror.com</arguments>
 						</configuration>
 					</execution>
 					<execution>
@@ -60,7 +48,7 @@
 					<nodeVersion>${nodeVersion}</nodeVersion>
 					<yarnVersion>${yarnVersion}</yarnVersion>
 					<installDirectory>${installDirectory}</installDirectory>
-					<nodeDownloadRoot>https://npm.taobao.org/dist/</nodeDownloadRoot>
+					<nodeDownloadRoot>https://npm.taobao.org/mirrors/node/</nodeDownloadRoot>
 					<yarnDownloadRoot>https://ghproxy.com/https://github.com/yarnpkg/yarn/releases/download/</yarnDownloadRoot>
 				</configuration>
 			</plugin>
