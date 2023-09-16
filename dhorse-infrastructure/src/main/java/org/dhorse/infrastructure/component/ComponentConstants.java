@@ -36,6 +36,9 @@ public class ComponentConstants {
 	
 	@Autowired
 	private MysqlConfig mysqlConfig;
+	
+	@Value("${kubernetes-client:official}")
+	private String kubernetesClient;
 
 	@Value("${data.path:#{null}}")
 	private void setDataPath(String dataPath) {
@@ -97,5 +100,9 @@ public class ComponentConstants {
 
 	public Integer getThreadPoolDeploymentMax() {
 		return threadPoolDeploymentMax;
+	}
+
+	public String getKubernetesClient() {
+		return kubernetesClient;
 	}
 }

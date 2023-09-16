@@ -75,7 +75,7 @@ $  bin/dhorse-stop.sh
 
 * [配置文件](https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6.md)
 
-* [多环境标识](https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E6%A0%87%E8%AF%86.md)
+* [多环境标识](https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E5%A4%9A%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F.md)
 
 * [日志收集](https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.md)
 

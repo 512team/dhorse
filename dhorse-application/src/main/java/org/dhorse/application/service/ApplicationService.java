@@ -175,8 +175,11 @@ public abstract class ApplicationService {
 	
 	protected ClusterStrategy clusterStrategy(Integer clusterType) {
 		if (ClusterTypeEnum.K8S.getCode().equals(clusterType)) {
+			if(componentConstants.getKubernetesClient().equals("fabric8")) {
+				return new org.dhorse.infrastructure.strategy.cluster.k8s.K8sClusterStrategy();
+			}
 			return new K8sClusterStrategy();
-		} else {
+		}else {
 			return new K8sClusterStrategy();
 		}
 	}
