@@ -24,7 +24,7 @@
 						<phase>generate-resources</phase>
 					</execution>
 					<execution>
-						<id>npm cache clear</id>
+						<id>npm cache clear --force</id>
 						<goals>
 							<goal>npm</goal>
 						</goals>
