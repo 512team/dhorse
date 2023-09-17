@@ -827,10 +827,9 @@ public class K8sDeploymentHelper {
 	}
 	
 	private static String nginxImage(DeploymentContext context) {
-		//如：dockerproxy.com/library/nginx:1.23.3-alpine
 		if(ImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
 			String v = NginxVersionEnum.getByCode(context.getApp().getBaseImageVersion()).getValue();
-			return "dockerproxy.com/library/nginx:" + v + "-alpine";
+			return String.format(Constants.NGINX_IMAGE_URL, v);
 		}
 		return context.getApp().getBaseImage();
 	}

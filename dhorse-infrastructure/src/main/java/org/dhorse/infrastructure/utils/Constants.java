@@ -64,13 +64,16 @@ public class Constants {
 	
 	public static final int METRICS_TABLE_SIZE = 32;
 	
-	public static final String BUSYBOX_IMAGE_URL = "dockerproxy.com/library/busybox:latest";
+	public static final String BUSYBOX_IMAGE_URL = "registry.cn-hangzhou.aliyuncs.com/dhorse/busybox:latest";
 	
 	public static final String CENTOS_IMAGE_URL = "dockerproxy.com/library/centos:latest";
 	
 	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.com/library/python:";
 	
 	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.com/library/node:";
+	
+	//格式：dockerproxy.com/library/nginx:1.23.3-alpine
+	public static final String NGINX_IMAGE_URL = "dockerproxy.com/library/nginx:%s-alpine";
 	
 	public static final String LOCALHOST_IP = "127.0.0.1";
 	

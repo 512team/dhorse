@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 import org.dhorse.api.enums.ActionTypeEnum;
 import org.dhorse.api.enums.AffinityLevelEnum;
-import org.dhorse.api.enums.NuxtDeploymentTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.NginxVersionEnum;
 import org.dhorse.api.enums.NodeCompileTypeEnum;
+import org.dhorse.api.enums.NuxtDeploymentTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
 import org.dhorse.api.enums.SchedulingTypeEnum;
@@ -1340,10 +1340,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	private String nginxImage(DeploymentContext context) {
-		//如：dockerproxy.com/library/nginx:1.23.3-alpine
 		if(ImageSourceEnum.VERSION.getCode().equals(context.getApp().getBaseImageSource())) {
 			String v = NginxVersionEnum.getByCode(context.getApp().getBaseImageVersion()).getValue();
-			return "dockerproxy.com/library/nginx:" + v + "-alpine";
+			return String.format(Constants.NGINX_IMAGE_URL, v);
 		}
 		return context.getApp().getBaseImage();
 	}
