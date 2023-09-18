@@ -13,7 +13,6 @@ import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
-import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,24 +20,27 @@ public abstract class CodeRepoStrategy {
 
 	public static final Logger logger = LoggerFactory.getLogger(CodeRepoStrategy.class);
 	
-	void clearHistoryBranch(DeploymentContext context) {
-		File[] hisBranchs = new File(localPathOfBranch(context)).getParentFile().listFiles();
-		//异步清除历史代码
-		ThreadPoolUtils.async(new Runnable() {
-			@Override
-			public void run() {
-				for(File h : hisBranchs) {
-					try {
-						FileUtils.deleteDirectory(h);
-					} catch (IOException e) {
-						logger.error("Failed to clear local history branch", e);
-					}
-				}
+	public void clearHistoryBranch(DeploymentContext context) {
+		File[] hisBranchs = new File(localPathOfBranch(context)).listFiles();
+		for(File h : hisBranchs) {
+			//为了提高Node类应用install过程的性能，不删除安装文件
+			if("node_modules".equals(h.getName())) {
+				continue;
 			}
-		});
+			try {
+				if(h.isDirectory()) {
+					FileUtils.deleteDirectory(h);
+				}else {
+					h.delete();
+				}
+			} catch (IOException e) {
+				logger.error("Failed to clear local history branch", e);
+			}
+		}
 	}
 	
 	public boolean downloadBranch(DeploymentContext context) {
+		checkLocalPathOfBranch(context);
 		clearHistoryBranch(context);
 		return doDownloadBranch(context);
 	}
@@ -63,16 +65,12 @@ public abstract class CodeRepoStrategy {
 		return localPathOfBranch;
 	}
 	
-	String localPathOfBranch(DeploymentContext context) {
+	public String localPathOfBranch(DeploymentContext context) {
 		return new StringBuilder()
 				.append(context.getComponentConstants().getDataPath())
 				.append(K8sUtils.APP_KEY)
 				.append(File.separator)
 				.append(context.getApp().getAppName())
-				.append(File.separator)
-				.append(context.getApp().getAppName())
-				.append("-")
-				.append(System.currentTimeMillis())
 				.append(File.separator)
 				.toString();
 	}

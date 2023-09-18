@@ -54,7 +54,7 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 				return false;
 			}
 
-			String localPathOfBranch = checkLocalPathOfBranch(context);
+			String localPathOfBranch = localPathOfBranch(context);
 			if (localPathOfBranch == null) {
 				logger.warn("Failed to local path of branch, app id : {}", appId);
 				gitLabApi.close();

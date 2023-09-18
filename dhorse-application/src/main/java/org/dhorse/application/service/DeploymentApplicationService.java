@@ -548,9 +548,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 		Resource resource = new PathMatchingResourcePatternResolver()
 				.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "maven/settings.xml");
-		File appHome = new File(context.getLocalPathOfBranch());
 		try (InputStream in = resource.getInputStream();
-				FileOutputStream out = new FileOutputStream(appHome.getParent() + "/settings.xml")) {
+				FileOutputStream out = new FileOutputStream(context.getLocalPathOfBranch() + "settings.xml")) {
 			byte[] buffer = new byte[in.available()];
 			in.read(buffer);
 			String lines = new String(buffer, "UTF-8");
@@ -597,7 +596,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		//cd /opt/dhorse/data/app/hello\hello-1689587261061 && \
 		//opt/dhorse/data/maven/apache-maven-3.9.3/bin/mvn clean package \
 		//-s /opt/dhorse/data/app/hello/settings.xml
-		String settingsFile = new File(context.getLocalPathOfBranch()).getParent() + "/settings.xml";
+		String settingsFile = context.getLocalPathOfBranch() + "settings.xml";
 		String mavenBin = mavenHome + Constants.MAVEN_VERSION + "/bin/mvn";
 		StringBuilder cmd = new StringBuilder();
 		if(!Constants.isWindows()) {
