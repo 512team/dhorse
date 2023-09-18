@@ -1412,7 +1412,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		container.setImage(context.getFullNameOfImage());
 		container.setImagePullPolicy("Always");
 		container.setCommand(Arrays.asList("/bin/sh", "-c"));
-		String warFile = Constants.USR_LOCAL_HOME + context.getApp().getAppName() + "." + PackageFileTypeEnum.WAR.getValue();
+		String warFile = Constants.USR_LOCAL_HOME + "ROOT." + PackageFileTypeEnum.WAR.getValue();
 		container.setArgs(Arrays.asList("cp -rf " + warFile + " " + K8sUtils.TOMCAT_APP_PATH));
 		
 		V1VolumeMount volumeMount = new V1VolumeMount();

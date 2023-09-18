@@ -737,7 +737,11 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		for (File file : packageTargetPath.listFiles()) {
 			String packageFileType = PackageFileTypeEnum.getByCode(appExtend.getPackageFileType()).getValue();
 			if (file.getName().endsWith("." + packageFileType)) {
-				File targetFile = new File(file.getParent() + "/" + context.getApp().getAppName() + "." + packageFileType);
+				String fileName = context.getApp().getAppName();
+				if(PackageFileTypeEnum.WAR.getCode().equals(appExtend.getPackageFileType())) {
+					fileName = "ROOT";
+				}
+				File targetFile = new File(file.getParent() + "/" + fileName + "." + packageFileType);
 				file.renameTo(targetFile);
 				targetFiles.add(targetFile.toPath());
 				break;
