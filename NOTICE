@@ -6,4 +6,4 @@ This product includes software developed at Github
 
 This product uses the following project:
 
-SpringBoot、Mybatis、Mybatis-plus、Jib-core、Layuimini、Sqlite
+SpringBoot、Fabric8(kubernetes-client)、Mybatis、Mybatis-plus、Jib-core、Layuimini、Sqlite
