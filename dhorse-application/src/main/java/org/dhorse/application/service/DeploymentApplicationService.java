@@ -801,9 +801,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		if(!TechTypeEnum.NODEJS.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		File branchFile = new File(context.getLocalPathOfBranch());
-		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
-		rename(branchFile, targetFile);
+		File targetFile = new File(context.getLocalPathOfBranch());
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
 	
@@ -811,11 +809,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		if(!TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		
 		AppExtendNuxt appExted = context.getApp().getAppExtend();
-		File branchFile = new File(context.getLocalPathOfBranch());
-		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
-		rename(branchFile, targetFile);
+		File targetFile = new File(context.getLocalPathOfBranch());
 		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExted.getNodeVersion().substring(1);
 		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
 	}
@@ -824,9 +819,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		if(!TechTypeEnum.HTML.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		File branchFile = new File(context.getLocalPathOfBranch());
-		File targetFile = new File(branchFile.getParent() + "/" + context.getApp().getAppName());
-		rename(branchFile, targetFile);
+		File targetFile = new File(context.getLocalPathOfBranch());
 		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
 	}
 
@@ -868,32 +861,10 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 	private void buildPythonImage(DeploymentContext context, List<String> entrypoint) {
 		App app = context.getApp();
-		File branchFile = new File(context.getLocalPathOfBranch());
-		File targetFile = new File(branchFile.getParent() + "/" + app.getAppName());
-		rename(branchFile, targetFile);
+		File targetFile = new File(context.getLocalPathOfBranch());
 		String version = ((AppExtendPython)app.getAppExtend()).getPythonVersion();
 		String baseImage = Constants.PYTHON_IMAGE_BASE_URL + version.substring(1);
 		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
-	}
-
-	private boolean rename(File source, File target) {
-		boolean success = false;
-		//如果30秒还没成功，则报错
-		for(int i = 0; i < 300; i++) {
-			if(source.renameTo(target)) {
-				success = true;
-				break;
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				//ignore
-			}
-		}
-		if(!success) {
-			LogUtils.throwException(logger, MessageCodeEnum.RENAME_FILE_FAILURE);
-		}
-		return success;
 	}
 
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {

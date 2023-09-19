@@ -35,7 +35,7 @@
 #====================================================================================================
 #如果启用，则优先使用Mysql
 #mysql.enable: true
-#需要手动创建dhorse库，DHorse在启动时会自动创建表
+#需要手动创建dhorse库，dhorse在启动时会自动创建表
 #mysql.url: jdbc:mysql://localhost:3306/dhorse?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true
 #该账号需要具有建表权限
 #mysql.user: username

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.api.response.model.AppTag;
@@ -13,6 +14,7 @@ import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
+import org.dhorse.infrastructure.utils.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +22,11 @@ public abstract class CodeRepoStrategy {
 
 	public static final Logger logger = LoggerFactory.getLogger(CodeRepoStrategy.class);
 	
-	public void clearHistoryBranch(DeploymentContext context) {
+	void clearLocalHistoryCode(DeploymentContext context) {
+		String localPathOfBranch = localPathOfBranch(context);
 		File[] hisBranchs = new File(localPathOfBranch(context)).listFiles();
 		for(File h : hisBranchs) {
-			//为了提高Node类应用install过程的性能，不删除安装文件
+			//为了提高Node类应用install过程的性能，不删除node_modules文件
 			if("node_modules".equals(h.getName())) {
 				continue;
 			}
@@ -34,14 +37,16 @@ public abstract class CodeRepoStrategy {
 					h.delete();
 				}
 			} catch (IOException e) {
-				logger.error("Failed to clear local history branch", e);
+				logger.error("Failed to clear local history code, please delete it"
+						+ " manually, path is: " + localPathOfBranch, e);
+				LogUtils.throwException(logger, MessageCodeEnum.DELETE_FAILURE);
 			}
 		}
 	}
 	
 	public boolean downloadBranch(DeploymentContext context) {
 		checkLocalPathOfBranch(context);
-		clearHistoryBranch(context);
+		clearLocalHistoryCode(context);
 		return doDownloadBranch(context);
 	}
 	
