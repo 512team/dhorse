@@ -138,8 +138,10 @@
 			contentType: 'application/json;charset=UTF-8',
 			data: JSON.stringify({'appId': appId}),
 			success: function(res){
+				if(!res.data || !res.data.techType){
+					initTable(table, appId, true);
 				//只有Vue、React应用，才展示环境名称列
-				if(!res.data || !res.data.techType || res.data.techType == 2 || res.data.techType == 3){
+				}else if(res.data.techType == 2 || res.data.techType == 3){
 					initTable(table, appId, false);
 				}else{
 					initTable(table, appId, true);
