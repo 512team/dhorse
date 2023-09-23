@@ -225,9 +225,15 @@
 				</div>
 				<div class="layui-form layuimini-form" style="display:none" id="nodejsFormItem" lay-filter="nodejsFormItem">
 					<div class="layui-form-item">
-						<label class="layui-form-label required">基础镜像</label>
+						<label class="layui-form-label required">Node版本</label>
 						<div class="layui-input-block">
-							<input type="text" name="baseImageNodejs" placeholder="如：dockerproxy.com/library/node:18.17.1" autocomplete="off" class="layui-input">
+							<input name="extendNodejsParam.nodeVersion" placeholder="如：v18.17.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">Node镜像</label>
+						<div class="layui-input-block">
+							<input type="text" name="extendNodejsParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.com/library/node:18.17.1" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item required">
@@ -273,6 +279,12 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
+						<label class="layui-form-label">Python镜像</label>
+						<div class="layui-input-block">
+							<input name="extendPythonParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.com/library/python:3.11.5" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
 						<label class="layui-form-label">启动文件</label>
 						<div class="layui-input-block">
 							<input type="text" name="extendPythonParam.startFile" placeholder="默认：main.py" autocomplete="off" class="layui-input">
@@ -290,6 +302,12 @@
 						<label class="layui-form-label required">Python版本</label>
 						<div class="layui-input-block">
 							<input type="text" name="extendFlaskParam.pythonVersion" placeholder="如：v3.11.5" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">Python镜像</label>
+						<div class="layui-input-block">
+							<input name="extendFlaskParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.com/library/python:3.11.5" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -313,6 +331,12 @@
 						</div>
 					</div>
 					<div class="layui-form-item">
+						<label class="layui-form-label">Python镜像</label>
+						<div class="layui-input-block">
+							<input name="extendDjangoParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.com/library/python:3.11.5" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
 						<label class="layui-form-label">启动文件</label>
 						<div class="layui-input-block">
 							<input type="text" name="extendDjangoParam.startFile" placeholder="默认：manage.py" autocomplete="off" class="layui-input">
@@ -326,10 +350,25 @@
 					</div>
 				</div>
 				<div class="layui-form layuimini-form" style="display:none" id="nuxtFormItem" lay-filter="nuxtFormItem">
+					<div class="layui-form-item" id="nuxtDeploymentTypeDiv">
+						<label class="layui-form-label required" id="baseImageLabel">部署方式</label>
+						<div class="layui-input-block">
+							<select name="extendNuxtParam.deploymentType" id="extendNuxtParam-deploymentType" lay-verify="required" lay-reqtext="部署方式不能为空">
+								<option value="1">动态部署</option>
+								<!--<option value="2">静态部署</option>-->
+							</select>
+						</div>
+					</div>
 					<div class="layui-form-item">
 						<label class="layui-form-label required">Node版本</label>
 						<div class="layui-input-block">
 							<input name="extendNuxtParam.nodeVersion" placeholder="如：v18.17.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">Node镜像</label>
+						<div class="layui-input-block">
+							<input name="extendNuxtParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.com/library/node:18.17.1" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -355,15 +394,6 @@
 							<input type="text" name="extendNuxtParam.yarnVersion" placeholder="如：v1.22.19" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
-					<div class="layui-form-item" id="nuxtDeploymentTypeDiv">
-						<label class="layui-form-label required" id="baseImageLabel">部署方式</label>
-						<div class="layui-input-block">
-							<select name="extendNuxtParam.deploymentType" id="extendNuxtParam-deploymentType" lay-verify="required" lay-reqtext="部署方式不能为空">
-								<option value="1">动态部署</option>
-								<!--<option value="2">静态部署</option>-->
-							</select>
-						</div>
-					</div>
 					<div class="layui-form-item required">
 						<div class="layui-input-block">
 							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
@@ -376,6 +406,12 @@
 						<label class="layui-form-label required">Node版本</label>
 						<div class="layui-input-block">
 							<input name="extendNextParam.nodeVersion" placeholder="如：v18.17.1" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">Node镜像</label>
+						<div class="layui-input-block">
+							<input name="extendNextParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.com/library/node:18.17.1" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -719,54 +755,7 @@
         });
 		
 		//Nodejs
-		form.on('submit(saveBtnNodejs)', function(data) {
-			if(data.field.affinityAppNames != ''){
-				data.field.affinityAppNames = data.field.affinityAppNames.split(',');
-			}else{
-				data.field.affinityAppNames = [];
-			}
-			
-			data.field.baseImage = data.field.baseImageNodejs;
-			
-			var fields = data.field;
-			var allParams = {};
-			var extendParams = {};
-			for(var fieldName in fields){
-				var fs = fieldName.split(".");
-				if(fs.length > 1){
-					extendParams[fs[1]] = fields[fieldName];
-				}else{
-					allParams[fieldName] = fields[fieldName];
-				}
-			}
-			allParams['extendNodejsParam'] = extendParams;
-		
-			$.ajax({
-				url: '/app/add',
-				type: 'POST',
-				dataType: "json",
-				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify(allParams),
-				success: function(res){
-					if(res.code != "000000"){
-						layer.msg(res.message, {icon: 5, shift: 6});
-						return false;
-					}
-					localStorage.setItem('appId_' + $("#userName").val(), res.data.id);
-					layer.msg("保存成功", {
-						icon: 1,
-						time: 500,
-						shade: 0.01,
-						shadeClose: false}, function(){
-						window.location = '/index.html';
-					});
-				},
-				error: function(res){
-					layer.msg(res.message, {icon: 5, shift: 6});
-				}
-			});
-            return false;
-        });
+		submmit($, layer, form, 'saveBtnNodejs', 'extendNodejsParam');
 		
 		//Html
 		submmit($, layer, form, 'saveBtnHtml', 'extendHtmlParam');

@@ -458,6 +458,32 @@ public class AppCreationParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * Node版本
+		 */
+		private String nodeVersion;
+
+		/**
+		 * Node镜像
+		 */
+		private String nodeImage;
+
+		public String getNodeVersion() {
+			return nodeVersion;
+		}
+
+		public void setNodeVersion(String nodeVersion) {
+			this.nodeVersion = nodeVersion;
+		}
+
+		public String getNodeImage() {
+			return nodeImage;
+		}
+
+		public void setNodeImage(String nodeImage) {
+			this.nodeImage = nodeImage;
+		}
+
 	}
 
 	/**
@@ -510,6 +536,11 @@ public class AppCreationParam implements Serializable {
 		private String pythonVersion;
 
 		/**
+		 * Python镜像
+		 */
+		private String pythonImage;
+
+		/**
 		 * 启动文件
 		 */
 		private String startFile;
@@ -520,6 +551,14 @@ public class AppCreationParam implements Serializable {
 
 		public void setPythonVersion(String pythonVersion) {
 			this.pythonVersion = pythonVersion;
+		}
+
+		public String getPythonImage() {
+			return pythonImage;
+		}
+
+		public void setPythonImage(String pythonImage) {
+			this.pythonImage = pythonImage;
 		}
 
 		public String getStartFile() {
@@ -568,6 +607,11 @@ public class AppCreationParam implements Serializable {
 		private String nodeVersion;
 
 		/**
+		 * Node镜像
+		 */
+		private String nodeImage;
+
+		/**
 		 * Npm版本
 		 */
 		private String npmVersion;
@@ -598,6 +642,14 @@ public class AppCreationParam implements Serializable {
 
 		public void setNodeVersion(String nodeVersion) {
 			this.nodeVersion = nodeVersion;
+		}
+
+		public String getNodeImage() {
+			return nodeImage;
+		}
+
+		public void setNodeImage(String nodeImage) {
+			this.nodeImage = nodeImage;
 		}
 
 		public String getNpmVersion() {
@@ -656,6 +708,11 @@ public class AppCreationParam implements Serializable {
 		private String nodeVersion;
 
 		/**
+		 * Node镜像
+		 */
+		private String nodeImage;
+
+		/**
 		 * Npm版本
 		 */
 		private String npmVersion;
@@ -686,6 +743,14 @@ public class AppCreationParam implements Serializable {
 
 		public void setNodeVersion(String nodeVersion) {
 			this.nodeVersion = nodeVersion;
+		}
+
+		public String getNodeImage() {
+			return nodeImage;
+		}
+
+		public void setNodeImage(String nodeImage) {
+			this.nodeImage = nodeImage;
 		}
 
 		public String getNpmVersion() {

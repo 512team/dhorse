@@ -42,6 +42,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
+import org.dhorse.api.response.model.AppExtendNodeJS;
 import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.DeploymentDetail;
@@ -802,16 +803,24 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			return;
 		}
 		File targetFile = new File(context.getLocalPathOfBranch());
-		doBuildImage(context, context.getApp().getBaseImage(), null, Arrays.asList(targetFile.toPath()));
+		AppExtendNodeJS appExtend = context.getApp().getAppExtend();
+		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExtend.getNodeVersion().substring(1);
+		if(!StringUtils.isBlank(appExtend.getNodeImage())){
+			baseImage = appExtend.getNodeImage();
+		}
+		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
 	}
 	
 	private void buildNuxtImage(DeploymentContext context) {
 		if(!TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		AppExtendNuxt appExted = context.getApp().getAppExtend();
 		File targetFile = new File(context.getLocalPathOfBranch());
-		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExted.getNodeVersion().substring(1);
+		AppExtendNuxt appExtend = context.getApp().getAppExtend();
+		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExtend.getNodeVersion().substring(1);
+		if(!StringUtils.isBlank(appExtend.getNodeImage())){
+			baseImage = appExtend.getNodeImage();
+		}
 		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
 	}
 
@@ -860,10 +869,12 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 	}
 
 	private void buildPythonImage(DeploymentContext context, List<String> entrypoint) {
-		App app = context.getApp();
 		File targetFile = new File(context.getLocalPathOfBranch());
-		String version = ((AppExtendPython)app.getAppExtend()).getPythonVersion();
-		String baseImage = Constants.PYTHON_IMAGE_BASE_URL + version.substring(1);
+		AppExtendPython appExtend = context.getApp().getAppExtend();
+		String baseImage = Constants.PYTHON_IMAGE_BASE_URL + appExtend.getPythonVersion().substring(1);
+		if(!StringUtils.isBlank(appExtend.getPythonImage())){
+			baseImage = appExtend.getPythonImage();
+		}
 		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
 	}
 

@@ -12,6 +12,11 @@ public class AppExtendNext extends AppExtend {
 	private String nodeVersion;
 
 	/**
+	 * Node镜像
+	 */
+	private String nodeImage;
+
+	/**
 	 * Npm版本
 	 */
 	private String npmVersion;
@@ -42,6 +47,14 @@ public class AppExtendNext extends AppExtend {
 
 	public void setNodeVersion(String nodeVersion) {
 		this.nodeVersion = nodeVersion;
+	}
+
+	public String getNodeImage() {
+		return nodeImage;
+	}
+
+	public void setNodeImage(String nodeImage) {
+		this.nodeImage = nodeImage;
 	}
 
 	public String getNpmVersion() {
