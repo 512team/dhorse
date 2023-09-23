@@ -18,8 +18,8 @@ DHorse是一个轻量级的云应用管理平台，界面简洁、操作简单�
 
 * [GitHub](https://github.com/512team/dhorse)
 * [Gitee](https://gitee.com/i512team/dhorse)
-* [演示1](http://dhorse-demo1.512.team)
-* [演示2](http://dhorse-demo2.512.team)
+* [演示1](http://dhorse-demo1.512.team?_blank)
+* [演示2](http://dhorse-demo2.512.team){:target="_blank"}
 
 ## 快速开始
 

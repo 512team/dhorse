@@ -59,6 +59,12 @@
 				<label class="layui-form-label text-value" id="nodeVersion"></label>
 			</div>
 		</div>
+		<div class="layui-form-item" id="nodeImageDiv" style="display: none">
+			<label class="layui-form-label">Node镜像：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="nodeImage"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="compileTypeDiv" style="display: none">
 			<label class="layui-form-label">编译工具：</label>
 			<div class="layui-input-block">
@@ -93,6 +99,12 @@
 			<label class="layui-form-label">Python版本：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="pythonVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="pythonImageDiv" style="display: none">
+			<label class="layui-form-label">Python镜像：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="pythonImage"></label>
 			</div>
 		</div>
 		<div class="layui-form-item" id="startFileDiv" style="display: none">
@@ -220,17 +232,19 @@
 				$("#appName").text(res.data.appName);
 				
 				var techType = '';
+				var appExtend = res.data.appExtend;
+				
 				//SpringBoot
 				if(res.data.techType == 1){
 					techType = "SpringBoot";
-					$("#javaHome").text(res.data.appExtend.javaHome);
+					$("#javaHome").text(appExtend.javaHome);
 					$("#packageBuildTypeDiv").show();
 					$("#packageFileTypeDiv").show();
 					$("#javaHomeDiv").show();
 				//Vue
 				}else if(res.data.techType == 2){
 					techType = "Vue";
-					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#nodeVersion").text(appExtend.nodeVersion);
 					if(res.data.appExtend.compileType == 1){
 						$("#compileType").text("Npm");
 						$("#npmVersionDiv").show();
@@ -276,9 +290,13 @@
 				//Nodejs
 				}else if(res.data.techType == 4){
 					techType = "Nodejs";
-					$("#baseImageDiv").show();
+					$("#baseImageDiv").hide();
 					$("#baseImageSourceDiv").hide();
 					$("#packageTargetPathDiv").hide();
+					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#nodeVersionDiv").show();
+					$("#nodeImage").text(res.data.appExtend.nodeImage);
+					$("#nodeImageDiv").show();
 				//Html
 				}else if(res.data.techType == 5){
 					techType = "Html";
@@ -303,6 +321,8 @@
 					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
 					$("#startFileDiv").show();
 					$("#startFile").text(res.data.appExtend.startFile);
+					$("#pythonImage").text(res.data.appExtend.pythonImage);
+					$("#pythonImageDiv").show();
 				//Flask
 				}else if(res.data.techType == 8){
 					techType = "Flask";
@@ -313,6 +333,8 @@
 					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
 					$("#startFileDiv").show();
 					$("#startFile").text(res.data.appExtend.startFile);
+					$("#pythonImage").text(res.data.appExtend.pythonImage);
+					$("#pythonImageDiv").show();
 				//Django
 				}else if(res.data.techType == 9){
 					techType = "Django";
@@ -323,6 +345,8 @@
 					$("#pythonVersion").text(res.data.appExtend.pythonVersion);
 					$("#startFileDiv").show();
 					$("#startFile").text(res.data.appExtend.startFile);
+					$("#pythonImage").text(res.data.appExtend.pythonImage);
+					$("#pythonImageDiv").show();
 				//Nuxt
 				}else if(res.data.techType == 10){
 					techType = "Nuxt";
@@ -332,6 +356,8 @@
 					showDeploymentType($, res.data);
 					$("#packageTargetPathDiv").hide();
 					$("#baseImageSourceDiv").hide();
+					$("#nodeImage").text(res.data.appExtend.nodeImage);
+					$("#nodeImageDiv").show();
 				//Next
 				}else if(res.data.techType == 11){
 					techType = "Next";
@@ -341,6 +367,8 @@
 					showDeploymentType($, res.data);
 					$("#packageTargetPathDiv").hide();
 					$("#baseImageSourceDiv").hide();
+					$("#nodeImage").text(res.data.appExtend.nodeImage);
+					$("#nodeImageDiv").show();
 				}
 				
 				$("#techType").text(techType);
