@@ -403,7 +403,10 @@ public class K8sClusterHelper {
 			return paths;
 		}
 		
-		if(ep != null && kind.equals(ep.getKind()) && (existedAnnotations == null 
+		if(ep != null && kind.equals(ep.getKind()) && (existedAnnotations == null
+				|| StringUtils.isBlank(ep.getScrape())
+				|| StringUtils.isBlank(ep.getPort())
+				|| StringUtils.isBlank(ep.getPath())
 				|| !ep.getScrape().equals(existedAnnotations.get("prometheus.io/scrape"))
 				|| !ep.getPort().equals(existedAnnotations.get("prometheus.io/port"))
 				|| !ep.getPath().equals(existedAnnotations.get("prometheus.io/path")))) {

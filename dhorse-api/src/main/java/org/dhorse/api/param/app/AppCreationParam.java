@@ -468,6 +468,11 @@ public class AppCreationParam implements Serializable {
 		 */
 		private String nodeImage;
 
+		/**
+		 * 启动文件
+		 */
+		private String startFile;
+
 		public String getNodeVersion() {
 			return nodeVersion;
 		}
@@ -482,6 +487,14 @@ public class AppCreationParam implements Serializable {
 
 		public void setNodeImage(String nodeImage) {
 			this.nodeImage = nodeImage;
+		}
+
+		public String getStartFile() {
+			return startFile;
+		}
+
+		public void setStartFile(String startFile) {
+			this.startFile = startFile;
 		}
 
 	}
