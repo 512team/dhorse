@@ -2,7 +2,7 @@ package org.dhorse.api.response.model;
 
 import org.dhorse.api.response.model.App.AppExtend;
 
-public class AppExtendNodeJS extends AppExtend {
+public class AppExtendNodejs extends AppExtend {
 
 	private static final long serialVersionUID = 1L;
 
@@ -15,6 +15,11 @@ public class AppExtendNodeJS extends AppExtend {
 	 * Node镜像
 	 */
 	private String nodeImage;
+	
+	/**
+	 * 启动文件
+	 */
+	private String startFile;
 
 	public String getNodeVersion() {
 		return nodeVersion;
@@ -30,6 +35,14 @@ public class AppExtendNodeJS extends AppExtend {
 
 	public void setNodeImage(String nodeImage) {
 		this.nodeImage = nodeImage;
+	}
+
+	public String getStartFile() {
+		return startFile;
+	}
+
+	public void setStartFile(String startFile) {
+		this.startFile = startFile;
 	}
 
 }

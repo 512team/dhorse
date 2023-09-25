@@ -24,6 +24,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendDjango;
 import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.AppExtendNodejs;
 import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.EnvHealth;
@@ -490,15 +491,19 @@ public class K8sDeploymentHelper {
 			return;
 		}
 		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String startFile = ((AppExtendNodejs)context.getApp().getAppExtend()).getStartFile();
+		if(StringUtils.isBlank(startFile)) {
+			startFile = "index.js";
+		}
 		String commands = new StringBuilder()
 				.append("export NODE_ENV=" + context.getAppEnv().getTag())
 				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
 				.append(" && cd ").append(appHome)
 				.append(" && npm install --registry=https://registry.npmmirror.com")
-				.append(" && npm start")
+				.append(" && exec node " + startFile)
 				.toString();
-		container.setCommand(Arrays.asList("/bin/sh", "-c", commands));
+		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
 	}
 	
@@ -526,8 +531,8 @@ public class K8sDeploymentHelper {
 		}
 		commands.append(" && "+ commandType +" install" + registryMirror)
 				.append(" && "+ commandType +" run build")
-				.append(" && "+ commandType +" start");
-		container.setCommand(Arrays.asList("/bin/sh", "-c", commands.toString()));
+				.append(" && exec "+ commandType +" start");
+		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
 		container.setImage(context.getFullNameOfImage());
 	}
 	
@@ -573,7 +578,7 @@ public class K8sDeploymentHelper {
 		String commands = new StringBuilder()
 				.append("export GO_ENV=" + context.getAppEnv().getTag())
 				.append(" && chmod +x "+ executableFile)
-				.append(" && " + executableFile)
+				.append(" && exec " + executableFile)
 				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
@@ -592,7 +597,7 @@ public class K8sDeploymentHelper {
 				.append("export PYTHON_ENV=" + context.getAppEnv().getTag())
 				.append(" && cd " + appHome)
 				.append(" && pip install -r requirements.txt")
-				.append(" && python " + startFile)
+				.append(" && exec python " + startFile)
 				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
@@ -612,7 +617,7 @@ public class K8sDeploymentHelper {
 				.append(" && export FLASK_ENV=" + context.getAppEnv().getTag())
 				.append(" && cd " + appHome)
 				.append(" && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --use-deprecated=legacy-resolver")
-				.append(" && flask run --host 0.0.0.0 --port " + context.getAppEnv().getServicePort())
+				.append(" && exec flask run --host 0.0.0.0 --port " + context.getAppEnv().getServicePort())
 				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
@@ -631,7 +636,7 @@ public class K8sDeploymentHelper {
 				.append("export DJANGO_ENV=" + context.getAppEnv().getTag())
 				.append(" && cd " + appHome)
 				.append(" && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --use-deprecated=legacy-resolver")
-				.append(" && python ")
+				.append(" && exec python ")
 				.append(startFile)
 				.append(" runserver")
 				.append(" 0.0.0.0:" + context.getAppEnv().getServicePort())
@@ -760,8 +765,8 @@ public class K8sDeploymentHelper {
 	 */
 	private static void commandsOfJar(Container container, DeploymentContext context){
 		StringBuilder commands = new StringBuilder();
-		commands.append("chmod +x $JAVA_HOME/bin/java &&");
-		commands.append(" $JAVA_HOME/bin/java");
+		commands.append("chmod +x $JAVA_HOME/bin/java");
+		commands.append(" && exec $JAVA_HOME/bin/java");
 		//DHorse定义的Jvm参数
 		List<String> jvmArgsOfDHorse = jvmArgsOfDHorse(context);
 		for(String arg : jvmArgsOfDHorse) {

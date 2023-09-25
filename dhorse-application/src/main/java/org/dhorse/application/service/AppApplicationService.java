@@ -38,7 +38,7 @@ import org.dhorse.api.response.model.AppExtendHtml;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNext;
 import org.dhorse.api.response.model.AppExtendNode;
-import org.dhorse.api.response.model.AppExtendNodeJS;
+import org.dhorse.api.response.model.AppExtendNodejs;
 import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.GlobalConfigAgg;
@@ -442,7 +442,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			BeanUtils.copyProperties(requestParam.getExtendNodeParam(), appExtend);
 		}else if(TechTypeEnum.NODEJS.getCode().equals(requestParam.getTechType())
 				&& requestParam.getExtendNodejsParam() != null) {
-			appExtend = new AppExtendNodeJS();
+			appExtend = new AppExtendNodejs();
 			BeanUtils.copyProperties(requestParam.getExtendNodejsParam(), appExtend);
 		}else if(TechTypeEnum.HTML.getCode().equals(requestParam.getTechType())
 				&& requestParam.getExtendHtmlParam() != null) {

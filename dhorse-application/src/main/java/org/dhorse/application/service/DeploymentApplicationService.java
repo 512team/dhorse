@@ -42,7 +42,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
-import org.dhorse.api.response.model.AppExtendNodeJS;
+import org.dhorse.api.response.model.AppExtendNodejs;
 import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.DeploymentDetail;
@@ -272,8 +272,6 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		message.setSubmitter(context.getSubmitter());
 		message.setApprover(context.getApprover());
 		message.setStatus(status.getCode());
-		//todo
-		//message.setTagName(context.get);
 		message.setVerionName(context.getVersionName());
 
 		EventResponse<DeploymentMessage> response = new EventResponse<>();
@@ -803,7 +801,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			return;
 		}
 		File targetFile = new File(context.getLocalPathOfBranch());
-		AppExtendNodeJS appExtend = context.getApp().getAppExtend();
+		AppExtendNodejs appExtend = context.getApp().getAppExtend();
 		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExtend.getNodeVersion().substring(1);
 		if(!StringUtils.isBlank(appExtend.getNodeImage())){
 			baseImage = appExtend.getNodeImage();
