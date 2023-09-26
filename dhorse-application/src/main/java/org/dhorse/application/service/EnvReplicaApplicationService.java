@@ -255,7 +255,9 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 				}
 				for(ReplicaMetrics metric : replicaMetrics) {
 					String replicaName = metric.getReplicaName();
-					AppEnvPO appEnvPO = envMap.get(replicaName.substring(0, replicaName.indexOf("-dhorse-") + 7));
+					//解析deployment名字的方式不优雅，后续可以考虑其他方案
+					String[] appNameTag = K8sUtils.appNameAndEnvTag(replicaName);
+					AppEnvPO appEnvPO = envMap.get(K8sUtils.getReplicaAppName(appNameTag[0], appNameTag[1]));
 					if(appEnvPO == null) {
 						continue;
 					}

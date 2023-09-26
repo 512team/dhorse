@@ -46,7 +46,7 @@ public class K8sUtils {
 	
 	public static final String DHORSE_LABEL_KEY = Constants.DHORSE_TAG + "-app";
 	
-	public static final String DHORSE_SELECTOR_KEY = DHORSE_LABEL_KEY + "=";
+	public static final String DHORSE_SELECTOR_KEY = DHORSE_LABEL_KEY + " in (";
 	
 	private static final Set<String> SYSTEM_NAMESPACES = new HashSet<>();
 	
@@ -63,6 +63,10 @@ public class K8sUtils {
 	}
 	
 	public static String getReplicaAppName(String appName, String appEnvTag) {
+		return getServiceName(appName, appEnvTag);
+	}
+	
+	public static String getReplicaAppName2(String appName, String appEnvTag) {
 		return new StringBuilder()
 				.append(appName).append("-")
 				.append("1").append("-")
@@ -79,19 +83,45 @@ public class K8sUtils {
 	}
 	
 	public static String[] appNameAndEnvTag(String podName) {
-		String nameAndeEnv = podName.split("-dhorse-")[0];
+		String appName = "";
+		String envTag = "";
+		//兼容逻辑，v1.4.1以后的版本应该删除
+		if(podName.contains("-dhorse-")) {
+			String nameAndeEnv = podName.split("-dhorse-")[0];
+			int offset = nameAndeEnv.lastIndexOf("-1-");
+			appName = nameAndeEnv.substring(0, offset);
+			envTag = nameAndeEnv.substring(offset + 3);
+		}else {
+			String[] segments = podName.split("-");
+			envTag = segments[segments.length-3];
+			for(int i=0; i < segments.length-3; i++) {
+				appName += segments[i] + "-";
+			}
+			appName = appName.substring(0, appName.length() - 1);
+		}
+		return new String[]{appName, envTag};
+	}
+	
+	public static String[] appNameAndEnvTag2(String podName) {
+		String nameAndeEnv = podName.split("-dhorse")[0];
 		int offset = nameAndeEnv.lastIndexOf("-1-");
 		String appName = nameAndeEnv.substring(0, offset);
 		String envTag = nameAndeEnv.substring(offset + 3);
 		return new String[]{appName, envTag};
 	}
 	
-	public static String getDeploymentLabelSelector(String appName) {
-		return DHORSE_SELECTOR_KEY + appName;
+	public static String getSelectorKey(String appValue) {
+		if(appValue.contains("-dhorse")) {
+			String[] nameTag = appNameAndEnvTag2(appValue);
+			String newName = nameTag[0] + "-" + nameTag[1];
+			return DHORSE_SELECTOR_KEY + appValue + "," + newName +")";
+		}
+		return DHORSE_SELECTOR_KEY + appValue + ")";
 	}
 	
 	public static String getDeploymentLabelSelector(String appName, String appEnvTag) {
-		return DHORSE_SELECTOR_KEY + getReplicaAppName(appName, appEnvTag);
+		return DHORSE_SELECTOR_KEY + getReplicaAppName(appName, appEnvTag)
+			+ "," + getServiceName(appName, appEnvTag) + ")";
 	}
 	
 	public static Set<String> getSystemNamspaces() {

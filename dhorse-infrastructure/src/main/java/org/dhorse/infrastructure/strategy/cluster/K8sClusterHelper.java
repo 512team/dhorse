@@ -454,7 +454,7 @@ public class K8sClusterHelper {
 					continue;
 				}
 				V1ConfigMapList list = coreApi.listNamespacedConfigMap(namespace, null, null, null, null,
-						K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DHORSE_CONFIGMAP_NAME, null, null, null, null, null);
+						K8sUtils.getSelectorKey(K8sUtils.DHORSE_CONFIGMAP_NAME), null, null, null, null, null);
 				
 				V1ConfigMap configMap = K8sClusterHelper.dhorseConfigMap();
 				if(CollectionUtils.isEmpty(list.getItems())) {
@@ -510,7 +510,7 @@ public class K8sClusterHelper {
 			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
 				return;
 			}
-			String selector = K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DHORSE_CONFIGMAP_NAME;
+			String selector = K8sUtils.getSelectorKey(K8sUtils.DHORSE_CONFIGMAP_NAME);
 			for(V1Namespace n : namespaceList.getItems()) {
 				String namespace = n.getMetadata().getName();
 				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)

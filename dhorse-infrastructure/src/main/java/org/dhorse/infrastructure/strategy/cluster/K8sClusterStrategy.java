@@ -183,7 +183,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			if(CollectionUtils.isEmpty(namespaceList.getItems())) {
 				return null;
 			}
-			String selector = K8sUtils.DHORSE_SELECTOR_KEY + K8sUtils.DOCKER_REGISTRY_KEY;
+			String selector = K8sUtils.getSelectorKey(K8sUtils.DOCKER_REGISTRY_KEY);
 			for(V1Namespace n : namespaceList.getItems()) {
 				String namespace = n.getMetadata().getName();
 				if(!K8sUtils.DHORSE_NAMESPACE.equals(namespace)
@@ -250,14 +250,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		V1Deployment deployment = new V1Deployment();
 		deployment.apiVersion("apps/v1");
 		deployment.setKind("Deployment");
-		deployment.setMetadata(deploymentMetaData(context.getDeploymentName(), context.getAppEnv().getTag()));
+		deployment.setMetadata(deploymentMetaData(context.getDeploymentName()));
 		deployment.setSpec(deploymentSpec(context));
 		ApiClient apiClient = this.apiClient(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken());
 		AppsV1Api api = new AppsV1Api(apiClient);
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		String namespace = context.getAppEnv().getNamespaceName();
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(context.getDeploymentName());
+		String labelSelector = K8sUtils.getSelectorKey(context.getDeploymentName());
 		try {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
@@ -268,8 +268,15 @@ public class K8sClusterStrategy implements ClusterStrategy {
 						null, null);
 			}
 			
+			//v1.4.1的兼容代码，后续版本删除
+			try {
+				String name = K8sUtils.getReplicaAppName2(context.getApp().getAppName(), context.getAppEnv().getTag());
+				api.deleteNamespacedDeployment(name, namespace, null, null, null, null, null, null);
+			}catch(Exception e) {
+				logger.error("Failed to delete deployment", e);
+			}
 			// 自动扩容任务
-			createAutoScaling(context.getAppEnv(), context.getDeploymentName(), apiClient);
+			createAutoScaling(context.getApp().getAppName(), context.getAppEnv(), context.getDeploymentName(), apiClient);
 
 			if(!checkHealthOfAll(coreApi, namespace, labelSelector)) {
 				logger.error("Failed to create k8s deployment, because the replica is not fully started");
@@ -302,7 +309,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String namespace = context.getAppEnv().getNamespaceName();
 		String serviceName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-				K8sUtils.DHORSE_SELECTOR_KEY + serviceName, 1, null, null, null, null);
+				K8sUtils.getSelectorKey(serviceName), 1, null, null, null, null);
 		if (CollectionUtils.isEmpty(serviceList.getItems())) {
 			logger.info("Start to create service");
 			V1Service service = new V1Service();
@@ -314,6 +321,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		}else{
 			List<JsonPatch> patchs = K8sClusterHelper.updatePrometheus("Service", serviceList.getItems().get(0)
 					.getMetadata().getAnnotations(), context);
+			
+			//兼容逻辑，v1.4.1以后应该删除
+			JsonPatch path = new JsonPatch();
+			path.setOp("replace");
+			path.setPath("/spec/selector/dhorse-app");
+			path.setValue(serviceName);
+			patchs.add(path);
+			
 			if(!CollectionUtils.isEmpty(patchs)) {
 				logger.info("Start to update service");
 				V1Patch patch = new V1Patch(JsonUtils.toJsonString(patchs));
@@ -334,7 +349,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String ingressName = K8sUtils.getServiceName(context.getApp().getAppName(), context.getAppEnv().getTag());
 		
 		V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
-				K8sUtils.DHORSE_SELECTOR_KEY + ingressName, 1, null, null, null, null);
+				K8sUtils.getSelectorKey(ingressName), 1, null, null, null, null);
 		V1Ingress ingress = null;
 		if (!StringUtils.isBlank(ingressHost) && CollectionUtils.isEmpty(list.getItems())) {
 			logger.info("Start to create ingress");
@@ -406,7 +421,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		AppsV1Api api = new AppsV1Api(apiClient);
 		String namespace = appEnvPO.getNamespaceName();
 		String depolymentName = K8sUtils.getDeploymentName(appPO.getAppName(), appEnvPO.getTag());
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(depolymentName);
+		String labelSelector = K8sUtils.getSelectorKey(depolymentName);
 		try {
 			V1DeploymentList oldDeployment = api.listNamespacedDeployment(namespace, null, null, null, null,
 					labelSelector, null, null, null, null, null);
@@ -437,10 +452,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public boolean autoScaling(AppPO appPO, AppEnvPO appEnvPO, ClusterPO clusterPO) {
 		ApiClient apiClient = this.apiClient(clusterPO.getClusterUrl(), clusterPO.getAuthToken());
 		String deploymentName = K8sUtils.getReplicaAppName(appPO.getAppName(), appEnvPO.getTag());
-		return createAutoScaling(appEnvPO, deploymentName, apiClient);
+		return createAutoScaling(appPO.getAppName(), appEnvPO, deploymentName, apiClient);
 	}
 
-	private boolean createAutoScaling(AppEnvPO appEnvPO, String deploymentName, ApiClient apiClient) {
+	private boolean createAutoScaling(String appName, AppEnvPO appEnvPO, String deploymentName, ApiClient apiClient) {
 		AutoscalingV1Api autoscalingApi = new AutoscalingV1Api(apiClient);
 		V1HorizontalPodAutoscaler body = new V1HorizontalPodAutoscaler();
 		body.setKind("HorizontalPodAutoscaler");
@@ -454,9 +469,9 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		scaleTargetRef.setName(deploymentName);
 		spec.setScaleTargetRef(scaleTargetRef);
 		spec.setTargetCPUUtilizationPercentage(appEnvPO.getAutoScalingCpu());
-		body.setMetadata(deploymentMetaData(deploymentName, appEnvPO.getTag()));
+		body.setMetadata(deploymentMetaData(deploymentName));
 		body.setSpec(spec);
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(deploymentName);
+		String labelSelector = K8sUtils.getSelectorKey(deploymentName);
 		try {
 			V1HorizontalPodAutoscalerList autoscalerList = autoscalingApi.listNamespacedHorizontalPodAutoscaler(
 					appEnvPO.getNamespaceName(), null, null, null, null, labelSelector, 1, null, null, null,
@@ -468,6 +483,14 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				autoscalingApi.replaceNamespacedHorizontalPodAutoscaler(deploymentName, appEnvPO.getNamespaceName(),
 						body, null, null, null, null);
 			}
+			
+			//v1.4.1的兼容代码，后续版本删除
+			try {
+				String name = K8sUtils.getReplicaAppName2(appName, appEnvPO.getTag());
+				autoscalingApi.deleteNamespacedHorizontalPodAutoscaler(name, appEnvPO.getNamespaceName(), null, null, null, null, null, null);
+			}catch(Exception e) {
+				logger.error("Failed to delete hpa", e);
+			}
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
 			LogUtils.throwException(logger, message, MessageCodeEnum.REPLICA_RESTARTED_FAILURE);
@@ -477,7 +500,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private boolean deleteAutoScaling(String namespace, String deploymentName, ApiClient apiClient) {
 		AutoscalingV1Api autoscalingApi = new AutoscalingV1Api(apiClient);
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(deploymentName);
+		String labelSelector = K8sUtils.getSelectorKey(deploymentName);
 		try {
 			V1HorizontalPodAutoscalerList autoscalerList = autoscalingApi.listNamespacedHorizontalPodAutoscaler(
 					namespace, null, null, null, null, labelSelector, 1, null, null, null, null);
@@ -506,7 +529,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		CoreV1Api coreApi = new CoreV1Api(apiClient);
 		try {
 			V1ServiceList serviceList = coreApi.listNamespacedService(namespace, null, null, null, null,
-					K8sUtils.DHORSE_SELECTOR_KEY + serviceName, 1, null, null, null, null);
+					K8sUtils.getSelectorKey(serviceName), 1, null, null, null, null);
 			if (CollectionUtils.isEmpty(serviceList.getItems())) {
 				return true;
 			}
@@ -530,7 +553,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		NetworkingV1Api networkingApi = new NetworkingV1Api(apiClient);
 		try {
 			V1IngressList list = networkingApi.listNamespacedIngress(namespace, null, null, null, null,
-					K8sUtils.DHORSE_SELECTOR_KEY + serviceName, 1, null, null, null, null);
+					K8sUtils.getSelectorKey(serviceName), 1, null, null, null, null);
 			if (CollectionUtils.isEmpty(list.getItems())) {
 				return true;
 			}
@@ -588,10 +611,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return ports;
 	}
 	
-	private V1ObjectMeta deploymentMetaData(String appName, String envTag) {
+	private V1ObjectMeta deploymentMetaData(String deploymentName) {
 		V1ObjectMeta metadata = new V1ObjectMeta();
-		metadata.setName(appName);
-		metadata.setLabels(K8sClusterHelper.dhorseLabel(appName));
+		metadata.setName(deploymentName);
+		metadata.setLabels(K8sClusterHelper.dhorseLabel(deploymentName));
 		return metadata;
 	}
 
@@ -612,9 +635,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	
 	private V1PodTemplateSpec specTemplate(DeploymentContext context) {
 		V1ObjectMeta specMetadata = new V1ObjectMeta();
-		Map<String, String> labels = K8sClusterHelper.dhorseLabel(context.getDeploymentName());
-		labels.put("version", String.valueOf(System.currentTimeMillis()));
-		specMetadata.setLabels(labels);
+		specMetadata.setLabels(K8sClusterHelper.deploymentLabel(context));
 		specMetadata.setAnnotations(K8sClusterHelper.addPrometheus("Pod", context));
 		V1PodTemplateSpec template = new V1PodTemplateSpec();
 		template.setMetadata(specMetadata);

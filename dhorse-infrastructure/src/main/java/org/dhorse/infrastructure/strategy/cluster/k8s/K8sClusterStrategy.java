@@ -177,7 +177,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public boolean createDeployment(DeploymentContext context) {
 		logger.info("Start to deploy k8s server");
 		String namespace = context.getAppEnv().getNamespaceName();
-		String labelSelector = K8sUtils.getDeploymentLabelSelector(context.getDeploymentName());
+		String labelSelector = K8sUtils.getSelectorKey(context.getDeploymentName());
 		try(KubernetesClient client = client(context.getCluster().getClusterUrl(),
 				context.getCluster().getAuthToken())){
 
