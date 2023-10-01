@@ -363,13 +363,13 @@
 				//Next
 				}else if(res.data.techType == 11){
 					techType = "Next";
-					$("#nodeVersion").text(res.data.appExtend.nodeVersion);
+					$("#nodeVersion").text(appExtend.nodeVersion);
 					$("#nodeVersionDiv").show();
 					showCompileType($, res.data);
 					showDeploymentType($, res.data);
 					$("#packageTargetPathDiv").hide();
 					$("#baseImageSourceDiv").hide();
-					$("#nodeImage").text(res.data.appExtend.nodeImage);
+					$("#nodeImage").text(appExtend.nodeImage);
 					$("#nodeImageDiv").show();
 				}
 				

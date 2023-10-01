@@ -475,11 +475,12 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				return packByGradle(context);
 			}
 		}
-		// Node应用
+		//Node类应用
 		if (TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
 				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())
-				|| TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())) {
-			AppExtendNode appExtend =  context.getApp().getAppExtend();
+				|| TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())
+				|| TechTypeEnum.NEXT.getCode().equals(context.getApp().getTechType())) {
+			AppExtendNodejs appExtend =  context.getApp().getAppExtend();
 			String pomName = "";
 			if (Objects.isNull(appExtend.getCompileType())
 					|| NodeCompileTypeEnum.NPM.getCode().equals(appExtend.getCompileType())) {
@@ -693,6 +694,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		buildNodejsImage(context);
 		
 		buildNuxtImage(context);
+		
+		buildNextImage(context);
 
 		buildHtmlImage(context);
 
@@ -796,7 +799,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		if(!TechTypeEnum.NODEJS.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		doBuildNuxtImage(context);
+		doBuildNodejsImage(context);
 	}
 	
 	private void buildNuxtImage(DeploymentContext context) {
@@ -806,7 +809,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		File branchFile = new File(context.getLocalPathOfBranch());
 		File[] codeFiles = branchFile.listFiles();
 		for(File c : codeFiles) {
-			if(Constants.NUXT_APP_TARGET_FILE.contains(c.getName())) {
+			if(Constants.NODE_APP_TARGET_FILE.contains(c.getName())) {
 				continue;
 			}
 			try {
@@ -819,10 +822,33 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				logger.error("Failed to clear code file", e);
 			}
 		}
-		doBuildNuxtImage(context);
+		doBuildNodejsImage(context);
 	}
 	
-	private void doBuildNuxtImage(DeploymentContext context) {
+	private void buildNextImage(DeploymentContext context) {
+		if(!TechTypeEnum.NEXT.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		File branchFile = new File(context.getLocalPathOfBranch());
+		File[] codeFiles = branchFile.listFiles();
+		for(File c : codeFiles) {
+			if(Constants.NODE_APP_TARGET_FILE.contains(c.getName())) {
+				continue;
+			}
+			try {
+				if(c.isDirectory()) {
+					FileUtils.deleteDirectory(c);
+				}else {
+					c.delete();
+				}
+			} catch (IOException e) {
+				logger.error("Failed to clear code file", e);
+			}
+		}
+		doBuildNodejsImage(context);
+	}
+	
+	private void doBuildNodejsImage(DeploymentContext context) {
 		File branchFile = new File(context.getLocalPathOfBranch());
 		//为了提高制作镜像的性能，这里先把编译后的文件压缩，然后在部署阶段进行解压
 		if(Constants.isWindows()) {

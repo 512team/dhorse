@@ -23,6 +23,7 @@ import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
 import org.dhorse.api.response.model.AppExtendDjango;
 import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendJava;
+import org.dhorse.api.response.model.AppExtendNext;
 import org.dhorse.api.response.model.AppExtendNodejs;
 import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
@@ -422,6 +423,7 @@ public class K8sDeploymentHelper {
 		containerOfNginx(context, container);
 		containerOfNodejs(context, container);
 		containerOfNuxt(context, container);
+		containerOfNext(context, container);
 		containerOfGo(context, container);
 		containerOfPython(context, container);
 		containerOfFlask(context, container);
@@ -516,16 +518,40 @@ public class K8sDeploymentHelper {
 			return;
 		}
 		String appName = context.getApp().getAppName();
-		StringBuilder commands = new StringBuilder()
+		String commands = new StringBuilder()
 				.append("export NODE_ENV=" + context.getAppEnv().getTag())
 				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
 				.append(" && cd ").append(Constants.USR_LOCAL_HOME)
 				.append(" && tar zxf ").append(appName).append(".tar.gz")
 				.append(" && cd ").append(appName)
-				.append(" && chmod +x /usr/local/hello-nuxt/node_modules/.bin/nuxt");
-		commands.append(" && exec npm start");
-		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
+				.append(" && chmod +x node_modules/.bin/nuxt")
+				.append(" && exec npm start")
+				.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
+		container.setImage(context.getFullNameOfImage());
+	}
+	
+	private static void containerOfNext(DeploymentContext context, Container container) {
+		if(!TechTypeEnum.NEXT.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		AppExtendNext appExtend = context.getApp().getAppExtend();
+		if(!NuxtDeploymentTypeEnum.DYNAMIC.getCode().equals(appExtend.getDeploymentType())) {
+			return;
+		}
+		String appName = context.getApp().getAppName();
+		String commands = new StringBuilder()
+				.append("export NODE_ENV=" + context.getAppEnv().getTag())
+				.append(" && export HOST=0.0.0.0")
+				.append(" && export PORT=" + context.getAppEnv().getServicePort())
+				.append(" && cd ").append(Constants.USR_LOCAL_HOME)
+				.append(" && tar zxf ").append(appName).append(".tar.gz")
+				.append(" && cd ").append(appName)
+				.append(" && chmod +x node_modules/.bin/next")
+				.append(" && exec npm start")
+				.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
 	}
 	

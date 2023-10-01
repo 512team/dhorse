@@ -429,7 +429,8 @@
 							<select name="extendNextParam.compileType" lay-filter="extendNextParam-compileType" lay-verify="required" lay-reqtext="编译工具不能为空">
 								<option value="">请选择</option>
 								<option value="1">Npm</option>
-								<option value="2">Pnpm</option>
+								<!--通过Pnpm构建的版本，启动服务有问题-->
+								<!--<option value="2">Pnpm</option>-->
 								<option value="3">Yarn</option>
 							</select>
 						</div>
@@ -913,7 +914,7 @@
 		submmit($, layer, form, 'saveBtnNuxt', 'extendNuxtParam', parentIndex, appId);
 		
 		//Next
-		submmit($, layer, form, 'saveBtnNext', 'extendDjangoNext', parentIndex, appId);
+		submmit($, layer, form, 'saveBtnNext', 'extendNextParam', parentIndex, appId);
 		
     });
 	

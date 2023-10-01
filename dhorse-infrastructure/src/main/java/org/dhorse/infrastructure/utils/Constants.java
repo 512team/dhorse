@@ -117,15 +117,17 @@ public class Constants {
 			AppMemberRoleTypeEnum.CHECKER.getCode());
 	
 	/**
-	 * Nuxt应用的编译文件
+	 * Nodejs类应用的编译文件
 	 */
-	public static final Set<String> NUXT_APP_TARGET_FILE = new HashSet<>();
+	public static final Set<String> NODE_APP_TARGET_FILE = new HashSet<>();
 	static {
-		NUXT_APP_TARGET_FILE.add(".nuxt");
-		NUXT_APP_TARGET_FILE.add("static");
-		NUXT_APP_TARGET_FILE.add("package.json");
-		NUXT_APP_TARGET_FILE.add("nuxt.config.js");
-		NUXT_APP_TARGET_FILE.add("node_modules");
+		NODE_APP_TARGET_FILE.add(".nuxt");
+		NODE_APP_TARGET_FILE.add(".next");
+		NODE_APP_TARGET_FILE.add("static");
+		NODE_APP_TARGET_FILE.add("package.json");
+		NODE_APP_TARGET_FILE.add("nuxt.config.js");
+		NODE_APP_TARGET_FILE.add("next.config.js");
+		NODE_APP_TARGET_FILE.add("node_modules");
 	}
 	
 	/**

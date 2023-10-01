@@ -1,6 +1,6 @@
 package org.dhorse.api.response.model;
 
-public class AppExtendNuxt extends AppExtendNode {
+public class AppExtendNuxt extends AppExtendNodejs {
 
 	private static final long serialVersionUID = 1L;
 
