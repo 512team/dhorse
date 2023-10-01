@@ -1,18 +1,25 @@
 package org.dhorse.infrastructure.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.Enumeration;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -26,51 +33,90 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
 	public static String unZip(String zipPath, String destParentPath) {
 		logger.info("Start to decompress zip file");
-	    File destFile = new File(destParentPath);
-	    if (!destFile.exists()) {
-	        destFile.mkdirs();
-	    }
-	    String destPath = null;
-	    try(ZipFile zip = new ZipFile(zipPath)){
-	    	Enumeration<? extends ZipEntry> entries = zip.entries();
-		    for (int i = 0; entries.hasMoreElements(); i++) {
-		        ZipEntry entry = entries.nextElement();
-		        String curEntryName = entry.getName();
-		        int endIndex = curEntryName.lastIndexOf('/');
-		        String outPath = (destParentPath + curEntryName).replaceAll("\\*", "/");
-		        if(i == 0) {
-		        	destPath = outPath;
-		        }
-		        if (endIndex != -1) {
-		            File file = new File(outPath.substring(0, outPath.lastIndexOf("/")));
-		            if (!file.exists()) {
-		                file.mkdirs();
-		            }
-		        }
-	
-		        File outFile = new File(outPath);
-		        if (outFile.isDirectory()) {
-		            continue;
-		        }
-		        
-		        byte[] buffer = new byte[1024 * 1024];
-		        int len;
-		        try(InputStream in = zip.getInputStream(entry);
-				        OutputStream out = new FileOutputStream(outPath)){
-			        while ((len = in.read(buffer)) > 0) {
-			            out.write(buffer, 0, len);
-			        }
-		        }catch (Exception ex) {
-                	LogUtils.throwException(logger, ex, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
-                }
-		    }
-	    }catch(Exception e) {
-	    	LogUtils.throwException(logger, e, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
-	    }
-	    logger.info("End to decompress zip file");
-	    return destPath;
+		File destFile = new File(destParentPath);
+		if (!destFile.exists()) {
+			destFile.mkdirs();
+		}
+		String destPath = null;
+		try (ZipFile zip = new ZipFile(zipPath)) {
+			Enumeration<? extends ZipEntry> entries = zip.entries();
+			for (int i = 0; entries.hasMoreElements(); i++) {
+				ZipEntry entry = entries.nextElement();
+				String curEntryName = entry.getName();
+				int endIndex = curEntryName.lastIndexOf('/');
+				String outPath = (destParentPath + curEntryName).replaceAll("\\*", "/");
+				if (i == 0) {
+					destPath = outPath;
+				}
+				if (endIndex != -1) {
+					File file = new File(outPath.substring(0, outPath.lastIndexOf("/")));
+					if (!file.exists()) {
+						file.mkdirs();
+					}
+				}
+
+				File outFile = new File(outPath);
+				if (outFile.isDirectory()) {
+					continue;
+				}
+
+				byte[] buffer = new byte[1024 * 1024];
+				int len;
+				try (InputStream in = zip.getInputStream(entry); OutputStream out = new FileOutputStream(outPath)) {
+					while ((len = in.read(buffer)) > 0) {
+						out.write(buffer, 0, len);
+					}
+				} catch (Exception ex) {
+					LogUtils.throwException(logger, ex, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
+				}
+			}
+		} catch (Exception e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
+		}
+		logger.info("End to decompress zip file");
+		return destPath;
 	}
-	
+
+	/**
+	 * @param source 指定打包的源目录
+	 */
+	public static String tarGz(String source) {
+		String targetFilePath = source + ".tar.gz";
+		try(TarArchiveOutputStream output = new TarArchiveOutputStream(
+				new GZIPOutputStream(new BufferedOutputStream(
+						new FileOutputStream(targetFilePath))))){
+			// 使文件名支持超过 100 个字节
+			output.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+			File sourceFile = new File(source);
+			File[] sources = sourceFile.listFiles();
+			for (File oneFile : sources) {
+				addFilesToTarGZ(oneFile.getPath(), new File(source).getName() + File.separator, output);
+			}
+		} catch (IOException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.COMPRESSION_FILE_FAILURE);
+		}
+		return targetFilePath;
+	}
+
+	private static void addFilesToTarGZ(String sourcePath, String parent, TarArchiveOutputStream tarArchive)
+			throws IOException {
+		File sourceFile = new File(sourcePath);
+		String fileName = parent.concat(sourceFile.getName());
+		tarArchive.putArchiveEntry(new TarArchiveEntry(sourceFile, fileName));
+		if (sourceFile.isFile()) {
+			try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sourceFile))){
+				IOUtils.copy(bis, tarArchive);
+				tarArchive.closeArchiveEntry();
+			}
+		} else if (sourceFile.isDirectory()) {
+			// 因为是个文件夹，无需写入内容，关闭即可
+			tarArchive.closeArchiveEntry();
+			for (File f : sourceFile.listFiles()) {
+				addFilesToTarGZ(f.getAbsolutePath(), fileName + File.separator, tarArchive);
+			}
+		}
+	}
+
 	public static String unTarGz(String orgFileName, String parentPath) {
 		return unTarGz(new File(orgFileName), new File(parentPath));
 	}
@@ -83,9 +129,9 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 			ArchiveEntry entry;
 			for (int i = 0; (entry = in.getNextEntry()) != null; i++) {
 				File targetFile = new File(parentPath, entry.getName());
-				if(i == 0) {
+				if (i == 0) {
 					destPath = targetFile.getPath();
-			    }
+				}
 				if (entry.isDirectory()) {
 					continue;
 				}
@@ -93,11 +139,11 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				if (!parent.exists()) {
 					parent.mkdirs();
 				}
-				try(OutputStream out = Files.newOutputStream(targetFile.toPath())){
+				try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
 					IOUtils.copy(in, out);
-				}catch (Exception ex) {
+				} catch (Exception ex) {
 					LogUtils.throwException(logger, ex, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
-                }
+				}
 			}
 		} catch (Exception e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.DECOMPRESSION_FILE_FAILURE);
@@ -108,18 +154,17 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
 	public static void downloadFile(String fileUrl, File targetFile) {
 		logger.info("Start to download file from {}", fileUrl);
-		
+
 		URLConnection conn = null;
 		try {
 			conn = new URL(fileUrl).openConnection();
 		} catch (Exception e) {
 			logger.error("File url invalid", e);
 		}
-		
+
 		conn.setConnectTimeout(5 * 1000);
 		conn.setReadTimeout(10 * 60 * 1000);
-		try (InputStream inStream = conn.getInputStream();
-				FileOutputStream fs = new FileOutputStream(targetFile)){
+		try (InputStream inStream = conn.getInputStream(); FileOutputStream fs = new FileOutputStream(targetFile)) {
 			byte[] buffer = new byte[1024 * 1024];
 			int length = 0;
 			while ((length = inStream.read(buffer)) != -1) {
@@ -131,7 +176,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 		}
 		logger.info("End to download file");
 	}
-	
+
 //	public static void deleteDirectory(final File directory) throws IOException {
 //        Objects.requireNonNull(directory, "directory");
 //        if (!directory.exists()) {

@@ -5,7 +5,9 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.dhorse.api.enums.AppMemberRoleTypeEnum;
 import org.dhorse.infrastructure.component.SpringBootApplicationHome;
@@ -66,8 +68,6 @@ public class Constants {
 	
 	public static final String BUSYBOX_IMAGE_URL = "registry.cn-hangzhou.aliyuncs.com/dhorse/busybox:latest";
 	
-	public static final String CENTOS_IMAGE_URL = "dockerproxy.com/library/centos:latest";
-	
 	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.com/library/python:";
 	
 	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.com/library/node:";
@@ -115,6 +115,18 @@ public class Constants {
 			AppMemberRoleTypeEnum.ADMIN.getCode(),
 			AppMemberRoleTypeEnum.ARCHITECT.getCode(),
 			AppMemberRoleTypeEnum.CHECKER.getCode());
+	
+	/**
+	 * Nuxt应用的编译文件
+	 */
+	public static final Set<String> NUXT_APP_TARGET_FILE = new HashSet<>();
+	static {
+		NUXT_APP_TARGET_FILE.add(".nuxt");
+		NUXT_APP_TARGET_FILE.add("static");
+		NUXT_APP_TARGET_FILE.add("package.json");
+		NUXT_APP_TARGET_FILE.add("nuxt.config.js");
+		NUXT_APP_TARGET_FILE.add("node_modules");
+	}
 	
 	/**
 	 * 部署日志文件路径

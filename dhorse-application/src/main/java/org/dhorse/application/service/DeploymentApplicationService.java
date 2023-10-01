@@ -43,7 +43,6 @@ import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
 import org.dhorse.api.response.model.AppExtendNodejs;
-import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.DeploymentDetail;
 import org.dhorse.api.response.model.EnvHealth;
@@ -478,7 +477,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		// Node应用
 		if (TechTypeEnum.VUE.getCode().equals(context.getApp().getTechType())
-				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())) {
+				|| TechTypeEnum.REACT.getCode().equals(context.getApp().getTechType())
+				|| TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())) {
 			AppExtendNode appExtend =  context.getApp().getAppExtend();
 			String pomName = "";
 			if (Objects.isNull(appExtend.getCompileType())
@@ -503,11 +503,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 				String result = lines.replace("${env}", envTag)
 						.replace("${nodeVersion}", appExtend.getNodeVersion())
 						.replace("${installDirectory}", mavenRepo() + "node/" + appExtend.getNodeVersion());
-				if (Objects.isNull(appExtend.getCompileType())
-						|| NodeCompileTypeEnum.NPM.getCode().equals(appExtend.getCompileType())) {
-					result = result
-							.replace("${npmVersion}", appExtend.getNpmVersion().substring(1));
-				} else if (NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
+				if (NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
 					result = result
 							.replace("${pnpmVersion}", appExtend.getPnpmVersion().substring(1));
 				} else if (NodeCompileTypeEnum.YARN.getCode().equals(appExtend.getCompileType())) {
@@ -800,26 +796,52 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		if(!TechTypeEnum.NODEJS.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		File targetFile = new File(context.getLocalPathOfBranch());
-		AppExtendNodejs appExtend = context.getApp().getAppExtend();
-		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExtend.getNodeVersion().substring(1);
-		if(!StringUtils.isBlank(appExtend.getNodeImage())){
-			baseImage = appExtend.getNodeImage();
-		}
-		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
+		doBuildNuxtImage(context);
 	}
 	
 	private void buildNuxtImage(DeploymentContext context) {
 		if(!TechTypeEnum.NUXT.getCode().equals(context.getApp().getTechType())) {
 			return;
 		}
-		File targetFile = new File(context.getLocalPathOfBranch());
-		AppExtendNuxt appExtend = context.getApp().getAppExtend();
+		File branchFile = new File(context.getLocalPathOfBranch());
+		File[] codeFiles = branchFile.listFiles();
+		for(File c : codeFiles) {
+			if(Constants.NUXT_APP_TARGET_FILE.contains(c.getName())) {
+				continue;
+			}
+			try {
+				if(c.isDirectory()) {
+					FileUtils.deleteDirectory(c);
+				}else {
+					c.delete();
+				}
+			} catch (IOException e) {
+				logger.error("Failed to clear code file", e);
+			}
+		}
+		doBuildNuxtImage(context);
+	}
+	
+	private void doBuildNuxtImage(DeploymentContext context) {
+		File branchFile = new File(context.getLocalPathOfBranch());
+		//为了提高制作镜像的性能，这里先把编译后的文件压缩，然后在部署阶段进行解压
+		if(Constants.isWindows()) {
+			FileUtils.tarGz(branchFile.getAbsolutePath());
+		}else {
+			String cmd = new StringBuilder()
+					.append("cd ").append(branchFile.getParent())
+					.append(" && tar zcf ").append(branchFile.getName() + ".tar.gz ").append(branchFile.getName())
+					.toString();
+			execCommand(cmd);
+		}
+		
+		String targetFile = branchFile.getAbsolutePath() + ".tar.gz";
+		AppExtendNodejs appExtend = context.getApp().getAppExtend();
 		String baseImage = Constants.NODE_IMAGE_BASE_URL + appExtend.getNodeVersion().substring(1);
 		if(!StringUtils.isBlank(appExtend.getNodeImage())){
 			baseImage = appExtend.getNodeImage();
 		}
-		doBuildImage(context, baseImage, null, Arrays.asList(targetFile.toPath()));
+		doBuildImage(context, baseImage, null, Arrays.asList(Paths.get(targetFile)));
 	}
 
 	private void buildHtmlImage(DeploymentContext context) {

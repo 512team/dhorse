@@ -14,6 +14,7 @@ public enum MessageCodeEnum {
 	CREATE_FAILURE("200000", "创建失败"),
 	DELETE_FAILURE("200000", "删除失败"),
 	DOWNLOAD_FAILURE("200000", "下载文件失败"),
+	COMPRESSION_FILE_FAILURE("200000", "压缩文件失败"),
 	DECOMPRESSION_FILE_FAILURE("200000", "解压文件失败"),
 	
 	SYS_USER_NOT_LOGINED("300000", "用户未登录"),

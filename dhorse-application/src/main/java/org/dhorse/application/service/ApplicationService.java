@@ -604,11 +604,17 @@ public abstract class ApplicationService {
 		return goHome;
 	}
 	
+	protected boolean execCommand(String cmd) {
+		return execCommand(null, cmd);
+	}
+	
 	protected boolean execCommand(Map<String, String> env, String cmd) {
 		List<String> cmds = systemCmd();
 		cmds.add(cmd.toString());
         ProcessBuilder pb = new ProcessBuilder();
-        pb.environment().putAll(env);
+        if(env != null) {
+        	pb.environment().putAll(env);
+        }
         //将标准输入流和错误输入流合并，通过标准输入流读取信息
         pb.redirectErrorStream(true);
         pb.command(cmds);

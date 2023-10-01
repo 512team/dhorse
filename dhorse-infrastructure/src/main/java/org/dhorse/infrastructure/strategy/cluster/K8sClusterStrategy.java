@@ -24,7 +24,6 @@ import org.dhorse.api.enums.AffinityLevelEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.NginxVersionEnum;
-import org.dhorse.api.enums.NodeCompileTypeEnum;
 import org.dhorse.api.enums.NuxtDeploymentTypeEnum;
 import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
@@ -273,7 +272,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				String name = K8sUtils.getReplicaAppName2(context.getApp().getAppName(), context.getAppEnv().getTag());
 				api.deleteNamespacedDeployment(name, namespace, null, null, null, null, null, null);
 			}catch(Exception e) {
-				logger.error("Failed to delete deployment", e);
+				logger.error("Failed to delete deployment");
 			}
 			// 自动扩容任务
 			createAutoScaling(context.getApp().getAppName(), context.getAppEnv(), context.getDeploymentName(), apiClient);
@@ -489,7 +488,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				String name = K8sUtils.getReplicaAppName2(appName, appEnvPO.getTag());
 				autoscalingApi.deleteNamespacedHorizontalPodAutoscaler(name, appEnvPO.getNamespaceName(), null, null, null, null, null, null);
 			}catch(Exception e) {
-				logger.error("Failed to delete hpa", e);
+				logger.error("Failed to delete hpa");
 			}
 		} catch (ApiException e) {
 			String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
@@ -1025,17 +1024,18 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		if(!nodejsApp(context.getApp())) {
 			return;
 		}
-		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
 		String startFile = ((AppExtendNodejs)context.getApp().getAppExtend()).getStartFile();
 		if(StringUtils.isBlank(startFile)) {
 			startFile = "index.js";
 		}
+		String appName = context.getApp().getAppName();
 		String commands = new StringBuilder()
 				.append("export NODE_ENV=" + context.getAppEnv().getTag())
 				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
-				.append(" && cd ").append(appHome)
-				.append(" && npm install --registry=https://registry.npmmirror.com")
+				.append(" && cd ").append(Constants.USR_LOCAL_HOME)
+				.append(" && tar zxf ").append(appName).append(".tar.gz")
+				.append(" && cd ").append(appName)
 				.append(" && exec node " + startFile)
 				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
@@ -1050,23 +1050,16 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		if(!NuxtDeploymentTypeEnum.DYNAMIC.getCode().equals(appExtend.getDeploymentType())) {
 			return;
 		}
-		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String appName = context.getApp().getAppName();
 		StringBuilder commands = new StringBuilder()
 				.append("export NODE_ENV=" + context.getAppEnv().getTag())
 				.append(" && export HOST=0.0.0.0")
 				.append(" && export PORT=" + context.getAppEnv().getServicePort())
-				.append(" && cd ").append(appHome);
-		String registryMirror = " --registry=https://registry.npmmirror.com";
-		String commandType = "npm";
-		if(NodeCompileTypeEnum.PNPM.getCode().equals(appExtend.getCompileType())) {
-			commands.append(" && npm install pnpm@"+ appExtend.getPnpmVersion() +" --location=global" + registryMirror);
-			commandType = "pnpm";
-		}else if(NodeCompileTypeEnum.YARN.getCode().equals(appExtend.getCompileType())) {
-			commandType = "yarn";
-		}
-		commands.append(" && "+ commandType +" install" + registryMirror)
-				.append(" && "+ commandType +" run build")
-				.append(" && exec "+ commandType +" start");
+				.append(" && cd ").append(Constants.USR_LOCAL_HOME)
+				.append(" && tar zxf ").append(appName).append(".tar.gz")
+				.append(" && cd ").append(appName)
+				.append(" && chmod +x /usr/local/hello-nuxt/node_modules/.bin/nuxt");
+		commands.append(" && exec npm start");
 		container.setCommand(Arrays.asList("sh", "-c", commands.toString()));
 		container.setImage(context.getFullNameOfImage());
 	}

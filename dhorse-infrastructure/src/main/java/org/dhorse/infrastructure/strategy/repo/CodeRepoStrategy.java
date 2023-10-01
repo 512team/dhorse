@@ -26,8 +26,8 @@ public abstract class CodeRepoStrategy {
 		String localPathOfBranch = localPathOfBranch(context);
 		File[] hisBranchs = new File(localPathOfBranch(context)).listFiles();
 		for(File h : hisBranchs) {
-			//为了提高Node类应用install过程的性能，不删除node_modules文件
-			if("node_modules".equals(h.getName())) {
+			//为了提高Node类应用install过程的性能，不删除以下文件
+			if("node_modules".equals(h.getName()) || ".nuxt".equals(h.getName())) {
 				continue;
 			}
 			try {

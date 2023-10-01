@@ -57,7 +57,6 @@
 				</executions>
 				<configuration>
 					<nodeVersion>${nodeVersion}</nodeVersion>
-					<npmVersion>${npmVersion}</npmVersion>
 					<installDirectory>${installDirectory}</installDirectory>
 					<nodeDownloadRoot>https://npm.taobao.org/mirrors/node/</nodeDownloadRoot>
 					<npmDownloadRoot>https://registry.npm.taobao.org/npm/-/</npmDownloadRoot>
