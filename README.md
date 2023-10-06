@@ -32,7 +32,7 @@ DHorse是一个轻量级的云应用管理平台，界面简洁、操作简单�
 
 2.下载安装文件
 
-[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.4.0/dhorse-v1.4.0-bin.tar.gz)
+[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.4.1/dhorse-v1.4.1-bin.tar.gz)
 
 3.解压
 
