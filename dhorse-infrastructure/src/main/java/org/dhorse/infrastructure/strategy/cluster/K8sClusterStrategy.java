@@ -1150,7 +1150,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		String commands = new StringBuilder()
 				.append("export PYTHON_ENV=" + context.getAppEnv().getTag())
 				.append(" && cd " + appHome)
-				.append(" && pip install -r requirements.txt")
+				.append(" && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --use-deprecated=legacy-resolver")
 				.append(" && exec python " + startFile)
 				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
