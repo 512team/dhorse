@@ -23,7 +23,7 @@ dhorse_banner(){
 	echo "                                   "
 }
 
-#如果没有指定data目录，则在当前的部署目录下创建
+#如果没有指定data目录，则在安装目录下创建
 mkdir_data_path(){
 	data_path_config=`grep 'data.path' $DHORSE_HOME/conf/dhorse.yml`
 	if [[ ! $data_path_config =~ ^# ]]; then
