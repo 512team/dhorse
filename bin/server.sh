@@ -40,6 +40,7 @@ mkdir_data_path(){
 
 is_exist() {
 	pid_number=$(ps -ef | grep $JAR_NAME | grep -v grep | awk '{print $2}')
+	
 	#如果不存在返回1，存在返回0
 	if test -z "$pid_number"; then
 		return 1
