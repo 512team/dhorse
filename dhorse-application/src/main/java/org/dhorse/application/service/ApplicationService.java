@@ -54,7 +54,7 @@ import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.repository.po.BasePO;
 import org.dhorse.infrastructure.repository.po.ClusterPO;
 import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
-import org.dhorse.infrastructure.strategy.cluster.K8sClusterStrategy;
+import org.dhorse.infrastructure.strategy.cluster.k8s.K8sClusterStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DeploymentContext;
