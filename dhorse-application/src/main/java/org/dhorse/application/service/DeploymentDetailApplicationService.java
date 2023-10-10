@@ -55,7 +55,7 @@ public class DeploymentDetailApplicationService extends DeploymentApplicationSer
 			return page;
 		}
 		
-		AppEnvPO appEnvPO = appEnvRepository.queryById(param.getAppEnvId());
+		AppEnvPO appEnvPO = appEnvRepository.queryById(param.getEnvId());
 		if (appEnvPO == null) {
 			return page;
 		}

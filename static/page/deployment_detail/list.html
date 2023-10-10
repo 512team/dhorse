@@ -4,8 +4,7 @@
 			<form class="layui-form layui-form-pane" action="">
 				<div class="layui-form-item">
 					<div class="layui-inline">
-						<select name="appEnvId" id="appEnvId">
-							<option value="">请选择环境</option>
+						<select name="envId" id="envId">
 						</select>
 					</div>
 					<input type="hidden" name="appId" id="appId"/>
@@ -223,7 +222,7 @@
 		});
 	}
 	
-	function initTable(table, appId, appEnvId){
+	function initTable(table, appId, envId){
 		table.render({
             elem: '#currentTableId',
             url: '/app/deployment/detail/page',
@@ -233,7 +232,7 @@
 				pageName: 'pageNum',
 				limitName: 'pageSize'
 			},
-			where: {"appId": appId, "appEnvId": appEnvId},
+			where: {"appId": appId, "envId": envId},
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter'],
 			parseData: function(res){
@@ -289,7 +288,7 @@
 					opt = opt.concat("<option value='"+ data[k].id +"'>"+ data[k].envName +"</option>");
 				}
 				if(opt != ''){
-					$("#appEnvId").html(opt);
+					$("#envId").html(opt);
 					form.render('select');
 				}
 				
