@@ -97,7 +97,9 @@ public class K8sUtils {
 			for(int i=0; i < segments.length-3; i++) {
 				appName += segments[i] + "-";
 			}
-			appName = appName.substring(0, appName.length() - 1);
+			if(!StringUtils.isBlank(appName)) {
+				appName = appName.substring(0, appName.length() - 1);
+			}
 		}
 		return new String[]{appName, envTag};
 	}

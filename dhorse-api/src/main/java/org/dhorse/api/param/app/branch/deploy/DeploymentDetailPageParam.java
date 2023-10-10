@@ -19,7 +19,7 @@ public class DeploymentDetailPageParam extends PageParam {
 	/**
 	 * 环境编号
 	 */
-	private String appEnvId;
+	private String envId;
 
 	public String getAppId() {
 		return appId;
@@ -29,12 +29,12 @@ public class DeploymentDetailPageParam extends PageParam {
 		this.appId = appId;
 	}
 
-	public String getAppEnvId() {
-		return appEnvId;
+	public String getEnvId() {
+		return envId;
 	}
 
-	public void setAppEnvId(String appEnvId) {
-		this.appEnvId = appEnvId;
+	public void setEnvId(String envId) {
+		this.envId = envId;
 	}
 
 }
