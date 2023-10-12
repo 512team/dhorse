@@ -118,21 +118,21 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			try {
 				logger.info("Start to build version");
 
-				// 2.下载分支代码
+				// 1.下载分支代码
 				if (context.getCodeRepoStrategy().downloadBranch(context)) {
 					logger.info("Download branch successfully");
 				} else {
 					LogUtils.throwException(logger, MessageCodeEnum.DOWNLOAD_BRANCH);
 				}
 
-				// 3.打包
+				// 2.打包
 				if (pack(context)) {
 					logger.info("Pack successfully");
 				} else {
 					LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
 				}
 
-				// 4.制作镜像并上传仓库
+				// 3.制作镜像并上传仓库
 				if(buildImage(context)) {
 					logger.info("Build image successfully");
 				}else {

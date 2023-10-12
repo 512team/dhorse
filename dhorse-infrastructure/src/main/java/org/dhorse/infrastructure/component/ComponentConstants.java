@@ -37,7 +37,7 @@ public class ComponentConstants {
 	@Autowired
 	private MysqlConfig mysqlConfig;
 	
-	@Value("${kubernetes-client:official}")
+	@Value("${kubernetes-client:fabric8}")
 	private String kubernetesClient;
 
 	@Value("${data.path:#{null}}")
