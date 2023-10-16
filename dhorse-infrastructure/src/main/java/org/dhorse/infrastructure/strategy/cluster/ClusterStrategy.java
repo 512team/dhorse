@@ -4,10 +4,12 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.param.cluster.ClusterNodePageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.AppEnv;
 import org.dhorse.api.response.model.ClusterNamespace;
+import org.dhorse.api.response.model.ClusterNode;
 import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.infrastructure.model.ReplicaMetrics;
@@ -63,5 +65,7 @@ public interface ClusterStrategy {
 	Void deleteDHorseConfig(ClusterPO clusterPO);
 	
 	String version(ClusterPO clusterPO);
+	
+	PageData<ClusterNode> nodePage(ClusterNodePageParam pageParam, ClusterPO clusterPO);
 
 }

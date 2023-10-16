@@ -1,0 +1,57 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">命名空间名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="namespaceName" lay-verify="required" lay-reqtext="命名空间名称不能为空" placeholder="请输入命名空间名称" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<input type="hidden" name="clusterId" id="clusterId">
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$,
+			parentIndex = layer.index;
+		var clusterId = JSON.parse(parent.parentData2).clusterId;
+		
+		$("#clusterId").val(clusterId);
+			
+        form.on('submit(saveBtn)', function(data) {
+			$.ajax({
+				url: '/cluster/namespace/add',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.close(parentIndex);
+					
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						parent.layui.table.reload('namespaceTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+            return false;
+        });
+    });
+</script>

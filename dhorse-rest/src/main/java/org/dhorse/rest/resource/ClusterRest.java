@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.dhorse.api.param.cluster.ClusterCreationParam;
 import org.dhorse.api.param.cluster.ClusterDeletionParam;
+import org.dhorse.api.param.cluster.ClusterNodePageParam;
 import org.dhorse.api.param.cluster.ClusterPageParam;
 import org.dhorse.api.param.cluster.ClusterQueryParam;
 import org.dhorse.api.param.cluster.ClusterSearchParam;
@@ -12,6 +13,7 @@ import org.dhorse.api.param.cluster.LogSwitchParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.Cluster;
+import org.dhorse.api.response.model.ClusterNode;
 import org.dhorse.api.response.model.LogCollectorStatus;
 import org.dhorse.application.service.ClusterApplicationService;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
@@ -47,8 +49,20 @@ public class ClusterRest extends AbstractRest {
 	}
 	
 	/**
-	 * 查询
+	 * 分页查询节点
 	 * 
+	 * @param clusterNodePageParam 查询参数
+	 * @return 符合条件的分页数据
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/node/page")
+	public RestResponse<PageData<ClusterNode>> nodePage(@RequestBody ClusterNodePageParam clusterNodePageParam) {
+		return this.success(clusterApplicationService.nodePage(clusterNodePageParam));
+	}
+	
+	/**
+	 * 查询
+	 *
 	 * @param clusterQueryParam 查询参数
 	 * @return 符合条件的数据
 	 */

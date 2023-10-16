@@ -31,6 +31,7 @@ import org.dhorse.api.enums.SchedulingTypeEnum;
 import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.param.cluster.ClusterNodePageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
@@ -44,6 +45,7 @@ import org.dhorse.api.response.model.AppExtendNodejs;
 import org.dhorse.api.response.model.AppExtendNuxt;
 import org.dhorse.api.response.model.AppExtendPython;
 import org.dhorse.api.response.model.ClusterNamespace;
+import org.dhorse.api.response.model.ClusterNode;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvHealth.Item;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -2093,6 +2095,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	}
 	
 	public String version(ClusterPO clusterPO) {
+		return null;
+	}
+	
+	public PageData<ClusterNode> nodePage(ClusterNodePageParam pageParam, ClusterPO clusterPO) {
 		return null;
 	}
 }

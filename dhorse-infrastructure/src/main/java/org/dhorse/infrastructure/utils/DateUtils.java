@@ -45,6 +45,17 @@ public class DateUtils {
 		return null;
 	}
 	
+	public static Date formatLocal2(String utcDateStr) {
+		SimpleDateFormat df = new SimpleDateFormat(Constants.DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS);
+		df.setTimeZone(TimeZone.getTimeZone("UTC"));
+		try {
+			return df.parse(utcDateStr);
+		} catch (ParseException e) {
+			logger.error("Failed to parse date", e);
+		}
+		return null;
+	}
+	
 	public static Date addDays(final Date date, final int amount) {
         return add(date, Calendar.DAY_OF_MONTH, amount);
     }

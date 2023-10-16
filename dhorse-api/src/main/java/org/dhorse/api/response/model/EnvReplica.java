@@ -29,9 +29,6 @@ public class EnvReplica implements Serializable {
 
 	private String clusterName;
 
-	/**
-	 * 格式：yyyy-MM-dd HH:mm:ss
-	 */
 	private String startTime;
 
 	public Integer getJvmMetricsStatus() {

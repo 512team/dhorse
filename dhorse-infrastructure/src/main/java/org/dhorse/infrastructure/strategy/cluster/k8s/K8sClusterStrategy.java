@@ -20,11 +20,13 @@ import org.dhorse.api.enums.PackageFileTypeEnum;
 import org.dhorse.api.enums.ReplicaStatusEnum;
 import org.dhorse.api.enums.TechTypeEnum;
 import org.dhorse.api.param.app.env.replica.EnvReplicaPageParam;
+import org.dhorse.api.param.cluster.ClusterNodePageParam;
 import org.dhorse.api.param.cluster.namespace.ClusterNamespacePageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.AppEnv;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.ClusterNamespace;
+import org.dhorse.api.response.model.ClusterNode;
 import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.infrastructure.model.ReplicaMetrics;
@@ -53,9 +55,12 @@ import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.ListOptions;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeAddress;
+import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -800,14 +805,61 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return null;
 	}
 	
-	public boolean nodePage(ClusterPO clusterPO) {
+	public PageData<ClusterNode> nodePage(ClusterNodePageParam pageParam, ClusterPO clusterPO) {
+		NodeList nodeList = null;
 		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
-			NodeList nodeList = client.nodes().list();
-			for(Node n : nodeList.getItems()) {
-				n.getStatus().getNodeInfo().getKubeletVersion();
+			ListOptions o = new ListOptions();
+			if(!StringUtils.isBlank(pageParam.getNodeName())) {
+				o.setLabelSelector("kubernetes.io/hostname=" + pageParam.getNodeName());
 			}
+			nodeList = client.nodes().list(o);
 		}
-		return true;
+		
+		PageData<ClusterNode> pageData = new PageData<>();
+		int dataCount = nodeList.getItems().size();
+		if (dataCount == 0) {
+			pageData.setPageNum(1);
+			pageData.setPageCount(0);
+			pageData.setPageSize(pageParam.getPageSize());
+			pageData.setItemCount(0);
+			return pageData;
+		}
+
+		int pageCount = dataCount / pageParam.getPageSize();
+		if (dataCount % pageParam.getPageSize() > 0) {
+			pageCount += 1;
+		}
+		int pageNum = pageParam.getPageNum() > pageCount ? pageCount : pageParam.getPageNum();
+		int startOffset = (pageNum - 1) * pageParam.getPageSize();
+		int endOffset = pageNum * pageParam.getPageSize();
+		endOffset = endOffset > dataCount ? dataCount : endOffset;
+		List<Node> pageNode = nodeList.getItems().subList(startOffset, endOffset);
+		List<ClusterNode> nodes = new ArrayList<>();
+		for(Node n : pageNode) {
+			ClusterNode node = new ClusterNode();
+			node.setNodeName(n.getMetadata().getName());
+			node.setCreationTime(DateUtils.formatLocal2(n.getMetadata().getCreationTimestamp()));
+			for(NodeAddress address : n.getStatus().getAddresses()) {
+				if("InternalIP".equals(address.getType())) {
+					node.setNodeIp(address.getAddress());
+					break;
+				}
+			}
+			for(NodeCondition c : n.getStatus().getConditions()) {
+				if("Ready".equals(c.getType())) {
+					node.setStatus("True".equals(c.getStatus()) ? "正常" : "异常");
+					break;
+				}
+			}
+			nodes.add(node);
+		}
+		pageData.setItems(nodes);
+		pageData.setPageNum(pageNum);
+		pageData.setPageCount(pageCount);
+		pageData.setPageSize(pageParam.getPageSize());
+		pageData.setItemCount(dataCount);
+		
+		return pageData;
 	}
 	
 	public String version(ClusterPO clusterPO) {

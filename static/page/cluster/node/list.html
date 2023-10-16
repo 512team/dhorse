@@ -1,0 +1,167 @@
+<div class="layuimini-main">
+	<div style="margin: 5px 5px 5px 5px">
+		<form class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<div class="layui-input-inline">
+						<input type="text" name="nodeName" autocomplete="off" class="layui-input" placeholder="节点名称">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="node-data-search-btn">搜 索</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	<script type="text/html" id="node-toolbarDemo">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="node-add"> 添加 </button>
+		</div>
+	</script>
+
+	<table class="layui-hide" id="nodeTableId" lay-filter="nodeTableFilter"></table>
+	
+	<script type="text/html" id="nodeTableBar">
+		<a href="javascript:;" class="layui-font-blue" lay-event="node-delete">删除</a>
+	</script>
+</div>
+<script>
+
+	//全局变量，在子页面里使用
+	var parentData2;
+	
+    layui.use(['form', 'table', 'miniPage'], function () {
+        var $ = layui.jquery,
+            form2 = layui.form,
+            table2 = layui.table,
+			miniPage2 = layui.miniPage;
+		var clusterId = JSON.parse(parent.parentData).clusterId;
+			
+        table2.render({
+			id: 'nodeTableId',
+            elem: '#nodeTableId',
+            url: '/cluster/node/page',
+			method: 'post',
+			contentType: 'application/json;charset=UTF-8',
+			request: {
+				pageName: 'pageNum',
+				limitName: 'pageSize'
+			},
+			where: {
+				'clusterId': clusterId
+			},
+            //toolbar: '#node-toolbarDemo',
+            defaultToolbar: ['filter'],
+			parseData: function(res){
+				redirectLogin(res.code);
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				if(res.code != '000000'){
+					return {
+					  "code": 1,
+					  "msg": res.message,
+					  "count": 0,
+					  "data": []
+					};
+				}
+				return {
+				  "code": 0,
+				  "msg": res.message,
+				  "count": res.data.itemCount,
+				  "data": res.data.items
+				};
+			},
+            cols: [[
+                {field: 'nodeName', title: '节点名称'},
+				{field: 'nodeIp', title: '节点IP'},
+				{field: 'status', title: '节点状态'},
+				{field: 'creationTime', title: '创建时间'}
+                //{title: '操作', toolbar: '#nodeTableBar'}
+            ]],
+            limits: [10, 20],
+            limit: 20,
+            page: true,
+            skin: 'row',
+			even: true
+        });
+
+        // 监听搜索操作
+        form2.on('submit(node-data-search-btn)', function (data) {
+            table2.reload('nodeTableId', {
+                page: {
+                    curr: 1
+                },
+                where: {
+					'nodeName': data.field.nodeName,
+					'clusterId': clusterId
+				}
+            }, 'data');
+
+            return false;
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table2.on('toolbar(nodeTableFilter)', function (obj) {
+			parentData2 = JSON.stringify({'clusterId' : clusterId});
+            if (obj.event === 'node-add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加命名空间',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin: false,
+                    shadeClose: false,
+                    area: ['30%', '25%'],
+                    offset: ['30%', '32%'],
+					content: miniPage2.getHrefContent('page/cluster/node/add.html')
+                });
+            }
+        });
+
+        table2.on('tool(nodeTableFilter)', function (obj) {
+			if (obj.event === 'node-delete') {
+                doDelete($, clusterId, obj.data.nodeName);
+            }
+			return false;
+        });
+    });
+	
+	//删除
+	function doDelete($, clusterId, nodeName) {
+		var msg = "同时会删除" + nodeName + "下的所有资源，确定删除吗？";
+		layer.confirm(msg, {icon: 0, title: '警告提示'}, function (index) {
+			layer.close(index);
+			$.ajax({
+				url: '/cluster/node/delete',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify({"clusterId": clusterId, "nodeName": nodeName}),
+				success: function(data){
+					if(data.code != "000000"){
+						layer.msg(data.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("删除成功", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('nodeTableId');
+					});
+				},
+				error: function(data){
+					layer.msg(data.message, {icon: 5, shift: 6});
+				}
+			});
+		});
+	}
+</script>

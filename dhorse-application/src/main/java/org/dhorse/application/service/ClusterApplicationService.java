@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.AuthTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.cluster.ClusterCreationParam;
+import org.dhorse.api.param.cluster.ClusterNodePageParam;
 import org.dhorse.api.param.cluster.ClusterPageParam;
 import org.dhorse.api.param.cluster.ClusterQueryParam;
 import org.dhorse.api.param.cluster.ClusterSearchParam;
@@ -18,6 +18,7 @@ import org.dhorse.api.param.cluster.ClusterUpdateParam;
 import org.dhorse.api.param.cluster.LogSwitchParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.Cluster;
+import org.dhorse.api.response.model.ClusterNode;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.LogCollectorStatus;
 import org.dhorse.infrastructure.exception.ApplicationException;
@@ -30,6 +31,7 @@ import org.dhorse.infrastructure.strategy.cluster.ClusterStrategy;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,12 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 
 	public PageData<Cluster> page(ClusterPageParam clusterPageParam) {
 		return this.pageData(clusterRepository.page(buildBizParam(clusterPageParam)));
+	}
+	
+	public PageData<ClusterNode> nodePage(ClusterNodePageParam param) {
+		ClusterPO clusterPO = clusterRepository.queryById(param.getClusterId());
+		return clusterStrategy(clusterPO.getClusterType())
+				.nodePage(param, clusterPO);
 	}
 	
 	public Cluster query(ClusterQueryParam clusterQueryParam) {
