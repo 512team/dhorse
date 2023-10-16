@@ -64,6 +64,12 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">集群版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="clusterVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">创建时间：</label>
 			<div class="layui-input-block">
 				<label class="layui-form-label text-value" id="creationTime"></label>
@@ -100,6 +106,7 @@
 		$("#creationTime").text(parentData.creationTime);
 		$("#updateTime").text(parentData.updateTime);
 		$("#description").text(parentData.description);
+		$("#clusterVersion").text(parentData.clusterVersion);
 		
 		if(parentData.clusterType == 1){
 			$("#clusterType").text('K8S');

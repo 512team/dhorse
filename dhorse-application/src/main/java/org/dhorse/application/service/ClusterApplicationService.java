@@ -262,6 +262,7 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		}catch(Exception e) {
 			dto.setLogSwitch(2);
 		}
+		dto.setClusterVersion(clusterStrategy(po.getClusterType()).version(po));
 		return dto;
 	}
 }

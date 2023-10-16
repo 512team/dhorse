@@ -61,5 +61,7 @@ public interface ClusterStrategy {
 	Void createDHorseConfig(ClusterPO clusterPO);
 	
 	Void deleteDHorseConfig(ClusterPO clusterPO);
+	
+	String version(ClusterPO clusterPO);
 
 }

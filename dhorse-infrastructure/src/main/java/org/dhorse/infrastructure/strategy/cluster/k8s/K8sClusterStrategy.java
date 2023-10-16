@@ -55,6 +55,8 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
+import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
@@ -92,6 +94,7 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.VersionInfo;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.kubernetes.client.dsl.Resource;
@@ -795,6 +798,23 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			DHorseConfigHelper.deleteServerIp(clusterPO, client);
 		}
 		return null;
+	}
+	
+	public boolean nodePage(ClusterPO clusterPO) {
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			NodeList nodeList = client.nodes().list();
+			for(Node n : nodeList.getItems()) {
+				n.getStatus().getNodeInfo().getKubeletVersion();
+			}
+		}
+		return true;
+	}
+	
+	public String version(ClusterPO clusterPO) {
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			VersionInfo versionInfo = client.getKubernetesVersion();
+			return "v" + versionInfo.getMajor() + "." + versionInfo.getMinor();
+		}
 	}
 	
 	private KubernetesClient client(String basePath, String accessToken) {

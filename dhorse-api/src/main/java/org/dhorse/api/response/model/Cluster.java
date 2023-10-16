@@ -22,6 +22,11 @@ public class Cluster extends BaseDto {
 	private String clusterUrl;
 
 	/**
+	 * 集群版本，如：v1.27
+	 */
+	private String clusterVersion;
+
+	/**
 	 * 认证方式，参见：AuthTypeEnum
 	 */
 	private Integer authType;
@@ -78,6 +83,14 @@ public class Cluster extends BaseDto {
 
 	public void setClusterUrl(String clusterUrl) {
 		this.clusterUrl = clusterUrl;
+	}
+
+	public String getClusterVersion() {
+		return clusterVersion;
+	}
+
+	public void setClusterVersion(String clusterVersion) {
+		this.clusterVersion = clusterVersion;
 	}
 
 	public Integer getAuthType() {

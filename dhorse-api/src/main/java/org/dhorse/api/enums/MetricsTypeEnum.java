@@ -17,8 +17,8 @@ public enum MetricsTypeEnum {
 	META_MEMORY_MAX(40, "元数据", "最大值", "MB"),
 	META_MEMORY_USED(41, "元数据", "已使用", "MB"),
 	
-	GC_SIZE(50, "GC次数", "次数", "次"),
-	GC_DURATION(51, "GC耗时", "耗时", "毫秒"),
+	GC_SIZE(50, "GC总次数", "次数", "次"),
+	GC_DURATION(51, "GC总耗时", "耗时", "毫秒"),
 	
 	THREAD(60, "线程", "总数", "个"),
 	THREAD_DAEMON(61, "线程", "守护", "个"),
