@@ -2072,4 +2072,8 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		K8sClusterHelper.deleteDHorseConfig(clusterPO, coreApi);
 		return null;
 	}
+	
+	public String version(ClusterPO clusterPO) {
+		return null;
+	}
 }
