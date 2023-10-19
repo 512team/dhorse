@@ -124,13 +124,13 @@
 					elem: '.dropdown-operate'
 					,trigger: 'hover'
 					,data: [{
-					  title: '节点'
+					  title: '节点管理'
 					  ,id: 'node'
 					},{
-					  title: '修改'
+					  title: '修改集群'
 					  ,id: 'update'
 					}, {
-					  title: '删除'
+					  title: '删除集群'
 					  ,id: 'delete'
 					}]
 					,click: function(data, othis){
@@ -140,7 +140,7 @@
 						parentData = JSON.stringify({"clusterId": clusterId});
 						if(data.id == 'node'){
 							var index = layer.open({
-								title: '节点',
+								title: '节点管理',
 								type: 1,
 								shade: 0.5,
 								maxmin: false,

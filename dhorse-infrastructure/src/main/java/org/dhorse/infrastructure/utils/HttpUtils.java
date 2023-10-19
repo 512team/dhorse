@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -18,6 +19,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.util.EntityUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +39,38 @@ public class HttpUtils {
 		}
 	}
 	
+	public static int get(String url) {
+		return get(url, 2000, null);
+	}
+	
 	public static int get(String url, int timeout) {
 		return get(url, timeout, null);
 	}
 	
 	public static int get(String url, int timeout, Map<String, String> cookies) {
+        try (CloseableHttpResponse response = doGet(url, timeout, cookies)){
+        	return response.getStatusLine().getStatusCode();
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, MessageCodeEnum.HTT_GET_FAILURE);
+        }
+        return -1;
+	}
+	
+	public static String getResponse(String url) {
+        return getResponse(url, 2000, null);
+	}
+	
+	public static String getResponse(String url, int timeout, Map<String, String> cookies) {
+        try (CloseableHttpResponse response = doGet(url, timeout, cookies)){
+        	return EntityUtils.toString(response.getEntity());
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, MessageCodeEnum.HTT_GET_FAILURE);
+        }
+        return null;
+	}
+	
+	private static CloseableHttpResponse doGet(String url, int timeout, Map<String, String> cookies)
+			throws ClientProtocolException, IOException {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(timeout)
                 .setConnectTimeout(timeout)
@@ -49,7 +78,6 @@ public class HttpUtils {
                 .build();
         HttpGet method = new HttpGet(url);
         method.setConfig(requestConfig);
-        method.setHeader("Content-Type", "application/json;charset=UTF-8");
         if(!CollectionUtils.isEmpty(cookies)) {
         	String cookieStr = "";
         	for(Entry<String, String> c : cookies.entrySet()) {
@@ -57,12 +85,7 @@ public class HttpUtils {
         	}
         	method.setHeader("Cookie", cookieStr);
         }
-        try (CloseableHttpResponse response = createHttpClient(url).execute(method)){
-        	return response.getStatusLine().getStatusCode();
-        } catch (IOException e) {
-        	LogUtils.throwException(logger, MessageCodeEnum.HTT_GET_FAILURE);
-        }
-        return -1;
+        return createHttpClient(url).execute(method);
 	}
 	
 	public static int post(String url, String jsonParam) {

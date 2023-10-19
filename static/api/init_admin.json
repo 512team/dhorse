@@ -22,6 +22,12 @@
 					"target": "_self"
 				},
 				{
+					"title": "企业微信",
+					"href": "page/sys_config/wechat.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
 					"title": "自义定菜单",
 					"href": "page/sys_config/customized_menu/list.html",
 					"icon": "fa fa-cog",

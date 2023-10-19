@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
@@ -32,6 +31,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.model.Menu;
 import org.dhorse.infrastructure.param.AppEnvParam;
@@ -45,6 +45,7 @@ import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -239,6 +240,11 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 	public Void addOrUpdateLdap(Ldap ldap) {
 		ldap.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
 		return addOrUpdateGlobalConfig(ldap);
+	}
+	
+	public Void addOrUpdateWeChat(WeChat wechat) {
+		wechat.setItemType(GlobalConfigItemTypeEnum.WECHAT.getCode());
+		return addOrUpdateGlobalConfig(wechat);
 	}
 	
 	public PageData<EnvTemplate> envTemplatePage(GlobalConfigPageParam pageParam) {

@@ -87,7 +87,6 @@ public class LdapUserStrategy extends UserStrategy {
 		SysUserRepository sysUserRepository = SpringBeanContext.getBean(SysUserRepository.class);
 		SysUserPO sysUserPO = sysUserRepository.queryByLoginName(userLoginParam.getLoginName());
 		if(sysUserPO == null) {
-			loginUser.setRoleType(RoleTypeEnum.NORMAL.getCode());
 			//如果用户第一次登录，登记到内部系统
 			SysUserParam bizParam = new SysUserParam();
 			bizParam.setLoginName(loginUser.getLoginName());
@@ -95,9 +94,10 @@ public class LdapUserStrategy extends UserStrategy {
 			bizParam.setEmail(loginUser.getEmail());
 			bizParam.setRegisteredSource(RegisteredSourceEnum.LDAP.getCode());
 			bizParam.setRoleType(RoleTypeEnum.NORMAL.getCode());
-			sysUserRepository.add(bizParam);
+			loginUser.setId(sysUserRepository.add(bizParam));
 		}else{
 			loginUser.setRoleType(sysUserPO.getRoleType());
+			loginUser.setId(sysUserPO.getId());
 		}
 		
 		return loginUser;

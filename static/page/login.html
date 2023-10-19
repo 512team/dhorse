@@ -62,6 +62,9 @@
 						<button class="layui-btn admin-button" lay-submit="" lay-filter="normal-login">登 陆</button>
 					</form>
 				</div>
+				<!--
+				<div class="layui-tab-item" id="wechat-context"><div id="wx_reg"></div></div>
+				
 				<div class="layui-tab-item" id="ldap-context" style="display: none">
 					<form class="layui-form" action="">
 						<div>
@@ -76,12 +79,14 @@
 						<button class="layui-btn admin-button" lay-submit="" lay-filter="ldap-login">登 陆</button>
 					</form>
 				</div>
+				-->
 			</div>
 		</div>
 	</div>
 </div>
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="../js/common.js" charset="utf-8"></script>
+<script src="https://wwcdn.weixin.qq.com/node/wework/wwopen/js/wwLogin-1.2.8.js"></script>
 <script>
     layui.use(['form'], function () {
         var form = layui.form,
@@ -110,9 +115,25 @@
 				if(res.data.enable != 1){
 					return false;
 				}
+				
+				var content = '\
+					<form class="layui-form" action="">\
+						<div>\
+							<i class="layui-icon layui-icon-username admin-icon"></i>\
+							<input type="text" name="loginName" placeholder="请输入登录名" lay-verify="required" lay-reqtext="登录名不能为空" autocomplete="off" class="layui-input admin-input admin-input-username">\
+						</div>\
+						<div>\
+							<i class="layui-icon layui-icon-password admin-icon"></i>\
+							<input type="password" name="password" placeholder="请输入密码" lay-verify="required" lay-reqtext="密码不能为空" autocomplete="off" class="layui-input admin-input admin-input-verify">\
+						</div>\
+						<input type="hidden" name="loginSource" value="2">\
+						<button class="layui-btn admin-button" lay-submit="" lay-filter="ldap-login">登 陆</button>\
+					</form>\
+				';
+				
 				element.tabAdd('login-handle', {
 					title: 'LDAP',
-					content: $("#ldap-context").html(),
+					content: content,
 					id: 'ldap-title'
 				});
 				element.tabChange('login-handle', 'ldap-title');
@@ -121,7 +142,48 @@
 				return false;
 			}
 		});
-
+		
+		//初始化企业微信登录
+		$.ajax({
+			url: '/globalConfig/query/wechat',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 8}),
+			success: function(res){
+				if(res.code != "000000"){
+					return false;
+				}
+				if(!res.data || !res.data.corpId){
+					return false;
+				}
+				//如果没有开启
+				if(res.data.enable != 1){
+					return false;
+				}
+				
+				element.tabAdd('login-handle', {
+					title: '企业微信',
+					content: '<div id="wx_reg"></div>',
+					id: 'wechat-title'
+				});
+				element.tabChange('login-handle', 'wechat-title');
+				var cssContent = 'data:text/css;base64,LmltcG93ZXJCb3gge21hcmdpbi10b3A6IC03JTt9Ci5pbXBvd2VyQm94IC5xcmNvZGUge3dpZHRoOiAyMDBweDt9Ci5pbXBvd2VyQm94IC50aXRsZSB7ZGlzcGxheTogbm9uZTt9Ci5pbXBvd2VyQm94IC5pbmZvIHtkaXNwbGF5OiBub25lO30KLnN0YXR1c19pY29uIHtkaXNwbGF577yabm9uZTt9';
+				var wwLogin = new WwLogin({
+					"id": "wx_reg",  
+					"appid": res.data.corpId,
+					"agentid": res.data.agentId,
+					"redirect_uri": encodeURIComponent(window.location.protocol + '//'+ window.location.host +'/wechat'),
+					"state": "sucess",
+					"href": cssContent,
+					"lang": "zh",
+				});
+			},
+			error: function(res){
+				return false;
+			}
+		});
+		
         // 普通登录
         form.on('submit(normal-login)', function(data) {
 			data.field.password = data.field.password.md5(32).toUpperCase();

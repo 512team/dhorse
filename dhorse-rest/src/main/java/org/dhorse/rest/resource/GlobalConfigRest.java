@@ -15,6 +15,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.application.service.GlobalConfigApplicationService;
 import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.dhorse.infrastructure.annotation.AccessOnlyAdmin;
@@ -63,6 +64,41 @@ public class GlobalConfigRest extends AbstractRest {
 	}
 	
 	/**
+	 * 添加或修改Ldap
+	 * 
+	 * @param ldap Ldap参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/ldap/addOrUpdate")
+	public RestResponse<Void> ldap(@RequestBody Ldap ldap) {
+		return this.success(globalConfigApplicationService.addOrUpdateLdap(ldap));
+	}
+	
+	/**
+	 * 查询企业微信
+	 * 
+	 * @return 企业微信数据
+	 */
+	@AccessNotLogin
+	@PostMapping("/query/wechat")
+	public RestResponse<WeChat> queryWeChat() {
+		return this.success(globalConfigApplicationService.queryWeChat());
+	}
+	
+	/**
+	 * 添加或修改企业微信
+	 * 
+	 * @param ldap Ldap参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/wechat/addOrUpdate")
+	public RestResponse<Void> wechat(@RequestBody WeChat wechat) {
+		return this.success(globalConfigApplicationService.addOrUpdateWeChat(wechat));
+	}
+	
+	/**
 	 * 查询菜单
 	 * 
 	 * @return 菜单数据
@@ -94,18 +130,6 @@ public class GlobalConfigRest extends AbstractRest {
 	@PostMapping("/imageRepo/addOrUpdate")
 	public RestResponse<Void> imageRepo(@RequestBody ImageRepo imageRepo) {
 		return this.success(globalConfigApplicationService.addOrUpdateImageRepo(imageRepo));
-	}
-
-	/**
-	 * 添加或修改Ldap
-	 * 
-	 * @param ldap Ldap参数
-	 * @return 无
-	 */
-	@AccessOnlyAdmin
-	@PostMapping("/ldap/addOrUpdate")
-	public RestResponse<Void> ldap(@RequestBody Ldap ldap) {
-		return this.success(globalConfigApplicationService.addOrUpdateLdap(ldap));
 	}
 
 	/**

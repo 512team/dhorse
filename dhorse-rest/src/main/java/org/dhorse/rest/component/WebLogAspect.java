@@ -26,7 +26,8 @@ public class WebLogAspect {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebLogAspect.class);
 
-	private static final String[] IGNORE_PARAMS = new String[] { "serialVersionUID", "password",
+	private static final String[] IGNORE_PARAMS = new String[] {
+			"serialVersionUID", "password", "code",
 			"authToken", "authName", "authPassword",
 			"CASE_INSENSITIVE_ORDER", "hash", "response"};
 
@@ -36,10 +37,14 @@ public class WebLogAspect {
 	private HttpServletRequest httpServletRequest;
 
 	@Pointcut("execution(public * org.dhorse.rest.resource.*.*(..))")
-	public void webLog() {
+	public void include() {
+	}
+	
+	@Pointcut("execution(public * org.dhorse.rest.resource.ScanCodeLoginRest.*(..))")
+	public void exclude() {
 	}
 
-	@Before("webLog()")
+	@Before("include() && !exclude()")
 	public void doBefore(JoinPoint joinPoint) {
 		if(httpServletRequest.getRequestURL().toString().endsWith(Constants.COLLECT_METRICS_URI)) {
 			return;
@@ -56,7 +61,7 @@ public class WebLogAspect {
 		}
 	}
 
-	@AfterReturning(returning = "ret", pointcut = "webLog()")
+	@AfterReturning(returning = "ret", pointcut = "include() && !exclude()")
 	public void doAfterReturning(Object ret) {
 		if(httpServletRequest.getRequestURL().toString().endsWith(Constants.COLLECT_METRICS_URI)) {
 			return;

@@ -12,6 +12,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.mapper.CustomizedBaseMapper;
 import org.dhorse.infrastructure.repository.mapper.GlobalConfigMapper;
@@ -50,6 +51,11 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 			}
 			if(GlobalConfigItemTypeEnum.LDAP.getCode().equals(po.getItemType())) {
 				globalConfig.setLdap(JsonUtils.parseToObject(po.getItemValue(), Ldap.class));
+				continue;
+			}
+			if(GlobalConfigItemTypeEnum.WECHAT.getCode().equals(po.getItemType())) {
+				WeChat wechat = JsonUtils.parseToObject(po.getItemValue(), WeChat.class);
+				globalConfig.setWechat(wechat);
 				continue;
 			}
 			if(GlobalConfigItemTypeEnum.CODEREPO.getCode().equals(po.getItemType())) {

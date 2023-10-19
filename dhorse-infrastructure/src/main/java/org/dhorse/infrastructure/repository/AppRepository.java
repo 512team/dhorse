@@ -70,6 +70,7 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		// 如果是普通用户，先查询应用成员表，再查询应用表
 		AppMemberParam appMemberParam = new AppMemberParam();
 		appMemberParam.setUserId(loginUser.getId());
+		appMemberParam.setLoginName(loginUser.getLoginName());
 		appMemberParam.setPageNum(bizParam.getPageNum());
 		appMemberParam.setPageSize(bizParam.getPageSize());
 		IPage<AppMemberPO> pageData = appMemberRepository.page(appMemberParam);

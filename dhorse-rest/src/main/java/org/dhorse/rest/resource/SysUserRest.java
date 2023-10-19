@@ -75,8 +75,9 @@ public class SysUserRest extends AbstractRest {
 	 * @return 符合条件的用户列表
 	 */
 	@PostMapping("/search")
-	public RestResponse<List<SysUser>> search(@RequestBody UserSearchParam usersearchParam) {
-		return this.success(sysUserApplicationService.search(usersearchParam));
+	public RestResponse<List<SysUser>> search(@CookieValue("login_token") String loginToken,
+			@RequestBody UserSearchParam usersearchParam) {
+		return this.success(sysUserApplicationService.search(this.queryLoginUserByToken(loginToken), usersearchParam));
 	}
 
 	/**

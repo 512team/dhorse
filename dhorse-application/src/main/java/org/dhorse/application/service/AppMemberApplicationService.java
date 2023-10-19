@@ -7,9 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
-import org.dhorse.api.enums.RegisteredSourceEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.member.AppMemberCreationParam;
@@ -25,6 +23,7 @@ import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -104,7 +103,7 @@ public class AppMemberApplicationService extends BaseApplicationService<AppMembe
 			SysUserParam bizParam = new SysUserParam();
 			bizParam.setLoginName(addParam.getLoginName());
 			bizParam.setUserName(addParam.getLoginName());
-			bizParam.setRegisteredSource(RegisteredSourceEnum.LDAP.getCode());
+			bizParam.setRegisteredSource(loginUser.getRegisteredSource());
 			bizParam.setRoleType(RoleTypeEnum.NORMAL.getCode());
 			userId = sysUserRepository.add(bizParam);
 		}else{

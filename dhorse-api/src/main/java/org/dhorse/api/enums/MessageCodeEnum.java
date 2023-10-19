@@ -19,6 +19,7 @@ public enum MessageCodeEnum {
 	
 	SYS_USER_NOT_LOGINED("300000", "用户未登录"),
 	NO_ACCESS_RIGHT("200000", "无权限"),
+	REQUEST_WECHAT_FAILURE("200000", "请求微信失败"),
 	RECORD_IS_INEXISTENCE("200000", "记录不存在"),
 	USER_LOGIN_FAILED("200000", "登录名或密码不正确"),
 	USER_PASSWORD_FAILED("200000", "登录密码不正确"),

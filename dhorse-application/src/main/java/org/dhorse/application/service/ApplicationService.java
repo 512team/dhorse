@@ -33,6 +33,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.AppMemberParam;
@@ -124,6 +125,7 @@ public abstract class ApplicationService {
 	public GlobalConfigAgg globalConfig() {
 		GlobalConfigParam param = new GlobalConfigParam();
 		param.setItemTypes(Arrays.asList(GlobalConfigItemTypeEnum.LDAP.getCode(),
+				GlobalConfigItemTypeEnum.WECHAT.getCode(),
 				GlobalConfigItemTypeEnum.CODEREPO.getCode(),
 				GlobalConfigItemTypeEnum.IMAGEREPO.getCode(),
 				GlobalConfigItemTypeEnum.MAVEN.getCode(),
@@ -143,6 +145,12 @@ public abstract class ApplicationService {
 		GlobalConfigParam configParam = new GlobalConfigParam();
 		configParam.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
 		return globalConfigRepository.queryAgg(configParam).getLdap();
+	}
+	
+	public WeChat queryWeChat() {
+		GlobalConfigParam configParam = new GlobalConfigParam();
+		configParam.setItemType(GlobalConfigItemTypeEnum.WECHAT.getCode());
+		return globalConfigRepository.queryAgg(configParam).getWechat();
 	}
 	
 	public GlobalConfigAgg envTemplateQuery(GlobalConfigQueryParam queryParam) {

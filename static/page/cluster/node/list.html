@@ -4,7 +4,7 @@
 			<div class="layui-form-item">
 				<div class="layui-inline">
 					<div class="layui-input-inline">
-						<input type="text" name="nodeName" autocomplete="off" class="layui-input" placeholder="节点名称">
+						<input type="text" name="nodeName2" autocomplete="off" class="layui-input" placeholder="节点名称">
 					</div>
 				</div>
 				<div class="layui-inline">
@@ -98,7 +98,7 @@
                     curr: 1
                 },
                 where: {
-					'nodeName': data.field.nodeName,
+					'nodeName': data.field.nodeName2,
 					'clusterId': clusterId
 				}
             }, 'data');
@@ -127,7 +127,7 @@
 
         table2.on('tool(nodeTableFilter)', function (obj) {
 			if (obj.event === 'node-delete') {
-                doDelete($, clusterId, obj.data.nodeName);
+                doDelete($, clusterId, obj.data.nodeName2);
             }
 			return false;
         });

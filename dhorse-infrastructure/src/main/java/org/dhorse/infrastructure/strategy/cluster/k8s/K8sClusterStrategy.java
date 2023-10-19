@@ -739,7 +739,11 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			ClusterNamespacePageParam pageParam) {
 		NamespaceList namespaceList = null;
 		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
-			namespaceList = client.namespaces().list();
+			ListOptions o = new ListOptions();
+			if(pageParam != null && !StringUtils.isBlank(pageParam.getNamespaceName())) {
+				o.setLabelSelector("kubernetes.io/metadata.name=" + pageParam.getNamespaceName());
+			}
+			namespaceList = client.namespaces().list(o);
 		}
 		List<ClusterNamespace> namespaces = new ArrayList<>();
 		if(CollectionUtils.isEmpty(namespaceList.getItems())) {

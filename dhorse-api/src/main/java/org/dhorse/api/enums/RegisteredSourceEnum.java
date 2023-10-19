@@ -9,7 +9,8 @@ public enum RegisteredSourceEnum {
 
 	DHORSE(1, "DHorse"),
 	LDAP(2, "LDAP"),
-	SSO(3, "SSO");
+	WECHAT(3, "WeChat"),
+	SSO(4, "SSO");
 
 	private Integer code;
 

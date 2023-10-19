@@ -16,6 +16,8 @@ public class GlobalConfigAgg implements Serializable {
 
 	private Ldap ldap;
 
+	private WeChat wechat;
+
 	private Maven maven;
 
 	private Map<String, TraceTemplate> traceTemplates = new HashMap<>();
@@ -88,6 +90,14 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setMore(More more) {
 		this.more = more;
+	}
+
+	public WeChat getWechat() {
+		return wechat;
+	}
+
+	public void setWechat(WeChat wechat) {
+		this.wechat = wechat;
 	}
 
 	public static abstract class BaseGlobalConfig implements Serializable {
@@ -327,7 +337,6 @@ public class GlobalConfigAgg implements Serializable {
 			this.mavenRepoUrl = mavenRepoUrl;
 		}
 
-		
 	}
 
 	/**
@@ -762,6 +771,55 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setEventNotifyUrl(String eventNotifyUrl) {
 			this.eventNotifyUrl = eventNotifyUrl;
+		}
+
+	}
+
+	/**
+	 * 企业微信配置
+	 */
+	public static class WeChat extends BaseGlobalConfig {
+
+		private static final long serialVersionUID = 1L;
+
+		private String corpId;
+
+		private String agentId;
+
+		private String secret;
+
+		private Integer enable;
+
+		public String getCorpId() {
+			return corpId;
+		}
+
+		public void setCorpId(String corpId) {
+			this.corpId = corpId;
+		}
+
+		public String getAgentId() {
+			return agentId;
+		}
+
+		public void setAgentId(String agentId) {
+			this.agentId = agentId;
+		}
+
+		public String getSecret() {
+			return secret;
+		}
+
+		public void setSecret(String secret) {
+			this.secret = secret;
+		}
+
+		public Integer getEnable() {
+			return enable;
+		}
+
+		public void setEnable(Integer enable) {
+			this.enable = enable;
 		}
 
 	}

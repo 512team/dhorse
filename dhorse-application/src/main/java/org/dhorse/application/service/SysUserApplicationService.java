@@ -6,12 +6,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.dhorse.infrastructure.utils.StringUtils;
-import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RegisteredSourceEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
-import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.user.PasswordSetParam;
 import org.dhorse.api.param.user.PasswordUpdateParam;
 import org.dhorse.api.param.user.RoleUpdateParam;
@@ -25,18 +22,19 @@ import org.dhorse.api.param.user.UserUpdateParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.SysUser;
-import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.po.SysUserPO;
 import org.dhorse.infrastructure.strategy.login.LdapUserStrategy;
 import org.dhorse.infrastructure.strategy.login.NormalUserStrategy;
 import org.dhorse.infrastructure.strategy.login.UserStrategy;
+import org.dhorse.infrastructure.strategy.login.WeChatUserStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.login.param.LoginUserParam;
 import org.dhorse.infrastructure.utils.BeanUtils;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.GuavaCacheUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,14 +56,18 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 	private PasswordEncoder passwordEncoder;
 
 	public LoginUser login(UserLoginParam userLoginParam) {
-		if (StringUtils.isEmpty(userLoginParam.getLoginName())) {
-			LogUtils.throwException(logger, MessageCodeEnum.LOGIN_NAME_IS_EMPTY);
-		}
-		if (StringUtils.isEmpty(userLoginParam.getPassword())) {
-			LogUtils.throwException(logger, MessageCodeEnum.PASSWORD_IS_EMPTY);
-		}
 		if (null == userLoginParam.getLoginSource()) {
 			LogUtils.throwException(logger, MessageCodeEnum.LOGIN_SOURCE_IS_EMPTY);
+		}
+		
+		if(RegisteredSourceEnum.DHORSE.getCode().equals(userLoginParam.getLoginSource())
+				|| RegisteredSourceEnum.LDAP.getCode().equals(userLoginParam.getLoginSource())) {
+			if (StringUtils.isEmpty(userLoginParam.getLoginName())) {
+				LogUtils.throwException(logger, MessageCodeEnum.LOGIN_NAME_IS_EMPTY);
+			}
+			if (StringUtils.isEmpty(userLoginParam.getPassword())) {
+				LogUtils.throwException(logger, MessageCodeEnum.PASSWORD_IS_EMPTY);
+			}
 		}
 		
 		GlobalConfigAgg globalConfig = globalConfig();
@@ -89,6 +91,7 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 		sysUserRepository.update(bizParam);
 
 		loginUser.setLastLoginToken(loginToken);
+		loginUser.setLastLoginTime(bizParam.getLastLoginTime());
 
 		// 记录缓存
 		GuavaCacheUtils.putLoginUser(loginToken, loginUser);
@@ -175,15 +178,11 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 	 * @param usersearchParam 搜索用户参数
 	 * @return 符合条件的用户列表
 	 */
-	public List<SysUser> search(UserSearchParam usersearchParam) {
-		GlobalConfigParam param = new GlobalConfigParam();
-		param.setItemType(GlobalConfigItemTypeEnum.LDAP.getCode());
-		GlobalConfigAgg ldap = globalConfigRepository.queryAgg(param);
-		Integer loginSource = RegisteredSourceEnum.DHORSE.getCode();
-		if (ldap.getLdap() != null && YesOrNoEnum.YES.getCode().equals(ldap.getLdap().getEnable())) {
-			loginSource = RegisteredSourceEnum.LDAP.getCode();
-		}
-		UserStrategy userStrategy = userStrategy(loginSource);
+	public List<SysUser> search(LoginUser loginUser, UserSearchParam usersearchParam) {
+		//目前只支持从dhorse搜索用户，从别的渠道首先登录一下，会保存到dhorse系统里
+		//如果后期需要从别的渠道搜索用户的话，实现方案如下：
+		//记录用户最后的登录渠道，然后从该渠道搜索用户
+		UserStrategy userStrategy = userStrategy(RegisteredSourceEnum.DHORSE.getCode());
 		return userStrategy.search(usersearchParam.getLoginName(), this.globalConfig());
 	}
 
@@ -405,11 +404,13 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 		return sysUserRepository.queryByLoginName(loginName);
 	}
 
-	private UserStrategy userStrategy(Integer roleType) {
-		if (RegisteredSourceEnum.DHORSE.getCode().equals(roleType)) {
+	private UserStrategy userStrategy(Integer loginSource) {
+		if (RegisteredSourceEnum.DHORSE.getCode().equals(loginSource)) {
 			return new NormalUserStrategy();
-		} else if (RegisteredSourceEnum.LDAP.getCode().equals(roleType)) {
+		} else if (RegisteredSourceEnum.LDAP.getCode().equals(loginSource)) {
 			return new LdapUserStrategy();
+		}else if (RegisteredSourceEnum.WECHAT.getCode().equals(loginSource)) {
+			return new WeChatUserStrategy();
 		}
 		return null;
 	}
