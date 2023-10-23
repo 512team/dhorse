@@ -22,8 +22,11 @@
 		
 		var loginToken = getCookie('login_token');
 		var appId = localStorage.getItem('appId_' + parent.layui.$("#userName").val());
-        //var websocket = new WebSocket('ws://'+ window.location.hostname +':'+ window.location.port +'/deployment/log/'+ parent.id +'/'+ appId + '/' + loginToken);
-		var websocket = new WebSocket('ws://'+ window.location.hostname +':'+ window.location.port +'/deployment/log');
+		var ws = 'ws://';
+		if(window.location.protocol == 'https:'){
+			ws = 'wss://';
+		}
+		var websocket = new WebSocket(ws + window.location.host +'/deployment/log');
         websocket.onopen = function(event) {
             websocket.send(JSON.stringify({"appId": appId, "deploymentDetailId": parent.id, "loginToken": loginToken}));
         };
