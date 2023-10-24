@@ -18,6 +18,8 @@ public class GlobalConfigAgg implements Serializable {
 
 	private WeChat wechat;
 
+	private DingDing dingding;
+
 	private Maven maven;
 
 	private Map<String, TraceTemplate> traceTemplates = new HashMap<>();
@@ -98,6 +100,14 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setWechat(WeChat wechat) {
 		this.wechat = wechat;
+	}
+
+	public DingDing getDingding() {
+		return dingding;
+	}
+
+	public void setDingding(DingDing dingding) {
+		this.dingding = dingding;
 	}
 
 	public static abstract class BaseGlobalConfig implements Serializable {
@@ -812,6 +822,45 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setSecret(String secret) {
 			this.secret = secret;
+		}
+
+		public Integer getEnable() {
+			return enable;
+		}
+
+		public void setEnable(Integer enable) {
+			this.enable = enable;
+		}
+
+	}
+
+	/**
+	 * 钉钉
+	 */
+	public static class DingDing extends BaseGlobalConfig {
+
+		private static final long serialVersionUID = 1L;
+
+		private String appKey;
+
+		private String appSecret;
+
+		private Integer enable;
+
+		public String getAppKey() {
+			return appKey;
+		}
+
+		public void setAppKey(String appKey) {
+			this.appKey = appKey;
+		}
+
+		public String getAppSecret() {
+			return appSecret;
+		}
+
+		public void setAppSecret(String appSecret) {
+			this.appSecret = appSecret;
 		}
 
 		public Integer getEnable() {

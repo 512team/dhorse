@@ -9,6 +9,7 @@ import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.CustomizedMenu;
+import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
@@ -62,7 +63,29 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Ldap> queryLdap() {
 		return this.success(globalConfigApplicationService.queryLdap());
 	}
-	
+
+	/**
+	 * 查询企业微信
+	 * 
+	 * @return 企业微信数据
+	 */
+	@AccessNotLogin
+	@PostMapping("/query/wechat")
+	public RestResponse<WeChat> queryWeChat() {
+		return this.success(globalConfigApplicationService.queryWeChat());
+	}
+
+	/**
+	 * 查询钉钉
+	 * 
+	 * @return 钉钉数据
+	 */
+	@AccessNotLogin
+	@PostMapping("/query/dingding")
+	public RestResponse<DingDing> queryDingDing() {
+		return this.success(globalConfigApplicationService.queryDingDing());
+	}
+
 	/**
 	 * 添加或修改Ldap
 	 * 
@@ -74,22 +97,11 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> ldap(@RequestBody Ldap ldap) {
 		return this.success(globalConfigApplicationService.addOrUpdateLdap(ldap));
 	}
-	
-	/**
-	 * 查询企业微信
-	 * 
-	 * @return 企业微信数据
-	 */
-	@AccessNotLogin
-	@PostMapping("/query/wechat")
-	public RestResponse<WeChat> queryWeChat() {
-		return this.success(globalConfigApplicationService.queryWeChat());
-	}
-	
+
 	/**
 	 * 添加或修改企业微信
 	 * 
-	 * @param ldap Ldap参数
+	 * @param wechat WeChat参数
 	 * @return 无
 	 */
 	@AccessOnlyAdmin
@@ -97,7 +109,19 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> wechat(@RequestBody WeChat wechat) {
 		return this.success(globalConfigApplicationService.addOrUpdateWeChat(wechat));
 	}
-	
+
+	/**
+	 * 添加或修改钉钉
+	 * 
+	 * @param dingding DingDing参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/dingding/addOrUpdate")
+	public RestResponse<Void> wechat(@RequestBody DingDing dingding) {
+		return this.success(globalConfigApplicationService.addOrUpdateDingDing(dingding));
+	}
+
 	/**
 	 * 查询菜单
 	 * 
@@ -107,7 +131,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public String menu(@CookieValue("login_token") String loginToken) {
 		return globalConfigApplicationService.menu(queryLoginUserByToken(loginToken));
 	}
-	
+
 	/**
 	 * 添加或修改maven
 	 * 
@@ -225,7 +249,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> envTemplateUpdate(@RequestBody EnvTemplate envTemplate) {
 		return this.success(globalConfigApplicationService.updateEnvTemplate(envTemplate));
 	}
-	
+
 	/**
 	 * 查询模板
 	 * 
@@ -236,7 +260,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<GlobalConfigAgg> envTemplateQuery(@RequestBody GlobalConfigQueryParam queryParam) {
 		return this.success(globalConfigApplicationService.envTemplateQuery(queryParam));
 	}
-	
+
 	/**
 	 * 分页查询自义定菜单
 	 * 
@@ -283,7 +307,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<Void> more(@RequestBody More more) {
 		return this.success(globalConfigApplicationService.addOrUpdateMore(more));
 	}
-	
+
 	/**
 	 * 查询Java版本
 	 * 
@@ -293,7 +317,7 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<List<String>> queryJavaVersion() {
 		return this.success(globalConfigApplicationService.queryJavaVersion());
 	}
-	
+
 	/**
 	 * 查询操作系统名称
 	 * 
@@ -301,7 +325,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 */
 	@PostMapping("/queryOsName")
 	public RestResponse<String> queryOsName() {
-		//return this.success(globalConfigApplicationService.queryOsName());
+		// return this.success(globalConfigApplicationService.queryOsName());
 		return this.success("Windows");
 	}
 }

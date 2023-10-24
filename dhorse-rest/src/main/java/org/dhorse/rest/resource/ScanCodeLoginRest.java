@@ -20,7 +20,20 @@ public class ScanCodeLoginRest extends AbstractRest {
 			HttpServletResponse response) {
 		UserLoginParam userLoginParam = new UserLoginParam();
 		userLoginParam.setLoginSource(RegisteredSourceEnum.WECHAT.getCode());
-		userLoginParam.setWechatCode(code);
+		userLoginParam.setCode(code);
+		LoginUser loginUser = sysUserApplicationService.login(userLoginParam);
+		Cookie c = new Cookie("login_token", loginUser.getLastLoginToken());
+		response.addCookie(c);
+		return "index.html";
+	}
+	
+	@AccessNotLogin
+	@RequestMapping("/dingding")
+	public String dingding(@RequestParam("authCode") String code, @RequestParam("state") String state,
+			HttpServletResponse response) {
+		UserLoginParam userLoginParam = new UserLoginParam();
+		userLoginParam.setLoginSource(RegisteredSourceEnum.DINGDING.getCode());
+		userLoginParam.setCode(code);
 		LoginUser loginUser = sysUserApplicationService.login(userLoginParam);
 		Cookie c = new Cookie("login_token", loginUser.getLastLoginToken());
 		response.addCookie(c);

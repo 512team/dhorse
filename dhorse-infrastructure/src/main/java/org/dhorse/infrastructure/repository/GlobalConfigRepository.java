@@ -6,6 +6,7 @@ import java.util.List;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
@@ -56,6 +57,11 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 			if(GlobalConfigItemTypeEnum.WECHAT.getCode().equals(po.getItemType())) {
 				WeChat wechat = JsonUtils.parseToObject(po.getItemValue(), WeChat.class);
 				globalConfig.setWechat(wechat);
+				continue;
+			}
+			if(GlobalConfigItemTypeEnum.DINGDING.getCode().equals(po.getItemType())) {
+				DingDing dingding = JsonUtils.parseToObject(po.getItemValue(), DingDing.class);
+				globalConfig.setDingding(dingding);
 				continue;
 			}
 			if(GlobalConfigItemTypeEnum.CODEREPO.getCode().equals(po.getItemType())) {

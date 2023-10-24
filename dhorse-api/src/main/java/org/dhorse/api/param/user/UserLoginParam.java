@@ -25,11 +25,11 @@ public class UserLoginParam implements Serializable {
 	 * 登录密码，MD5值（32位大写）
 	 */
 	private String password;
-	
+
 	/**
-	 * 企业微信登录码
+	 * 登录码
 	 */
-	private String wechatCode;
+	private String code;
 
 	public Integer getLoginSource() {
 		return loginSource;
@@ -55,12 +55,12 @@ public class UserLoginParam implements Serializable {
 		this.password = password;
 	}
 
-	public String getWechatCode() {
-		return wechatCode;
+	public String getCode() {
+		return code;
 	}
 
-	public void setWechatCode(String wechatCode) {
-		this.wechatCode = wechatCode;
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 }

@@ -25,6 +25,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.GlobalConfigAgg.BaseGlobalConfig;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.CustomizedMenu;
+import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
@@ -245,6 +246,11 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 	public Void addOrUpdateWeChat(WeChat wechat) {
 		wechat.setItemType(GlobalConfigItemTypeEnum.WECHAT.getCode());
 		return addOrUpdateGlobalConfig(wechat);
+	}
+	
+	public Void addOrUpdateDingDing(DingDing dingding) {
+		dingding.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
+		return addOrUpdateGlobalConfig(dingding);
 	}
 	
 	public PageData<EnvTemplate> envTemplatePage(GlobalConfigPageParam pageParam) {

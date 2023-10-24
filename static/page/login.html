@@ -62,24 +62,6 @@
 						<button class="layui-btn admin-button" lay-submit="" lay-filter="normal-login">登 陆</button>
 					</form>
 				</div>
-				<!--
-				<div class="layui-tab-item" id="wechat-context"><div id="wx_reg"></div></div>
-				
-				<div class="layui-tab-item" id="ldap-context" style="display: none">
-					<form class="layui-form" action="">
-						<div>
-							<i class="layui-icon layui-icon-username admin-icon"></i>
-							<input type="text" name="loginName" placeholder="请输入登录名" lay-verify="required" lay-reqtext="登录名不能为空" autocomplete="off" class="layui-input admin-input admin-input-username">
-						</div>
-						<div>
-							<i class="layui-icon layui-icon-password admin-icon"></i>
-							<input type="password" name="password" placeholder="请输入密码" lay-verify="required" lay-reqtext="密码不能为空" autocomplete="off" class="layui-input admin-input admin-input-verify">
-						</div>
-						<input type="hidden" name="loginSource" value="2">
-						<button class="layui-btn admin-button" lay-submit="" lay-filter="ldap-login">登 陆</button>
-					</form>
-				</div>
-				-->
 			</div>
 		</div>
 	</div>
@@ -87,6 +69,7 @@
 <script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="../js/common.js" charset="utf-8"></script>
 <script src="https://wwcdn.weixin.qq.com/node/wework/wwopen/js/wwLogin-1.2.8.js"></script>
+<script src="https://g.alicdn.com/dingding/h5-dingtalk-login/0.21.0/ddlogin.js"></script>
 <script>
     layui.use(['form'], function () {
         var form = layui.form,
@@ -178,6 +161,56 @@
 					"href": cssContent,
 					"lang": "zh",
 				});
+			},
+			error: function(res){
+				return false;
+			}
+		});
+		
+		//初始化钉钉登录
+		$.ajax({
+			url: '/globalConfig/query/dingding',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 10}),
+			success: function(res){
+				//如果没有开启
+				if(res.code != "000000" || !res.data || res.data.enable != 1){
+					return false;
+				}
+				
+				element.tabAdd('login-handle', {
+					title: '钉钉',
+					content: '<div id="dingding_reg" class="dingding-style"></div>',
+					id: 'dingding-title'
+				});
+				element.tabChange('login-handle', 'dingding-title');
+				
+				window.DTFrameLogin(
+					{
+						id: 'dingding_reg',
+						width: 300,
+						height: 300
+					},
+					{
+						redirect_uri: encodeURIComponent(window.location.protocol + '//'+ window.location.host +'/dingding'),
+						client_id: res.data.appKey,
+						scope: 'openid',
+						response_type: 'code',
+						state: 'success',
+						prompt: 'consent'
+					},
+					(loginResult) => {
+						const {redirectUrl, authCode, state} = loginResult;
+						// 这里可以直接进行重定向
+						window.location.href = redirectUrl;
+					},
+					(errorMsg) => {
+						// 这里一般需要展示登录失败的具体原因
+						layer.msg(`Login Error: ${errorMsg}`);
+					},
+				);
 			},
 			error: function(res){
 				return false;

@@ -1023,7 +1023,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		threadParam.setAppId(abortParam.getAppId());
 		threadParam.setDeploymentDetailId(abortParam.getDeploymentDetailId());
 		threadParam.setThreadName(thread.split(":")[1]);
-		Map<String, String> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
+		Map<String, Object> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
 		String url = "http://" + thread.split(":")[0] + ":" + serverPort + "/app/deployment/detail/abortDeploymentThread";
 		try {
 			HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);

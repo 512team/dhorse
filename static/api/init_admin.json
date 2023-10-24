@@ -28,6 +28,12 @@
 					"target": "_self"
 				},
 				{
+					"title": "钉钉",
+					"href": "page/sys_config/dingding.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
 					"title": "自义定菜单",
 					"href": "page/sys_config/customized_menu/list.html",
 					"icon": "fa fa-cog",

@@ -24,6 +24,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.SysUser;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.po.SysUserPO;
+import org.dhorse.infrastructure.strategy.login.DingDingUserStrategy;
 import org.dhorse.infrastructure.strategy.login.LdapUserStrategy;
 import org.dhorse.infrastructure.strategy.login.NormalUserStrategy;
 import org.dhorse.infrastructure.strategy.login.UserStrategy;
@@ -411,6 +412,8 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 			return new LdapUserStrategy();
 		}else if (RegisteredSourceEnum.WECHAT.getCode().equals(loginSource)) {
 			return new WeChatUserStrategy();
+		}else if (RegisteredSourceEnum.DINGDING.getCode().equals(loginSource)) {
+			return new DingDingUserStrategy();
 		}
 		return null;
 	}

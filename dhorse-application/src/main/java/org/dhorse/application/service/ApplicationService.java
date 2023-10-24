@@ -29,6 +29,7 @@ import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.GlobalConfigAgg;
+import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
@@ -126,6 +127,7 @@ public abstract class ApplicationService {
 		GlobalConfigParam param = new GlobalConfigParam();
 		param.setItemTypes(Arrays.asList(GlobalConfigItemTypeEnum.LDAP.getCode(),
 				GlobalConfigItemTypeEnum.WECHAT.getCode(),
+				GlobalConfigItemTypeEnum.DINGDING.getCode(),
 				GlobalConfigItemTypeEnum.CODEREPO.getCode(),
 				GlobalConfigItemTypeEnum.IMAGEREPO.getCode(),
 				GlobalConfigItemTypeEnum.MAVEN.getCode(),
@@ -151,6 +153,12 @@ public abstract class ApplicationService {
 		GlobalConfigParam configParam = new GlobalConfigParam();
 		configParam.setItemType(GlobalConfigItemTypeEnum.WECHAT.getCode());
 		return globalConfigRepository.queryAgg(configParam).getWechat();
+	}
+	
+	public DingDing queryDingDing() {
+		GlobalConfigParam configParam = new GlobalConfigParam();
+		configParam.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
+		return globalConfigRepository.queryAgg(configParam).getDingding();
 	}
 	
 	public GlobalConfigAgg envTemplateQuery(GlobalConfigQueryParam queryParam) {

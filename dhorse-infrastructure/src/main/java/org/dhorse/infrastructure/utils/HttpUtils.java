@@ -47,7 +47,7 @@ public class HttpUtils {
 		return get(url, timeout, null);
 	}
 	
-	public static int get(String url, int timeout, Map<String, String> cookies) {
+	public static int get(String url, int timeout, Map<String, Object> cookies) {
         try (CloseableHttpResponse response = doGet(url, timeout, cookies)){
         	return response.getStatusLine().getStatusCode();
         } catch (IOException e) {
@@ -57,11 +57,11 @@ public class HttpUtils {
 	}
 	
 	public static String getResponse(String url) {
-        return getResponse(url, 2000, null);
+        return getResponse(url, null);
 	}
 	
-	public static String getResponse(String url, int timeout, Map<String, String> cookies) {
-        try (CloseableHttpResponse response = doGet(url, timeout, cookies)){
+	public static String getResponse(String url, Map<String, Object> cookies) {
+        try (CloseableHttpResponse response = doGet(url, 2000, cookies)){
         	return EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
         	LogUtils.throwException(logger, MessageCodeEnum.HTT_GET_FAILURE);
@@ -69,7 +69,7 @@ public class HttpUtils {
         return null;
 	}
 	
-	private static CloseableHttpResponse doGet(String url, int timeout, Map<String, String> cookies)
+	private static CloseableHttpResponse doGet(String url, int timeout, Map<String, Object> cookies)
 			throws ClientProtocolException, IOException {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(timeout)
@@ -80,19 +80,43 @@ public class HttpUtils {
         method.setConfig(requestConfig);
         if(!CollectionUtils.isEmpty(cookies)) {
         	String cookieStr = "";
-        	for(Entry<String, String> c : cookies.entrySet()) {
+        	for(Entry<String, Object> c : cookies.entrySet()) {
         		cookieStr = cookieStr + c.getKey() + "=" + c.getValue() + ";";
+        		method.setHeader(c.getKey(), c.getValue().toString());
         	}
         	method.setHeader("Cookie", cookieStr);
         }
         return createHttpClient(url).execute(method);
 	}
 	
+	public static String postResponse(String url, Map<String, Object> param) {
+        try (CloseableHttpResponse response = doPost(url, JsonUtils.toJsonString(param), null)){
+        	return EntityUtils.toString(response.getEntity());
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, e, MessageCodeEnum.HTT_POST_FAILURE);
+        }
+        return null;
+	}
+	
+	public static int post(String url, Map<String, Object> param) {
+		return post(url, JsonUtils.toJsonString(param), null);
+	}
+	
 	public static int post(String url, String jsonParam) {
 		return post(url, jsonParam, null);
 	}
 	
-	public static int post(String url, String jsonParam, Map<String, String> cookies) {
+	public static int post(String url, String jsonParam, Map<String, Object> cookies) {
+        try (CloseableHttpResponse response = doPost(url, jsonParam, cookies)){
+        	return response.getStatusLine().getStatusCode();
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, e, MessageCodeEnum.HTT_POST_FAILURE);
+        }
+        return -1;
+	}
+	
+	public static CloseableHttpResponse doPost(String url, String jsonParam,
+			Map<String, Object> cookies) throws ClientProtocolException, IOException {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(2000)
                 .setConnectTimeout(2000)
@@ -103,18 +127,15 @@ public class HttpUtils {
         httpPost.setHeader("Content-Type", "application/json;charset=UTF-8");
         if(!CollectionUtils.isEmpty(cookies)) {
         	String cookieStr = "";
-        	for(Entry<String, String> c : cookies.entrySet()) {
+        	for(Entry<String, Object> c : cookies.entrySet()) {
         		cookieStr = cookieStr + c.getKey() + "=" + c.getValue() + ";";
         	}
         	httpPost.setHeader("Cookie", cookieStr);
         }
-        httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
-        try (CloseableHttpResponse response = createHttpClient(url).execute(httpPost)){
-        	return response.getStatusLine().getStatusCode();
-        } catch (IOException e) {
-        	LogUtils.throwException(logger, e, MessageCodeEnum.HTT_POST_FAILURE);
+        if(!StringUtils.isBlank(jsonParam)) {
+        	httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
         }
-        return -1;
+        return createHttpClient(url).execute(httpPost);
 	}
 	
 	public static CloseableHttpClient createHttpClient(String url) {
