@@ -13,12 +13,12 @@ CONF_PATH=$DHORSE_HOME/conf/$APP_NAME.yml
 JAVA_OPTS="-server -Xms256m -Xmx256m -Xmn96m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
 
 dhorse_banner(){
-	echo "       _ _                         "
-	echo "      | | |                        "
-	echo "    __| | |__   ___  _ __ ___  ___ "
-	echo "   / _\` | '_ \ / _ \| '__/ __|/ _ \\"
-	echo "  | (_| | | | | (_) | |  \__ \  __/"
-	echo "   \__,_|_| |_|\___/|_|  |___/\___|"
+	echo "  _____  _    _                     "
+	echo " |  __ \| |  | |                    "
+	echo " | |  | | |__| | ___  _ __ ___  ___ "
+	echo " | |  | |  __  |/ _ \| '__/ __|/ _ \\"
+	echo " | |__| | |  | | (_) | |  \__ \  __/"
+	echo " |_____/|_|  |_|\___/|_|  |___/\___|"
 	echo "  :: DHorse ::             (v${project.version})"
 	echo "                                   "
 }
