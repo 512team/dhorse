@@ -34,7 +34,7 @@ public class AppMemberRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<AppMember>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<AppMember>> page(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppMemberPageParam pageQueryParam) {
 		return success(appMemberApplicationService.page(queryLoginUserByToken(loginToken), pageQueryParam));
 	}
@@ -46,7 +46,7 @@ public class AppMemberRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/addOrUpdate")
-	public RestResponse<Void> addOrUpdate(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> addOrUpdate(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppMemberCreationParam addOrUpdateParam) {
 		return success(
 				appMemberApplicationService.addOrUpdate(queryLoginUserByToken(loginToken), addOrUpdateParam));
@@ -59,7 +59,7 @@ public class AppMemberRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppMemberDeletionParam deletedParam) {
 		return success(appMemberApplicationService.delete(queryLoginUserByToken(loginToken), deletedParam));
 	}

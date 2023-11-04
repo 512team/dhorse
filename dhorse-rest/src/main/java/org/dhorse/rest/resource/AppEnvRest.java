@@ -41,7 +41,8 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<AppEnv>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<AppEnv>> page(@CookieValue(name = "login_token",
+			required = false) String loginToken,
 			@RequestBody AppEnvPageParam appEnvPageParam) {
 		return success(appEnvApplicationService.page(queryLoginUserByToken(loginToken), appEnvPageParam));
 	}
@@ -53,7 +54,8 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/search")
-	public RestResponse<List<AppEnv>> search(@CookieValue("login_token") String loginToken,
+	public RestResponse<List<AppEnv>> search(@CookieValue(name = "login_token",
+			required = false) String loginToken,
 			@RequestBody AppEnvSearchParam appEnvSearchParam) {
 		return success(appEnvApplicationService.search(queryLoginUserByToken(loginToken), appEnvSearchParam));
 	}
@@ -65,7 +67,7 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/query")
-	public RestResponse<AppEnv> query(@CookieValue("login_token") String loginToken,
+	public RestResponse<AppEnv> query(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppEnvQueryParam appEnvQueryParam) {
 		return success(appEnvApplicationService.query(queryLoginUserByToken(loginToken), appEnvQueryParam));
 	}
@@ -88,7 +90,7 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/update")
-	public RestResponse<Void> update(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> update(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppEnvUpdateParam appEnvUpdateParam) {
 		return success(appEnvApplicationService.update(queryLoginUserByToken(loginToken), appEnvUpdateParam));
 	}
@@ -100,7 +102,7 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/updateResource")
-	public RestResponse<Void> updateResource(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> updateResource(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppEnvResoureUpdateParam envResoureUpdateParam) {
 		return success(
 				appEnvApplicationService.updateResource(queryLoginUserByToken(loginToken), envResoureUpdateParam));
@@ -113,7 +115,7 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/updateTrace")
-	public RestResponse<Void> updateTrace(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> updateTrace(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody TraceUpdateParam updateTraceParam) {
 		return success(appEnvApplicationService.updateTrace(queryLoginUserByToken(loginToken), updateTraceParam));
 	}
@@ -125,7 +127,7 @@ public class AppEnvRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppEnvDeletionParam appEnvDeletionParam) {
 		return success(appEnvApplicationService.delete(queryLoginUserByToken(loginToken), appEnvDeletionParam));
 	}

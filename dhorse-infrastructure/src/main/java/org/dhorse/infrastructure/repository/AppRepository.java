@@ -58,6 +58,9 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 	private AppMemberRepository appMemberRepository;
 
 	public PageData<App> page(LoginUser loginUser, AppParam bizParam) {
+		if(loginUser == null) {
+			return new PageData<App>();
+		}
 		// 如果admin角色的用户，直接查询应用表
 		if (RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			PageData<App> pageDto = pageData(super.page(bizParam));

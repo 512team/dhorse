@@ -36,7 +36,8 @@ public class AffinityToleraionRest extends AbstractRest {
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<AffinityToleration>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<AffinityToleration>> page(@CookieValue(name = "login_token",
+			required = false) String loginToken,
 			@RequestBody AffinityTolerationPageParam pageParam) {
 		return success(service.page(queryLoginUserByToken(loginToken), pageParam));
 	}
@@ -48,7 +49,8 @@ public class AffinityToleraionRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/query")
-	public RestResponse<AffinityToleration> query(@CookieValue("login_token") String loginToken,
+	public RestResponse<AffinityToleration> query(@CookieValue(name = "login_token",
+			required = false) String loginToken,
 			@RequestBody AffinityTolerationQueryParam queryParam) {
 		return success(service.query(queryLoginUserByToken(loginToken), queryParam));
 	}
@@ -71,7 +73,7 @@ public class AffinityToleraionRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/update")
-	public RestResponse<Void> update(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> update(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AffinityTolerationUpdateParam updateParam) {
 		return success(service.update(queryLoginUserByToken(loginToken), updateParam));
 	}
@@ -83,7 +85,7 @@ public class AffinityToleraionRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/openStatus")
-	public RestResponse<Void> openStatus(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> openStatus(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AffinityTolerationUpdateParam updateParam) {
 		return success(service.openStatus(queryLoginUserByToken(loginToken), updateParam));
 	}
@@ -95,7 +97,7 @@ public class AffinityToleraionRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AffinityTolerationDeletionParam deletionParam) {
 		return success(service.delete(queryLoginUserByToken(loginToken), deletionParam));
 	}

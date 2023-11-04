@@ -5,7 +5,7 @@ create table sys_user (
 	password varchar (64) default null comment is '密码，md5和sha256双重加密',
 	email varchar (32) default null comment is '邮箱',
 	role_type tinyint default 0 comment is '0：普通用户，1：管理员',
-	registered_source tinyint default 0 comment is '注册来源，1：dhorse，2：ldap，3：sso',
+	registered_source tinyint default 0 comment is '注册来源，1：dhorse，2：ldap，3：wechat，4：dingding，5：cas',
 	last_login_time datetime default null comment is '上次登录时间',
 	last_login_token varchar (32) default null comment is '上次登录token',
 	creation_time datetime default current_timestamp comment is '创建时间',

@@ -11,7 +11,7 @@ public enum RegisteredSourceEnum {
 	LDAP(2, "LDAP"),
 	WECHAT(3, "WeChat"),
 	DINGDING(4, "DingDing"),
-	SSO(5, "SSO");
+	CAS(5, "CAS");
 
 	private Integer code;
 

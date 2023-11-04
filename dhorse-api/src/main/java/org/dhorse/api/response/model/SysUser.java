@@ -30,7 +30,7 @@ public class SysUser extends BaseDto {
 	private Integer roleType;
 
 	/**
-	 * 注册来源，1：DHorse，2：LDAP，3：SSO
+	 * 注册来源，见：org.dhorse.api.enums.RegisteredSourceEnum
 	 */
 	private Integer registeredSource;
 

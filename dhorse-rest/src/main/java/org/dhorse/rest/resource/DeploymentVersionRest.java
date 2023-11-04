@@ -34,7 +34,7 @@ public class DeploymentVersionRest extends AbstractRest {
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<DeploymentVersion>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<DeploymentVersion>> page(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentVersionPageParam pageParam) {
 		return success(deploymentVersionApplicationService.page(queryLoginUserByToken(loginToken),
 				pageParam));
@@ -47,7 +47,7 @@ public class DeploymentVersionRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/search")
-	public RestResponse<PageData<DeploymentVersion>> search(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<DeploymentVersion>> search(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentVersionPageParam pageParam) {
 		return success(deploymentVersionApplicationService.search(queryLoginUserByToken(loginToken),
 				pageParam));
@@ -60,7 +60,7 @@ public class DeploymentVersionRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentVersionDeletionParam deletionParam) {
 		return success(deploymentVersionApplicationService.delete(queryLoginUserByToken(loginToken),
 				deletionParam));
@@ -73,7 +73,7 @@ public class DeploymentVersionRest extends AbstractRest {
 	 * @return 无
 	 */
 	@RequestMapping("/submitToDeploy")
-	public RestResponse<Void> submitToDeploy(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> submitToDeploy(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentParam deploymentParam) {
 		return this.success(deploymentVersionApplicationService
 				.submitToDeploy(this.queryLoginUserByToken(loginToken), deploymentParam));

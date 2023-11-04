@@ -253,6 +253,11 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 		return addOrUpdateGlobalConfig(dingding);
 	}
 	
+	public Void addOrUpdateCas(BaseGlobalConfig config) {
+		config.setItemType(GlobalConfigItemTypeEnum.CAS.getCode());
+		return addOrUpdateGlobalConfig(config);
+	}
+	
 	public PageData<EnvTemplate> envTemplatePage(GlobalConfigPageParam pageParam) {
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setPageNum(pageParam.getPageNum());

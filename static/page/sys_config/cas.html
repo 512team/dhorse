@@ -1,29 +1,35 @@
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form" lay-filter="form-data">
 		<div class="layui-form-item">
-			<label class="layui-form-label required">企业ID</label>
-			<div class="layui-input-inline" style="width: 70%">
-				<input type="text" name="corpId" lay-verify="required" lay-reqtext="企业ID不能为空" placeholder="查看路径：企业微信后台-我的企业" autocomplete="off" class="layui-input">
-			</div>
-			<div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E7%99%BB%E5%BD%95/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E7%99%BB%E5%BD%95.md" target="_blank">《使用指引》</a></div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label required">AgentId</label>
+			<label class="layui-form-label required">服务地址</label>
 			<div class="layui-input-block">
-				<input type="text" name="agentId" lay-verify="required" lay-reqtext="AgentId不能为空" placeholder="查看路径：企业微信后台-应用管理" autocomplete="off" class="layui-input">
+				<input type="text" name="serverUrlPrefix" lay-verify="required" lay-reqtext="服务地址不能为空" placeholder="如：http://localhost:8080" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label required">Secret</label>
+			<label class="layui-form-label required">登录地址</label>
 			<div class="layui-input-block">
-				<input type="text" name="secret" lay-verify="required" lay-reqtext="Secret不能为空" placeholder="查看路径：企业微信后台-应用管理" autocomplete="off" class="layui-input">
+				<input type="text" name="serverLoginUrl" lay-verify="required" lay-reqtext="登录地址不能为空" placeholder="如：http://localhost:8080/login" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">登出地址</label>
+			<div class="layui-input-block">
+				<input type="text" name="serverLogoutUrl" lay-verify="required" lay-reqtext="登出地址不能为空" placeholder="如：http://localhost:8080/logout" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">DHorse地址</label>
+			<div class="layui-input-block">
+				<input type="text" name="clientHostUrl" lay-verify="required" lay-reqtext="DHorse地址不能为空" placeholder="如：http://localhost:8100" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
 			<label class="layui-form-label">是否开启</label>
-			<div class="layui-input-block">
+			<div class="layui-input-inline" style="width: 5%">
 				<input type="checkbox" name="enable" lay-skin="switch" value="1" lay-text="开启|关闭">
 			</div>
+			<div class="layui-form-mid layui-word-aux">重启DHorse服务后生效</div>
 		</div>
 		<div class="layui-form-item">
 			<div class="layui-input-block">
@@ -43,7 +49,7 @@
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
-			data: JSON.stringify({"itemTypes": [9]}),
+			data: JSON.stringify({"itemTypes": [11]}),
 			success: function(res){
 				form.render();
 				if(res.code != "000000"){
@@ -54,12 +60,13 @@
 					return false;
 				}
 				//给表单赋值
-				var wechat = res.data.wechat;
+				var cas = res.data.cas;
 				form.val("form-data", {
-				  "corpId": wechat.corpId
-				  ,"agentId": wechat.agentId
-				  ,"secret": wechat.secret
-				  ,"enable": wechat.enable
+				  "serverUrlPrefix": cas.serverUrlPrefix
+				  ,"serverLogoutUrl": cas.serverLogoutUrl
+				  ,"serverLoginUrl": cas.serverLoginUrl
+				  ,"clientHostUrl": cas.clientHostUrl
+				  ,"enable": cas.enable
 				});
 				form.render();
 			},
@@ -71,9 +78,9 @@
         //监听提交
         form.on('submit(saveBtn)', function (data) {
 			//增加类型
-			data.field.itemType = 1;
+			data.field.itemType = 11;
 			$.ajax({
-				url: '/globalConfig/wechat/addOrUpdate',
+				url: '/globalConfig/cas/addOrUpdate',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',

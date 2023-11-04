@@ -27,6 +27,7 @@ import org.dhorse.infrastructure.repository.po.SysUserPO;
 import org.dhorse.infrastructure.strategy.login.DingDingUserStrategy;
 import org.dhorse.infrastructure.strategy.login.LdapUserStrategy;
 import org.dhorse.infrastructure.strategy.login.NormalUserStrategy;
+import org.dhorse.infrastructure.strategy.login.CasUserStrategy;
 import org.dhorse.infrastructure.strategy.login.UserStrategy;
 import org.dhorse.infrastructure.strategy.login.WeChatUserStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -129,16 +130,18 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 
 		loginUser = sysUserRepository.queryLoginUser(loginToken);
 		if (loginUser == null) {
-			return null;
+			LogUtils.throwException(logger, MessageCodeEnum.SYS_USER_NOT_LOGINED);
 		}
 
 		if (loginUser.getLastLoginTime() == null) {
-			return null;
+			LogUtils.throwException(logger, MessageCodeEnum.SYS_USER_NOT_LOGINED);
 		}
 
 		if (validLoginTime(loginUser.getLastLoginTime())) {
 			GuavaCacheUtils.putLoginUser(loginUser.getLastLoginToken(), loginUser);
 			return loginUser;
+		}else {
+			LogUtils.throwException(logger, MessageCodeEnum.SYS_USER_NOT_LOGINED);
 		}
 
 		return null;
@@ -414,6 +417,8 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 			return new WeChatUserStrategy();
 		}else if (RegisteredSourceEnum.DINGDING.getCode().equals(loginSource)) {
 			return new DingDingUserStrategy();
+		}else if (RegisteredSourceEnum.CAS.getCode().equals(loginSource)) {
+			return new CasUserStrategy();
 		}
 		return null;
 	}

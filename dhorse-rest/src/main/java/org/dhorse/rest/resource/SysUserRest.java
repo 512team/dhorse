@@ -2,6 +2,8 @@ package org.dhorse.rest.resource;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.dhorse.api.param.user.PasswordSetParam;
 import org.dhorse.api.param.user.PasswordUpdateParam;
 import org.dhorse.api.param.user.RoleUpdateParam;
@@ -45,7 +47,7 @@ public class SysUserRest extends AbstractRest {
 	public RestResponse<LoginUser> login(@RequestBody UserLoginParam userLoginParam) {
 		return this.success(sysUserApplicationService.login(userLoginParam));
 	}
-
+	
 	/**
 	 * 登录
 	 * 
@@ -64,7 +66,8 @@ public class SysUserRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/logout")
-	public RestResponse<Void> logout(@CookieValue("login_token") String loginToken) {
+	public RestResponse<Void> logout(@CookieValue(name = "login_token", required = false) String loginToken, HttpSession session) {
+		session.invalidate();
 		return this.success(sysUserApplicationService.logout(this.queryLoginUserByToken(loginToken)));
 	}
 
@@ -75,7 +78,7 @@ public class SysUserRest extends AbstractRest {
 	 * @return 符合条件的用户列表
 	 */
 	@PostMapping("/search")
-	public RestResponse<List<SysUser>> search(@CookieValue("login_token") String loginToken,
+	public RestResponse<List<SysUser>> search(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody UserSearchParam usersearchParam) {
 		return this.success(sysUserApplicationService.search(this.queryLoginUserByToken(loginToken), usersearchParam));
 	}
@@ -148,7 +151,7 @@ public class SysUserRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/updatePassword")
-	public RestResponse<Void> updatePassword(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> updatePassword(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody PasswordUpdateParam passwordUpdateParam) {
 		return this.success(
 				sysUserApplicationService.updatePassword(this.queryLoginUserByToken(loginToken), passwordUpdateParam));

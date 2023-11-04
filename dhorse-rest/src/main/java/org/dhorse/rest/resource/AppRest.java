@@ -11,6 +11,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.App;
 import org.dhorse.application.service.AppApplicationService;
+import org.dhorse.infrastructure.annotation.AccessNotLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,8 +38,9 @@ public class AppRest extends AbstractRest {
 	 * @param appPageParam 查询参数
 	 * @return 符合条件的分页数据
 	 */
+	@AccessNotLogin
 	@PostMapping("/page")
-	public RestResponse<PageData<App>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<App>> page(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppPageParam appPageParam) {
 		return success(appApplicationService.page(queryLoginUserByToken(loginToken), appPageParam));
 	}
@@ -61,7 +63,7 @@ public class AppRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/query")
-	public RestResponse<App> query(@CookieValue("login_token") String loginToken,
+	public RestResponse<App> query(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppQueryParam appQueryParam) {
 		return success(appApplicationService.query(queryLoginUserByToken(loginToken), appQueryParam.getAppId()));
 	}
@@ -73,7 +75,7 @@ public class AppRest extends AbstractRest {
 	 * @return 应用编号
 	 */
 	@PostMapping("/add")
-	public RestResponse<App> add(@CookieValue("login_token") String loginToken,
+	public RestResponse<App> add(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppCreationParam appCreationParam) {
 		return success(appApplicationService.add(queryLoginUserByToken(loginToken), appCreationParam));
 	}
@@ -85,7 +87,7 @@ public class AppRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/update")
-	public RestResponse<Void> update(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> update(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppUpdateParam appUpdateParam) {
 		return success(appApplicationService.update(queryLoginUserByToken(loginToken), appUpdateParam));
 	}
@@ -97,7 +99,7 @@ public class AppRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppDeletionParam appDeletionParam) {
 		return success(appApplicationService.delete(queryLoginUserByToken(loginToken), appDeletionParam));
 	}

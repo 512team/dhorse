@@ -27,7 +27,7 @@ public class UserPageParam extends PageParam {
 	private Integer roleType;
 
 	/**
-	 * 注册来源，1：DHorse，2：LDAP，3：SSO
+	 * 注册来源，1：DHorse，2：LDAP，3：CAS
 	 */
 	private Integer registeredSource;
 

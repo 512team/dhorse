@@ -135,6 +135,9 @@
 					layer.msg("获取用户信息失败：" + res.message, {icon: 2});
 					return false;
 				}
+				if($.isEmptyObject(res.data)){
+					return false;
+				}
 				var initMenu = "api/init_normal.json";
 				if(res.data.roleType == 1){
 					initMenu = "api/init_admin.json";
@@ -159,36 +162,53 @@
 
         $('.login-out').on("click", function () {
 			$.ajax({
-				url: '/sysUser/logout',
+				url: '/globalConfig/query/cas',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				success: function(data){
-					if(data.code != "000000"){
-						layer.msg("退出登录失败：" + data.message, {icon: 2});
-						return false;
+				data: JSON.stringify({"itemType": 11}),
+				success: function(res){
+					$.ajax({
+						url: '/sysUser/logout',
+						type: 'POST',
+						dataType: "json",
+						contentType: 'application/json;charset=UTF-8',
+						success: function(data){
+							if(data.code != "000000"){
+								layer.msg("退出登录失败：" + data.message, {icon: 2});
+								return false;
+							}
+							$("#userName").val();
+							window.location = '/page/login.html';
+						},
+						error: function(data){
+							layer.msg("退出登录失败：" + data.message, {icon: 2});
+						}
+					});
+					
+					//退出cas
+					if(res.code == "000000" && res.data && res.data.enable == 1){
+						window.location = res.data.serverLogoutUrl + '?service='+ window.location.protocol +'//'+ window.location.host +'/page/login.html';
 					}
-					$("#userName").val();
-					window.location = '/page/login.html';
 				},
-				error: function(data){
-					layer.msg("退出登录失败：" + data.message, {icon: 2});
+				error: function(res){
+					return false;
 				}
 			});
         });
-				
+		
 		$.ajax({
-			url: '/app/page',
+			url: '/app/search',
 			type: 'POST',
 			dataType: "json",
 			contentType: 'application/json;charset=UTF-8',
 			data: JSON.stringify({'pageSize': 10000, 'pageNum': 1}),
 			success: function(res){
 				var opt = '';
-				if(res.data.itemCount == 0){
+				if($.isEmptyObject(res.data)){
 					opt = opt.concat("<option>请选择或搜索应用</option>");
 				}else{
-					var data = res.data.items;
+					var data = res.data;
 					var appIdKey = 'appId_' + $("#userName").val();
 					for(var k in data){
 						if(localStorage.getItem(appIdKey) === null && k == 0){

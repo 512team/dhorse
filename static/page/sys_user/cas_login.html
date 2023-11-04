@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'jquery', 'layer'], function () {
+		var form = layui.form,
+			$ = layui.jquery,
+            layer = layui.layer;
+		/**
+        $.ajax({
+			url: '/sysUser/cas',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			success: function(res){
+				if(res.code != "000000" || !res.data || !res.data.lastLoginToken){
+					return;
+				}
+				setCookie("login_token", res.data.lastLoginToken);
+				window.location.href = '/index.html';
+			},
+			error: function(res){
+				layer.msg("调用用户信息接口失败：" + res.message, {icon: 2});
+			}
+		});
+		**/
+		
+		//该请求存在跨域跳转问题，目前未解决
+		$.ajax({
+			url: '/cas?callback=?',
+			dataType: "jsonp",
+			jsonpCallback: 'callback',
+			success: function(res){
+				if(res.code != "000000" || !res.data || !res.data.lastLoginToken){
+					window.location.href = '/page/login.html';
+				}else{
+					window.location.href = '/index.html';
+				}
+			},
+			error: function(res){
+				if(res.status == 200){
+					window.location.href = '/index.html';
+				}else{
+					window.location.href = '/page/login.html';
+				}
+			}
+		});
+		
+	});
+</script>
+</body>
+</html>

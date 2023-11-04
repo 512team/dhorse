@@ -5,7 +5,7 @@ create table sys_user (
 	password varchar(64) default null, -- '密码，md5和sha256双重加密'
 	email varchar(32) default null, -- '邮箱'
 	role_type integer default 0, -- '0：普通用户，1：管理员'
-	registered_source integer default 0, -- '注册来源，1：dhorse，2：ldap，3：sso'
+	registered_source integer default 0, -- '注册来源，1：dhorse，2：ldap，3：wechat，4：dingding，5：cas'
 	last_login_time varchar(19) default null, -- '上次登录时间'
 	last_login_token varchar(32) default null, -- '上次登录token'
 	creation_time varchar(19) default(datetime(CURRENT_TIMESTAMP,'localtime')), -- '创建时间'

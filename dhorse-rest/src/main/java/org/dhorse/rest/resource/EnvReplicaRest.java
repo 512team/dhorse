@@ -57,7 +57,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<EnvReplica>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<EnvReplica>> page(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvReplicaPageParam envReplicaPageParam) {
 		return success(
 				envReplicaApplicationService.page(queryLoginUserByToken(loginToken), envReplicaPageParam));
@@ -70,7 +70,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/rebuild")
-	public RestResponse<Void> rebuild(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> rebuild(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvReplicaRebuildParam rebuildParam) {
 		return success(envReplicaApplicationService.rebuild(queryLoginUserByToken(loginToken), rebuildParam));
 	}
@@ -82,7 +82,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 文件列表
 	 */
 	@PostMapping("/queryFiles")
-	public RestResponse<List<String>> queryFiles(@CookieValue("login_token") String loginToken,
+	public RestResponse<List<String>> queryFiles(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody QueryFilesParam requestParam) {
 		return success(
 				envReplicaApplicationService.queryFiles(queryLoginUserByToken(loginToken), requestParam));
@@ -95,7 +95,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 数据文件列表
 	 */
 	@GetMapping("/downloadFile")
-	public Void downloadFile(@CookieValue("login_token") String loginToken, DownloadFileParam downloadFileParam) {
+	public Void downloadFile(@CookieValue(name = "login_token", required = false) String loginToken, DownloadFileParam downloadFileParam) {
 		response.setContentType("application/octet-stream");
 		response.setHeader("Content-Disposition", "attachment;filename=" + downloadFileParam.getFileName());
 		int length = 0;
@@ -120,7 +120,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 日志文件
 	 */
 	@GetMapping("/downloadLog")
-	public Void downloadLog(@CookieValue("login_token") String loginToken,
+	public Void downloadLog(@CookieValue(name = "login_token", required = false) String loginToken,
 			EnvReplicaParam envReplicaParam) {
 		response.setContentType("application/octet-stream");
 		response.setHeader("Content-Disposition", "attachment;filename=out.log");
@@ -141,7 +141,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 日志文件
 	 */
 	@GetMapping("/downloadYaml")
-	public Void downloadYaml(@CookieValue("login_token") String loginToken,
+	public Void downloadYaml(@CookieValue(name = "login_token", required = false) String loginToken,
 			EnvReplicaParam envReplicaParam) {
 		response.setContentType("application/octet-stream");
 		response.setHeader("Content-Disposition", "attachment;filename="+envReplicaParam.getReplicaName()+".yaml");
@@ -162,7 +162,7 @@ public class EnvReplicaRest extends AbstractRest {
 	 * @return 符合条件的数据集
 	 */
 	@PostMapping("/metrics/list")
-	public RestResponse<MetricsView> metricsList(@CookieValue("login_token") String loginToken,
+	public RestResponse<MetricsView> metricsList(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody MetricsQueryParam queryParam) {
 		return success(
 				envReplicaApplicationService.metrics(queryLoginUserByToken(loginToken), queryParam));

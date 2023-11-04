@@ -14,6 +14,8 @@ public class GlobalConfigAgg implements Serializable {
 
 	private ImageRepo imageRepo;
 
+	private CAS cas;
+
 	private Ldap ldap;
 
 	private WeChat wechat;
@@ -60,6 +62,14 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setCustomizedMenu(CustomizedMenu customizedMenu) {
 		this.customizedMenu = customizedMenu;
+	}
+
+	public CAS getCas() {
+		return cas;
+	}
+
+	public void setCas(CAS cas) {
+		this.cas = cas;
 	}
 
 	public Ldap getLdap() {
@@ -861,6 +871,65 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setAppSecret(String appSecret) {
 			this.appSecret = appSecret;
+		}
+
+		public Integer getEnable() {
+			return enable;
+		}
+
+		public void setEnable(Integer enable) {
+			this.enable = enable;
+		}
+
+	}
+
+	/**
+	 * CAS登录
+	 */
+	public static class CAS extends BaseGlobalConfig {
+
+		private static final long serialVersionUID = 1L;
+
+		private String serverUrlPrefix;
+
+		private String serverLoginUrl;
+
+		private String serverLogoutUrl;
+
+		private String clientHostUrl;
+
+		private Integer enable;
+
+		public String getServerUrlPrefix() {
+			return serverUrlPrefix;
+		}
+
+		public void setServerUrlPrefix(String serverUrlPrefix) {
+			this.serverUrlPrefix = serverUrlPrefix;
+		}
+
+		public String getServerLoginUrl() {
+			return serverLoginUrl;
+		}
+
+		public void setServerLoginUrl(String serverLoginUrl) {
+			this.serverLoginUrl = serverLoginUrl;
+		}
+
+		public String getServerLogoutUrl() {
+			return serverLogoutUrl;
+		}
+
+		public void setServerLogoutUrl(String serverLogoutUrl) {
+			this.serverLogoutUrl = serverLogoutUrl;
+		}
+
+		public String getClientHostUrl() {
+			return clientHostUrl;
+		}
+
+		public void setClientHostUrl(String clientHostUrl) {
+			this.clientHostUrl = clientHostUrl;
 		}
 
 		public Integer getEnable() {

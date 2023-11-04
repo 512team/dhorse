@@ -43,7 +43,7 @@ public class AppTagRest extends AbstractRest {
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<AppTag>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<AppTag>> page(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppTagPageParam appTagPageParam) {
 		return success(appTagApplicationService.page(queryLoginUserByToken(loginToken),
 				appTagPageParam));
@@ -56,7 +56,7 @@ public class AppTagRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/search")
-	public RestResponse<List<AppBranch>> search(@CookieValue("login_token") String loginToken,
+	public RestResponse<List<AppBranch>> search(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppBranchListParam appBranchListParam) {
 		return success(appBranchApplicationService.list(queryLoginUserByToken(loginToken),
 				appBranchListParam));
@@ -69,7 +69,7 @@ public class AppTagRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/add")
-	public RestResponse<Void> add(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> add(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppTagCreationParam appTagCreationParam) {
 		return success(appTagApplicationService.add(queryLoginUserByToken(loginToken),
 				appTagCreationParam));
@@ -82,7 +82,7 @@ public class AppTagRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AppTagDeletionParam appTagDeletionParam) {
 		return success(appTagApplicationService.delete(queryLoginUserByToken(loginToken),
 				appTagDeletionParam));
@@ -95,7 +95,7 @@ public class AppTagRest extends AbstractRest {
 	 * @return 无
 	 */
 	@RequestMapping("/buildVersion")
-	public RestResponse<String> buildVersion(@CookieValue("login_token") String loginToken,
+	public RestResponse<String> buildVersion(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody BuildParam buildParam) {
 		return this.success(appBranchApplicationService
 				.buildVersion(this.queryLoginUserByToken(loginToken), buildParam));

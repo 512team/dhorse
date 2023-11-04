@@ -34,7 +34,7 @@ public class EnvExtRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/queryEnvHealth")
-	public RestResponse<EnvHealth> queryEnvHealth(@CookieValue("login_token") String loginToken,
+	public RestResponse<EnvHealth> queryEnvHealth(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvHealthQueryParam queryParam) {
 		return success(envExtApplicationService.queryEnvHealth(queryLoginUserByToken(loginToken), queryParam));
 	}
@@ -46,7 +46,7 @@ public class EnvExtRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/addOrUpdateEnvHealth")
-	public RestResponse<Void> addOrUpdateEnvHealth(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> addOrUpdateEnvHealth(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvHealth envHealthParam) {
 		return success(envExtApplicationService.addOrUpdateEnvHealth(queryLoginUserByToken(loginToken), envHealthParam));
 	}
@@ -57,7 +57,7 @@ public class EnvExtRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/queryLifecycle")
-	public RestResponse<EnvLifecycle> queryLifecycle(@CookieValue("login_token") String loginToken,
+	public RestResponse<EnvLifecycle> queryLifecycle(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvLifeCycleQueryParam queryParam) {
 		return success(envExtApplicationService.queryLifecycle(queryLoginUserByToken(loginToken), queryParam));
 	}
@@ -69,7 +69,7 @@ public class EnvExtRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/addOrUpdateLifecycle")
-	public RestResponse<Void> addOrUpdateLifecycle(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> addOrUpdateLifecycle(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvLifecycle addParam) {
 		return success(envExtApplicationService.addOrUpdateLifecycle(queryLoginUserByToken(loginToken), addParam));
 	}
@@ -80,7 +80,7 @@ public class EnvExtRest extends AbstractRest {
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/queryPrometheus")
-	public RestResponse<EnvPrometheus> queryPrometheus(@CookieValue("login_token") String loginToken,
+	public RestResponse<EnvPrometheus> queryPrometheus(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvPrometheusQueryParam queryParam) {
 		return success(envExtApplicationService.queryPrometheus(queryLoginUserByToken(loginToken), queryParam));
 	}
@@ -92,7 +92,7 @@ public class EnvExtRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/addOrUpdatePrometheus")
-	public RestResponse<Void> addOrUpdatePrometheus(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> addOrUpdatePrometheus(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvPrometheus addParam) {
 		return success(envExtApplicationService.addOrUpdatePrometheus(queryLoginUserByToken(loginToken), addParam));
 	}

@@ -48,6 +48,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 		if (hasAnnotation(method, AccessNotLogin.class)) {
 			return true;
 		}
+		
+		if(method.getName().equals("login")) {
+			return true;
+		}
 
 		// 登录允许访问
 		SysUser loginUser = getLoginUser(request);

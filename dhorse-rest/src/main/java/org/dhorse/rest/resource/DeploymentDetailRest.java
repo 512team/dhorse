@@ -37,7 +37,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	 * @return 符合条件的分页数据
 	 */
 	@PostMapping("/page")
-	public RestResponse<PageData<DeploymentDetail>> page(@CookieValue("login_token") String loginToken,
+	public RestResponse<PageData<DeploymentDetail>> page(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentDetailPageParam deploymentDetailPageParam) {
 		return success(deploymentDetailApplicationService.page(queryLoginUserByToken(loginToken),
 				deploymentDetailPageParam));
@@ -50,7 +50,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	 * @return 审批后的明细编号
 	 */
 	@RequestMapping("/approveToDeploy")
-	public RestResponse<Void> approveToDeploy(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> approveToDeploy(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentApprovementParam deploymentApplicationParam) {
 		return this.success(deploymentDetailApplicationService
 				.approveToDeploy(queryLoginUserByToken(loginToken), deploymentApplicationParam));
@@ -63,7 +63,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	 * @return 提交回滚的参数
 	 */
 	@RequestMapping("/submitToRollback")
-	public RestResponse<Void> submitToRollback(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> submitToRollback(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody RollbackApplicationParam requestParam) {
 		return this.success(deploymentDetailApplicationService
 				.submitToRollback(queryLoginUserByToken(loginToken), requestParam));
@@ -76,7 +76,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	 * @return 无
 	 */
 	@RequestMapping("/abortDeployment")
-	public RestResponse<Void> abortDeployment(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> abortDeployment(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AbortDeploymentParam abortParam) {
 		return this.success(
 				deploymentDetailApplicationService.abortDeployment(queryLoginUserByToken(loginToken), abortParam));
@@ -89,7 +89,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	 * @return 无
 	 */
 	@PostMapping("/abortDeploymentThread")
-	public RestResponse<Void> abortDeploymentThread(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> abortDeploymentThread(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody AbortDeploymentThreadParam abortParam) {
 		return this.success(
 				deploymentDetailApplicationService.abortDeploymentThread(queryLoginUserByToken(loginToken), abortParam));
@@ -102,7 +102,7 @@ public class DeploymentDetailRest extends AbstractRest {
 	 * @return 无
 	 */
 	@RequestMapping("/delete")
-	public RestResponse<Void> delete(@CookieValue("login_token") String loginToken,
+	public RestResponse<Void> delete(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody DeploymentDetailDeletionParam requestParam) {
 		return this.success(
 				deploymentDetailApplicationService.delete(queryLoginUserByToken(loginToken), requestParam));

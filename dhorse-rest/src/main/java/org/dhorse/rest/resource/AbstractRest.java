@@ -1,5 +1,6 @@
 package org.dhorse.rest.resource;
 
+import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.application.service.SysUserApplicationService;
 import org.dhorse.infrastructure.exception.ApplicationException;
@@ -27,5 +28,7 @@ public abstract class AbstractRest {
 		return new RestResponse<D>(e.getCode(), e.getMessage());
 	}
 	
-	
+	protected <D> RestResponse<D> error(MessageCodeEnum e) {
+		return new RestResponse<D>(e.getCode(), e.getMessage());
+	}
 }

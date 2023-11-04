@@ -15,6 +15,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
+import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.application.service.GlobalConfigApplicationService;
@@ -54,6 +55,17 @@ public class GlobalConfigRest extends AbstractRest {
 	}
 
 	/**
+	 * 查询CAS
+	 * 
+	 * @return CAS数据
+	 */
+	@AccessNotLogin
+	@PostMapping("/query/cas")
+	public RestResponse<CAS> queryCas() {
+		return this.success(globalConfigApplicationService.queryCas());
+	}
+	
+	/**
 	 * 查询Ldap
 	 * 
 	 * @return Ldap数据
@@ -85,7 +97,19 @@ public class GlobalConfigRest extends AbstractRest {
 	public RestResponse<DingDing> queryDingDing() {
 		return this.success(globalConfigApplicationService.queryDingDing());
 	}
-
+	
+	/**
+	 * 添加或修改CAS
+	 * 
+	 * @param cas CAS参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/cas/addOrUpdate")
+	public RestResponse<Void> ldap(@RequestBody CAS cas) {
+		return this.success(globalConfigApplicationService.addOrUpdateCas(cas));
+	}
+	
 	/**
 	 * 添加或修改Ldap
 	 * 
@@ -128,7 +152,7 @@ public class GlobalConfigRest extends AbstractRest {
 	 * @return 菜单数据
 	 */
 	@GetMapping("/menu")
-	public String menu(@CookieValue("login_token") String loginToken) {
+	public String menu(@CookieValue(name = "login_token", required = false) String loginToken) {
 		return globalConfigApplicationService.menu(queryLoginUserByToken(loginToken));
 	}
 

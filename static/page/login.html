@@ -217,6 +217,37 @@
 			}
 		});
 		
+		//初始化CAS登录
+		$.ajax({
+			url: '/globalConfig/query/cas',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 11}),
+			success: function(res){
+				//如果没有开启
+				if(res.code != "000000" || !res.data || res.data.enable != 1){
+					return false;
+				}
+				
+				element.tabAdd('login-handle', {
+					title: 'CAS',
+					content: '',
+					id: 'cas-title'
+				});
+			},
+			error: function(res){
+				return false;
+			}
+		});
+		
+		element.on('tab(login-handle)', function(data){
+			if($(this).attr('lay-id') == 'cas-title'){
+				window.location.href = '/page/sys_user/cas_login.html';
+				//window.location.href = '/cas';
+			}
+		});
+		
         // 普通登录
         form.on('submit(normal-login)', function(data) {
 			data.field.password = data.field.password.md5(32).toUpperCase();

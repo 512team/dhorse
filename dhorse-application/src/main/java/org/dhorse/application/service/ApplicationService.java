@@ -33,6 +33,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
+import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.component.ComponentConstants;
@@ -125,7 +126,9 @@ public abstract class ApplicationService {
 	
 	public GlobalConfigAgg globalConfig() {
 		GlobalConfigParam param = new GlobalConfigParam();
-		param.setItemTypes(Arrays.asList(GlobalConfigItemTypeEnum.LDAP.getCode(),
+		param.setItemTypes(Arrays.asList(
+				GlobalConfigItemTypeEnum.CAS.getCode(),
+				GlobalConfigItemTypeEnum.LDAP.getCode(),
 				GlobalConfigItemTypeEnum.WECHAT.getCode(),
 				GlobalConfigItemTypeEnum.DINGDING.getCode(),
 				GlobalConfigItemTypeEnum.CODEREPO.getCode(),
@@ -159,6 +162,12 @@ public abstract class ApplicationService {
 		GlobalConfigParam configParam = new GlobalConfigParam();
 		configParam.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
 		return globalConfigRepository.queryAgg(configParam).getDingding();
+	}
+	
+	public CAS queryCas() {
+		GlobalConfigParam configParam = new GlobalConfigParam();
+		configParam.setItemType(GlobalConfigItemTypeEnum.CAS.getCode());
+		return globalConfigRepository.queryAgg(configParam).getCas();
 	}
 	
 	public GlobalConfigAgg envTemplateQuery(GlobalConfigQueryParam queryParam) {

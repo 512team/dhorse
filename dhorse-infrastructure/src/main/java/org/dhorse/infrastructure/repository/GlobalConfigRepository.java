@@ -12,6 +12,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
+import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
@@ -48,6 +49,10 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 		}
 		for(GlobalConfigPO po : pos) {
 			if(StringUtils.isBlank(po.getItemValue())) {
+				continue;
+			}
+			if(GlobalConfigItemTypeEnum.CAS.getCode().equals(po.getItemType())) {
+				globalConfig.setCas(JsonUtils.parseToObject(po.getItemValue(), CAS.class));
 				continue;
 			}
 			if(GlobalConfigItemTypeEnum.LDAP.getCode().equals(po.getItemType())) {
