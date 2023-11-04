@@ -103,12 +103,15 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		if(CollectionUtils.isEmpty(pos)) {
 			return Collections.emptyList();
 		}
-		return pos.stream().map(e ->{
-			App app = new App();
-			app.setId(e.getId());
-			app.setAppName(e.getAppName());
-			return app;
-		}).collect(Collectors.toList());
+		return pos.stream()
+				.sorted((e1, e2)-> e1.getAppName().compareTo(e2.getAppName()))
+				.map(e ->{
+					App app = new App();
+					app.setId(e.getId());
+					app.setAppName(e.getAppName());
+					return app;
+				})
+				.collect(Collectors.toList());
 	}
 	
 	public App query(LoginUser loginUser, String appId) {
