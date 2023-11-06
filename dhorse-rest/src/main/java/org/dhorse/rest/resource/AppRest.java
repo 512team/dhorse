@@ -51,6 +51,7 @@ public class AppRest extends AbstractRest {
 	 * @param searchParam 搜索参数
 	 * @return 符合条件的数据
 	 */
+	@AccessNotLogin
 	@PostMapping("/search")
 	public RestResponse<List<App>> search(@RequestBody AppPageParam searchParam) {
 		return success(appApplicationService.search(searchParam));

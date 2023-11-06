@@ -43,6 +43,17 @@
 				}
 			},
 			error: function(res){
+			
+				/**
+				setTimeout(() => {
+					if(res.status == 200){
+						window.location.href = '/index.html';
+					}else{
+						window.location.href = '/page/login.html';
+					}
+				}, 5000);
+				**/
+				
 				if(res.status == 200){
 					window.location.href = '/index.html';
 				}else{

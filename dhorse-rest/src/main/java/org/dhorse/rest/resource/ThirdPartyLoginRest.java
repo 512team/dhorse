@@ -47,7 +47,7 @@ public class ThirdPartyLoginRest extends AbstractRest {
 
 	@AccessNotLogin
 	@GetMapping("/cas")
-	public String cas2(HttpSession session, HttpServletResponse response) {
+	public String cas(HttpSession session, HttpServletResponse response) {
 		Assertion assertion = (Assertion) session.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION);
 		if(assertion == null) {
 			return null;
