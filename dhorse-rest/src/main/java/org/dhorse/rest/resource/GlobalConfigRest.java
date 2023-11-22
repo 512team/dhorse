@@ -7,15 +7,16 @@ import org.dhorse.api.param.global.GlobalConfigPageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.GlobalConfigAgg;
+import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.CustomizedMenu;
 import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.FeiShu;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
-import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.application.service.GlobalConfigApplicationService;
@@ -99,6 +100,17 @@ public class GlobalConfigRest extends AbstractRest {
 	}
 	
 	/**
+	 * 查询飞书
+	 * 
+	 * @return 飞书数据
+	 */
+	@AccessNotLogin
+	@PostMapping("/query/feishu")
+	public RestResponse<FeiShu> queryFeiShu() {
+		return this.success(globalConfigApplicationService.queryFeiShu());
+	}
+	
+	/**
 	 * 添加或修改CAS
 	 * 
 	 * @param cas CAS参数
@@ -142,8 +154,20 @@ public class GlobalConfigRest extends AbstractRest {
 	 */
 	@AccessOnlyAdmin
 	@PostMapping("/dingding/addOrUpdate")
-	public RestResponse<Void> wechat(@RequestBody DingDing dingding) {
+	public RestResponse<Void> dingDing(@RequestBody DingDing dingding) {
 		return this.success(globalConfigApplicationService.addOrUpdateDingDing(dingding));
+	}
+	
+	/**
+	 * 添加或修改飞书
+	 * 
+	 * @param feishu FeiShu参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/feishu/addOrUpdate")
+	public RestResponse<Void> feiShu(@RequestBody FeiShu feishu) {
+		return this.success(globalConfigApplicationService.addOrUpdateFeiShu(feishu));
 	}
 
 	/**

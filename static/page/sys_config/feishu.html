@@ -1,0 +1,95 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">AppID</label>
+			<div class="layui-input-inline" style="width: 70%">
+				<input type="text" name="appID" lay-verify="required" lay-reqtext="AppID不能为空" placeholder="请输入AppID" autocomplete="off" class="layui-input">
+			</div>
+			<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="https://gitee.com/i512team/dhorse-doc/blob/main/guide/%E9%A3%9E%E4%B9%A6%E7%99%BB%E5%BD%95/%E9%A3%9E%E4%B9%A6%E7%99%BB%E5%BD%95.md" target="_blank">《使用指引》</a></div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">AppSecret</label>
+			<div class="layui-input-block">
+				<input type="text" name="appSecret" lay-verify="required" lay-reqtext="AppSecret不能为空" placeholder="请输入AppSecret" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">是否开启</label>
+			<div class="layui-input-block">
+				<input type="checkbox" name="enable" lay-skin="switch" value="1" lay-text="开启|关闭">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+		$.ajax({
+			url: '/globalConfig/query',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemTypes": [12]}),
+			success: function(res){
+				form.render();
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				if($.isEmptyObject(res.data)){
+					return false;
+				}
+				//给表单赋值
+				var feishu = res.data.feishu;
+				form.val("form-data", {
+				  "appID": feishu.appID
+				  ,"appSecret": feishu.appSecret
+				  ,"enable": feishu.enable
+				});
+				form.render();
+			},
+			error: function(res){
+				layer.msg(res.message, {icon: 5, shift: 6});
+			}
+		});
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+			//增加类型
+			data.field.itemType = 12;
+			$.ajax({
+				url: '/globalConfig/feishu/addOrUpdate',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}	
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+</script>

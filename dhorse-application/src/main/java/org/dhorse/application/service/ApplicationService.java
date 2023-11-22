@@ -29,11 +29,12 @@ import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.GlobalConfigAgg;
+import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.FeiShu;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
-import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.component.ComponentConstants;
@@ -131,6 +132,7 @@ public abstract class ApplicationService {
 				GlobalConfigItemTypeEnum.LDAP.getCode(),
 				GlobalConfigItemTypeEnum.WECHAT.getCode(),
 				GlobalConfigItemTypeEnum.DINGDING.getCode(),
+				GlobalConfigItemTypeEnum.FEISHU.getCode(),
 				GlobalConfigItemTypeEnum.CODEREPO.getCode(),
 				GlobalConfigItemTypeEnum.IMAGEREPO.getCode(),
 				GlobalConfigItemTypeEnum.MAVEN.getCode(),
@@ -162,6 +164,12 @@ public abstract class ApplicationService {
 		GlobalConfigParam configParam = new GlobalConfigParam();
 		configParam.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
 		return globalConfigRepository.queryAgg(configParam).getDingding();
+	}
+	
+	public FeiShu queryFeiShu() {
+		GlobalConfigParam configParam = new GlobalConfigParam();
+		configParam.setItemType(GlobalConfigItemTypeEnum.FEISHU.getCode());
+		return globalConfigRepository.queryAgg(configParam).getFeishu();
 	}
 	
 	public CAS queryCas() {

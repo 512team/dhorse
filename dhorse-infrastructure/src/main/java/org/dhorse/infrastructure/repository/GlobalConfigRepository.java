@@ -5,14 +5,15 @@ import java.util.List;
 
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.response.model.GlobalConfigAgg;
+import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.FeiShu;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
 import org.dhorse.api.response.model.GlobalConfigAgg.More;
-import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.api.response.model.GlobalConfigAgg.TraceTemplate;
 import org.dhorse.api.response.model.GlobalConfigAgg.WeChat;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
@@ -67,6 +68,11 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 			if(GlobalConfigItemTypeEnum.DINGDING.getCode().equals(po.getItemType())) {
 				DingDing dingding = JsonUtils.parseToObject(po.getItemValue(), DingDing.class);
 				globalConfig.setDingding(dingding);
+				continue;
+			}
+			if(GlobalConfigItemTypeEnum.FEISHU.getCode().equals(po.getItemType())) {
+				FeiShu feiShu = JsonUtils.parseToObject(po.getItemValue(), FeiShu.class);
+				globalConfig.setFeishu(feiShu);
 				continue;
 			}
 			if(GlobalConfigItemTypeEnum.CODEREPO.getCode().equals(po.getItemType())) {

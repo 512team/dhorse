@@ -24,10 +24,11 @@ import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.api.response.model.SysUser;
 import org.dhorse.infrastructure.param.SysUserParam;
 import org.dhorse.infrastructure.repository.po.SysUserPO;
+import org.dhorse.infrastructure.strategy.login.CasUserStrategy;
 import org.dhorse.infrastructure.strategy.login.DingDingUserStrategy;
+import org.dhorse.infrastructure.strategy.login.FeiShuUserStrategy;
 import org.dhorse.infrastructure.strategy.login.LdapUserStrategy;
 import org.dhorse.infrastructure.strategy.login.NormalUserStrategy;
-import org.dhorse.infrastructure.strategy.login.CasUserStrategy;
 import org.dhorse.infrastructure.strategy.login.UserStrategy;
 import org.dhorse.infrastructure.strategy.login.WeChatUserStrategy;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
@@ -417,6 +418,8 @@ public class SysUserApplicationService extends BaseApplicationService<SysUser, S
 			return new WeChatUserStrategy();
 		}else if (RegisteredSourceEnum.DINGDING.getCode().equals(loginSource)) {
 			return new DingDingUserStrategy();
+		}else if (RegisteredSourceEnum.FEISHU.getCode().equals(loginSource)) {
+			return new FeiShuUserStrategy();
 		}else if (RegisteredSourceEnum.CAS.getCode().equals(loginSource)) {
 			return new CasUserStrategy();
 		}

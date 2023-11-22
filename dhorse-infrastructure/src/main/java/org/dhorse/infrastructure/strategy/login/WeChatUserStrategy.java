@@ -83,7 +83,7 @@ public class WeChatUserStrategy extends UserStrategy {
 	private JsonNode wechat(String url) {
 		JsonNode json = JsonUtils.parseToNode(HttpUtils.getResponse(url));
 		if(0 != json.get("errcode").asInt()){
-			logger.info("WeChat response: {}", json.toString());
+			logger.error("WeChat response: {}", json.toString());
 			LogUtils.throwException(logger, MessageCodeEnum.REQUEST_WECHAT_FAILURE);
 		}
 		return json;

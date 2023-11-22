@@ -40,6 +40,12 @@
 					"target": "_self"
 				},
 				{
+					"title": "飞书登录",
+					"href": "page/sys_config/feishu.html",
+					"icon": "fa fa-cog",
+					"target": "_self"
+				},
+				{
 					"title": "自义定菜单",
 					"href": "page/sys_config/customized_menu/list.html",
 					"icon": "fa fa-cog",

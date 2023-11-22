@@ -60,7 +60,7 @@ drwxr-xr-x 8 root root    93 Sep 23 16:09 static
 $  bin/dhorse-start.sh
 ```
 
-6.在浏览器里输入地址：`http://127.0.0.1:8100`，并输入认证信息：admin/admin，登录之后如下图所示
+6.在浏览器里输入地址：`http://127.0.0.1:8100`，并输入账号/密码：admin/admin，登录之后如下图所示：
 
  ![Image text](./static/images/home.jpg)
 

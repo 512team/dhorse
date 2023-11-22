@@ -27,6 +27,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.CustomizedMenu;
 import org.dhorse.api.response.model.GlobalConfigAgg.DingDing;
 import org.dhorse.api.response.model.GlobalConfigAgg.EnvTemplate;
+import org.dhorse.api.response.model.GlobalConfigAgg.FeiShu;
 import org.dhorse.api.response.model.GlobalConfigAgg.ImageRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.Ldap;
 import org.dhorse.api.response.model.GlobalConfigAgg.Maven;
@@ -251,6 +252,11 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 	public Void addOrUpdateDingDing(DingDing dingding) {
 		dingding.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
 		return addOrUpdateGlobalConfig(dingding);
+	}
+	
+	public Void addOrUpdateFeiShu(FeiShu feishu) {
+		feishu.setItemType(GlobalConfigItemTypeEnum.FEISHU.getCode());
+		return addOrUpdateGlobalConfig(feishu);
 	}
 	
 	public Void addOrUpdateCas(BaseGlobalConfig config) {

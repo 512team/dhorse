@@ -44,6 +44,19 @@ public class ThirdPartyLoginRest extends AbstractRest {
 		response.addCookie(c);
 		return "index.html";
 	}
+	
+	@AccessNotLogin
+	@RequestMapping("/feishu")
+	public String feishu(@RequestParam("code") String code, @RequestParam("state") String state,
+			HttpServletResponse response) {
+		UserLoginParam userLoginParam = new UserLoginParam();
+		userLoginParam.setLoginSource(RegisteredSourceEnum.FEISHU.getCode());
+		userLoginParam.setCode(code);
+		LoginUser loginUser = sysUserApplicationService.login(userLoginParam);
+		Cookie c = new Cookie("login_token", loginUser.getLastLoginToken());
+		response.addCookie(c);
+		return "index.html";
+	}
 
 	@AccessNotLogin
 	@GetMapping("/cas")

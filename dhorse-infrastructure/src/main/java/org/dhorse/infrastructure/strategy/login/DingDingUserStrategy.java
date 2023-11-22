@@ -87,7 +87,7 @@ public class DingDingUserStrategy extends UserStrategy {
 	private JsonNode dingding(String url, Map<String, Object> param) {
 		JsonNode json = JsonUtils.parseToNode(HttpUtils.postResponse(url, param));
 		if(null != json.get("code")){
-			logger.info("Dingding response: {}", json.toString());
+			logger.error("Dingding response: {}", json.toString());
 			LogUtils.throwException(logger, MessageCodeEnum.REQUEST_DINGDING_FAILURE);
 		}
 		return json;
@@ -96,7 +96,7 @@ public class DingDingUserStrategy extends UserStrategy {
 	private JsonNode dingdingGet(String url, Map<String, Object> cookies) {
 		JsonNode json = JsonUtils.parseToNode(HttpUtils.getResponse(url, cookies));
 		if(null != json.get("code")){
-			logger.info("Dingding response: {}", json.toString());
+			logger.error("Dingding response: {}", json.toString());
 			LogUtils.throwException(logger, MessageCodeEnum.REQUEST_DINGDING_FAILURE);
 		}
 		return json;

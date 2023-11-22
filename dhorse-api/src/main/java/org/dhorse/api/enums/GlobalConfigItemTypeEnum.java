@@ -13,6 +13,7 @@ public enum GlobalConfigItemTypeEnum {
 	WECHAT(9, "企业微信"),
 	DINGDING(10, "钉钉登录"),
 	CAS(11, "CAS登录"),
+	FEISHU(12, "飞书登录"),
 	MORE(100, "更多"),
 	;
 

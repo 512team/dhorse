@@ -70,6 +70,7 @@
 <script src="../js/common.js" charset="utf-8"></script>
 <script src="https://wwcdn.weixin.qq.com/node/wework/wwopen/js/wwLogin-1.2.8.js"></script>
 <script src="https://g.alicdn.com/dingding/h5-dingtalk-login/0.21.0/ddlogin.js"></script>
+<script src="https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/passport/qrcode/LarkSSOSDKWebQRCode-1.0.3.js"></script>
 <script>
     layui.use(['form'], function () {
         var form = layui.form,
@@ -211,6 +212,56 @@
 						layer.msg(`Login Error: ${errorMsg}`);
 					},
 				);
+			},
+			error: function(res){
+				return false;
+			}
+		});
+		
+		//初始化飞书登录
+		$.ajax({
+			url: '/globalConfig/query/feishu',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"itemType": 12}),
+			success: function(res){
+				//如果没有开启
+				if(res.code != "000000" || !res.data || res.data.enable != 1){
+					return false;
+				}
+				
+				element.tabAdd('login-handle', {
+					title: '飞书',
+					content: '<div id="feishu_reg" style="text-align:center;margin-top:-9px"></div>',
+					id: 'feishu-title'
+				});
+				element.tabChange('login-handle', 'feishu-title');
+				
+				var loginUrl = window.location.protocol + '//'+ window.location.host +'/feishu';
+				var gotoUrl = "https://passport.feishu.cn/suite/passport/oauth/authorize?client_id="+ res.data.appID +"&redirect_uri="+loginUrl+"&response_type=code&state=success";
+				var QRLoginObj = QRLogin({
+					id:"feishu_reg",
+					goto: gotoUrl,
+					width: "100",
+					height: "100",
+					style: "width:251px;height:251px;border:none"
+				});
+				
+				var handleMessage = function (event) {         
+					// 使用 matchOrigin 和 matchData 方法来判断 message 和来自的页面 url 是否合法
+					if(QRLoginObj.matchOrigin(event.origin) && QRLoginObj.matchData(event.data)) { 
+						var loginTmpCode = event.data.tmp_code; 
+						// 在授权页面地址上拼接上参数 tmp_code，并跳转
+						window.location.href = `${gotoUrl}&tmp_code=${loginTmpCode}`;
+					}
+				};
+
+				if (typeof window.addEventListener != 'undefined') {   
+					window.addEventListener('message', handleMessage, false);} 
+				else if (typeof window.attachEvent != 'undefined') { 
+					window.attachEvent('onmessage', handleMessage);
+				}
 			},
 			error: function(res){
 				return false;

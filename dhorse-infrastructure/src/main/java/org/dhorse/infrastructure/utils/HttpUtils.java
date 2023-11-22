@@ -82,7 +82,6 @@ public class HttpUtils {
         	String cookieStr = "";
         	for(Entry<String, Object> c : cookies.entrySet()) {
         		cookieStr = cookieStr + c.getKey() + "=" + c.getValue() + ";";
-        		method.setHeader(c.getKey(), c.getValue().toString());
         	}
         	method.setHeader("Cookie", cookieStr);
         }

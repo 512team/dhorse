@@ -22,6 +22,8 @@ public class GlobalConfigAgg implements Serializable {
 
 	private DingDing dingding;
 
+	private FeiShu feishu;
+
 	private Maven maven;
 
 	private Map<String, TraceTemplate> traceTemplates = new HashMap<>();
@@ -118,6 +120,14 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setDingding(DingDing dingding) {
 		this.dingding = dingding;
+	}
+
+	public FeiShu getFeishu() {
+		return feishu;
+	}
+
+	public void setFeishu(FeiShu feishu) {
+		this.feishu = feishu;
 	}
 
 	public static abstract class BaseGlobalConfig implements Serializable {
@@ -863,6 +873,45 @@ public class GlobalConfigAgg implements Serializable {
 
 		public void setAppKey(String appKey) {
 			this.appKey = appKey;
+		}
+
+		public String getAppSecret() {
+			return appSecret;
+		}
+
+		public void setAppSecret(String appSecret) {
+			this.appSecret = appSecret;
+		}
+
+		public Integer getEnable() {
+			return enable;
+		}
+
+		public void setEnable(Integer enable) {
+			this.enable = enable;
+		}
+
+	}
+
+	/**
+	 * 飞书
+	 */
+	public static class FeiShu extends BaseGlobalConfig {
+
+		private static final long serialVersionUID = 1L;
+
+		private String appID;
+
+		private String appSecret;
+
+		private Integer enable;
+
+		public String getAppID() {
+			return appID;
+		}
+
+		public void setAppID(String appID) {
+			this.appID = appID;
 		}
 
 		public String getAppSecret() {
