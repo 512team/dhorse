@@ -68,6 +68,8 @@ public interface ClusterStrategy {
 	
 	PageData<ClusterNode> nodePage(ClusterNodePageParam pageParam, ClusterPO clusterPO);
 	
-	void addNode(ClusterPO clusterPO);
+	void addNode(ClusterPO clusterPO, String hostName);
+	
+	void deleteNode(ClusterPO clusterPO, String hostName);
 
 }

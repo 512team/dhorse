@@ -60,6 +60,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.NodeAddress;
+import io.fabric8.kubernetes.api.model.NodeBuilder;
 import io.fabric8.kubernetes.api.model.NodeCondition;
 import io.fabric8.kubernetes.api.model.NodeList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -866,10 +867,35 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		return pageData;
 	}
 	
+	public void addNode(ClusterPO clusterPO, String hostName) {
+		Node node = new NodeBuilder()
+				.withNewMetadata()
+				.withName(hostName)
+				.endMetadata()
+				.build();
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			client.nodes().resource(node).create();
+		}
+	}
+	
+	public void deleteNode(ClusterPO clusterPO, String hostName) {
+		Node node = new NodeBuilder()
+				.withNewMetadata()
+				.withName(hostName)
+				.endMetadata()
+				.build();
+		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
+			client.nodes().resource(node).delete();
+		}
+	}
+	
 	public String version(ClusterPO clusterPO) {
 		try(KubernetesClient client = client(clusterPO.getClusterUrl(), clusterPO.getAuthToken())){
 			VersionInfo versionInfo = client.getKubernetesVersion();
 			return "v" + versionInfo.getMajor() + "." + versionInfo.getMinor();
+		}catch(Exception e) {
+			logger.error("Failed to get cluster version", e);
+			return "--";
 		}
 	}
 	

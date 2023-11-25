@@ -1,9 +1,9 @@
 <div class="layuimini-main">
 	<div class="layui-form layuimini-form">
 		<div class="layui-form-item">
-			<label class="layui-form-label required">命名空间名称</label>
+			<label class="layui-form-label required">节点名称</label>
 			<div class="layui-input-block">
-				<input type="text" name="namespaceName" lay-verify="required" lay-reqtext="命名空间名称不能为空" placeholder="请输入命名空间名称" autocomplete="off" class="layui-input">
+				<input type="text" name="nodeName" lay-verify="required" lay-reqtext="节点名称不能为空" placeholder="请输入节点名称" autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<input type="hidden" name="clusterId" id="clusterId">
@@ -26,7 +26,7 @@
 			
         form.on('submit(saveBtn)', function(data) {
 			$.ajax({
-				url: '/cluster/namespace/add',
+				url: '/cluster/node/add',
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
@@ -44,7 +44,7 @@
 						time: 700,
 						shade: 0.01,
 						shadeClose: false}, function(){
-						parent.layui.table.reload('namespaceTableId');
+						parent.layui.table.reload('nodeTableId');
 					});
 				},
 				error: function(data){

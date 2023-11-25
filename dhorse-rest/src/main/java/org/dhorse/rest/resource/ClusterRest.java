@@ -10,6 +10,8 @@ import org.dhorse.api.param.cluster.ClusterQueryParam;
 import org.dhorse.api.param.cluster.ClusterSearchParam;
 import org.dhorse.api.param.cluster.ClusterUpdateParam;
 import org.dhorse.api.param.cluster.LogSwitchParam;
+import org.dhorse.api.param.cluster.NodeCreationParam;
+import org.dhorse.api.param.cluster.NodeDeletionParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.Cluster;
@@ -58,6 +60,30 @@ public class ClusterRest extends AbstractRest {
 	@PostMapping("/node/page")
 	public RestResponse<PageData<ClusterNode>> nodePage(@RequestBody ClusterNodePageParam clusterNodePageParam) {
 		return this.success(clusterApplicationService.nodePage(clusterNodePageParam));
+	}
+	
+	/**
+	 * 添加节点
+	 * 
+	 * @param creationParam 添加节点参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/node/add")
+	public RestResponse<Void> addNode(@RequestBody NodeCreationParam creationParam) {
+		return this.success(clusterApplicationService.addNode(creationParam));
+	}
+	
+	/**
+	 * 删除节点
+	 * 
+	 * @param deletionParam 删除节点参数
+	 * @return 无
+	 */
+	@AccessOnlyAdmin
+	@PostMapping("/node/delete")
+	public RestResponse<Void> deleteNode(@RequestBody NodeDeletionParam deletionParam) {
+		return this.success(clusterApplicationService.deleteNode(deletionParam));
 	}
 	
 	/**

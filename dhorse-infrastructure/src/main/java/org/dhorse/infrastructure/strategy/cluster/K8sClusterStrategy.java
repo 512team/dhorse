@@ -2101,4 +2101,12 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	public PageData<ClusterNode> nodePage(ClusterNodePageParam pageParam, ClusterPO clusterPO) {
 		return null;
 	}
+	
+	public void addNode(ClusterPO clusterPO, String hostName) {
+		
+	}
+	
+	public void deleteNode(ClusterPO clusterPO, String hostName) {
+		
+	}
 }

@@ -16,6 +16,8 @@ import org.dhorse.api.param.cluster.ClusterQueryParam;
 import org.dhorse.api.param.cluster.ClusterSearchParam;
 import org.dhorse.api.param.cluster.ClusterUpdateParam;
 import org.dhorse.api.param.cluster.LogSwitchParam;
+import org.dhorse.api.param.cluster.NodeCreationParam;
+import org.dhorse.api.param.cluster.NodeDeletionParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.Cluster;
 import org.dhorse.api.response.model.ClusterNode;
@@ -272,5 +274,33 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		}
 		dto.setClusterVersion(clusterStrategy(po.getClusterType()).version(po));
 		return dto;
+	}
+	
+	public Void addNode(NodeCreationParam creationParam) {
+		if(StringUtils.isBlank(creationParam.getClusterId())
+				|| StringUtils.isBlank(creationParam.getNodeName())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM);
+		}
+		ClusterPO clusterPO = clusterRepository.queryById(creationParam.getClusterId());
+		if (clusterPO == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);
+		}
+		ClusterStrategy cluster = clusterStrategy(clusterPO.getClusterType());
+		cluster.addNode(clusterPO, creationParam.getNodeName());
+		return null;
+	}
+	
+	public Void deleteNode(NodeDeletionParam deletionParam) {
+		if(StringUtils.isBlank(deletionParam.getClusterId())
+				|| StringUtils.isBlank(deletionParam.getNodeName())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM);
+		}
+		ClusterPO clusterPO = clusterRepository.queryById(deletionParam.getClusterId());
+		if (clusterPO == null) {
+			LogUtils.throwException(logger, MessageCodeEnum.CLUSER_EXISTENCE);
+		}
+		ClusterStrategy cluster = clusterStrategy(clusterPO.getClusterType());
+		cluster.deleteNode(clusterPO, deletionParam.getNodeName());
+		return null;
 	}
 }
