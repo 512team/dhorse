@@ -23,15 +23,18 @@ import io.fabric8.kubernetes.client.dsl.LogWatch;
  * @author 天地之怪
  */
 @Component
-@ServerEndpoint("/replica/log/{replicaname}/{logintoken}")
+@ServerEndpoint("/replica/log/{appId}/{envId}/{replicaname}/{logintoken}")
 public class ReplicaLogWebSocket extends AbstracWebSocket{
 
 	private static final Logger logger = LoggerFactory.getLogger(ReplicaLogWebSocket.class);
 
 	@OnOpen
-	public void onOpen(@PathParam("replicaname") String replicaName,
-			@PathParam("logintoken") String loginToken, Session session) {
-		SSHContext ssContext = sshContext(loginToken, replicaName);
+	public void onOpen(@PathParam("appId") String appId,
+			@PathParam("envId") String envId,
+			@PathParam("replicaname") String replicaName,
+			@PathParam("logintoken") String loginToken,
+			Session session) {
+		SSHContext ssContext = sshContext(loginToken, appId, envId, replicaName);
 		LogWatch watch = ssContext.getClient()
 				.pods()
 				.inNamespace(ssContext.getNamespace())

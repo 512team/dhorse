@@ -8,6 +8,8 @@
 <script>
 	openTerminal({
 		operate : 'connect',
+		appId : localStorage.getItem('appId_' + parent.layui.$("#userName").val()),
+		envId : parent.envId,
 		replicaName : parent.replicaName,
 		loginToken : getCookie('login_token')
 	});

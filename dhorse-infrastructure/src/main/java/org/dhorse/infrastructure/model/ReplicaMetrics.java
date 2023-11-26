@@ -11,18 +11,21 @@ public class ReplicaMetrics implements Serializable {
 
 	private String replicaName;
 
+	private String appLabel;
+
 	private long cpuUsed;
 
 	private long memoryUsed;
 
-	public ReplicaMetrics(String replicaName, long cpuUsed, long memoryUsed) {
+	public ReplicaMetrics(String replicaName, String appLabel, long cpuUsed, long memoryUsed) {
 		this.replicaName = replicaName;
+		this.appLabel = appLabel;
 		this.cpuUsed = cpuUsed;
 		this.memoryUsed = memoryUsed;
 	}
 
-	public static ReplicaMetrics of(String replicaName, long cpuUsed, long memoryUsed) {
-		return new ReplicaMetrics(replicaName, cpuUsed, memoryUsed);
+	public static ReplicaMetrics of(String replicaName, String appLabel, long cpuUsed, long memoryUsed) {
+		return new ReplicaMetrics(replicaName, appLabel, cpuUsed, memoryUsed);
 	}
 
 	public String getReplicaName() {
@@ -31,6 +34,14 @@ public class ReplicaMetrics implements Serializable {
 
 	public void setReplicaName(String replicaName) {
 		this.replicaName = replicaName;
+	}
+
+	public String getAppLabel() {
+		return appLabel;
+	}
+
+	public void setAppLabel(String appLabel) {
+		this.appLabel = appLabel;
 	}
 
 	public long getCpuUsed() {

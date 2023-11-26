@@ -43,6 +43,7 @@
 <script>
 
 	var replicaName;
+	var envId;
 	
     layui.use(['form', 'table', 'dropdown', 'miniPage'], function () {
         var $ = layui.jquery,
@@ -100,7 +101,7 @@
         });
     });
 	
-	function rebuild($, replicaName) {
+	function rebuild($, appId, envId, replicaName) {
 		var msg = '确定重建”' + replicaName + '“吗？';
 		layer.confirm(msg, {icon: 0, title:'提示'}, function (index) {
 			layer.close(index);
@@ -109,7 +110,7 @@
 				type: 'POST',
 				dataType: "json",
 				contentType: 'application/json;charset=UTF-8',
-				data: JSON.stringify({"replicaName": replicaName}),
+				data: JSON.stringify({"replicaName": replicaName, "appId": appId, "envId": envId}),
 				success: function(data){
 					if(data.code != "000000"){
 						layer.msg(data.message, {icon: 5, shift: 6});
@@ -208,9 +209,11 @@
 					,click: function(data, othis){
 						var elem = $(this.elem);
 						replicaName = elem.data('replica-name');
+						envId = appEnvId;
+						var param = "appId="+ appId +"&envId="+ envId +"&replicaName="+ replicaName;
 						if (data.id === 'log') {
 							var index = layer.open({
-								title: '日志',
+								title: '查看日志',
 								type: 2,
 								shade: 0.5,
 								maxmin: false,
@@ -220,9 +223,9 @@
 								content: ['page/replica/log.html', 'no']
 							});
 						}else if(data.id === 'log-download'){
-							$("<a>").attr("href","/app/env/replica/downloadLog?replicaName=" + replicaName)[0].click();
+							$("<a>").attr("href","/app/env/replica/downloadLog?" + param)[0].click();
 						}else if(data.id === 'yaml-download'){
-							$("<a>").attr("href","/app/env/replica/downloadYaml?replicaName=" + replicaName)[0].click();
+							$("<a>").attr("href","/app/env/replica/downloadYaml?" + param)[0].click();
 						}else if (data.id === 'terminal') {
 							var index = layer.open({
 								title: '终端命令',
@@ -235,7 +238,7 @@
 								content: ['page/replica/terminal.html', 'no']
 							});
 						}else if (data.id === 'rebuild') {
-							rebuild($, replicaName);
+							rebuild($, appId, appEnvId, replicaName);
 						}
 					}
 				});

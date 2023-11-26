@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.MetricsTypeEnum;
@@ -28,6 +27,7 @@ import org.dhorse.api.response.model.EnvReplica;
 import org.dhorse.api.response.model.Metrics;
 import org.dhorse.api.response.model.MetricsView;
 import org.dhorse.infrastructure.context.AppEnvClusterContext;
+import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.model.ReplicaMetrics;
 import org.dhorse.infrastructure.param.AppEnvParam;
 import org.dhorse.infrastructure.param.AppMemberParam;
@@ -50,6 +50,7 @@ import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -107,8 +108,8 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 	}
 
 	public Void rebuild(LoginUser loginUser, EnvReplicaRebuildParam param) {
-		AppEnvClusterContext appEnvClusterEntity = queryCluster(param.getReplicaName(),
-				loginUser);
+		AppEnvClusterContext appEnvClusterEntity = queryCluster(param.getAppId(),
+				param.getEnvId(), loginUser);
 		clusterStrategy(appEnvClusterEntity.getClusterPO().getClusterType()).rebuildReplica(
 				appEnvClusterEntity.getClusterPO(), param.getReplicaName(),
 				appEnvClusterEntity.getAppEnvPO().getNamespaceName());
@@ -128,76 +129,60 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 		return appRepository.queryById(appId);
 	}
 
-	public InputStream streamPodLog(LoginUser loginUser, String replicaName) {
-		AppEnvClusterContext appEnvClusterEntity = queryCluster(replicaName, loginUser);
-		ClusterStrategy clusterStrategy = clusterStrategy(
-				appEnvClusterEntity.getClusterPO().getClusterType());
-		return clusterStrategy.streamPodLog(appEnvClusterEntity.getClusterPO(),
-				replicaName,
-				appEnvClusterEntity.getAppEnvPO().getNamespaceName());
-	}
-
-	public AppEnvClusterContext queryCluster(String podName, LoginUser loginUser) {
-		if (StringUtils.isBlank(podName)) {
-			LogUtils.throwException(logger, MessageCodeEnum.REQUIRED_REPLICA_NAME);
+	public AppEnvClusterContext queryCluster(String appId, String envId, LoginUser loginUser) {
+		if (StringUtils.isBlank(appId) || StringUtils.isBlank(envId)) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用编号或环境编号不能为空");
 		}
-		String[] appNameAndEnvTag = K8sUtils.appNameAndEnvTag(podName);
-		AppPO appPO = appRepository.queryByAppName(appNameAndEnvTag[0]);
-
+		AppPO appPO = appRepository.queryById(appId);
 		this.hasRights(loginUser, appPO.getId());
-		
-		AppEnvParam envInfoParam = new AppEnvParam();
-		envInfoParam.setAppId(appPO.getId());
-		envInfoParam.setTag(appNameAndEnvTag[1]);
-		AppEnvPO appEnvPO = appEnvRepository.query(envInfoParam);
-		if (!appEnvPO.getTag().equals(appNameAndEnvTag[1])) {
-			LogUtils.throwException(logger, MessageCodeEnum.REPLICA_NAME_INVALIDE);
-		}
+		AppEnvPO appEnvPO = appEnvRepository.queryById(envId);
 		ClusterPO clusterPO = clusterRepository.queryById(appEnvPO.getClusterId());
-		AppEnvClusterContext appEnvClusterEntity = new AppEnvClusterContext();
-		appEnvClusterEntity.setAppPO(appPO);
-		appEnvClusterEntity.setAppEnvPO(appEnvPO);
-		appEnvClusterEntity.setClusterPO(clusterPO);
-		return appEnvClusterEntity;
+		AppEnvClusterContext context = new AppEnvClusterContext();
+		context.setAppPO(appPO);
+		context.setAppEnvPO(appEnvPO);
+		context.setClusterPO(clusterPO);
+		return context;
 	}
 	
 	public List<String> queryFiles(LoginUser loginUser, QueryFilesParam requestParam) {
-		String replicaName = requestParam.getReplicaName();
-		AppEnvClusterContext appEnvClusterEntity = queryCluster(replicaName, loginUser);
+		AppEnvClusterContext appEnvClusterEntity = queryCluster(requestParam.getAppId(),
+				requestParam.getEnvId(), loginUser);
 		ClusterStrategy clusterStrategy = clusterStrategy(
 				appEnvClusterEntity.getClusterPO().getClusterType());
 		return clusterStrategy.queryFiles(appEnvClusterEntity.getClusterPO(),
-				replicaName,
+				requestParam.getReplicaName(),
 				appEnvClusterEntity.getAppEnvPO().getNamespaceName());
 	}
 	
 	public InputStream downloadFile(LoginUser loginUser, DownloadFileParam requestParam) {
-		String replicaName = requestParam.getReplicaName();
-		AppEnvClusterContext appEnvClusterEntity = queryCluster(replicaName, loginUser);
+		AppEnvClusterContext appEnvClusterEntity = queryCluster(requestParam.getAppId(),
+				requestParam.getEnvId(), loginUser);
 		ClusterStrategy clusterStrategy = clusterStrategy(
 				appEnvClusterEntity.getClusterPO().getClusterType());
 		return clusterStrategy.downloadFile(appEnvClusterEntity.getClusterPO(),
 				appEnvClusterEntity.getAppEnvPO().getNamespaceName(),
-				replicaName,
+				requestParam.getReplicaName(),
 				requestParam.getFileName());
 	}
 	
 	public String downloadLog(LoginUser loginUser, EnvReplicaParam requestParam) {
-		String replicaName = requestParam.getReplicaName();
-		AppEnvClusterContext appEnvClusterEntity = queryCluster(replicaName, loginUser);
+		AppEnvClusterContext appEnvClusterEntity = queryCluster(requestParam.getAppId(),
+				requestParam.getEnvId(), loginUser);
 		ClusterStrategy clusterStrategy = clusterStrategy(
 				appEnvClusterEntity.getClusterPO().getClusterType());
 		return clusterStrategy.podLog(appEnvClusterEntity.getClusterPO(),
-				replicaName, appEnvClusterEntity.getAppEnvPO().getNamespaceName());
+				requestParam.getReplicaName(),
+				appEnvClusterEntity.getAppEnvPO().getNamespaceName());
 	}
 
 	public String downloadYaml(LoginUser loginUser, EnvReplicaParam requestParam) {
-		String replicaName = requestParam.getReplicaName();
-		AppEnvClusterContext appEnvClusterEntity = queryCluster(replicaName, loginUser);
+		AppEnvClusterContext appEnvClusterEntity = queryCluster(requestParam.getAppId(),
+				requestParam.getEnvId(), loginUser);
 		ClusterStrategy clusterStrategy = clusterStrategy(
 				appEnvClusterEntity.getClusterPO().getClusterType());
 		return clusterStrategy.podYaml(appEnvClusterEntity.getClusterPO(),
-				replicaName, appEnvClusterEntity.getAppEnvPO().getNamespaceName());
+				requestParam.getReplicaName(),
+				appEnvClusterEntity.getAppEnvPO().getNamespaceName());
 	}
 
 	public void clearMetrics(Date date) {
@@ -254,13 +239,11 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 					continue;
 				}
 				for(ReplicaMetrics metric : replicaMetrics) {
-					String replicaName = metric.getReplicaName();
-					//解析deployment名字的方式不优雅，后续可以考虑其他方案
-					String[] appNameTag = K8sUtils.appNameAndEnvTag(replicaName);
-					AppEnvPO appEnvPO = envMap.get(K8sUtils.getReplicaAppName(appNameTag[0], appNameTag[1]));
+					AppEnvPO appEnvPO = envMap.get(metric.getAppLabel());
 					if(appEnvPO == null) {
 						continue;
 					}
+					String replicaName = metric.getReplicaName();
 					List<MetricsParam> metricsList = new ArrayList<>();
 					item(MetricsTypeEnum.REPLICA_CPU_USED, replicaName, metricsList, metric.getCpuUsed());
 					item(MetricsTypeEnum.REPLICA_CPU_MAX, replicaName, metricsList, appEnvPO.getReplicaCpu());

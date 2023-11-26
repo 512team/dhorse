@@ -591,12 +591,13 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				continue;
 			}
 			String replicaName = metric.getMetadata().getName();
+			String appLabel = metric.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY);
 			Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
 			//转换为单位：m
 			long cpuUsed = new BigDecimal(usage.get("cpu").getAmount()).movePointLeft(6).setScale(0, RoundingMode.HALF_UP).longValue();
 			//转换为单位：字节
 			long memoryUsed = new BigDecimal(usage.get("memory").getAmount()).movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue();
-			replicaMetrics.add(ReplicaMetrics.of(replicaName, cpuUsed, memoryUsed));
+			replicaMetrics.add(ReplicaMetrics.of(replicaName, appLabel, cpuUsed, memoryUsed));
 		}
 		return replicaMetrics;
 	}

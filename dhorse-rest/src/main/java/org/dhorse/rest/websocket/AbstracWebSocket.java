@@ -20,14 +20,14 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
  */
 public abstract class AbstracWebSocket {
 
-	public SSHContext sshContext(String loginToken, String replicaName) {
+	public SSHContext sshContext(String loginToken, String appId, String envId, String replicaName) {
 		SysUserApplicationService sysUserApplicationService = SpringBeanContext
 				.getBean(SysUserApplicationService.class);
 		EnvReplicaApplicationService replicaApplicationService = SpringBeanContext
 				.getBean(EnvReplicaApplicationService.class);
 		LoginUser loginUser = sysUserApplicationService.queryLoginUserByToken(loginToken);
 		AppEnvClusterContext appEnvClusterContext = replicaApplicationService
-					.queryCluster(replicaName, loginUser);
+					.queryCluster(appId, envId, loginUser);
 		 Config config = new ConfigBuilder()
 				 .withTrustCerts(true)
 				 .withMasterUrl(appEnvClusterContext.getClusterPO().getClusterUrl())

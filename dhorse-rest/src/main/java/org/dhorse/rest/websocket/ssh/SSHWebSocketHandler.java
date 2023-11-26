@@ -63,13 +63,13 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 	}
 
 	private void terminal(String payload, WebSocketSession session) {
-		EnvReplicaTerminalParam replicaTerminalParam = JsonUtils.parseToObject(payload,
+		EnvReplicaTerminalParam param = JsonUtils.parseToObject(payload,
 				EnvReplicaTerminalParam.class);
 		SSHContext sshContext = sshMap.get(session.getId());
-		if ("connect".equals(replicaTerminalParam.getOperate())) {
+		if ("connect".equals(param.getOperate())) {
 			
 			LoginUser loginUser = sysUserApplicationService
-					.queryLoginUserByToken(replicaTerminalParam.getLoginToken());
+					.queryLoginUserByToken(param.getLoginToken());
 			if(loginUser == null) {
 				sendMessage(session, "用户未登录");
 				return;
@@ -78,7 +78,7 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 			AppEnvClusterContext appEnvClusterContext = null;
 			try {
 				appEnvClusterContext = replicaApplicationService
-						.queryCluster(replicaTerminalParam.getReplicaName(), loginUser);
+						.queryCluster(param.getAppId(), param.getEnvId(), loginUser);
 			}catch(ApplicationException e) {
 				sendMessage(session, e.getMessage());
 				return;
@@ -88,13 +88,13 @@ public class SSHWebSocketHandler implements WebSocketHandler {
 					appEnvClusterContext.getClusterPO().getAuthToken());
 			String namespace = appEnvClusterContext.getAppEnvPO().getNamespaceName();
 			sshContext.setNamespace(namespace);
-			sshContext.setReplicaName(replicaTerminalParam.getReplicaName());
+			sshContext.setReplicaName(param.getReplicaName());
 			sshContext.setClient(client);
 			if(!doConnect(sshContext, "bash")) {
 				doConnect(sshContext, "sh");
 			}
-		} else if ("command".equals(replicaTerminalParam.getOperate())) {
-			transToSSH(sshContext, replicaTerminalParam.getCommand());
+		} else if ("command".equals(param.getOperate())) {
+			transToSSH(sshContext, param.getCommand());
 		}
 	}
 

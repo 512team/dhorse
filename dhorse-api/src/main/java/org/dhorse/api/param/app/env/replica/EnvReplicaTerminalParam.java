@@ -28,6 +28,16 @@ public class EnvReplicaTerminalParam implements Serializable {
 	private String replicaName;
 
 	/**
+	 * 应用编号
+	 */
+	private String appId;
+
+	/**
+	 * 环境编号
+	 */
+	private String envId;
+
+	/**
 	 * 操作指令
 	 */
 	private String command;
@@ -54,6 +64,22 @@ public class EnvReplicaTerminalParam implements Serializable {
 
 	public void setReplicaName(String replicaName) {
 		this.replicaName = replicaName;
+	}
+
+	public String getAppId() {
+		return appId;
+	}
+
+	public void setAppId(String appId) {
+		this.appId = appId;
+	}
+
+	public String getEnvId() {
+		return envId;
+	}
+
+	public void setEnvId(String envId) {
+		this.envId = envId;
 	}
 
 	public String getCommand() {

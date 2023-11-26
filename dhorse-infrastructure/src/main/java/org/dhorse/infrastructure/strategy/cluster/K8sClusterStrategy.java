@@ -1841,14 +1841,15 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		List<ReplicaMetrics> metricsList = new ArrayList<>();
 		List<PodMetrics> metrics = podMetricsList.getItems();
 		for(PodMetrics metric : metrics) {
-			String replicaName = metric.getMetadata().getName();
 			if(CollectionUtils.isEmpty(metric.getContainers())) {
 				continue;
 			}
+			String replicaName = metric.getMetadata().getName();
+			String appLabel = metric.getMetadata().getLabels().get(K8sUtils.DHORSE_LABEL_KEY);
 			Map<String, Quantity> usage = metric.getContainers().get(0).getUsage();
 			long cpuUsed = usage.get("cpu").getNumber().movePointRight(3).setScale(0, RoundingMode.HALF_UP).longValue();
 			long memoryUsed = usage.get("memory").getNumber().setScale(0, RoundingMode.HALF_UP).longValue();
-			metricsList.add(ReplicaMetrics.of(replicaName, cpuUsed, memoryUsed));
+			metricsList.add(ReplicaMetrics.of(replicaName, appLabel, cpuUsed, memoryUsed));
 		}
 		
 		return metricsList;

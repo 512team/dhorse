@@ -76,7 +76,7 @@ public class ClusterRest extends AbstractRest {
 	
 	/**
 	 * 删除节点
-	 * 
+	 *
 	 * @param deletionParam 删除节点参数
 	 * @return 无
 	 */
