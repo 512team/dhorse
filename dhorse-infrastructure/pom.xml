@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.dhorse</groupId>
 		<artifactId>dhorse-parent</artifactId>
-		<version>1.4.2</version>
+		<version>1.5.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>dhorse-infrastructure</artifactId>

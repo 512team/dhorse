@@ -1,20 +1,8 @@
 package org.dhorse.rest.component;
 
-import java.util.Arrays;
 import java.util.EventListener;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import org.dhorse.api.enums.YesOrNoEnum;
-import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
-import org.dhorse.application.service.GlobalConfigApplicationService;
-import org.jasig.cas.client.authentication.AuthenticationFilter;
 import org.jasig.cas.client.session.SingleSignOutHttpSessionListener;
-import org.jasig.cas.client.validation.AbstractTicketValidationFilter;
-import org.jasig.cas.client.validation.Cas30ProxyReceivingTicketValidationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,46 +13,46 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CasConfig {
 
-	private static final List<String> URL_PATTERNS = Arrays.asList("/cas", "/page/sys_user/cas_login.html");
-	
-	@Autowired
-	private GlobalConfigApplicationService globalConfigApplicationService;
-
-	@Bean
-	public FilterRegistrationBean<AuthenticationFilter> authFilterRegistration() {
-		CAS cas = globalConfigApplicationService.queryCas();
-		FilterRegistrationBean<AuthenticationFilter> fr = new FilterRegistrationBean<>();
-		Map<String, String> initParameters = new HashMap<String, String>();
-		if (cas != null && YesOrNoEnum.YES.getCode().equals(cas.getEnable())) {
-			initParameters.put("casServerLoginUrl", cas.getServerLoginUrl());
-			initParameters.put("serverName", cas.getClientHostUrl());
-		} else {
-			fr.setEnabled(false);
-		}
-		fr.setFilter(new AuthenticationFilter());
-		fr.setInitParameters(initParameters);
-		fr.setUrlPatterns(URL_PATTERNS);
-		fr.setOrder(2);
-		return fr;
-	}
-
-	@Bean
-	public FilterRegistrationBean<AbstractTicketValidationFilter> validFilterRegistration() {
-		CAS cas = globalConfigApplicationService.queryCas();
-		FilterRegistrationBean<AbstractTicketValidationFilter> fr = new FilterRegistrationBean<>();
-		Map<String, String> initParameters = new HashMap<String, String>();
-		if (cas != null && YesOrNoEnum.YES.getCode().equals(cas.getEnable())) {
-			initParameters.put("casServerUrlPrefix", cas.getServerUrlPrefix());
-			initParameters.put("serverName", cas.getClientHostUrl());
-		} else {
-			fr.setEnabled(false);
-		}
-		fr.setFilter(new Cas30ProxyReceivingTicketValidationFilter());
-		fr.setInitParameters(initParameters);
-		fr.setUrlPatterns(URL_PATTERNS);
-		fr.setOrder(1);
-		return fr;
-	}
+//	private static final List<String> URL_PATTERNS = Arrays.asList("/cas", "/page/sys_user/cas_login.html");
+//	
+//	@Autowired
+//	private GlobalConfigApplicationService globalConfigApplicationService;
+//
+//	@Bean
+//	public FilterRegistrationBean<AuthenticationFilter> authFilterRegistration() {
+//		CAS cas = globalConfigApplicationService.queryCas();
+//		FilterRegistrationBean<AuthenticationFilter> fr = new FilterRegistrationBean<>();
+//		Map<String, String> initParameters = new HashMap<String, String>();
+//		if (cas != null && YesOrNoEnum.YES.getCode().equals(cas.getEnable())) {
+//			initParameters.put("casServerLoginUrl", cas.getServerLoginUrl());
+//			initParameters.put("serverName", cas.getClientHostUrl());
+//		} else {
+//			fr.setEnabled(false);
+//		}
+//		fr.setFilter(new AuthenticationFilter());
+//		fr.setInitParameters(initParameters);
+//		fr.setUrlPatterns(URL_PATTERNS);
+//		fr.setOrder(2);
+//		return fr;
+//	}
+//
+//	@Bean
+//	public FilterRegistrationBean<AbstractTicketValidationFilter> validFilterRegistration() {
+//		CAS cas = globalConfigApplicationService.queryCas();
+//		FilterRegistrationBean<AbstractTicketValidationFilter> fr = new FilterRegistrationBean<>();
+//		Map<String, String> initParameters = new HashMap<String, String>();
+//		if (cas != null && YesOrNoEnum.YES.getCode().equals(cas.getEnable())) {
+//			initParameters.put("casServerUrlPrefix", cas.getServerUrlPrefix());
+//			initParameters.put("serverName", cas.getClientHostUrl());
+//		} else {
+//			fr.setEnabled(false);
+//		}
+//		fr.setFilter(new Cas30ProxyReceivingTicketValidationFilter());
+//		fr.setInitParameters(initParameters);
+//		fr.setUrlPatterns(URL_PATTERNS);
+//		fr.setOrder(1);
+//		return fr;
+//	}
 
 	@Bean
 	public ServletListenerRegistrationBean<EventListener> singleSignOutListenerRegistration() {
