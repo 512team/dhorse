@@ -3,6 +3,7 @@ package org.dhorse.rest.task;
 import java.util.Date;
 
 import org.dhorse.application.service.EnvReplicaApplicationService;
+import org.dhorse.application.service.InitializingService;
 import org.dhorse.infrastructure.repository.LogRecordRepository;
 import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.DateUtils;
@@ -24,15 +25,26 @@ public class Task {
 	@Autowired
 	private LogRecordRepository logRecordRepository;
 	
+	@Autowired
+	private InitializingService initializingService;
+	
 	/**
-	 * 收集副本的指标数据
+	 * 10s定时任务
 	 */
 	@Scheduled(cron = "0/10 * * * * ?")
 	public void collectReplicaMetrics() {
+		//收集副本的指标数据
 		try {
 			replicaApplicationService.collectReplicaMetrics();
 		}catch(Exception e) {
 			logger.error("Failed to collect pod metrics", e);
+		}
+		
+		//上报服务IP地址
+		try {
+			initializingService.reportServerIp();
+		}catch(Exception e) {
+			logger.error("Failed to report server ip", e);
 		}
 	}
 	
@@ -53,7 +65,7 @@ public class Task {
 	}
 	
 	/**
-	 * 清除过期的WebSocket
+	 * 清除过期的WebSocket，每分钟执行一次
 	 */
 	@Scheduled(cron = "0 0/1 * * * ?")
 	public void clearSocket() {

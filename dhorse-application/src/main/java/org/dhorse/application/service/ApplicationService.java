@@ -131,10 +131,10 @@ public abstract class ApplicationService {
 				GlobalConfigItemTypeEnum.CAS.getCode(),
 				GlobalConfigItemTypeEnum.LDAP.getCode(),
 				GlobalConfigItemTypeEnum.WECHAT.getCode(),
-				GlobalConfigItemTypeEnum.DINGDING.getCode(),
-				GlobalConfigItemTypeEnum.FEISHU.getCode(),
-				GlobalConfigItemTypeEnum.CODEREPO.getCode(),
-				GlobalConfigItemTypeEnum.IMAGEREPO.getCode(),
+				GlobalConfigItemTypeEnum.DING_DING.getCode(),
+				GlobalConfigItemTypeEnum.FEI_SHU.getCode(),
+				GlobalConfigItemTypeEnum.CODE_REPO.getCode(),
+				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode(),
 				GlobalConfigItemTypeEnum.MAVEN.getCode(),
 				GlobalConfigItemTypeEnum.TRACE_TEMPLATE.getCode(),
 				GlobalConfigItemTypeEnum.MORE.getCode()));
@@ -162,13 +162,13 @@ public abstract class ApplicationService {
 	
 	public DingDing queryDingDing() {
 		GlobalConfigParam configParam = new GlobalConfigParam();
-		configParam.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
+		configParam.setItemType(GlobalConfigItemTypeEnum.DING_DING.getCode());
 		return globalConfigRepository.queryAgg(configParam).getDingding();
 	}
 	
 	public FeiShu queryFeiShu() {
 		GlobalConfigParam configParam = new GlobalConfigParam();
-		configParam.setItemType(GlobalConfigItemTypeEnum.FEISHU.getCode());
+		configParam.setItemType(GlobalConfigItemTypeEnum.FEI_SHU.getCode());
 		return globalConfigRepository.queryAgg(configParam).getFeishu();
 	}
 	
@@ -418,7 +418,7 @@ public abstract class ApplicationService {
 	
 	private void creatImageRepoProject() {
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		ImageRepo imageRepo = globalConfigAgg.getImageRepo();
 		if(imageRepo == null) {
@@ -467,7 +467,7 @@ public abstract class ApplicationService {
 			return;
 		}
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg == null || globalConfigAgg.getImageRepo() == null) {
 			return;
@@ -507,7 +507,7 @@ public abstract class ApplicationService {
 	
 	protected void buildDHorseAgentImage() {
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg == null || globalConfigAgg.getImageRepo() == null) {
 			logger.info("The image repo does not exist, and end to build dhorse agent image");
@@ -721,5 +721,13 @@ public abstract class ApplicationService {
 		pageData.setItemCount((int)pagePO.getTotal());
 		pageData.setItems(items);
 		return pageData;
+	}
+	
+	protected void randomSleep() {
+		try {
+			Thread.sleep(new Random().nextInt(100));
+		} catch (InterruptedException e) {
+			//ignore
+		}
 	}
 }

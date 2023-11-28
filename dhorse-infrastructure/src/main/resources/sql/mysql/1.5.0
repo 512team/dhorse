@@ -1,0 +1,1 @@
+alter table global_config add column version bigint default 0 comment '版本号' after item_value;

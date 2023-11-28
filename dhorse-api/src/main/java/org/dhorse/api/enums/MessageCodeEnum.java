@@ -100,6 +100,9 @@ public enum MessageCodeEnum {
 	TRACE_TEMPLATE_IS_EMPTY("200000", "链路模板不存在"),
 	WAR_APP_SERVICE_PORT_8080("200000", "构建文件类型是War时，服务端口必须是8080"),
 	
+	//代码仓库
+	CODE_REPO_IS_EMPTY("200000", "请先完成代码仓库配置"),
+	
 	//镜像仓库
 	IMAGE_REPO_PROJECT_FAILURE("200000", "创建镜像仓库项目失败"),
 	IMAGE_REPO_IS_EMPTY("200000", "请先完成镜像仓库配置"),
@@ -109,7 +112,7 @@ public enum MessageCodeEnum {
 	JAVA_VERSION_IS_EMPTY("200000", "Java版本不能为空"),
 	BUILD_IMAGE("200000", "构建镜像失败"),
 	
-	//代码
+	//代码分支
 	APP_BRANCH_PAGE_FAILURE("200000", "获取分支列表失败"),
 	APP_BRANCH_FAILURE("200000", "获取分支失败"),
 	APP_BRANCH_NAME_INEXISTENCE("200000", "分支名称已经存在"),

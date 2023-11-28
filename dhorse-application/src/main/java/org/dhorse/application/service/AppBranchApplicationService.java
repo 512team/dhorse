@@ -1,9 +1,10 @@
 package org.dhorse.application.service;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.dhorse.infrastructure.utils.StringUtils;
+import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.param.app.branch.AppBranchCreationParam;
@@ -21,6 +22,8 @@ import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
+import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -119,12 +122,34 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 		if (StringUtils.isBlank(buildParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
+		
 		hasRights(loginUser, buildParam.getAppId());
+		
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		if (globalConfigRepository.count(globalConfigParam) < 1) {
-			LogUtils.throwException(logger, MessageCodeEnum.INIT_GLOBAL_CONFIG);
+		globalConfigParam.setItemTypes(Arrays.asList(
+				GlobalConfigItemTypeEnum.CODE_REPO.getCode(),
+				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode()));
+		GlobalConfigAgg config = globalConfigRepository.queryAgg(globalConfigParam);
+		if(config.getCodeRepo() == null || StringUtils.isBlank(config.getCodeRepo().getUrl())) {
+			LogUtils.throwException(logger, MessageCodeEnum.CODE_REPO_IS_EMPTY);
 		}
+		if(config.getImageRepo() == null || StringUtils.isBlank(config.getImageRepo().getUrl())) {
+			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
+		}
+		
 		buildParam.setSubmitter(loginUser.getLoginName());
-		return buildVersion(buildParam);
+		
+		if(hasUsableThread()) {
+			return buildVersion(buildParam);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * 如果构建线程池的队列为空，则代表具有可用的线程
+	 */
+	public boolean hasUsableThread() {
+		return ThreadPoolUtils.getBuildVersionPool().getQueue().size() == 0;
 	}
 }

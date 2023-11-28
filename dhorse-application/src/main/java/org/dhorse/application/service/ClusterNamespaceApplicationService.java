@@ -66,7 +66,7 @@ public class ClusterNamespaceApplicationService extends BaseApplicationService<C
 		cluster.createDHorseConfig(clusterPO);
 		//3.为命名空间增加镜像仓库认证key
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
 			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());

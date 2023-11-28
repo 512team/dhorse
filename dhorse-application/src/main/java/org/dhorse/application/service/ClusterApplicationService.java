@@ -90,7 +90,7 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		cluster.createDHorseConfig(clusterPO);
 		//3.创建镜像仓库认证key
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
 			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());
@@ -135,7 +135,7 @@ public class ClusterApplicationService extends BaseApplicationService<Cluster, C
 		cluster.createDHorseConfig(clusterPO);
 		//3.创建镜像仓库认证key
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(globalConfigParam);
 		if(globalConfigAgg != null && globalConfigAgg.getImageRepo() != null) {
 			cluster.createSecret(clusterPO, globalConfigAgg.getImageRepo());

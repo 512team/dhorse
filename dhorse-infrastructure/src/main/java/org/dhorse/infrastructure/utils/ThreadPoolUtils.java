@@ -95,6 +95,10 @@ public class ThreadPoolUtils {
 	public static void buildVersion(Runnable runnable) {
 		THREAD_POOL_BUILD.submit(runnable);
 	}
+	
+	public static ThreadPoolExecutor getBuildVersionPool() {
+		return THREAD_POOL_BUILD;
+	}
 
 	public static void deploy(Runnable runnable) {
 		THREAD_POOL_DEPLOYMENT.submit(runnable);

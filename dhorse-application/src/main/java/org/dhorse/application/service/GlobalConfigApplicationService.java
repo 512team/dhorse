@@ -204,7 +204,7 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 		if(!codeRepo.getUrl().startsWith("http")) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "仓库地址格式不正确");
 		}
-		codeRepo.setItemType(GlobalConfigItemTypeEnum.CODEREPO.getCode());
+		codeRepo.setItemType(GlobalConfigItemTypeEnum.CODE_REPO.getCode());
 		return addOrUpdateGlobalConfig(codeRepo);
 	}
 	
@@ -235,7 +235,7 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 			buildDHorseAgentImage(imageRepo);
 		});
 		
-		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		imageRepo.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		return addOrUpdateGlobalConfig(imageRepo);
 	}
 	
@@ -250,12 +250,12 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 	}
 	
 	public Void addOrUpdateDingDing(DingDing dingding) {
-		dingding.setItemType(GlobalConfigItemTypeEnum.DINGDING.getCode());
+		dingding.setItemType(GlobalConfigItemTypeEnum.DING_DING.getCode());
 		return addOrUpdateGlobalConfig(dingding);
 	}
 	
 	public Void addOrUpdateFeiShu(FeiShu feishu) {
-		feishu.setItemType(GlobalConfigItemTypeEnum.FEISHU.getCode());
+		feishu.setItemType(GlobalConfigItemTypeEnum.FEI_SHU.getCode());
 		return addOrUpdateGlobalConfig(feishu);
 	}
 	
@@ -374,7 +374,7 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 	public Void addTraceTemplate(TraceTemplate taceTemplate) {
 		checkTraceTemplateParam(taceTemplate);
 		GlobalConfigParam bizParam = new GlobalConfigParam();
-		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
 		if(globalConfigAgg.getImageRepo() == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);
@@ -398,7 +398,7 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 		}
 		checkTraceTemplateParam(taceTemplate);
 		GlobalConfigParam bizParam = new GlobalConfigParam();
-		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGEREPO.getCode());
+		bizParam.setItemType(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode());
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
 		if(globalConfigAgg.getImageRepo() == null) {
 			LogUtils.throwException(logger, MessageCodeEnum.IMAGE_REPO_IS_EMPTY);

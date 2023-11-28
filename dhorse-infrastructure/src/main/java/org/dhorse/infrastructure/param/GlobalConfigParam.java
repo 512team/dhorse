@@ -24,6 +24,11 @@ public class GlobalConfigParam extends PageParam {
 	private String itemValue;
 
 	/**
+	 * 版本号
+	 */
+	private Long version;
+
+	/**
 	 * 备注
 	 */
 	private String remark;
@@ -42,6 +47,14 @@ public class GlobalConfigParam extends PageParam {
 
 	public void setItemType(Integer itemType) {
 		this.itemType = itemType;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
 	}
 
 	public List<Integer> getItemTypes() {

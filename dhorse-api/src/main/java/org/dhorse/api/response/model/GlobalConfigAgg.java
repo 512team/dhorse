@@ -31,6 +31,8 @@ public class GlobalConfigAgg implements Serializable {
 	private EnvTemplate envTemplate;
 
 	private CustomizedMenu customizedMenu;
+	
+	private List<String> serverIps;
 
 	private More more;
 
@@ -96,6 +98,10 @@ public class GlobalConfigAgg implements Serializable {
 
 	public void setEnvTemplate(EnvTemplate envTemplate) {
 		this.envTemplate = envTemplate;
+	}
+
+	public List<String> getServerIps() {
+		return serverIps;
 	}
 
 	public More getMore() {

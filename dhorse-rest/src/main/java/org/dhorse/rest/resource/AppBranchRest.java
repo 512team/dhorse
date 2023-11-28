@@ -98,4 +98,15 @@ public class AppBranchRest extends AbstractRest {
 		return this.success(appBranchApplicationService
 				.buildVersion(this.queryLoginUserByToken(loginToken), buildParam));
 	}
+	
+	/**
+	 * 是否有可用构建版本资源
+	 * 
+	 * @return 无
+	 */
+	@RequestMapping("/hasUsableThread")
+	public RestResponse<Boolean> hasUsableThread(@CookieValue(name = "login_token",
+			required = false) String loginToken) {
+		return this.success(appBranchApplicationService.hasUsableThread());
+	}
 }

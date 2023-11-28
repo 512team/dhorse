@@ -65,21 +65,21 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 				globalConfig.setWechat(wechat);
 				continue;
 			}
-			if(GlobalConfigItemTypeEnum.DINGDING.getCode().equals(po.getItemType())) {
+			if(GlobalConfigItemTypeEnum.DING_DING.getCode().equals(po.getItemType())) {
 				DingDing dingding = JsonUtils.parseToObject(po.getItemValue(), DingDing.class);
 				globalConfig.setDingding(dingding);
 				continue;
 			}
-			if(GlobalConfigItemTypeEnum.FEISHU.getCode().equals(po.getItemType())) {
+			if(GlobalConfigItemTypeEnum.FEI_SHU.getCode().equals(po.getItemType())) {
 				FeiShu feiShu = JsonUtils.parseToObject(po.getItemValue(), FeiShu.class);
 				globalConfig.setFeishu(feiShu);
 				continue;
 			}
-			if(GlobalConfigItemTypeEnum.CODEREPO.getCode().equals(po.getItemType())) {
+			if(GlobalConfigItemTypeEnum.CODE_REPO.getCode().equals(po.getItemType())) {
 				globalConfig.setCodeRepo(JsonUtils.parseToObject(po.getItemValue(), CodeRepo.class));
 				continue;
 			}
-			if(GlobalConfigItemTypeEnum.IMAGEREPO.getCode().equals(po.getItemType())) {
+			if(GlobalConfigItemTypeEnum.IMAGE_REPO.getCode().equals(po.getItemType())) {
 				globalConfig.setImageRepo(JsonUtils.parseToObject(po.getItemValue(), ImageRepo.class));
 				continue;
 			}

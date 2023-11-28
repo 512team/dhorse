@@ -16,7 +16,7 @@ public class GlobalConfigPO extends BasePO {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 配置项类型，1：ldap，2：代码仓库，3：镜像仓库，4：maven
+	 * 配置项类型，见：GlobalConfigItemTypeEnum
 	 */
 	private Integer itemType;
 
@@ -24,6 +24,8 @@ public class GlobalConfigPO extends BasePO {
 	 * 配置项值
 	 */
 	private String itemValue;
+
+	private Long version;
 
 	@TableField(exist = false)
 	private List<Integer> itemTypes;
@@ -55,6 +57,14 @@ public class GlobalConfigPO extends BasePO {
 
 	public void setItemTypes(List<Integer> itemTypes) {
 		this.itemTypes = itemTypes;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
 	}
 
 	public String getRemark() {

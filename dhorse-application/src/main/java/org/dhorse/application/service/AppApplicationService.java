@@ -181,7 +181,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setItemTypes(Arrays.asList(GlobalConfigItemTypeEnum.MAVEN.getCode(),
-				GlobalConfigItemTypeEnum.IMAGEREPO.getCode()));
+				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode()));
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
 		
 		//构建镜像
@@ -201,7 +201,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		
 		GlobalConfigParam bizParam = new GlobalConfigParam();
 		bizParam.setItemTypes(Arrays.asList(GlobalConfigItemTypeEnum.MAVEN.getCode(),
-				GlobalConfigItemTypeEnum.IMAGEREPO.getCode()));
+				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode()));
 		GlobalConfigAgg globalConfigAgg = globalConfigRepository.queryAgg(bizParam);
 		List<String> jdkVersions = globalConfigApplicationService.queryJavaVersion("xxxxxx");
 		

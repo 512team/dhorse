@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
@@ -190,12 +189,10 @@ public class EnvReplicaApplicationService extends BaseApplicationService<EnvRepl
 	}
 	
 	public void collectReplicaMetrics() {
-		//这里随机休眠一段时间，在集群部署时防止多个节点的任务并发执行
-		try {
-			Thread.sleep(new Random().nextInt(100));
-		} catch (InterruptedException e) {
-			//ignore
-		}
+		
+		//随机休眠，减小集群任务的并发性
+		randomSleep();
+		
 		// 如果修改不成功，则代表其他节点已经运行了任务，该节点不需要再运行
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		globalConfigParam.setItemType(GlobalConfigItemTypeEnum.COLLECT_REPLICA_METRICS_TASK_TIME.getCode());

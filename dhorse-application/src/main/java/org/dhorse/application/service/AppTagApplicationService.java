@@ -3,11 +3,9 @@ package org.dhorse.application.service;
 import java.util.Collections;
 import java.util.List;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.param.app.branch.AppBranchListParam;
-import org.dhorse.api.param.app.branch.BuildParam;
 import org.dhorse.api.param.app.tag.AppTagCreationParam;
 import org.dhorse.api.param.app.tag.AppTagDeletionParam;
 import org.dhorse.api.param.app.tag.AppTagPageParam;
@@ -15,13 +13,13 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.api.response.model.AppTag;
 import org.dhorse.api.response.model.GlobalConfigAgg;
-import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -116,18 +114,5 @@ public class AppTagApplicationService extends DeploymentApplicationService {
 		if (StringUtils.isBlank(addParam.getTagName())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_TAG_NAME_IS_EMPTY);
 		}
-	}
-
-	public String buildVersion(LoginUser loginUser, BuildParam buildParam) {
-		if (StringUtils.isBlank(buildParam.getAppId())) {
-			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
-		}
-		hasRights(loginUser, buildParam.getAppId());
-		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
-		if (globalConfigRepository.count(globalConfigParam) < 1) {
-			LogUtils.throwException(logger, MessageCodeEnum.INIT_GLOBAL_CONFIG);
-		}
-		buildParam.setSubmitter(loginUser.getLoginName());
-		return buildVersion(buildParam);
 	}
 }
