@@ -51,7 +51,7 @@ function getUrlParam(name) {
 
 function doBuild($, appId, envId, branchName, callback){
 	$.ajax({
-		url: '/app/branch/buildVersion',
+		url: '/app/branch/buildVersionWithClusterMode',
 		type: 'POST',
 		dataType: "json",
 		contentType: 'application/json;charset=UTF-8',

@@ -3,7 +3,6 @@ package org.dhorse.rest.resource;
 import java.util.List;
 
 import org.dhorse.api.param.app.branch.AppBranchListParam;
-import org.dhorse.api.param.app.branch.BuildParam;
 import org.dhorse.api.param.app.tag.AppTagCreationParam;
 import org.dhorse.api.param.app.tag.AppTagDeletionParam;
 import org.dhorse.api.param.app.tag.AppTagPageParam;
@@ -86,18 +85,5 @@ public class AppTagRest extends AbstractRest {
 			@RequestBody AppTagDeletionParam appTagDeletionParam) {
 		return success(appTagApplicationService.delete(queryLoginUserByToken(loginToken),
 				appTagDeletionParam));
-	}
-
-	/**
-	 * 构建版本
-	 * 
-	 * @param buildParam 参数
-	 * @return 无
-	 */
-	@RequestMapping("/buildVersion")
-	public RestResponse<String> buildVersion(@CookieValue(name = "login_token", required = false) String loginToken,
-			@RequestBody BuildParam buildParam) {
-		return this.success(appBranchApplicationService
-				.buildVersion(this.queryLoginUserByToken(loginToken), buildParam));
 	}
 }

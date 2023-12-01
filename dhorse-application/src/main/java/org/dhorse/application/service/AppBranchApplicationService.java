@@ -3,6 +3,8 @@ package org.dhorse.application.service;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
@@ -13,20 +15,27 @@ import org.dhorse.api.param.app.branch.AppBranchListParam;
 import org.dhorse.api.param.app.branch.AppBranchPageParam;
 import org.dhorse.api.param.app.branch.BuildParam;
 import org.dhorse.api.response.PageData;
+import org.dhorse.api.response.RestResponse;
 import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.api.response.model.GlobalConfigAgg;
+import org.dhorse.infrastructure.exception.ApplicationException;
 import org.dhorse.infrastructure.param.GlobalConfigParam;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
+import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.HttpUtils;
+import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.infrastructure.utils.ThreadPoolUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 
 /**
  * 
@@ -118,7 +127,11 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 		}
 	}
 
-	public String buildVersion(LoginUser loginUser, BuildParam buildParam) {
+	/**
+	 * 向集群提交构建版本请求。<p/>
+	 * 轮询集群的各个Server，找出存在可用线程资源的目标Server，并向其提交构建请求。
+	 */
+	public Void buildVersionWithClusterMode(LoginUser loginUser, BuildParam buildParam) {
 		if (StringUtils.isBlank(buildParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
@@ -128,7 +141,8 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 		GlobalConfigParam globalConfigParam = new GlobalConfigParam();
 		globalConfigParam.setItemTypes(Arrays.asList(
 				GlobalConfigItemTypeEnum.CODE_REPO.getCode(),
-				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode()));
+				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode(),
+				GlobalConfigItemTypeEnum.SERVER_IP.getCode()));
 		GlobalConfigAgg config = globalConfigRepository.queryAgg(globalConfigParam);
 		if(config.getCodeRepo() == null || StringUtils.isBlank(config.getCodeRepo().getUrl())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CODE_REPO_IS_EMPTY);
@@ -138,18 +152,59 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 		}
 		
 		buildParam.setSubmitter(loginUser.getLoginName());
-		
-		if(hasUsableThread()) {
-			return buildVersion(buildParam);
+		//1.如果当前server有可用的线程资源，则用当前server进行版本构建
+		if(CollectionUtils.isEmpty(config.getServerIps()) || hasUsableThread()) {
+			buildVersion(buildParam);
+			return null;
 		}
 		
+		String localServer = Constants.hostIp() + ":" + componentConstants.getServerPort();
+		Map<String, Object> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
+		String url = "http://%s/app/branch/buildVersion";
+		String responseStr = null;
+		//2.如果当前server没有可用的线程资源，则轮询集群中的其他server进行构建
+		for(String ip : config.getServerIps()) {
+			if(ip.equals(localServer)) {
+				continue;
+			}
+			try {
+				responseStr = HttpUtils.postResponse(String.format(url, ip), JsonUtils.toJsonString(buildParam), cookieParam);
+			}catch(Exception e) {
+				logger.error("Failed to build version", e);
+				//如果有请求异常，比如请求超时，此时并不能确定有没有真正请求到目标server
+				//因此，只要出现异常，统一提示为操作失败，由用户重新提交请求
+				throw new ApplicationException(MessageCodeEnum.FAILURE);
+			}
+			RestResponse<?> response = JsonUtils.parseToObject(responseStr, RestResponse.class);
+			if(MessageCodeEnum.SUCESS.getCode().equals(response.getCode())) {
+				return null;
+			}
+			if(MessageCodeEnum.RESOURCES_NOT_ENOUGH.getCode().equals(response.getCode())) {
+				continue;
+			}
+			throw new ApplicationException(response.getCode(), response.getMessage());
+		}
+		
+		//3.如果集群没有可用的线程资源，则用当前server进行构建
+		buildVersion(buildParam);
+		
 		return null;
+	}
+	
+	public boolean buildVersion(LoginUser loginUser, BuildParam buildParam) {
+		if(!hasUsableThread()) {
+			return false;
+		}
+		buildParam.setSubmitter(loginUser.getLoginName());
+		buildVersion(buildParam);
+		return true;
 	}
 	
 	/**
 	 * 如果构建线程池的队列为空，则代表具有可用的线程
 	 */
-	public boolean hasUsableThread() {
-		return ThreadPoolUtils.getBuildVersionPool().getQueue().size() == 0;
+	private boolean hasUsableThread() {
+		ThreadPoolExecutor pool = ThreadPoolUtils.getBuildVersionPool();
+		return pool.getActiveCount() < pool.getMaximumPoolSize();
 	}
 }

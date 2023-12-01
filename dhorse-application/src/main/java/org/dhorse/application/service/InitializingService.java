@@ -42,7 +42,7 @@ public class InitializingService extends ApplicationService implements Initializ
 	
 	private boolean doReport(String currentIp) {
 		GlobalConfigParam param = new GlobalConfigParam();
-		param.setItemType(GlobalConfigItemTypeEnum.DHORSE_SERVER_IP.getCode());
+		param.setItemType(GlobalConfigItemTypeEnum.SERVER_IP.getCode());
 		GlobalConfigPO po = globalConfigRepository.query(param);
 		
 		Set<String> ipSet = new HashSet<>();

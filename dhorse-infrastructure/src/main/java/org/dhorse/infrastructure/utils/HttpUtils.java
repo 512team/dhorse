@@ -88,6 +88,15 @@ public class HttpUtils {
         return createHttpClient(url).execute(method);
 	}
 	
+	public static String postResponse(String url, String jsonParam, Map<String, Object> cookie) {
+        try (CloseableHttpResponse response = doPost(url, jsonParam, cookie)){
+        	return EntityUtils.toString(response.getEntity());
+        } catch (IOException e) {
+        	LogUtils.throwException(logger, e, MessageCodeEnum.HTT_POST_FAILURE);
+        }
+        return null;
+	}
+	
 	public static String postResponse(String url, Map<String, Object> param) {
         try (CloseableHttpResponse response = doPost(url, JsonUtils.toJsonString(param), null)){
         	return EntityUtils.toString(response.getEntity());

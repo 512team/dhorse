@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -195,11 +193,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 			DeploymentDetailParam detailParam = new DeploymentDetailParam();
 			detailParam.setId(deployParam.getDeploymentDetailId());
-			try {
-				detailParam.setDeploymentThread(InetAddress.getLocalHost().getHostAddress() + ":" + t.getName());
-			} catch (UnknownHostException e) {
-				logger.error("Failed to get host ip");
-			}
+			//见方法：abortDeployment()
+			detailParam.setDeploymentThread(Constants.hostIp() + ":" + componentConstants.getServerPort() + "," + t.getName());
 			deploymentDetailRepository.update(detailParam);
 
 			try {
@@ -668,13 +663,9 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		//指令格式：
 		//cd /opt/data/app/hello-go/hello-go-1693449686623 \
-		//&& /opt/data/go/go-1.20.7/bin/go mod init hello-go \
-		//&& /opt/data/go/go-1.20.7/bin/go mod tidy \
 		//&& /opt/data/go/go-1.20.7/bin/go mod download \
 		//&& /opt/data/go/go-1.20.7/bin/go build -o hello-go
 		cmd.append("cd " + context.getLocalPathOfBranch())
-				.append(" && " + goBin + " mod init " + appName)
-				.append(" && " + goBin + " mod tidy")
 				.append(" && " + goBin + " mod download")
 				.append(" && " + goBin + " build -o " + appName);
 
@@ -1019,12 +1010,13 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			return null;
 		}
 
+		String[] ipThread = thread.split(",");
 		AbortDeploymentThreadParam threadParam = new AbortDeploymentThreadParam();
 		threadParam.setAppId(abortParam.getAppId());
 		threadParam.setDeploymentDetailId(abortParam.getDeploymentDetailId());
-		threadParam.setThreadName(thread.split(":")[1]);
+		threadParam.setThreadName(ipThread[1]);
 		Map<String, Object> cookieParam = Collections.singletonMap("login_token", loginUser.getLastLoginToken());
-		String url = "http://" + thread.split(":")[0] + ":" + serverPort + "/app/deployment/detail/abortDeploymentThread";
+		String url = "http://" + ipThread[0] + "/app/deployment/detail/abortDeploymentThread";
 		try {
 			HttpUtils.post(url, JsonUtils.toJsonString(threadParam), cookieParam);
 		}catch(Exception e) {

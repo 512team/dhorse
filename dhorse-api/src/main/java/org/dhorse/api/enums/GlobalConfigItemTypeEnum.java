@@ -14,7 +14,7 @@ public enum GlobalConfigItemTypeEnum {
 	DING_DING(10, "钉钉登录"),
 	CAS(11, "CAS登录"),
 	FEI_SHU(12, "飞书登录"),
-	DHORSE_SERVER_IP(13, "DHorse服务器IP"),
+	SERVER_IP(13, "DHorse服务器IP"),
 	MORE(100, "更多"),
 	;
 

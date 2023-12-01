@@ -2,6 +2,7 @@ package org.dhorse.rest.resource;
 
 import java.util.List;
 
+import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.param.app.branch.AppBranchCreationParam;
 import org.dhorse.api.param.app.branch.AppBranchDeletionParam;
 import org.dhorse.api.param.app.branch.AppBranchListParam;
@@ -86,27 +87,34 @@ public class AppBranchRest extends AbstractRest {
 	}
 
 	/**
+	 * 构建版本-集群模式
+	 * 
+	 * @param buildParam 参数
+	 * @return 无
+	 */
+	@RequestMapping("/buildVersionWithClusterMode")
+	public RestResponse<Void> buildVersionWithClusterMode(@CookieValue(name = "login_token",
+			required = false) String loginToken,
+			@RequestBody BuildParam buildParam) {
+		return this.success(appBranchApplicationService
+				.buildVersionWithClusterMode(this.queryLoginUserByToken(loginToken), buildParam));
+	}
+	
+	/**
 	 * 构建版本
 	 * 
 	 * @param buildParam 参数
 	 * @return 无
 	 */
 	@RequestMapping("/buildVersion")
-	public RestResponse<String> buildVersion(@CookieValue(name = "login_token",
+	public RestResponse<Void> buildVersion(@CookieValue(name = "login_token",
 			required = false) String loginToken,
 			@RequestBody BuildParam buildParam) {
-		return this.success(appBranchApplicationService
-				.buildVersion(this.queryLoginUserByToken(loginToken), buildParam));
-	}
-	
-	/**
-	 * 是否有可用构建版本资源
-	 * 
-	 * @return 无
-	 */
-	@RequestMapping("/hasUsableThread")
-	public RestResponse<Boolean> hasUsableThread(@CookieValue(name = "login_token",
-			required = false) String loginToken) {
-		return this.success(appBranchApplicationService.hasUsableThread());
+		if(appBranchApplicationService.buildVersion(
+				this.queryLoginUserByToken(loginToken), buildParam)) {
+			return success();
+		}
+		return error(MessageCodeEnum.RESOURCES_NOT_ENOUGH);
+		
 	}
 }

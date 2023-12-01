@@ -16,6 +16,7 @@ public enum MessageCodeEnum {
 	DOWNLOAD_FAILURE("200000", "下载文件失败"),
 	COMPRESSION_FILE_FAILURE("200000", "压缩文件失败"),
 	DECOMPRESSION_FILE_FAILURE("200000", "解压文件失败"),
+	RESOURCES_NOT_ENOUGH("400000", "资源不足"),
 	
 	SYS_USER_NOT_LOGINED("300000", "用户未登录"),
 	NO_ACCESS_RIGHT("200000", "无权限"),

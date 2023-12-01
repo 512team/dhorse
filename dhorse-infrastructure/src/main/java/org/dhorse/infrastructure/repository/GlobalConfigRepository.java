@@ -100,6 +100,10 @@ public class GlobalConfigRepository extends BaseRepository<GlobalConfigParam, Gl
 				globalConfig.setEnvTemplate(template);
 				continue;
 			}
+			if(GlobalConfigItemTypeEnum.SERVER_IP.getCode().equals(po.getItemType())) {
+				globalConfig.setServerIps(JsonUtils.parseToList(po.getItemValue(), String.class));
+				continue;
+			}
 			if(GlobalConfigItemTypeEnum.MORE.getCode().equals(po.getItemType())) {
 				More more = JsonUtils.parseToObject(po.getItemValue(), More.class);
 				globalConfig.setMore(more);
