@@ -25,6 +25,7 @@
 								<option value="9">Django</option>
 								<option value="10">Nuxt</option>
 								<option value="11">Next</option>
+								<option value="12">.Net</option>
 							</select>
 						</div>
 					</div>
@@ -461,7 +462,31 @@
 						</div>
 					</div>
 				</div>
-				
+				<div class="layui-form layuimini-form" style="display:none" id="dotNetFormItem" lay-filter="dotNetFormItem">
+					<div class="layui-form-item">
+						<label class="layui-form-label required">.Net版本</label>
+						<div class="layui-input-block">
+							<select name="extendDotNetParam.dotNetVersion">
+								<option value="v8.0.100">v8.0.100</option>
+								<option value="v7.0.404">v7.0.404</option>
+								<option value="v6.0.417">v6.0.417</option>
+								<option value="v5.0.408">v5.0.408</option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">.Net镜像</label>
+						<div class="layui-input-block">
+							<input name="extendDotNetParam.dotNetImage" placeholder="如：mcr.microsoft.com/dotnet/aspnet:8.0" autocomplete="off"  class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item required">
+						<div class="layui-input-block">
+							<button type="button" class="layui-btn layui-btn-primary pre">上一步</button>
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtnDotNet">确认保存</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -522,6 +547,9 @@
 			//Next
 			}else if(data.value == 11){
 				$("#nextFormItem").show();
+			//.Net
+			}else if(data.value == 12){
+				$("#dotNetFormItem").show();
 			}else{
 				$("#saveBtn").attr("lay-filter", "saveBtn").text("确认保存");
 			}
@@ -625,6 +653,9 @@
 			//Next
 			}else if(data.field.techType == 11){
 				$("#nextFormItem").append(firstFormData);
+			//.Net
+			}else if(data.field.techType == 12){
+				$("#dotNetFormItem").append(firstFormData);
 			}
             step.next('#stepForm');
             return false;
@@ -785,6 +816,9 @@
 		
 		//Next
 		submmit($, layer, form, 'saveBtnNext', 'extendNextParam');
+		
+		//.Net
+		submmit($, layer, form, 'saveBtnDotNet', 'extendDotNetParam');
     });
 	
 	function compileType($, form, extendParamName){

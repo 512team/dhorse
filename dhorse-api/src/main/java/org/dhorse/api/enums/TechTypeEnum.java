@@ -12,7 +12,8 @@ public enum TechTypeEnum {
 	FLASK(8, "Flask"),
 	DJANGO(9, "Django"),
 	NUXT(10, "Nuxt"),
-	NEXT(11, "Next");
+	NEXT(11, "Next"),
+	DOTNET(12, ".Net");
 	
 	private Integer code;
 

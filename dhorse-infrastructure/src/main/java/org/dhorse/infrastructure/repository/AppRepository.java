@@ -17,6 +17,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.App.AppExtend;
 import org.dhorse.api.response.model.AppExtendDjango;
+import org.dhorse.api.response.model.AppExtendDotNet;
 import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
@@ -175,6 +176,9 @@ public class AppRepository extends BaseRepository<AppParam, AppPO> {
 		}
 		if (TechTypeEnum.NEXT.getCode().equals(appPO.getTechType())) {
 			return JsonUtils.parseToObject(appPO.getExt(), AppExtendNext.class);
+		}
+		if (TechTypeEnum.DOTNET.getCode().equals(appPO.getTechType())) {
+			return JsonUtils.parseToObject(appPO.getExt(), AppExtendDotNet.class);
 		}
 		return null;
 	}

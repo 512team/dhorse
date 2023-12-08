@@ -117,6 +117,11 @@ public class AppCreationParam implements Serializable {
 	 */
 	private AppExtendNextCreationParam extendNextParam;
 
+	/**
+	 * .NET应用扩展扩展参数
+	 */
+	private AppExtendDotNetCreationParam extendDotNetParam;
+
 	public String getAppName() {
 		return appName;
 	}
@@ -283,6 +288,14 @@ public class AppCreationParam implements Serializable {
 
 	public void setExtendNextParam(AppExtendNextCreationParam extendNextParam) {
 		this.extendNextParam = extendNextParam;
+	}
+
+	public AppExtendDotNetCreationParam getExtendDotNetParam() {
+		return extendDotNetParam;
+	}
+
+	public void setExtendDotNetParam(AppExtendDotNetCreationParam extendDotNetParam) {
+		this.extendDotNetParam = extendDotNetParam;
 	}
 
 	/**
@@ -804,6 +817,42 @@ public class AppCreationParam implements Serializable {
 
 		public void setDeploymentType(Integer deploymentType) {
 			this.deploymentType = deploymentType;
+		}
+
+	}
+
+	/**
+	 * .NET应用扩展参数模型
+	 * 
+	 */
+	public static class AppExtendDotNetCreationParam implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * .NET版本
+		 */
+		private String dotNetVersion;
+
+		/**
+		 * .NET镜像
+		 */
+		private String dotNetImage;
+
+		public String getDotNetVersion() {
+			return dotNetVersion;
+		}
+
+		public void setDotNetVersion(String dotNetVersion) {
+			this.dotNetVersion = dotNetVersion;
+		}
+
+		public String getDotNetImage() {
+			return dotNetImage;
+		}
+
+		public void setDotNetImage(String dotNetImage) {
+			this.dotNetImage = dotNetImage;
 		}
 
 	}

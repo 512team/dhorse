@@ -428,6 +428,7 @@ public class K8sDeploymentHelper {
 		containerOfPython(context, container);
 		containerOfFlask(context, container);
 		containerOfDjango(context, container);
+		containerOfDotNet(context, container);
 		envVars(context, container);
 		container.setImagePullPolicy("Always");
 		
@@ -659,6 +660,22 @@ public class K8sDeploymentHelper {
 				.append(startFile)
 				.append(" runserver")
 				.append(" 0.0.0.0:" + context.getAppEnv().getServicePort())
+				.toString();
+		container.setCommand(Arrays.asList("sh", "-c", commands));
+		container.setImage(context.getFullNameOfImage());
+	}
+	
+	private static void containerOfDotNet(DeploymentContext context, Container container) {
+		if(!dotNetApp(context.getApp())) {
+			return;
+		}
+		String appHome = Constants.USR_LOCAL_HOME + context.getApp().getAppName();
+		String commands = new StringBuilder()
+				.append("export env=" + context.getAppEnv().getTag())
+				.append(" && cd " + appHome)
+				.append(" && dotnet "+ context.getApp().getAppName() +".dll")
+				.append(" --urls http://*:"+ context.getAppEnv().getServicePort())
+				.append(" --environment " + context.getAppEnv().getTag())
 				.toString();
 		container.setCommand(Arrays.asList("sh", "-c", commands));
 		container.setImage(context.getFullNameOfImage());
@@ -981,6 +998,10 @@ public class K8sDeploymentHelper {
 	
 	private static boolean djangoApp(App app) {
 		return TechTypeEnum.DJANGO.getCode().equals(app.getTechType());
+	}
+	
+	private static boolean dotNetApp(App app) {
+		return TechTypeEnum.DOTNET.getCode().equals(app.getTechType());
 	}
 	
 	/**

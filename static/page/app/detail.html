@@ -125,6 +125,18 @@
 				<label class="layui-form-label text-value" id="packageFileType"></label>
 			</div>
 		</div>
+		<div class="layui-form-item" id="dotNetVersionDiv" style="display: none">
+			<label class="layui-form-label">.Net版本：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="dotNetVersion"></label>
+			</div>
+		</div>
+		<div class="layui-form-item" id="dotNetImageDiv" style="display: none">
+			<label class="layui-form-label">.Net镜像：</label>
+			<div class="layui-input-block">
+				<label class="layui-form-label text-value" id="dotNetImage"></label>
+			</div>
+		</div>
 		<div class="layui-form-item" id="baseImageSourceDiv">
 			<label class="layui-form-label">基础镜像来源：</label>
 			<div class="layui-input-block">
@@ -371,6 +383,15 @@
 					$("#baseImageSourceDiv").hide();
 					$("#nodeImage").text(appExtend.nodeImage);
 					$("#nodeImageDiv").show();
+				//.Net
+				}else if(res.data.techType == 12){
+					techType = ".Net";
+					$("#dotNetVersion").text(appExtend.dotNetVersion);
+					$("#dotNetVersionDiv").show();
+					$("#dotNetImage").text(appExtend.dotNetImage);
+					$("#dotNetImageDiv").show();
+					$("#packageTargetPathDiv").hide();
+					$("#baseImageSourceDiv").hide();
 				}
 				
 				$("#techType").text(techType);

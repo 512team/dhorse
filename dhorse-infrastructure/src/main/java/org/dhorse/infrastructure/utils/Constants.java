@@ -31,6 +31,8 @@ public class Constants {
 	
 	public static final String GO_FILE_PRE_URL = "https://dl.google.com/go/";
 	
+	public static final String DOTNET_FILE_PRE_URL = "http://file.512.team/list/dotnet/";
+	
 	/**
 	 * 24小时
 	 */
@@ -71,6 +73,8 @@ public class Constants {
 	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.com/library/python:";
 	
 	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.com/library/node:";
+	
+	public static final String DOTNET_IMAGE_BASE_URL = "mcr.microsoft.com/dotnet/aspnet:";
 	
 	//格式：dockerproxy.com/library/nginx:1.23.3-alpine
 	public static final String NGINX_IMAGE_URL = "dockerproxy.com/library/nginx:%s-alpine";

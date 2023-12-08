@@ -37,6 +37,7 @@ import org.dhorse.api.response.EventResponse;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.AppEnv.EnvExtendNode;
 import org.dhorse.api.response.model.AppEnv.EnvExtendSpringBoot;
+import org.dhorse.api.response.model.AppExtendDotNet;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendJava;
 import org.dhorse.api.response.model.AppExtendNode;
@@ -514,9 +515,14 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			return packByMaven(context, null);
 		}
 
-		// Go应用
+		//Go应用
 		if (TechTypeEnum.GO.getCode().equals(context.getApp().getTechType())) {
 			return packByGo(context);
+		}
+		
+		//.Net应用
+		if (TechTypeEnum.DOTNET.getCode().equals(context.getApp().getTechType())) {
+			return packByDotNet(context);
 		}
 
 		return true;
@@ -640,7 +646,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
         return execCommand(env, cmd);
     }
 
-	public boolean packByGo(DeploymentContext context) {
+	private boolean packByGo(DeploymentContext context) {
 		AppExtendGo appExtend = context.getApp().getAppExtend();
 		//统一下载amd64安装文件，并允许交叉编译，即设置CGO_ENABLED=0
 		String goHome = downloadGo(appExtend.getGoVersion().substring(1));
@@ -676,6 +682,29 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 		return true;
 	}
+	
+	private boolean packByDotNet(DeploymentContext context) {
+		AppExtendDotNet appExtend = context.getApp().getAppExtend();
+		String dotNetHome = downloadDotNet(appExtend.getDotNetVersion().substring(1));
+		String dotNetBin = dotNetHome + "dotnet";
+        String appName = context.getApp().getAppName();
+        StringBuilder cmd = new StringBuilder();
+		if(!Constants.isWindows()) {
+			cmd.append("chmod +x ").append(dotNetBin);
+		}
+		//指令格式：
+		//cd /opt/data/app/hello-dotnet/ \
+		//&& /opt/data/dotnet/sdk-8.0.100/dotnet publish hello-dotnet
+		cmd.append("cd " + context.getLocalPathOfBranch())
+			.append(" && " + dotNetBin + " publish -o " + appName);
+
+		if(!execCommand(cmd.toString())) {
+			logger.error("Failed to pack by .net");
+			return false;
+		}
+		
+		return true;
+	}
 
 	private boolean buildImage(DeploymentContext context) {
 
@@ -699,6 +728,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 		buildDjangoImage(context);
 
+		buildDotNetImage(context);
+		
 		return true;
 	}
 
@@ -915,6 +946,22 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
 	}
+	
+	private void buildDotNetImage(DeploymentContext context) {
+		if(!TechTypeEnum.DOTNET.getCode().equals(context.getApp().getTechType())) {
+			return;
+		}
+		File targetFile = new File(context.getLocalPathOfBranch() + context.getApp().getAppName());
+		AppExtendDotNet appExtend = context.getApp().getAppExtend();
+		String dotNetVersion = appExtend.getDotNetVersion();
+		dotNetVersion = dotNetVersion.substring(1, dotNetVersion.lastIndexOf("."));
+		String baseImage = Constants.DOTNET_IMAGE_BASE_URL + dotNetVersion;
+		if(!StringUtils.isBlank(appExtend.getDotNetImage())){
+			baseImage = appExtend.getDotNetImage();
+		}
+		List<String> entrypoint = Arrays.asList("dotnet");
+		doBuildImage(context, baseImage, entrypoint, Arrays.asList(targetFile.toPath()));
+	}
 
 	private void doBuildImage(DeploymentContext context, String baseImageName, List<String> entrypoint, List<Path> targetFiles) {
 		ImageRepo imageRepo = context.getGlobalConfigAgg().getImageRepo();
@@ -1050,5 +1097,43 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		}
 		DeploymentThreadPoolUtils.interrupt(abortParam.getThreadName());
 		return null;
+	}
+	
+	protected String downloadDotNet(String version) {
+		String dotNetPath = "dotnet-" + version;
+		String rootPath = componentConstants.getDataPath() + "dotnet/";
+		File rootPathFile = new File(rootPath);
+		if(!rootPathFile.exists()) {
+			if(rootPathFile.mkdirs()) {
+				logger.info("Create .net path successfully");
+			}else {
+				logger.warn("Failed to create .net path");
+			}
+		}
+		
+		String dotNetHome = rootPath + dotNetPath + "/";
+		if(new File(dotNetHome).exists()) {
+			logger.info(".Net home is {}", dotNetHome);
+			return dotNetHome;
+		}
+		
+		//格式：dotnet-sdk-8.0.100-win-x64.zip
+		String fileName = "dotnet-sdk-%s-%s-x64.%s";
+		if(Constants.isUnix()) {
+			fileName = String.format(fileName, version, "linux", "tar.gz");
+		}else if(Constants.isWindows()) {
+			fileName = String.format(fileName, version, "win", "zip");
+		}else if(Constants.isMac()) {
+			fileName = String.format(fileName, version, "osx", "tar.gz");
+		}
+		File targetFile = new File(rootPath + fileName);
+		FileUtils.downloadFile(Constants.DOTNET_FILE_PRE_URL + fileName, targetFile);
+		if(Constants.isWindows()) {
+			FileUtils.unZip(targetFile.getAbsolutePath(), dotNetHome);
+		}else {
+			FileUtils.unTarGz(targetFile.getAbsolutePath(), dotNetHome);
+		}
+		targetFile.delete();
+		return dotNetHome;
 	}
 }

@@ -32,6 +32,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.App;
 import org.dhorse.api.response.model.App.AppExtend;
 import org.dhorse.api.response.model.AppExtendDjango;
+import org.dhorse.api.response.model.AppExtendDotNet;
 import org.dhorse.api.response.model.AppExtendFlask;
 import org.dhorse.api.response.model.AppExtendGo;
 import org.dhorse.api.response.model.AppExtendHtml;
@@ -475,6 +476,10 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 				&& requestParam.getExtendNextParam() != null) {
 			appExtend = new AppExtendNext();
 			BeanUtils.copyProperties(requestParam.getExtendNextParam(), appExtend);
+		}else if(TechTypeEnum.DOTNET.getCode().equals(requestParam.getTechType())
+				&& requestParam.getExtendDotNetParam() != null) {
+			appExtend = new AppExtendDotNet();
+			BeanUtils.copyProperties(requestParam.getExtendDotNetParam(), appExtend);
 		}
 		bizParam.setAppExtend(appExtend);
 		return bizParam;
