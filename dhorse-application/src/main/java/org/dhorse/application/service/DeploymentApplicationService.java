@@ -690,7 +690,8 @@ public abstract class DeploymentApplicationService extends ApplicationService {
         String appName = context.getApp().getAppName();
         StringBuilder cmd = new StringBuilder();
 		if(!Constants.isWindows()) {
-			cmd.append("chmod +x ").append(dotNetBin);
+			cmd.append("chmod +x " + dotNetBin)
+				.append(" && ");
 		}
 		//指令格式：
 		//cd /opt/data/app/hello-dotnet/ \

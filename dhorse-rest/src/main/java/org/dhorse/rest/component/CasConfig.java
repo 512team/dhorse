@@ -1,6 +1,7 @@
 package org.dhorse.rest.component;
 
 import java.util.Arrays;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,70 +11,83 @@ import org.dhorse.api.response.model.GlobalConfigAgg.CAS;
 import org.dhorse.application.service.GlobalConfigApplicationService;
 import org.jasig.cas.client.authentication.AuthenticationFilter;
 import org.jasig.cas.client.session.SingleSignOutHttpSessionListener;
+import org.jasig.cas.client.validation.AbstractTicketValidationFilter;
 import org.jasig.cas.client.validation.Cas30ProxyReceivingTicketValidationFilter;
-import org.springframework.beans.BeansException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * CAS登录过滤器。<p/>
- * 因为需要查询数据库，所以需要在Spring容器启动完成以后，手动注册Bean对象。
+ * CAS登录过滤器
  */
-public class CasConfig implements BeanDefinitionRegistryPostProcessor{
+@Configuration
+public class CasConfig {
 
+	private static final Logger logger = LoggerFactory.getLogger(CasConfig.class);
+	
 	private static final List<String> URL_PATTERNS = Arrays.asList("/cas", "/page/sys_user/cas_login.html");
 	
 	@Autowired
 	private GlobalConfigApplicationService globalConfigApplicationService;
 
-	@Override
-	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-		BeanDefinitionBuilder bdf = BeanDefinitionBuilder
-				.rootBeanDefinition(ServletListenerRegistrationBean.class)
-				.addPropertyValue("listener", new SingleSignOutHttpSessionListener())
-                .addPropertyValue("order", 1);
-		
-		CAS cas = globalConfigApplicationService.queryCas();
-		BeanDefinitionBuilder bdf1 = BeanDefinitionBuilder
-				.rootBeanDefinition(FilterRegistrationBean.class)
-				.addPropertyValue("filter", new AuthenticationFilter())
-                .addPropertyValue("urlPatterns", URL_PATTERNS)
-                .addPropertyValue("order", 2);
+	@Bean
+	public FilterRegistrationBean<AuthenticationFilter> authFilterRegistration() {
+		CAS cas = null;
+		try {
+			cas = globalConfigApplicationService.queryCas();
+		}catch(Exception e) {
+			//如果读取配置失败，不阻塞启动
+			logger.error("Failed to query cas config");
+		}
+		FilterRegistrationBean<AuthenticationFilter> fr = new FilterRegistrationBean<>();
+		Map<String, String> initParameters = new HashMap<String, String>();
 		if (cas != null && YesOrNoEnum.YES.getCode().equals(cas.getEnable())) {
-			Map<String, String> initParameters = new HashMap<String, String>();
 			initParameters.put("casServerLoginUrl", cas.getServerLoginUrl());
 			initParameters.put("serverName", cas.getClientHostUrl());
-			bdf1.addPropertyValue("initParameters", initParameters);
 		} else {
-			bdf1.addPropertyValue("enabled", false);
+			fr.setEnabled(false);
 		}
-		
-		BeanDefinitionBuilder bdf2 = BeanDefinitionBuilder
-				.rootBeanDefinition(FilterRegistrationBean.class)
-				.addPropertyValue("filter", new Cas30ProxyReceivingTicketValidationFilter())
-                .addPropertyValue("urlPatterns", URL_PATTERNS)
-                .addPropertyValue("order", 1);
+		fr.setFilter(new AuthenticationFilter());
+		fr.setInitParameters(initParameters);
+		fr.setUrlPatterns(URL_PATTERNS);
+		fr.setOrder(2);
+		return fr;
+	}
+
+	@Bean
+	public FilterRegistrationBean<AbstractTicketValidationFilter> validFilterRegistration() {
+		CAS cas = null;
+		try {
+			cas = globalConfigApplicationService.queryCas();
+		}catch(Exception e) {
+			//如果读取配置失败，不阻塞启动
+			logger.error("Failed to query cas config");
+		}
+		FilterRegistrationBean<AbstractTicketValidationFilter> fr = new FilterRegistrationBean<>();
+		Map<String, String> initParameters = new HashMap<String, String>();
 		if (cas != null && YesOrNoEnum.YES.getCode().equals(cas.getEnable())) {
-			Map<String, String> initParameters = new HashMap<String, String>();
 			initParameters.put("casServerUrlPrefix", cas.getServerUrlPrefix());
 			initParameters.put("serverName", cas.getClientHostUrl());
-			bdf2.addPropertyValue("initParameters", initParameters);
 		} else {
-			bdf2.addPropertyValue("enabled", false);
+			fr.setEnabled(false);
 		}
-		
-		registry.registerBeanDefinition("singleSignOutListenerRegistration", bdf.getBeanDefinition());
-		registry.registerBeanDefinition("authFilterRegistration", bdf1.getBeanDefinition());
-		registry.registerBeanDefinition("validFilterRegistration", bdf2.getBeanDefinition());
+		fr.setFilter(new Cas30ProxyReceivingTicketValidationFilter());
+		fr.setInitParameters(initParameters);
+		fr.setUrlPatterns(URL_PATTERNS);
+		fr.setOrder(1);
+		return fr;
 	}
-	
-	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		
+
+	@Bean
+	public ServletListenerRegistrationBean<EventListener> singleSignOutListenerRegistration() {
+		ServletListenerRegistrationBean<EventListener> registrationBean
+			= new ServletListenerRegistrationBean<EventListener>();
+		registrationBean.setListener(new SingleSignOutHttpSessionListener());
+		registrationBean.setOrder(1);
+		return registrationBean;
 	}
 }

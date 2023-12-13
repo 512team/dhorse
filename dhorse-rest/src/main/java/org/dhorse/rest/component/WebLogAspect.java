@@ -47,14 +47,6 @@ public class WebLogAspect {
 		startTime.set(System.currentTimeMillis());
 		logger.info("request url: {}, ip: {}", httpServletRequest.getRequestURL().toString(),
 				httpServletRequest.getRemoteAddr());
-		//不打印参数
-//		Object[] args = joinPoint.getArgs();
-//		if (args == null || args.length == 0 || args[0] == null) {
-//			return;
-//		}
-//		for (Object arg : args) {
-//			logger.info("request params: {}", JsonUtils.toJsonString(arg, IGNORE_PARAMS));
-//		}
 	}
 
 	@AfterReturning(returning = "ret", pointcut = "include()")
