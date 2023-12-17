@@ -4,9 +4,9 @@ DHorse是一个轻量级、简单易用的云应用管理平台，具有多云�
 ## 主要特性
 * 简洁的操作界面
 * 以应用为中心，屏蔽K8S的底层概念
-* 支持SpringBoot、Vue、React、Nodejs、Html、Go、Flask、Django、Nuxt应用部署
+* 支持SpringBoot、Vue、React、Nodejs、Html、Go、Flask、Django、Nuxt、Next、.Net应用部署
 * 无需安装Docker即可构建镜像
-* 无需安装Maven、Gradle、Node、Go、Python即可打包
+* 无需安装Maven、Gradle、Node、Go、Python、Nodejs、.Net即可打包
 * 支持多集群管理
 * 支持多环境部署
 * 支持日志收集
@@ -62,7 +62,7 @@ $  bin/dhorse-start.sh
 
 6.在浏览器里输入地址：`http://127.0.0.1:8100`，并输入账号/密码：admin/admin，登录之后如下图所示：
 
- ![Image text](./static/images/home.jpg)
+ ![Image text](./static/images/home.png)
 
 7.最后，关闭服务
 
