@@ -41,7 +41,7 @@ public class CasConfig {
 			cas = globalConfigApplicationService.queryCas();
 		}catch(Exception e) {
 			//如果读取配置失败，不阻塞启动
-			logger.error("Failed to query cas config");
+			logger.warn("Failed to query cas config");
 		}
 		FilterRegistrationBean<AuthenticationFilter> fr = new FilterRegistrationBean<>();
 		Map<String, String> initParameters = new HashMap<String, String>();
@@ -65,7 +65,7 @@ public class CasConfig {
 			cas = globalConfigApplicationService.queryCas();
 		}catch(Exception e) {
 			//如果读取配置失败，不阻塞启动
-			logger.error("Failed to query cas config");
+			logger.warn("Failed to query cas config");
 		}
 		FilterRegistrationBean<AbstractTicketValidationFilter> fr = new FilterRegistrationBean<>();
 		Map<String, String> initParameters = new HashMap<String, String>();

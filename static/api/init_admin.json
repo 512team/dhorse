@@ -16,12 +16,6 @@
 			"target": "_self",
 			"child": [
 				{
-					"title": "CAS登录",
-					"href": "page/sys_config/cas.html",
-					"icon": "fa fa-cog",
-					"target": "_self"
-				},
-				{
 					"title": "LDAP登录",
 					"href": "page/sys_config/ldap.html",
 					"icon": "fa fa-cog",
