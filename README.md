@@ -28,7 +28,7 @@ DHorse是一个轻量级、简单易用的云应用管理平台，具有多云�
 
 | Java | kubernetes | Harbor |
 | :----: | :----: | :----: |
-| >=8 | [1.18, 1.27] | >=2.0.0 |
+| >=8 | [1.18, 1.28] | >=2.0.0 |
 
 2.下载安装文件
 
@@ -88,9 +88,9 @@ $  bin/dhorse-stop.sh
 
 ## 社区交流
 
-感谢您的支持和关注，如想了解更多内容，欢迎加入微信群。
+感谢您的支持和关注，如想了解更多内容，欢迎加入微信群，备注：dhorse。
 
- ![Image text](./static/images/weixin.jpg)
+ ![Image text](./static/images/weixin.png)
 
 ## 开源许可
 
