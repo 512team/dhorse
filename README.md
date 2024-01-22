@@ -88,7 +88,7 @@ $  bin/dhorse-stop.sh
 
 ## 社区交流
 
-感谢您的支持和关注，如想了解更多内容，欢迎加入微信群，备注：dhorse。
+感谢您的支持和关注，如想了解更多内容，欢迎加入如下群聊，如果二维码失效，也可加微信(tiandizhiguai)，备注：dhorse。
 
  ![Image text](./static/images/weixin.png)
 
