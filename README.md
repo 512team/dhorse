@@ -90,7 +90,7 @@ $  bin/dhorse-stop.sh
 
 感谢您的支持和关注，如想了解更多内容，欢迎加入如下群聊，如果二维码失效，也可加微信(tiandizhiguai)，备注：dhorse。
 
- ![Image text](./static/images/weixin.png)
+ ![Image text](https://512.team/img/weixin.png)
 
 ## 开源许可
 
