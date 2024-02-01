@@ -212,7 +212,15 @@
 						layer.msg(data.message, {icon: 5, shift: 6});
 						return false;
 					}
+					
 					layer.close(index);
+					layer.msg("开始回滚，请查看日志", {
+						icon: 1,
+						time: 700,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layui.table.reload('currentTableId');
+					});
 				},
 				error: function(data){
 					layer.close(index);
