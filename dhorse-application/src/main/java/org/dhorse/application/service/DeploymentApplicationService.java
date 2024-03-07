@@ -213,7 +213,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		ThreadLocalUtils.Deployment.put(context);
 		DeploymentStatusEnum deploymentStatus = DeploymentStatusEnum.DEPLOYED_FAILURE;
 
-		if(DeploymentThreadPoolUtils.isInterrupted()) {
+		if(DeploymentThreadPoolUtils.interrupted()) {
 			return false;
 		}
 

@@ -432,7 +432,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 	private boolean checkHealthOfAll(KubernetesClient client, String namespace, String labelSelector) {
 		// 检查pod状态，检查时长20分钟
 		for (int i = 0; i < 60 * 20; i++) {
-			if(DeploymentThreadPoolUtils.isInterrupted()) {
+			if(DeploymentThreadPoolUtils.interrupted()) {
 				return false;
 			}
 			try {

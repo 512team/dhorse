@@ -39,7 +39,7 @@ public class DeploymentThreadPoolUtils {
 		t.interrupt();
 	}
 	
-	public static boolean isInterrupted() {
+	public static boolean interrupted() {
 		//恢复中断状态
 		if(Thread.interrupted()) {
 			logger.warn("The deployment was manually aborted");
