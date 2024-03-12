@@ -7,7 +7,7 @@ public class ThreadLocalUtils {
 	 */
 	public static class Deployment {
 		
-		private static final ThreadLocal<DeploymentContext> CACHE = new InheritableThreadLocal<>();
+		private static final ThreadLocal<DeploymentContext> CACHE = new ThreadLocal<>();
 		
 		public static void put(DeploymentContext val) {
 			CACHE.set(val);
@@ -27,7 +27,7 @@ public class ThreadLocalUtils {
 	 */
 	public static class DynamicTable {
 		
-		private static final ThreadLocal<String> CACHE = new InheritableThreadLocal<>();
+		private static final ThreadLocal<String> CACHE = new ThreadLocal<>();
 		
 		public static void put(String val) {
 			CACHE.set(val);

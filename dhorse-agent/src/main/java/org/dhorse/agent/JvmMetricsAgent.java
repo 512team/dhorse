@@ -24,8 +24,7 @@ import java.util.logging.Logger;
 /**
  * 采集Jvm信息的agent
  * <p>
- * 启动方式：java
- * -javaagent:dhorse-agent.jar=http://dhost_host:port/app/env/replica/metrics/add
+ * 启动方式：java -javaagent:dhorse-agent.jar
  * 
  * @author 无双
  */
