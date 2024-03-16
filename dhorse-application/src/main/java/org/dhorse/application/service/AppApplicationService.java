@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.http.client.config.RequestConfig;
@@ -372,6 +373,9 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 		}
 		if(addParam.getAppName().length() > 32) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用名称不能大于32个字符");
+		}
+		if(!Pattern.compile("^[a-z]+[\\-a-z]*$").matcher(addParam.getAppName()).matches()) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "应用名称只能包含小写字母、中划线");
 		}
 		if(addParam.getBaseImage() != null && addParam.getBaseImage().length() > 128) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "基础镜像不能大于128个字符");
