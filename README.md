@@ -28,11 +28,11 @@ DHorse是一个轻量级、简单易用的云应用管理平台，具有多云�
 
 | Java | kubernetes | Harbor |
 | :----: | :----: | :----: |
-| >=8 | [1.18, 1.28] | >=2.0.0 |
+| >=8 | [1.18, 1.30] | >=2.0.0 |
 
 2.下载安装文件
 
-[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.5.0/dhorse-v1.5.0-bin.tar.gz)
+[最新稳定版](https://gitee.com/i512team/dhorse/releases/download/v1.5.1/dhorse-v1.5.1-bin.tar.gz)
 
 3.解压
 
