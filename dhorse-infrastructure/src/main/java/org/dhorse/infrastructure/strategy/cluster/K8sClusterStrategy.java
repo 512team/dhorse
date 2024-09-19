@@ -62,6 +62,7 @@ import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson;
 import org.dhorse.infrastructure.strategy.cluster.model.DockerConfigJson.Auth;
 import org.dhorse.infrastructure.strategy.cluster.model.Replica;
 import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
@@ -1761,7 +1762,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			r.setNamespace(namespace);
 			//todo 这里为了解决k8s的时区问题，强制加8小时
 			r.setStartTime(e.getMetadata().getCreationTimestamp().atZoneSameInstant(ZoneOffset.of("+08:00"))
-					.format(DateTimeFormatter.ofPattern(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS)));
+					.format(DateTimeFormatter.ofPattern(DateUtils.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS)));
 			r.setStatus(podStatus(e.getStatus()));
 			r.setNodeName(e.getSpec().getNodeName());
 			return r;

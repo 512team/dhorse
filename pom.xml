@@ -162,11 +162,6 @@
 			    <version>1.11.9</version>
 			</dependency>
 			<dependency>
-				<groupId>com.aliyun</groupId>
-				<artifactId>cr20181201</artifactId>
-				<version>1.0.11</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-compress</artifactId>
 				<version>1.21</version>

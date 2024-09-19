@@ -5,7 +5,7 @@ public enum CodeRepoTypeEnum {
 	GITLAB(1, "GitLab"),
 	GITHUB(2, "GitHub"),
 	GITEE(3, "Gitee"),
-	;
+	CODEUP(4, "Codeup");
 
 	private Integer code;
 

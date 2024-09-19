@@ -511,7 +511,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 			r.setClusterName(clusterPO.getClusterName());
 			r.setNamespace(namespace);
 			//这里为了解决k8s的时区问题，强制用东8区转换
-			r.setStartTime(DateUtils.formatLocal(e.getMetadata().getCreationTimestamp()));
+			r.setStartTime(DateUtils.format(e.getMetadata().getCreationTimestamp()));
 			r.setStatus(podStatus(e.getStatus()));
 			r.setNodeName(e.getSpec().getNodeName());
 			return r;
@@ -844,7 +844,7 @@ public class K8sClusterStrategy implements ClusterStrategy {
 		for(Node n : pageNode) {
 			ClusterNode node = new ClusterNode();
 			node.setNodeName(n.getMetadata().getName());
-			node.setCreationTime(DateUtils.formatLocal2(n.getMetadata().getCreationTimestamp()));
+			node.setCreationTime(DateUtils.parseDateUseUTC(n.getMetadata().getCreationTimestamp()));
 			for(NodeAddress address : n.getStatus().getAddresses()) {
 				if("InternalIP".equals(address.getType())) {
 					node.setNodeIp(address.getAddress());

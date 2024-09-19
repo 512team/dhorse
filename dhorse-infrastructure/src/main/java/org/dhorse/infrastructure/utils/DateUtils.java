@@ -13,15 +13,21 @@ public class DateUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
 	
-	public static final String PATTERN_DEFAULT = "yyyy-MM-dd HH:mm:ss";
+	public static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
 	
-	public static final String PATTERN_HH_MM_SS = "HH:mm:ss";
-
+	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+	
+	public static final String DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	
+	public static final String ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
+	
+	public static final String DATE_FORMAT_YYYYMMDD_HHMMSS = "yyyyMMdd_HHmmss";
+	
 	/**
 	 * 使用默认格式化日期：yyyy-MM-dd HH:mm:ss
 	 */
 	public static String formatDefault(Date date) {
-		return format(date, PATTERN_DEFAULT);
+		return format(date, DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
 	}
 
 	/**
@@ -34,22 +40,31 @@ public class DateUtils {
 		return new SimpleDateFormat(format).format(date);
 	}
 	
-	public static String formatLocal(String utcDateStr) {
-		SimpleDateFormat df = new SimpleDateFormat(Constants.DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS);
+	public static String format(String utcDateStr) {
+		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS);
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		try {
-			return format(df.parse(utcDateStr), PATTERN_DEFAULT);
+			return format(df.parse(utcDateStr), DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
 		} catch (ParseException e) {
 			logger.error("Failed to parse date", e);
 		}
 		return null;
 	}
 	
-	public static Date formatLocal2(String utcDateStr) {
-		SimpleDateFormat df = new SimpleDateFormat(Constants.DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS);
+	public static Date parseDateUseUTC(String utcDateStr) {
+		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS);
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		try {
 			return df.parse(utcDateStr);
+		} catch (ParseException e) {
+			logger.error("Failed to parse date", e);
+		}
+		return null;
+	}
+	
+	public static Date parse(String utcDateStr, String format) {
+		try {
+			return org.apache.commons.lang3.time.DateUtils.parseDate(utcDateStr, format);
 		} catch (ParseException e) {
 			logger.error("Failed to parse date", e);
 		}

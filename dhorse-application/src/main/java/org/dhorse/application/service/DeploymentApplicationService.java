@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,9 +61,11 @@ import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
+import org.dhorse.infrastructure.strategy.repo.CodeupRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
 import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.FileUtils;
@@ -332,7 +333,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		String nameOfImage = new StringBuilder()
 				.append(context.getApp().getAppName())
 				.append(":v")
-				.append(new SimpleDateFormat(Constants.DATE_FORMAT_YYYYMMDD_HHMMSS).format(new Date()))
+				.append(DateUtils.formatDefault(new Date()))
 				.toString();
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), nameOfImage);
 		context.setVersionName(nameOfImage);
@@ -529,11 +530,12 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 	}
 
 	protected CodeRepoStrategy buildCodeRepo(String codeRepoType) {
-		if (CodeRepoTypeEnum.GITLAB.getValue().equals(codeRepoType)) {
-			return new GitLabCodeRepoStrategy();
-		} else {
+		if(CodeRepoTypeEnum.CODEUP.getValue().equals(codeRepoType)){
+			return new CodeupRepoStrategy();
+		}else if(CodeRepoTypeEnum.GITHUB.getValue().equals(codeRepoType)){
 			return new GitHubCodeRepoStrategy();
 		}
+		return new GitLabCodeRepoStrategy();
 	}
 
 	public boolean packByMaven(DeploymentContext context, String customizedJavaHome) {
