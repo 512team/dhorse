@@ -19,7 +19,6 @@ import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.DeploymentContext;
-import org.dhorse.infrastructure.utils.GlobalCache;
 import org.dhorse.infrastructure.utils.LogUtils;
 
 import com.aliyun.auth.credentials.Credential;
@@ -358,16 +357,12 @@ public class CodeupRepoStrategy extends CodeRepoStrategy {
 	@SuppressWarnings("unchecked")
 	private Long repositoryId(Codeup codeup, String codeRepoPath, AsyncClient client) {
 		String identity = codeup.getOrganizationId() + "/" + codeRepoPath;
-		if(GlobalCache.CODEUP_REPOSITORY_ID.containsKey(identity)){
-			return GlobalCache.CODEUP_REPOSITORY_ID.get(identity);
-		}
 		GetRepositoryRequest request = GetRepositoryRequest.builder()
 				.organizationId(codeup.getOrganizationId())
 				.identity(identity)
 				.build();
 		CompletableFuture<GetRepositoryResponse> response = client.getRepository(request);
 		Long repositoryId = (Long)((Map<String, Object>)response(response).get("repository")).get("id");
-		GlobalCache.CODEUP_REPOSITORY_ID.put(identity, repositoryId);
 		return repositoryId;
 	}
 	

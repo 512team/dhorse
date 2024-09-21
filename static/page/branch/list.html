@@ -32,11 +32,13 @@
         </script>
 
 		<script type="text/html" id="mergedStatusBar">
-		    {{#	if (d.mergedStatus == 0) {  }}
-			{{#		return '未合并'			}}
-			{{#	} else {              		}}
-			{{#		return '已合并'   		}}
-			{{#	}                     		}}
+		    {{#	if (d.mergedStatus == 1) {      }}
+			{{#		return '已合并'			    }}
+			{{#	}else if (d.mergedStatus == 0) { }}
+			{{#		return '未合并'				}}
+			{{#	} else {              			}}
+			{{#		return '--'   		    	}}
+			{{#	}                     			}}
 		</script>
     </div>
 </div>
@@ -88,7 +90,7 @@
             cols: [[
                 {field: 'branchName', title: '分支名称'},
                 {field: 'mergedStatus', title: '合并状态', templet: '#mergedStatusBar'},
-                {field: 'updateTime', title: '最后提交时间', width: '13%'},
+                {field: 'updateTime', title: '最后提交时间', width: '17%'},
 				{field: 'commitMessage', title: '最后提交信息'},
                 {title: '操作', toolbar: '#currentTableBar'}
             ]],
@@ -121,8 +123,8 @@
                     shade: 0.5,
                     maxmin:false,
                     shadeClose: false,
-                    area: ['30%', '40%'],
-					offset: ['30%', '35%'],
+                    area: ['40%', '50%'],
+					offset: ['23%', '33%'],
 					content: ['page/branch/add.html', 'no']
                 });
             } else if (obj.event === 'delete') {  // 监听删除操作
