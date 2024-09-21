@@ -92,5 +92,5 @@ public abstract class CodeRepoStrategy {
 	
 	public abstract void createTag(CodeRepo codeRepo, String codeRepoPath, String tagName, String branchName);
 	
-	public abstract void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName);
+	public abstract void deleteTag(CodeRepo codeRepo, String codeRepoPath, String tagName);
 }

@@ -2,6 +2,8 @@ package org.dhorse.infrastructure.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -18,8 +20,6 @@ public class DateUtils {
 	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	
 	public static final String DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-	
-	public static final String ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
 	
 	public static final String DATE_FORMAT_YYYYMMDD_HHMMSS = "yyyyMMdd_HHmmss";
 	
@@ -62,13 +62,9 @@ public class DateUtils {
 		return null;
 	}
 	
-	public static Date parse(String utcDateStr, String format) {
-		try {
-			return org.apache.commons.lang3.time.DateUtils.parseDate(utcDateStr, format);
-		} catch (ParseException e) {
-			logger.error("Failed to parse date", e);
-		}
-		return null;
+	public static Date parse(String utcDateStr) {
+        ZonedDateTime dateTime = ZonedDateTime.parse(utcDateStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        return Date.from(dateTime.toInstant());
 	}
 	
 	public static Date addDays(final Date date, final int amount) {

@@ -144,7 +144,7 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode(),
 				GlobalConfigItemTypeEnum.SERVER_IP.getCode()));
 		GlobalConfigAgg config = globalConfigRepository.queryAgg(globalConfigParam);
-		if(config.getCodeRepo() == null || StringUtils.isBlank(config.getCodeRepo().getUrl())) {
+		if(config.getCodeRepo() == null || StringUtils.isBlank(config.getCodeRepo().getType())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CODE_REPO_IS_EMPTY);
 		}
 		if(config.getImageRepo() == null || StringUtils.isBlank(config.getImageRepo().getUrl())) {

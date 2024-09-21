@@ -62,14 +62,16 @@ public class Constants {
 	
 	public static final String BUSYBOX_IMAGE_URL = "registry.cn-hangzhou.aliyuncs.com/dhorse/busybox:latest";
 	
-	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.com/library/python:";
+	public static final String CENTOS_IMAGE_URL = "dockerproxy.net/library/centos:latest";
 	
-	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.com/library/node:";
+	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.net/library/python:";
+	
+	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.net/library/node:";
 	
 	public static final String DOTNET_IMAGE_BASE_URL = "mcr.microsoft.com/dotnet/aspnet:";
 	
-	//格式：dockerproxy.com/library/nginx:1.23.3-alpine
-	public static final String NGINX_IMAGE_URL = "dockerproxy.com/library/nginx:%s-alpine";
+	//格式：dockerproxy.net/library/nginx:1.23.3-alpine
+	public static final String NGINX_IMAGE_URL = "dockerproxy.net/library/nginx:%s-alpine";
 	
 	public static final String LOCALHOST_IP = "127.0.0.1";
 	

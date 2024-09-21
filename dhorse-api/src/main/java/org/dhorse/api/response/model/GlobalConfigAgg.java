@@ -244,15 +244,9 @@ public class GlobalConfigAgg implements Serializable {
 
 		private String type;
 
-		private String url;
+		private GitLab gitLab;
 
-		private Integer authType;
-
-		private String authToken;
-
-		private String authName;
-
-		private String authPassword;
+		private Codeup codeup;
 
 		public String getType() {
 			return type;
@@ -262,46 +256,108 @@ public class GlobalConfigAgg implements Serializable {
 			this.type = type;
 		}
 
-		public String getUrl() {
-			return url;
+		public GitLab getGitLab() {
+			return gitLab;
 		}
 
-		public void setUrl(String url) {
-			this.url = url;
+		public void setGitLab(GitLab gitLab) {
+			this.gitLab = gitLab;
 		}
 
-		public Integer getAuthType() {
-			return authType;
+		public Codeup getCodeup() {
+			return codeup;
 		}
 
-		public void setAuthType(Integer authType) {
-			this.authType = authType;
+		public void setCodeup(Codeup codeup) {
+			this.codeup = codeup;
 		}
 
-		public String getAuthToken() {
-			return authToken;
+		public static class GitLab {
+			
+			private String url;
+
+			private Integer authType;
+
+			private String authToken;
+
+			private String authName;
+
+			private String authPassword;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public Integer getAuthType() {
+				return authType;
+			}
+
+			public void setAuthType(Integer authType) {
+				this.authType = authType;
+			}
+
+			public String getAuthToken() {
+				return authToken;
+			}
+
+			public void setAuthToken(String authToken) {
+				this.authToken = authToken;
+			}
+
+			public String getAuthName() {
+				return authName;
+			}
+
+			public void setAuthName(String authName) {
+				this.authName = authName;
+			}
+
+			public String getAuthPassword() {
+				return authPassword;
+			}
+
+			public void setAuthPassword(String authPassword) {
+				this.authPassword = authPassword;
+			}
 		}
 
-		public void setAuthToken(String authToken) {
-			this.authToken = authToken;
-		}
+		public static class Codeup {
 
-		public String getAuthName() {
-			return authName;
-		}
+			private String organizationId;
 
-		public void setAuthName(String authName) {
-			this.authName = authName;
-		}
+			private String accessKey;
 
-		public String getAuthPassword() {
-			return authPassword;
-		}
+			private String accessKeySecret;
 
-		public void setAuthPassword(String authPassword) {
-			this.authPassword = authPassword;
-		}
+			public String getOrganizationId() {
+				return organizationId;
+			}
 
+			public void setOrganizationId(String organizationId) {
+				this.organizationId = organizationId;
+			}
+
+			public String getAccessKey() {
+				return accessKey;
+			}
+
+			public void setAccessKey(String accessKey) {
+				this.accessKey = accessKey;
+			}
+
+			public String getAccessKeySecret() {
+				return accessKeySecret;
+			}
+
+			public void setAccessKeySecret(String accessKeySecret) {
+				this.accessKeySecret = accessKeySecret;
+			}
+
+		}
 	}
 
 	public static class Ldap extends BaseGlobalConfig {

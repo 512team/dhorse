@@ -14,6 +14,7 @@ import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.api.response.model.AppTag;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
+import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo.GitLab;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
@@ -30,7 +31,6 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Tag;
 import org.gitlab4j.api.models.TreeItem;
 import org.gitlab4j.api.models.TreeItem.Type;
-
 
 /**
  * 
@@ -49,18 +49,20 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		try {
 			Project project = gitLabApi.getProjectApi().getProject(appId);
 			if (project == null) {
-				logger.warn("The project does not exist, app id : {}", appId);
+				logger.warn("The project does not exist, appid is {}", appId);
 				gitLabApi.close();
 				return false;
 			}
 
 			String localPathOfBranch = localPathOfBranch(context);
 			if (localPathOfBranch == null) {
-				logger.warn("Failed to local path of branch, app id : {}", appId);
+				logger.warn("Failed to local path of branch, appid is {}", appId);
 				gitLabApi.close();
 				return false;
 			}
-
+			
+			context.setLocalPathOfBranch(localPathOfBranch);
+			
 			List<TreeItem> trees = gitLabApi.getRepositoryApi().getTree(appId, null, branchName, true);
 			for (TreeItem tree : trees) {
 				File file = new File(localPathOfBranch + tree.getPath());
@@ -81,7 +83,6 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 					file.mkdir();
 				}
 			}
-			context.setLocalPathOfBranch(localPathOfBranch);
 		} catch (Exception e) {
 			logger.error("Failed to download branch", e);
 			return false;
@@ -320,10 +321,10 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	}
 
 	@Override
-	public void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName) {
+	public void deleteTag(CodeRepo codeRepo, String codeRepoPath, String tagName) {
 		GitLabApi gitLabApi = gitLabApi(codeRepo);
 		try {
-			gitLabApi.getTagsApi().deleteTag(codeRepoPath, branchName);
+			gitLabApi.getTagsApi().deleteTag(codeRepoPath, tagName);
 		} catch (GitLabApiException e) {
 			LogUtils.throwException(logger, e, MessageCodeEnum.DELETE_FAILURE);
 		} finally {
@@ -333,11 +334,12 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 	
 	private GitLabApi gitLabApi(CodeRepo codeRepo) {
 		GitLabApi gitLabApi = null;
-		if(AuthTypeEnum.TOKEN.getCode().equals(codeRepo.getAuthType())) {
-			gitLabApi = new GitLabApi(codeRepo.getUrl(), codeRepo.getAuthToken());
-		}else if(AuthTypeEnum.ACCOUNT.getCode().equals(codeRepo.getAuthType())) {
+		GitLab gitLab = codeRepo.getGitLab();
+		if(AuthTypeEnum.TOKEN.getCode().equals(gitLab.getAuthType())) {
+			gitLabApi = new GitLabApi(gitLab.getUrl(), gitLab.getAuthToken());
+		}else if(AuthTypeEnum.ACCOUNT.getCode().equals(gitLab.getAuthType())) {
 			try {
-				gitLabApi = GitLabApi.oauth2Login(codeRepo.getUrl(), codeRepo.getAuthName(), codeRepo.getAuthPassword());
+				gitLabApi = GitLabApi.oauth2Login(gitLab.getUrl(), gitLab.getAuthName(), gitLab.getAuthPassword());
 			} catch (GitLabApiException e) {
 				LogUtils.throwException(logger, e, MessageCodeEnum.AUTH_FAILURE);
 			}

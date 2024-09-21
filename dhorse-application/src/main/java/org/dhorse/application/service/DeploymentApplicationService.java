@@ -333,7 +333,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		String nameOfImage = new StringBuilder()
 				.append(context.getApp().getAppName())
 				.append(":v")
-				.append(DateUtils.formatDefault(new Date()))
+				.append(DateUtils.format(new Date(), DateUtils.DATE_FORMAT_YYYYMMDD_HHMMSS))
 				.toString();
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), nameOfImage);
 		context.setVersionName(nameOfImage);

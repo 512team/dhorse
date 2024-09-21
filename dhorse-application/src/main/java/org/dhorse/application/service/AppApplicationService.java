@@ -299,7 +299,7 @@ public class AppApplicationService extends BaseApplicationService<App, AppPO> {
 			RegistryImage registryImage = RegistryImage.named(fullNameOfImage).addCredential(
 					imageRepo.getAuthName(),
 					imageRepo.getAuthPassword());
-			Jib.from("dockerproxy.com/library/centos:latest")
+			Jib.from(Constants.CENTOS_IMAGE_URL)
 				.addLayer(Arrays.asList(javaHomePath), AbsoluteUnixPath.get("/usr/local"))
 				//在exec模式下，不可以使用环境变量
 				.setProgramArguments(Arrays.asList("chmod", "+x", home + "/bin/java"))

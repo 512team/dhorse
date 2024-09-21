@@ -111,6 +111,11 @@
 			<groupId>io.github.biezhi</groupId>
 			<artifactId>TinyPinyin</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.aliyun</groupId>
+			<artifactId>alibabacloud-devops20210625</artifactId>
+			<version>4.0.38</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<resources>
