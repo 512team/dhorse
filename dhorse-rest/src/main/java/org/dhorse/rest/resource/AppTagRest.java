@@ -2,15 +2,13 @@ package org.dhorse.rest.resource;
 
 import java.util.List;
 
-import org.dhorse.api.param.app.branch.AppBranchListParam;
+import org.dhorse.api.param.app.branch.AppTagListParam;
 import org.dhorse.api.param.app.tag.AppTagCreationParam;
 import org.dhorse.api.param.app.tag.AppTagDeletionParam;
 import org.dhorse.api.param.app.tag.AppTagPageParam;
 import org.dhorse.api.response.PageData;
 import org.dhorse.api.response.RestResponse;
-import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.api.response.model.AppTag;
-import org.dhorse.application.service.AppBranchApplicationService;
 import org.dhorse.application.service.AppTagApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -30,9 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppTagRest extends AbstractRest {
 
 	@Autowired
-	private AppBranchApplicationService appBranchApplicationService;
-	
-	@Autowired
 	private AppTagApplicationService appTagApplicationService;
 
 	/**
@@ -51,14 +46,14 @@ public class AppTagRest extends AbstractRest {
 	/**
 	 * 搜索分支
 	 * 
-	 * @param appBranchListParam 分页参数
+	 * @param appTagListParam 分页参数
 	 * @return 符合条件的数据
 	 */
 	@PostMapping("/search")
-	public RestResponse<List<AppBranch>> search(@CookieValue(name = "login_token", required = false) String loginToken,
-			@RequestBody AppBranchListParam appBranchListParam) {
-		return success(appBranchApplicationService.list(queryLoginUserByToken(loginToken),
-				appBranchListParam));
+	public RestResponse<List<AppTag>> search(@CookieValue(name = "login_token", required = false) String loginToken,
+			@RequestBody AppTagListParam appTagListParam) {
+		return success(appTagApplicationService.list(queryLoginUserByToken(loginToken),
+				appTagListParam));
 	}
 
 	/**

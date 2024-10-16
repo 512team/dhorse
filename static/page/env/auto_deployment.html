@@ -1,0 +1,186 @@
+<div class="layuimini-main">
+	<div class="layui-form layuimini-form" lay-filter="form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label required">代码类型</label>
+			<div class="layui-input-block">
+				<select name="codeType" lay-filter="codeType" lay-verify="required" lay-reqtext="代码类型不能为空">
+					<option value="">请选择</option>
+					<option value="1">分支</option>
+					<option value="2">标签</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">分支（标签）</label>
+			<div class="layui-input-block">
+				<select name="branchName" id="branchName" lay-verify="required" lay-reqtext="分支（标签）不能为空">
+					<option value="">请选择</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label required">Cron</label>
+			<div class="layui-input-block">
+				<input type="text" name="cron" lay-verify="required" lay-reqtext="Cron不能为空" placeholder="如：0 0 2 * * ? *" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">开关状态</label>
+			<div class="layui-input-block">
+				<input type="checkbox" name="enable" lay-skin="switch" value="1" lay-text="开启|关闭">
+			</div>
+		</div>
+		<input type="hidden" name="appId" id="appId2"/>
+		<input type="hidden" name="envId" id="envId2">
+		<input type="hidden" name="id" id="id"/>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+			parentIndex = layer.index,
+            $ = layui.$;
+		var appId = localStorage.getItem('appId_' + $("#userName").val());
+		var envId = JSON.parse(parent.data2).envId;
+		
+		$("#appId2").val(appId);
+		$("#envId2").val(envId);
+		
+		form.render();
+		
+		form.on("select(codeType)", function(data){
+			initCode(form, $, appId, data.value);
+		});
+		
+		$.ajax({
+			url: '/env/ext/queryAutoDeployment',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({"appId": appId, "envId": envId}),
+			success: function(res){
+				if(res.code != "000000"){
+					layer.msg(res.message, {icon: 5, shift: 6});
+					return false;
+				}
+				var data = res.data;
+				if(!data || JSON.stringify(data) === '{}'){
+					return false;
+				}
+				//给表单赋值
+				form.val("form-data", {
+				  "id": data.id
+				  ,"codeType": data.codeType
+				  ,"branchName": data.branchName
+				  ,"cron": data.cron
+				  ,"enable": data.enable
+				});
+				initCode(form, $, appId, data.codeType, data.branchName);
+				form.render();
+			}
+		});
+		
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+			$.ajax({
+				url: '/env/ext/addOrUpdateAutoDeployment',
+				type: 'POST',
+				dataType: "json",
+				contentType: 'application/json;charset=UTF-8',
+				data: JSON.stringify(data.field),
+				success: function(res){
+					if(res.code != "000000"){
+						layer.msg(res.message, {icon: 5, shift: 6});
+						return false;
+					}
+					
+					layer.msg("保存成功", {
+						icon: 1,
+						time: 500,
+						shade: 0.01,
+						shadeClose: false}, function(){
+						layer.close(parentIndex);
+						parent.layui.table.reload('currentTableId');
+					});
+				},
+				error: function(res){
+					layer.msg(res.message, {icon: 5, shift: 6});
+				}
+			});
+
+            return false;
+        });
+
+    });
+	
+	function initCode(form, $, appId, codeType, branchName){
+		if(codeType == 1){
+			initBranch(form, $, appId, branchName);
+		}else if(codeType == 2){
+			initTag(form, $, appId, branchName);
+		}else{
+			$("#branchName").html('<option value="">请选择</option>');
+			form.render('select');
+		}
+	}
+	
+	function initBranch(form, $, appId, branchName){
+		$.ajax({
+			url: '/app/branch/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'appId': appId}),
+			success: function(res){
+				data = res.data
+				var opt = '<option value="">请选择</option>';
+				for(var k in data){
+					var branchName2 = data[k].branchName;
+					if(branchName2 == branchName){
+						opt = opt.concat("<option value='"+ branchName2 +"' selected>"+ branchName2 +"</option>");
+					}else{
+						opt = opt.concat("<option value='"+ branchName2 +"'>"+ branchName2 +"</option>");
+					}
+				}
+				$("#branchName").html(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+	
+	function initTag(form, $, appId, branchName){
+		$.ajax({
+			url: '/app/tag/search',
+			type: 'POST',
+			dataType: "json",
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify({'appId': appId}),
+			success: function(res){
+				data = res.data
+				var opt = '<option value="">请选择</option>';
+				for(var k in data){
+					var branchName2 = data[k].tagName;
+					if(branchName2 == branchName){
+						opt = opt.concat("<option value='"+ branchName2 +"' selected>"+ branchName2 +"</option>");
+					}else{
+						opt = opt.concat("<option value='"+ branchName2 +"'>"+ branchName2 +"</option>");
+					}
+				}
+				$("#branchName").html(opt);
+				form.render('select');
+			},
+			error: function(data){
+				layer.msg(data.message, {icon: 5, shift: 6});
+			}
+		});
+	}
+</script>

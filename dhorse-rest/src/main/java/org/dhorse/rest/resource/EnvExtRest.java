@@ -1,9 +1,11 @@
 package org.dhorse.rest.resource;
 
+import org.dhorse.api.param.app.env.EnvAutoDeploymentQueryParam;
 import org.dhorse.api.param.app.env.EnvHealthQueryParam;
 import org.dhorse.api.param.app.env.EnvLifeCycleQueryParam;
 import org.dhorse.api.param.app.env.EnvPrometheusQueryParam;
 import org.dhorse.api.response.RestResponse;
+import org.dhorse.api.response.model.EnvAutoDeployment;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
 import org.dhorse.api.response.model.EnvPrometheus;
@@ -95,5 +97,28 @@ public class EnvExtRest extends AbstractRest {
 	public RestResponse<Void> addOrUpdatePrometheus(@CookieValue(name = "login_token", required = false) String loginToken,
 			@RequestBody EnvPrometheus addParam) {
 		return success(envExtApplicationService.addOrUpdatePrometheus(queryLoginUserByToken(loginToken), addParam));
+	}
+	
+	/**
+	 * 查询自动部署配置
+	 * 
+	 * @return 符合条件的数据
+	 */
+	@PostMapping("/queryAutoDeployment")
+	public RestResponse<EnvAutoDeployment> queryAutoDeployment(@CookieValue(name = "login_token", required = false) String loginToken,
+			@RequestBody EnvAutoDeploymentQueryParam queryParam) {
+		return success(envExtApplicationService.queryAutoDeployment(queryLoginUserByToken(loginToken), queryParam));
+	}
+
+	/**
+	 * 添加（修改）自动部署配置
+	 * 
+	 * @param addParam 添加（修改）参数
+	 * @return 无
+	 */
+	@PostMapping("/addOrUpdateAutoDeployment")
+	public RestResponse<Void> addOrUpdateAutoDeployment(@CookieValue(name = "login_token", required = false) String loginToken,
+			@RequestBody EnvAutoDeployment addParam) {
+		return success(envExtApplicationService.addOrUpdateAutoDeployment(queryLoginUserByToken(loginToken), addParam));
 	}
 }

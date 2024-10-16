@@ -97,7 +97,7 @@ public class AppBranchRest extends AbstractRest {
 			required = false) String loginToken,
 			@RequestBody BuildParam buildParam) {
 		return this.success(appBranchApplicationService
-				.buildVersionWithClusterMode(this.queryLoginUserByToken(loginToken), buildParam));
+				.asyncBuildVersionWithClusterMode(this.queryLoginUserByToken(loginToken), buildParam));
 	}
 	
 	/**
@@ -110,7 +110,7 @@ public class AppBranchRest extends AbstractRest {
 	public RestResponse<Void> buildVersion(@CookieValue(name = "login_token",
 			required = false) String loginToken,
 			@RequestBody BuildParam buildParam) {
-		if(appBranchApplicationService.buildVersion(
+		if(appBranchApplicationService.asyncBuildVersion(
 				this.queryLoginUserByToken(loginToken), buildParam)) {
 			return success();
 		}

@@ -17,6 +17,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo.Codeup;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
+import org.dhorse.infrastructure.strategy.repo.param.TagListParam;
 import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.LogUtils;
@@ -315,6 +316,16 @@ public class CodeupRepoStrategy extends CodeRepoStrategy {
 		return pageData;
 	}
 
+	@Override
+	public List<AppTag> tagList(CodeRepo codeRepo, TagListParam param) {
+		BranchPageParam pageParam = new BranchPageParam();
+		pageParam.setAppIdOrPath(param.getAppIdOrPath());
+		pageParam.setPageNum(1);
+		pageParam.setPageSize(100);
+		PageData<AppTag> page = tagPage(codeRepo, pageParam);
+		return page.getItems();
+	}
+	
 	@Override
 	public void createTag(CodeRepo codeRepo, String codeRepoPath, String tagName, String branchName) {
 		Codeup codeup = codeRepo.getCodeup();

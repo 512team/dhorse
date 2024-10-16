@@ -11,12 +11,20 @@ import org.dhorse.infrastructure.utils.Constants;
 import org.dhorse.infrastructure.utils.HttpUtils;
 import org.dhorse.infrastructure.utils.JsonUtils;
 import org.dhorse.infrastructure.utils.StringUtils;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 @Service
 public class InitializingService extends ApplicationService implements InitializingBean {
 
+	private static final Logger logger = LoggerFactory.getLogger(InitializingService.class);
+	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		//做一些事情
@@ -67,5 +75,15 @@ public class InitializingService extends ApplicationService implements Initializ
 		param.setItemValue(JsonUtils.toJsonString(ipSet));
 		param.setVersion(po.getVersion());
 		return globalConfigRepository.updateById(param);
+	}
+	
+	@Bean
+	public Scheduler scheduler() {
+		try {
+			return new StdSchedulerFactory().getScheduler();
+		} catch (SchedulerException e) {
+			logger.error("Failed to create bean [Scheduler]", e);
+		}
+		return null;
 	}
 }

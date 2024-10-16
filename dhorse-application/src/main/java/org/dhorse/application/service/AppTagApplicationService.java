@@ -5,19 +5,18 @@ import java.util.List;
 
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.api.enums.RoleTypeEnum;
-import org.dhorse.api.param.app.branch.AppBranchListParam;
+import org.dhorse.api.param.app.branch.AppTagListParam;
 import org.dhorse.api.param.app.tag.AppTagCreationParam;
 import org.dhorse.api.param.app.tag.AppTagDeletionParam;
 import org.dhorse.api.param.app.tag.AppTagPageParam;
 import org.dhorse.api.response.PageData;
-import org.dhorse.api.response.model.AppBranch;
 import org.dhorse.api.response.model.AppTag;
 import org.dhorse.api.response.model.GlobalConfigAgg;
 import org.dhorse.infrastructure.repository.po.AppMemberPO;
 import org.dhorse.infrastructure.repository.po.AppPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
-import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
+import org.dhorse.infrastructure.strategy.repo.param.TagListParam;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.dhorse.infrastructure.utils.StringUtils;
 import org.slf4j.Logger;
@@ -58,7 +57,7 @@ public class AppTagApplicationService extends DeploymentApplicationService {
 		return pageData;
 	}
 
-	public List<AppBranch> list(LoginUser loginUser, AppBranchListParam listParam) {
+	public List<AppTag> list(LoginUser loginUser, AppTagListParam listParam) {
 		if (!RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())) {
 			AppMemberPO appMember = appMemberRepository
 					.queryByLoginNameAndAppId(loginUser.getLoginName(), listParam.getAppId());
@@ -68,11 +67,11 @@ public class AppTagApplicationService extends DeploymentApplicationService {
 		}
 		AppPO appPO = validateApp(listParam.getAppId());
 		GlobalConfigAgg globalConfigAgg = this.globalConfig();
-		BranchListParam branchListParam = new BranchListParam();
-		branchListParam.setAppIdOrPath(appPO.getCodeRepoPath());
-		branchListParam.setBranchName(listParam.getBranchName());
+		TagListParam tagListParam = new TagListParam();
+		tagListParam.setAppIdOrPath(appPO.getCodeRepoPath());
+		tagListParam.setTagName(listParam.getTagName());
 		return buildCodeRepo(globalConfigAgg.getCodeRepo().getType())
-				.branchList(globalConfigAgg.getCodeRepo(), branchListParam);
+				.tagList(globalConfigAgg.getCodeRepo(), tagListParam);
 	}
 	
 	public Void add(LoginUser loginUser, AppTagCreationParam addParam) {

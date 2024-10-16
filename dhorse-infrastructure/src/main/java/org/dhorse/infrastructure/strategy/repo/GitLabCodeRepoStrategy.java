@@ -17,6 +17,7 @@ import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo.GitLab;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
+import org.dhorse.infrastructure.strategy.repo.param.TagListParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.LogUtils;
 import org.gitlab4j.api.Constants.MergeRequestState;
@@ -306,6 +307,33 @@ public class GitLabCodeRepoStrategy extends CodeRepoStrategy {
 		pageData.setItemCount(dataCount);
 		
 		return pageData;
+	}
+	
+	@Override
+	public List<AppTag> tagList(CodeRepo codeRepo, TagListParam param) {
+		GitLabApi gitLabApi = gitLabApi(codeRepo);
+		List<Tag> list = null;
+		try {
+			list = gitLabApi.getTagsApi().getTags(param.getAppIdOrPath());
+		} catch (GitLabApiException e) {
+			LogUtils.throwException(logger, e, MessageCodeEnum.APP_TAG_PAGE_FAILURE);
+		} finally {
+			gitLabApi.close();
+		}
+		
+		int dataCount = list.size();
+		if (dataCount == 0) {
+			return Collections.emptyList();
+		}
+		//按照提交时间倒排序
+		list.sort((e1, e2) -> e2.getCommit().getAuthoredDate().compareTo(e1.getCommit().getAuthoredDate()));
+		return list.stream().map(e ->{
+			AppTag appTag = new AppTag();
+			appTag.setTagName(e.getName());
+			appTag.setUpdateTime(e.getCommit().getCommittedDate());
+			appTag.setCommitMessage(e.getCommit().getMessage());
+			return appTag;
+		}).collect(Collectors.toList());
 	}
 	
 	@Override

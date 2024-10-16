@@ -32,6 +32,8 @@ public class ThreadPoolUtils {
 	
 	private static final ExecutorService SINGLE_THREAD = Executors.newSingleThreadExecutor();
 	
+	public static final ExecutorService AUTO_DEPLOYMENT_THREAD = Executors.newSingleThreadExecutor();
+	
 	private static final ThreadPoolExecutor THREAD_POOL_WRITE_LOG = new ThreadPoolExecutor(
 			CPU_SIZE,
 			CPU_SIZE_2,

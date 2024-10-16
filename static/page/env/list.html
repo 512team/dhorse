@@ -116,6 +116,9 @@
 					},{
 					  title: '删除环境'
 					  ,id: 'delete'
+					},{
+					  title: '自动部署'
+					  ,id: 'autoDeployment'
 					}]
 					,click: function(data, othis){
 						var elem = $(this.elem)
@@ -178,6 +181,17 @@
 								area: ['50%', '70%'],
 								offset: ['15%', '25%'],
 								content: miniPage.getHrefContent('page/env/prometheus.html')
+							});
+						}else if(data.id == 'autoDeployment'){
+							var index = layer.open({
+								title: '自动部署',
+								type: 1,
+								shade: 0.5,
+								maxmin: false,
+								shadeClose: false,
+								area: ['50%', '70%'],
+								offset: ['15%', '25%'],
+								content: miniPage.getHrefContent('page/env/auto_deployment.html')
 							});
 						}
 					}

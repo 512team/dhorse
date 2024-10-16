@@ -7,6 +7,7 @@ import java.util.Date;
 import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.api.enums.DeploymentStatusEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.enums.RoleTypeEnum;
 import org.dhorse.api.enums.YesOrNoEnum;
 import org.dhorse.api.param.app.branch.deploy.DeploymentParam;
 import org.dhorse.api.param.app.branch.deploy.DeploymentVersionDeletionParam;
@@ -105,7 +106,8 @@ public class DeploymentVersionApplicationService extends DeploymentApplicationSe
 		deployParam.setDeployer(loginUser.getLoginName());
 		deployParam.setDeploymentDetailId(deploymentDetailId);
 		deployParam.setDeploymentStartTime(deploymentDetailParam.getStartTime());
-		if (YesOrNoEnum.YES.getCode().equals(appEnv.getRequiredDeployApproval())) {
+		if (!RoleTypeEnum.ADMIN.getCode().equals(loginUser.getRoleType())
+				&& YesOrNoEnum.YES.getCode().equals(appEnv.getRequiredDeployApproval())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APPROVE);
 		}
 		deploy(deployParam);
