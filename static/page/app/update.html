@@ -130,7 +130,7 @@
 					<div class="layui-form-item" style="display:none" id="baseImageDiv2">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-inline" style="width: 50%">
-							<input type="text" name="baseImage" id="baseImage2" placeholder="如：dockerproxy.com/library/openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
+							<input type="text" name="baseImage" id="baseImage2" placeholder="如：dockerproxy.net/library/openjdk:11.0.16-jdk" autocomplete="off" class="layui-input">
 						</div>
 						<div class="layui-form-mid layui-word-aux" id="baseImageDesc"><a href="#" target="_blank">《镜像制作指引》</a></div>
 					</div>
@@ -216,7 +216,7 @@
 					<div class="layui-form-item" style="display:none" id="baseImageNodeDiv">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-block">
-							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：dockerproxy.com/library/nginx:1.23.3" autocomplete="off" class="layui-input">
+							<input type="text" name="baseImageNode" id="baseImageNode" placeholder="如：dockerproxy.net/library/nginx:1.23.3" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item required">
@@ -236,7 +236,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">Node镜像</label>
 						<div class="layui-input-block">
-							<input type="text" name="extendNodejsParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.com/library/node:18.17.1" autocomplete="off" class="layui-input">
+							<input type="text" name="extendNodejsParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.net/library/node:18.17.1" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -256,7 +256,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label required">基础镜像</label>
 						<div class="layui-input-block">
-							<input type="text" name="baseImageHtml" placeholder="如：dockerproxy.com/library/nginx:1.23.3" autocomplete="off" class="layui-input">
+							<input type="text" name="baseImageHtml" placeholder="如：dockerproxy.net/library/nginx:1.23.3" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item required">
@@ -290,7 +290,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">Python镜像</label>
 						<div class="layui-input-block">
-							<input name="extendPythonParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.com/library/python:3.11.5" autocomplete="off"  class="layui-input">
+							<input name="extendPythonParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.net/library/python:3.11.5" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -316,7 +316,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">Python镜像</label>
 						<div class="layui-input-block">
-							<input name="extendFlaskParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.com/library/python:3.11.5" autocomplete="off"  class="layui-input">
+							<input name="extendFlaskParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.net/library/python:3.11.5" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -342,7 +342,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">Python镜像</label>
 						<div class="layui-input-block">
-							<input name="extendDjangoParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.com/library/python:3.11.5" autocomplete="off"  class="layui-input">
+							<input name="extendDjangoParam.pythonImage" placeholder="默认使用Python的官方镜像，如：dockerproxy.net/library/python:3.11.5" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -377,7 +377,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">Node镜像</label>
 						<div class="layui-input-block">
-							<input name="extendNuxtParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.com/library/node:18.17.1" autocomplete="off"  class="layui-input">
+							<input name="extendNuxtParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.net/library/node:18.17.1" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -421,7 +421,7 @@
 					<div class="layui-form-item">
 						<label class="layui-form-label">Node镜像</label>
 						<div class="layui-input-block">
-							<input name="extendNextParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.com/library/node:18.17.1" autocomplete="off"  class="layui-input">
+							<input name="extendNextParam.nodeImage" placeholder="默认使用Node的官方镜像，如：dockerproxy.net/library/node:18.17.1" autocomplete="off"  class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
@@ -1092,11 +1092,11 @@
 	function baseImagePlaceholder(packageFileType, baseImageValue, $, form){
 		//Jar
 		if(packageFileType == 1){
-			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：dockerproxy.com/library/openjdk:11.0.16-jdk");
+			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：dockerproxy.net/library/openjdk:11.0.16-jdk");
 			$("#baseImageDesc a").attr("href", "https://gitee.com/i512team/dhorse-doc/blob/main/guide/JDK%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
 		//War
 		}else if(packageFileType == 2){
-			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：dockerproxy.com/library/tomcat:9.0.70-jdk11");
+			$("#baseImage2").val(baseImageValue).attr("placeholder", "如：dockerproxy.net/library/tomcat:9.0.70-jdk11");
 			$("#baseImageDesc a").attr("href", "https://gitee.com/i512team/dhorse-doc/blob/main/guide/Tomcat%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C.md");
 		}
 	}

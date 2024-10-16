@@ -1,17 +1,15 @@
 package org.dhorse.api.enums;
 
-public enum CodeRepoTypeEnum {
+public enum CodeTypeEnum {
 
-	GITLAB(1, "GitLab"),
-	GITHUB(2, "GitHub"),
-	GITEE(3, "Gitee"),
-	CODEUP(4, "Codeup");
+	BRANCH(1, "分支"),
+	TAG(2, "标签");
 
 	private Integer code;
 
 	private String value;
 
-	private CodeRepoTypeEnum(Integer code, String value) {
+	private CodeTypeEnum(Integer code, String value) {
 		this.code = code;
 		this.value = value;
 	}

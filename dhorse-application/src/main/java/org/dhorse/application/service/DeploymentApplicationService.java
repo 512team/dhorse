@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,9 +61,11 @@ import org.dhorse.infrastructure.repository.po.DeploymentDetailPO;
 import org.dhorse.infrastructure.repository.po.DeploymentVersionPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.strategy.repo.CodeRepoStrategy;
+import org.dhorse.infrastructure.strategy.repo.CodeupRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitHubCodeRepoStrategy;
 import org.dhorse.infrastructure.strategy.repo.GitLabCodeRepoStrategy;
 import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.DeploymentThreadPoolUtils;
 import org.dhorse.infrastructure.utils.FileUtils;
@@ -105,52 +106,62 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 	private Integer serverPort;
 
 	protected String buildVersion(BuildParam buildParam) {
+		DeploymentContext context = buildVersionContext(buildParam);
+		doBuildVersion(buildParam, context);
+		return context.getVersionName();
+	}
+	
+	protected String asyncBuildVersion(BuildParam buildParam) {
 
 		DeploymentContext context = buildVersionContext(buildParam);
 
 		//异步构建
 		ThreadPoolUtils.buildVersion(() -> {
-
-			Integer status = BuildStatusEnum.BUILDED_SUCCESS.getCode();
-			ThreadLocalUtils.Deployment.put(context);
-
-			try {
-				logger.info("Start to build version");
-
-				// 1.下载分支代码
-				if (context.getCodeRepoStrategy().downloadBranch(context)) {
-					logger.info("Download branch successfully");
-				} else {
-					LogUtils.throwException(logger, MessageCodeEnum.DOWNLOAD_BRANCH);
-				}
-
-				// 2.打包
-				if (pack(context)) {
-					logger.info("Pack successfully");
-				} else {
-					LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
-				}
-
-				// 3.制作镜像并上传仓库
-				if(buildImage(context)) {
-					logger.info("Build image successfully");
-				}else {
-					LogUtils.throwException(logger, MessageCodeEnum.BUILD_IMAGE);
-				}
-
-				updateDeploymentVersionStatus(context.getId(), status);
-			} catch (Throwable e) {
-				status = BuildStatusEnum.BUILDED_FAILUR.getCode();
-				updateDeploymentVersionStatus(context.getId(), status);
-				logger.error("Failed to build version", e);
-			} finally {
-				buildNotify(context, status);
-				logger.info("End to build version");
-				ThreadLocalUtils.Deployment.remove();
-			}
+			doBuildVersion(buildParam, context);
 		});
 
 		return context.getVersionName();
+	}
+	
+	private void doBuildVersion(BuildParam buildParam, DeploymentContext context) {
+
+		Integer status = BuildStatusEnum.BUILDED_SUCCESS.getCode();
+		ThreadLocalUtils.Deployment.put(context);
+
+		try {
+			logger.info("Start to build version");
+
+			// 1.下载分支代码
+			if (context.getCodeRepoStrategy().downloadBranch(context)) {
+				logger.info("Download branch successfully");
+			} else {
+				LogUtils.throwException(logger, MessageCodeEnum.DOWNLOAD_BRANCH);
+			}
+
+			// 2.打包
+			if (pack(context)) {
+				logger.info("Pack successfully");
+			} else {
+				LogUtils.throwException(logger, MessageCodeEnum.PACK_FAILURE);
+			}
+
+			// 3.制作镜像并上传仓库
+			if(buildImage(context)) {
+				logger.info("Build image successfully");
+			}else {
+				LogUtils.throwException(logger, MessageCodeEnum.BUILD_IMAGE);
+			}
+
+			updateDeploymentVersionStatus(context.getId(), status);
+		} catch (Throwable e) {
+			status = BuildStatusEnum.BUILDED_FAILUR.getCode();
+			updateDeploymentVersionStatus(context.getId(), status);
+			logger.error("Failed to build version", e);
+		} finally {
+			buildNotify(context, status);
+			ThreadLocalUtils.Deployment.remove();
+		}
+		logger.info("End to build version");
 	}
 
 	private void buildNotify(DeploymentContext context, int status) {
@@ -332,7 +343,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		String nameOfImage = new StringBuilder()
 				.append(context.getApp().getAppName())
 				.append(":v")
-				.append(new SimpleDateFormat(Constants.DATE_FORMAT_YYYYMMDD_HHMMSS).format(new Date()))
+				.append(DateUtils.format(new Date(), DateUtils.DATE_FORMAT_YYYYMMDD_HHMMSS))
 				.toString();
 		String fullNameOfImage = fullNameOfImage(context.getGlobalConfigAgg().getImageRepo(), nameOfImage);
 		context.setVersionName(nameOfImage);
@@ -529,11 +540,12 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 	}
 
 	protected CodeRepoStrategy buildCodeRepo(String codeRepoType) {
-		if (CodeRepoTypeEnum.GITLAB.getValue().equals(codeRepoType)) {
-			return new GitLabCodeRepoStrategy();
-		} else {
+		if(CodeRepoTypeEnum.CODEUP.getValue().equals(codeRepoType)){
+			return new CodeupRepoStrategy();
+		}else if(CodeRepoTypeEnum.GITHUB.getValue().equals(codeRepoType)){
 			return new GitHubCodeRepoStrategy();
 		}
+		return new GitLabCodeRepoStrategy();
 	}
 
 	public boolean packByMaven(DeploymentContext context, String customizedJavaHome) {

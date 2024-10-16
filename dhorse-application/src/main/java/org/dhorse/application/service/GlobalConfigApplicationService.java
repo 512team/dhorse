@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.dhorse.api.enums.CodeRepoTypeEnum;
 import org.dhorse.api.enums.GlobalConfigItemTypeEnum;
 import org.dhorse.api.enums.ImageRepoTypeEnum;
 import org.dhorse.api.enums.ImageSourceEnum;
@@ -201,7 +202,8 @@ public class GlobalConfigApplicationService extends DeploymentApplicationService
 	}
 	
 	public Void addOrUpdateCodeRepo(CodeRepo codeRepo) {
-		if(!codeRepo.getUrl().startsWith("http")) {
+		if(CodeRepoTypeEnum.GITLAB.getValue().equals(codeRepo.getType())
+				&& !codeRepo.getGitLab().getUrl().startsWith("http")) {
 			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "仓库地址格式不正确");
 		}
 		codeRepo.setItemType(GlobalConfigItemTypeEnum.CODE_REPO.getCode());

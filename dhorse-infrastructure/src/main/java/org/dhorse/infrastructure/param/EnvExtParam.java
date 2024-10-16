@@ -10,11 +10,6 @@ public class EnvExtParam extends PageParam {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 应用编号
-	 */
-	private String appId;
-
-	/**
 	 * 环境编号
 	 */
 	private String envId;

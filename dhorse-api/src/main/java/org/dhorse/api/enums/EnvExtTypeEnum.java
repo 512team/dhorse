@@ -6,7 +6,8 @@ public enum EnvExtTypeEnum {
 	AFFINITY(2, "亲和容忍"),
 	HEALTH(3, "健康检查"),
 	LIFECYCLE(4, "生命周期"),
-	PROMETHEUS(5, "Prometheus");
+	PROMETHEUS(5, "Prometheus"),
+	AUTO_DEPLOYMENT(6, "自动部署");
 
 	private Integer code;
 

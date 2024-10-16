@@ -2,6 +2,7 @@ package org.dhorse.infrastructure.repository;
 
 import java.util.List;
 
+import org.dhorse.api.response.model.EnvAutoDeployment;
 import org.dhorse.api.response.model.EnvExt;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -74,6 +75,18 @@ public class EnvExtRepository extends RightRepository<EnvExtParam, EnvExtPO, Env
 			return null;
 		}
 		EnvPrometheus model = JsonUtils.parseToObject(po.getExt(), EnvPrometheus.class);
+		model.setId(po.getId());
+		model.setAppId(po.getAppId());
+		model.setEnvId(po.getEnvId());
+		return model;
+	}
+	
+	public EnvAutoDeployment queryEnvAutoDeployment(EnvExtParam bizParam) {
+		EnvExtPO po = this.query(bizParam);
+		if(po == null) {
+			return null;
+		}
+		EnvAutoDeployment model = JsonUtils.parseToObject(po.getExt(), EnvAutoDeployment.class);
 		model.setId(po.getId());
 		model.setAppId(po.getAppId());
 		model.setEnvId(po.getEnvId());

@@ -7,7 +7,7 @@
 	<groupId>org.dhorse</groupId>
 	<artifactId>app-node-yarn</artifactId>
 	<packaging>pom</packaging>
-	<version>1.5.1</version>
+	<version>1.6.0</version>
 	
 	<build>
 		<plugins>

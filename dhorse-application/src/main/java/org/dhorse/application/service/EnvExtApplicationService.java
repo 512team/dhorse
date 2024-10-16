@@ -2,9 +2,11 @@ package org.dhorse.application.service;
 
 import org.dhorse.api.enums.EnvExtTypeEnum;
 import org.dhorse.api.enums.MessageCodeEnum;
+import org.dhorse.api.param.app.env.EnvAutoDeploymentQueryParam;
 import org.dhorse.api.param.app.env.EnvHealthQueryParam;
 import org.dhorse.api.param.app.env.EnvLifeCycleQueryParam;
 import org.dhorse.api.param.app.env.EnvPrometheusQueryParam;
+import org.dhorse.api.response.model.EnvAutoDeployment;
 import org.dhorse.api.response.model.EnvExt;
 import org.dhorse.api.response.model.EnvHealth;
 import org.dhorse.api.response.model.EnvLifecycle;
@@ -14,6 +16,7 @@ import org.dhorse.infrastructure.param.EnvExtParam;
 import org.dhorse.infrastructure.repository.po.EnvExtPO;
 import org.dhorse.infrastructure.strategy.login.dto.LoginUser;
 import org.dhorse.infrastructure.utils.JsonUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -26,6 +29,9 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
  */
 @Service
 public class EnvExtApplicationService extends BaseApplicationService<EnvExt, EnvExtPO> {
+	
+	@Autowired
+	private AutoDeploymentApplicationService autoDeploymentApplicationService;
 
 	public EnvHealth queryEnvHealth(LoginUser loginUser, EnvHealthQueryParam queryParam) {
 		this.hasRights(loginUser, queryParam.getAppId());
@@ -111,6 +117,37 @@ public class EnvExtApplicationService extends BaseApplicationService<EnvExt, Env
 		ext.setAppId(addParam.getAppId());
 		ext.setEnvId(addParam.getEnvId());
 		ext.setExType(EnvExtTypeEnum.PROMETHEUS.getCode());
+		ext.setExt(JsonUtils.toJsonString(addParam, "id", "appId", "envId", "modifyRights", "deleteRights"));
+		if(StringUtils.isBlank(addParam.getId())){
+			envExtRepository.add(ext);
+		}else {
+			ext.setId(addParam.getId());
+			envExtRepository.updateById(ext);
+		}
+		return null;
+	}
+	
+	public EnvAutoDeployment queryAutoDeployment(LoginUser loginUser, EnvAutoDeploymentQueryParam queryParam) {
+		this.hasRights(loginUser, queryParam.getAppId());
+		EnvExtParam bizParam = new EnvExtParam();
+		bizParam.setAppId(queryParam.getAppId());
+		bizParam.setEnvId(queryParam.getEnvId());
+		bizParam.setExType(EnvExtTypeEnum.AUTO_DEPLOYMENT.getCode());
+		return envExtRepository.queryEnvAutoDeployment(bizParam);
+	}
+	
+	public Void addOrUpdateAutoDeployment(LoginUser loginUser, EnvAutoDeployment addParam) {
+		if(null == addParam.getCodeType()) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "代码类型不能为空");
+		}
+		if(StringUtils.isBlank(addParam.getBranchName())) {
+			throw new ApplicationException(MessageCodeEnum.INVALID_PARAM.getCode(), "分支名称不能为空");
+		}
+		autoDeploymentApplicationService.updateJob(addParam);
+		EnvExtParam ext = new EnvExtParam();
+		ext.setAppId(addParam.getAppId());
+		ext.setEnvId(addParam.getEnvId());
+		ext.setExType(EnvExtTypeEnum.AUTO_DEPLOYMENT.getCode());
 		ext.setExt(JsonUtils.toJsonString(addParam, "id", "appId", "envId", "modifyRights", "deleteRights"));
 		if(StringUtils.isBlank(addParam.getId())){
 			envExtRepository.add(ext);

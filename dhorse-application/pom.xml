@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.dhorse</groupId>
 		<artifactId>dhorse-parent</artifactId>
-		<version>1.5.1</version>
+		<version>1.6.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>dhorse-application</artifactId>
@@ -16,6 +16,10 @@
 		<dependency>
 			<groupId>org.dhorse</groupId>
 			<artifactId>dhorse-infrastructure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
 		</dependency>
 	</dependencies>
 </project>

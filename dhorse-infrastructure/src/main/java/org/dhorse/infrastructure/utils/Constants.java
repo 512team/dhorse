@@ -42,14 +42,6 @@ public class Constants {
 	
 	public static final String MB_UNIT = "MB";
 	
-	public static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
-	
-	public static final String DATE_FORMAT_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
-	
-	public static final String DATE_FORMAT_UTC_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-	
-	public static final String DATE_FORMAT_YYYYMMDD_HHMMSS = "yyyyMMdd_HHmmss";
-	
 	public static final int DAYS_14 = 14;
 	
 	public static final int DAYS_7 = 7;
@@ -70,14 +62,16 @@ public class Constants {
 	
 	public static final String BUSYBOX_IMAGE_URL = "registry.cn-hangzhou.aliyuncs.com/dhorse/busybox:latest";
 	
-	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.com/library/python:";
+	public static final String CENTOS_IMAGE_URL = "dockerproxy.net/library/centos:latest";
 	
-	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.com/library/node:";
+	public static final String PYTHON_IMAGE_BASE_URL = "dockerproxy.net/library/python:";
+	
+	public static final String NODE_IMAGE_BASE_URL = "dockerproxy.net/library/node:";
 	
 	public static final String DOTNET_IMAGE_BASE_URL = "mcr.microsoft.com/dotnet/aspnet:";
 	
-	//格式：dockerproxy.com/library/nginx:1.23.3-alpine
-	public static final String NGINX_IMAGE_URL = "dockerproxy.com/library/nginx:%s-alpine";
+	//格式：dockerproxy.net/library/nginx:1.23.3-alpine
+	public static final String NGINX_IMAGE_URL = "dockerproxy.net/library/nginx:%s-alpine";
 	
 	public static final String LOCALHOST_IP = "127.0.0.1";
 	
@@ -141,7 +135,7 @@ public class Constants {
 		return new StringBuilder()
     			.append(logPath)
     			.append("published/")
-    			.append(new SimpleDateFormat(DATE_FORMAT_YYYYMMDD).format(deplopyedStartTime))
+    			.append(new SimpleDateFormat(DateUtils.DATE_FORMAT_YYYYMMDD).format(deplopyedStartTime))
     			.append("/")
     			.toString();
 	}

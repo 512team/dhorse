@@ -11,6 +11,7 @@ import org.dhorse.api.response.model.AppTag;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
+import org.dhorse.infrastructure.strategy.repo.param.TagListParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 import org.dhorse.infrastructure.utils.FileUtils;
 import org.dhorse.infrastructure.utils.K8sUtils;
@@ -90,7 +91,9 @@ public abstract class CodeRepoStrategy {
 	
 	public abstract PageData<AppTag> tagPage(CodeRepo codeRepo, BranchPageParam param);
 	
+	public abstract List<AppTag> tagList(CodeRepo codeRepo, TagListParam param);
+	
 	public abstract void createTag(CodeRepo codeRepo, String codeRepoPath, String tagName, String branchName);
 	
-	public abstract void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName);
+	public abstract void deleteTag(CodeRepo codeRepo, String codeRepoPath, String tagName);
 }

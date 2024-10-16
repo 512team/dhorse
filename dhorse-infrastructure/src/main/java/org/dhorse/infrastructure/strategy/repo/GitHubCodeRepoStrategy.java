@@ -8,6 +8,7 @@ import org.dhorse.api.response.model.AppTag;
 import org.dhorse.api.response.model.GlobalConfigAgg.CodeRepo;
 import org.dhorse.infrastructure.strategy.repo.param.BranchListParam;
 import org.dhorse.infrastructure.strategy.repo.param.BranchPageParam;
+import org.dhorse.infrastructure.strategy.repo.param.TagListParam;
 import org.dhorse.infrastructure.utils.DeploymentContext;
 
 public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
@@ -55,6 +56,12 @@ public class GitHubCodeRepoStrategy extends CodeRepoStrategy {
 	@Override
 	public void deleteTag(CodeRepo codeRepo, String codeRepoPath, String branchName) {
 		
+	}
+
+	@Override
+	public List<AppTag> tagList(CodeRepo codeRepo, TagListParam param) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

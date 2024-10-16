@@ -131,7 +131,7 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 	 * 向集群提交构建版本请求。<p/>
 	 * 轮询集群的各个Server，找出存在可用线程资源的目标Server，并向其提交构建请求。
 	 */
-	public Void buildVersionWithClusterMode(LoginUser loginUser, BuildParam buildParam) {
+	public Void asyncBuildVersionWithClusterMode(LoginUser loginUser, BuildParam buildParam) {
 		if (StringUtils.isBlank(buildParam.getAppId())) {
 			LogUtils.throwException(logger, MessageCodeEnum.APP_ID_IS_NULL);
 		}
@@ -144,7 +144,7 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 				GlobalConfigItemTypeEnum.IMAGE_REPO.getCode(),
 				GlobalConfigItemTypeEnum.SERVER_IP.getCode()));
 		GlobalConfigAgg config = globalConfigRepository.queryAgg(globalConfigParam);
-		if(config.getCodeRepo() == null || StringUtils.isBlank(config.getCodeRepo().getUrl())) {
+		if(config.getCodeRepo() == null || StringUtils.isBlank(config.getCodeRepo().getType())) {
 			LogUtils.throwException(logger, MessageCodeEnum.CODE_REPO_IS_EMPTY);
 		}
 		if(config.getImageRepo() == null || StringUtils.isBlank(config.getImageRepo().getUrl())) {
@@ -154,7 +154,7 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 		buildParam.setSubmitter(loginUser.getLoginName());
 		//1.如果当前server有可用的线程资源，则用当前server进行版本构建
 		if(CollectionUtils.isEmpty(config.getServerIps()) || hasUsableThread()) {
-			buildVersion(buildParam);
+			asyncBuildVersion(buildParam);
 			return null;
 		}
 		
@@ -186,17 +186,17 @@ public class AppBranchApplicationService extends DeploymentApplicationService {
 		}
 		
 		//3.如果集群没有可用的线程资源，则用当前server进行构建
-		buildVersion(buildParam);
+		asyncBuildVersion(buildParam);
 		
 		return null;
 	}
 	
-	public boolean buildVersion(LoginUser loginUser, BuildParam buildParam) {
+	public boolean asyncBuildVersion(LoginUser loginUser, BuildParam buildParam) {
 		if(!hasUsableThread()) {
 			return false;
 		}
 		buildParam.setSubmitter(loginUser.getLoginName());
-		buildVersion(buildParam);
+		asyncBuildVersion(buildParam);
 		return true;
 	}
 	

@@ -4,15 +4,15 @@ import java.io.File;
 
 import javax.sql.DataSource;
 
-import org.dhorse.infrastructure.utils.StringUtils;
 import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.apache.ibatis.session.AutoMappingBehavior;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.dhorse.api.enums.MessageCodeEnum;
 import org.dhorse.infrastructure.component.ComponentConstants;
 import org.dhorse.infrastructure.component.MysqlConfig;
-import org.dhorse.infrastructure.utils.Constants;
+import org.dhorse.infrastructure.utils.DateUtils;
 import org.dhorse.infrastructure.utils.LogUtils;
+import org.dhorse.infrastructure.utils.StringUtils;
 import org.dhorse.infrastructure.utils.ThreadLocalUtils;
 import org.mybatis.spring.annotation.MapperScan;
 import org.slf4j.Logger;
@@ -95,7 +95,7 @@ public class DataSourceConfig{
 			dataSource = new HikariDataSource();
 			SQLiteConfig config = new SQLiteConfig();
 			config.setDateClass(DateClass.TEXT.getValue());
-			config.setDateStringFormat(Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+			config.setDateStringFormat(DateUtils.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
 			SQLiteDataSource sqLiteDataSource = new SQLiteDataSource();
 			sqLiteDataSource.setConfig(config);
 			sqLiteDataSource.setUrl("jdbc:sqlite:" + componentConstants.getDataPath()
