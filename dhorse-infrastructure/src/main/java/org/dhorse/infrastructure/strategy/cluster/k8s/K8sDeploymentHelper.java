@@ -108,15 +108,18 @@ public class K8sDeploymentHelper {
 	    		.withVolumes(volumes(context))
 	            .endSpec()
 	            .endTemplate()
-	            .withStrategy(deploymentStrategy())
+	            .withStrategy(deploymentStrategy(context.getAppEnv()))
 	            .endSpec()
 	            .build();
 		
 		return deployment;
 	}
 	
-	private static DeploymentStrategy deploymentStrategy() {
+	private static DeploymentStrategy deploymentStrategy(AppEnvPO appEnvPO) {
 		IntOrString size = new IntOrString("25%");
+		if(appEnvPO.getBatchSize() != null) {
+			size = new IntOrString((100 / appEnvPO.getBatchSize()) + "%");
+		}
 		RollingUpdateDeployment ru = new RollingUpdateDeployment();
 		ru.setMaxSurge(size);
 		ru.setMaxUnavailable(size);

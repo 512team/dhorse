@@ -191,8 +191,10 @@ public class K8sClusterStrategy implements ClusterStrategy {
 				context.getCluster().getAuthToken())){
 
 			//执行deployment
-			Resource<Deployment> resource = client.apps().deployments()
-					.inNamespace(namespace).resource(K8sDeploymentHelper.build(context));
+			Resource<Deployment> resource = client.apps()
+					.deployments()
+					.inNamespace(namespace)
+					.resource(K8sDeploymentHelper.build(context));
 			doOperation(resource);
 			
 			// 自动扩容任务

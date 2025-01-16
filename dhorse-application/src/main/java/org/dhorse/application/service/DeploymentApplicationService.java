@@ -107,7 +107,9 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 
 	protected String buildVersion(BuildParam buildParam) {
 		DeploymentContext context = buildVersionContext(buildParam);
-		doBuildVersion(buildParam, context);
+		if(doBuildVersion(buildParam, context)) {
+			return null;
+		}
 		return context.getVersionName();
 	}
 	
@@ -123,7 +125,7 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 		return context.getVersionName();
 	}
 	
-	private void doBuildVersion(BuildParam buildParam, DeploymentContext context) {
+	private boolean doBuildVersion(BuildParam buildParam, DeploymentContext context) {
 
 		Integer status = BuildStatusEnum.BUILDED_SUCCESS.getCode();
 		ThreadLocalUtils.Deployment.put(context);
@@ -157,11 +159,13 @@ public abstract class DeploymentApplicationService extends ApplicationService {
 			status = BuildStatusEnum.BUILDED_FAILUR.getCode();
 			updateDeploymentVersionStatus(context.getId(), status);
 			logger.error("Failed to build version", e);
+			return false;
 		} finally {
 			buildNotify(context, status);
 			ThreadLocalUtils.Deployment.remove();
 		}
 		logger.info("End to build version");
+		return true;
 	}
 
 	private void buildNotify(DeploymentContext context, int status) {

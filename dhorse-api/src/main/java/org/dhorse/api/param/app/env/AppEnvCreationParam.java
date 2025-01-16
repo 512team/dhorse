@@ -112,6 +112,11 @@ public class AppEnvCreationParam implements Serializable {
 	private String minorPorts;
 
 	/**
+	 * 部署批次
+	 */
+	private Integer batchSize;
+
+	/**
 	 * 环境描述
 	 */
 	private String description;
@@ -174,6 +179,14 @@ public class AppEnvCreationParam implements Serializable {
 
 	public void setMinorPorts(String minorPorts) {
 		this.minorPorts = minorPorts;
+	}
+
+	public Integer getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
 	}
 
 	public String getEventNofigyUrl() {
@@ -307,7 +320,7 @@ public class AppEnvCreationParam implements Serializable {
 	public static class EnvExtendNodeParam implements Serializable {
 
 		private static final long serialVersionUID = 1L;
-		
+
 	}
 
 	public static class EnvExtendSpringBootParam implements Serializable {

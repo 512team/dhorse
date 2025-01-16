@@ -87,6 +87,11 @@ public class AppEnvParam extends PageParam {
 	private String minorPorts;
 
 	/**
+	 * 部署批次
+	 */
+	private Integer batchSize;
+
+	/**
 	 * 链路追踪状态，0：未开启，1：已开启
 	 */
 	private Integer traceStatus;
@@ -170,6 +175,14 @@ public class AppEnvParam extends PageParam {
 
 	public void setMinorPorts(String minorPorts) {
 		this.minorPorts = minorPorts;
+	}
+
+	public Integer getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
 	}
 
 	public Integer getMaxReplicas() {

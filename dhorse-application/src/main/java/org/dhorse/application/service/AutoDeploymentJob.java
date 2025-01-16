@@ -30,15 +30,16 @@ public class AutoDeploymentJob implements Job {
     	buildParam.setBranchName(dataMap.getString("branchName"));
     	buildParam.setSubmitter(Constants.DHORSE_TAG);
     	try {
-    		String versionName = "";
+    		DeploymentApplicationService deploymentApplicationService = null;
 	    	if(codeType == CodeTypeEnum.BRANCH.getCode()) {
-	    		AppBranchApplicationService appBranchApplicationService = SpringBeanContext.getBean(AppBranchApplicationService.class);
-	    		versionName = appBranchApplicationService.buildVersion(buildParam);
+	    		deploymentApplicationService = SpringBeanContext.getBean(AppBranchApplicationService.class);
 	    	}else if(codeType == CodeTypeEnum.TAG.getCode()){
-	    		AppTagApplicationService appTagApplicationService = SpringBeanContext.getBean(AppTagApplicationService.class);
-	    		versionName = appTagApplicationService.buildVersion(buildParam);
+	    		deploymentApplicationService = SpringBeanContext.getBean(AppTagApplicationService.class);
 	    	}
-	    	DeploymentVersionApplicationService deploymentVersionApplicationService = SpringBeanContext.getBean(DeploymentVersionApplicationService.class);
+	    	String versionName = deploymentApplicationService.buildVersion(buildParam);
+	    	if(versionName == null) {
+	    		return;
+	    	}
 	    	LoginUser loginUser = new LoginUser();
 	    	loginUser.setLoginName("admin");
 	    	loginUser.setRoleType(RoleTypeEnum.ADMIN.getCode());
@@ -46,6 +47,7 @@ public class AutoDeploymentJob implements Job {
 	    	deploymentParam.setAppId(buildParam.getAppId());
 	    	deploymentParam.setEnvId(buildParam.getEnvId());
 	    	deploymentParam.setVersionName(versionName);
+	    	DeploymentVersionApplicationService deploymentVersionApplicationService = SpringBeanContext.getBean(DeploymentVersionApplicationService.class);
 	    	deploymentVersionApplicationService.submitToDeploy(loginUser, deploymentParam);
     	}catch(Exception e) {
     		logger.error("Failed to start auto deployment, envId: " + buildParam.getEnvId(), e);

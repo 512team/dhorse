@@ -48,6 +48,12 @@
 			</div>
 		</div>
 		<div class="layui-form-item">
+			<label class="layui-form-label">部署批次</label>
+			<div class="layui-input-block">
+				<input type="text" name="batchSize" id="batchSize" placeholder="默认分为4批" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
 			<label class="layui-form-label">最小副本数</label>
 			<div class="layui-input-block">
 				<input type="text" name="minReplicas" placeholder="默认值：1" autocomplete="off" class="layui-input">
@@ -179,6 +185,7 @@
 					,"autoScalingCpu": data.autoScalingCpu
 					,"servicePort": data.servicePort
 					,"minorPorts": data.minorPorts
+					,"batchSize": data.batchSize
 					,"ingressHost": data.ingressHost
 					,"requiredDeployApproval": data.requiredDeployApproval
 					,"requiredMerge": data.requiredMerge
