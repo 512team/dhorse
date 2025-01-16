@@ -1,13 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 os=`uname`
 JAVA_HOME=$JAVA_HOME
 
-APP_NAME=dhorse
-JAR_NAME=$APP_NAME-rest-${project.version}.jar
+APP_NAME1=dhorse
+APP_NAME2=DHorse
+JAR_NAME=$APP_NAME1-rest-${project.version}.jar
 DHORSE_HOME=`dirname "$bin"`
 JAR_PATH=$DHORSE_HOME/lib/$JAR_NAME
-CONF_PATH=$DHORSE_HOME/conf/$APP_NAME.yml
+CONF_PATH=$DHORSE_HOME/conf/$APP_NAME1.yml
 
 #Jvm参数
 JAVA_OPTS="-server -Xms256m -Xmx256m -Xmn96m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m"
@@ -64,11 +65,11 @@ start() {
 	mkdir_data_path
 	is_exist
 	if [ $? == "1" ]; then
-		echo "The $APP_NAME service is already running, pid is $pid_number"
+		echo "The $APP_NAME2 service is already running, pid is $pid_number"
 		exit 0
 	fi
 	
-	echo "Starting $APP_NAME service, please wait a moment..."
+	echo "Starting $APP_NAME2 service, please wait a moment..."
 	
 	nohup $JAVA_HOME/bin/java $JAVA_OPTS -jar $JAR_PATH --spring.config.location=$CONF_PATH >/dev/null 2>&1 &
 	for i in {0..60}; do
@@ -81,12 +82,12 @@ start() {
 			sleep 1
 		else
 			echo $! > $data_path/pid
-			echo "Start $APP_NAME service successfully, pid is $!"
+			echo "Start $APP_NAME2 service successfully, pid is $!"
 			exit 0
 		fi
 	done
 	
-	echo "The $APP_NAME service startup failure"
+	echo "The $APP_NAME2 service startup failure"
 }
 
 #停止方法
@@ -95,22 +96,22 @@ stop() {
 	mkdir_data_path
 	is_exist
 	if [ $? == "0" ]; then
-		echo "The $APP_NAME service is not running"
+		echo "The $APP_NAME2 service is not running"
 		return
 	fi
-	echo "Stoping $APP_NAME service, pid is $pid_number"
+	echo "Stoping $APP_NAME2 service, pid is $pid_number"
 	kill $pid_number
 	rm -rf $data_path/pid
 	sleep 2
 	is_exist
 	if [ $? == "0" ]; then
-		echo "Stop $APP_NAME service successfully"
+		echo "Stop $APP_NAME2 service successfully"
 		return
 	fi
 	
 	kill -9 $pid_number
 	sleep 2
-	echo "Stop $APP_NAME service successfully"
+	echo "Stop $APP_NAME2 service successfully"
 }
 
 #重启
@@ -123,9 +124,9 @@ restart(){
 status(){
   is_exist
   if [ $? -eq "1" ]; then
-    echo "The $APP_NAME service is running, pid is $pid_number"
+    echo "The $APP_NAME2 service is running, pid is $pid_number"
   else
-    echo "The $APP_NAME service is not running"
+    echo "The $APP_NAME2 service is not running"
   fi
 }
 
