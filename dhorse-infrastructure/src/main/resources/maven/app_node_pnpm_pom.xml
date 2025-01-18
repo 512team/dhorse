@@ -7,7 +7,7 @@
 	<groupId>org.dhorse</groupId>
 	<artifactId>app-node-pnpm</artifactId>
 	<packaging>pom</packaging>
-	<version>1.6.0</version>
+	<version>1.6.1</version>
 	
 	<build>
 		<plugins>
